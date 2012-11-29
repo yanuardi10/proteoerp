@@ -479,7 +479,7 @@ class Sinv extends Controller {
 		$bodyscript .= '
 		var verinactivos = 0;
 		var mstatus = "";
-';
+		';
 
 		// Agregar
 		$bodyscript .= '
@@ -492,10 +492,108 @@ class Sinv extends Controller {
 			function(data){
 				$("#fborra").html("");
 				$("#fedita").html(data);
-				$("#fedita").dialog( {height: 550, width: 800} );
+				$("#fedita").dialog({
+					autoOpen: false, height: 550, width: 800, modal: true,
+					buttons: {
+					"Guardar y Cerrar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						$.ajax({
+							type: "POST", dataType: "html", async: false,
+							url: murl,
+							data: $("#df1").serialize(),
+							success: function(r,s,x){
+								if ( r.length == 0 ) {
+									$( "#fedita" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									return true;
+								} else {
+									$("#fedita").html(r);
+							}}
+						})},
+					"Guardar y Seguir": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						$.ajax({
+							type: "POST", dataType: "html", async: false,
+							url: murl,
+							data: $("#df1").serialize(),
+							success: function(r,s,x){
+								if ( r.length == 0 ) {
+									apprise("Registro Guardado");
+									//$( "#fedita" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									return true;
+								} else {
+									$("#fedita").html(r);
+							}}
+						})},
+					"Cancelar": function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+				});
 				$("#fedita").dialog( "open" );
 			})
 		};';
+
+
+
+/*
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 550, width: 800, modal: true,
+
+			buttons: {
+			"Guardar y Cerrar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							//apprise("Registro Guardado");
+							$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							return true;
+						} else {
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Guardar y Seguir": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							apprise("Registro Guardado");
+							//$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							return true;
+						} else {
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); }
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+*/
+
+
+
+
+
 
 		// Fotos
 		$bodyscript .= '
@@ -642,8 +740,32 @@ class Sinv extends Controller {
 				mId = id;
 				mstatus = "E";
 				$.post("'.site_url('inventario/sinv/dataedit/modify').'/"+id, function(data){
-					$("#fedita").html(data);
-					$("#fedita").dialog( {height: 550, width: 800} );
+				$("#fedita").html(data);
+				$("#fedita").dialog({
+					autoOpen: false, height: 550, width: 800, modal: true,
+					buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						$.ajax({
+							type: "POST", dataType: "html", async: false,
+							url: murl,
+							data: $("#df1").serialize(),
+							success: function(r,s,x){
+								if ( r.length == 0 ) {
+									$( "#fedita" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									return true;
+								} else {
+									$("#fedita").html(r);
+							}}
+						})},
+					"Cancelar": function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+				});
+
 					$("#fedita").dialog( "open" );
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
@@ -692,9 +814,11 @@ class Sinv extends Controller {
 			s = grid.getGridParam(\'selarrrow\');
 			';
 
+/*
 		$bodyscript .= '
 		$("#fedita").dialog({
 			autoOpen: false, height: 550, width: 800, modal: true,
+
 			buttons: {
 			"Guardar y Cerrar": function() {
 				var bValid = true;
@@ -738,6 +862,8 @@ class Sinv extends Controller {
 			},
 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
+*/
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
