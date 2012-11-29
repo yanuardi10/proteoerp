@@ -91,7 +91,7 @@ class Dpto extends Controller {
 			'width'         => 40,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:3, maxlength: 3 }',
+			'editoptions'   => '{ size:3, maxlength: 2 }',
 		));
 
 		$grid->addField('tipo');
