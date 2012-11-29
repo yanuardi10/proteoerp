@@ -686,7 +686,26 @@ class Sinv extends Controller {
 		$("#fedita").dialog({
 			autoOpen: false, height: 550, width: 800, modal: true,
 			buttons: {
-			"Guardar": function() {
+			"Guardar y Cerrar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							//apprise("Registro Guardado");
+							$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							return true;
+						} else {
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Guardar y Seguir": function() {
 				var bValid = true;
 				var murl = $("#df1").attr("action");
 				allFields.removeClass( "ui-state-error" );
@@ -697,8 +716,8 @@ class Sinv extends Controller {
 					success: function(r,s,x){
 						if ( r.length == 0 ) {
 							apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
+							//$( "#fedita" ).dialog( "close" );
+							//grid.trigger("reloadGrid");
 							return true;
 						} else {
 							$("#fedita").html(r);

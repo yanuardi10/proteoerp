@@ -1620,7 +1620,7 @@ class Sfac extends Controller {
 
 
 	//*********************************************************
-	// Forma de Abono
+	// Forma de Cobro de Servicio
 	//
 	function fcobroser(){
 		$mSQL    = "SELECT tipo, CONCAT(tipo, ' ', nombre) descrip FROM tarjeta WHERE tipo NOT IN ('DE','NC','IR') ORDER BY tipo ";

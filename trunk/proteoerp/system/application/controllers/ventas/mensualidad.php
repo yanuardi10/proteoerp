@@ -147,15 +147,18 @@ class mensualidad extends sfac_add {
 	function servxmes($status){
 		$this->genesal=false;
 		$this->back_url=$this->url.'filteredgrid';
+		
+		$codigo = $this->traevalor('SINVTARIFA');
 
 		$cliente = $this->input->post('cod_cli');
 		$cana    = $this->input->post('cana_0');
 		$sel=array('a.nombre','a.rifci','b.codigo','b.descrip','b.base1'
 		,'b.precio1','b.precio2','b.precio3','b.precio4','a.dire11'
 		,'b.iva','a.cliente','a.upago');
+
 		$this->db->select($sel);
 		$this->db->from('scli AS a');
-		$this->db->join('sinv AS b','a.tarifa=b.codigo');
+		$this->db->join('sinv AS b','b.codigo='.$this->db->escape($codigo));
 		$this->db->where('a.cliente',$cliente);
 		$query = $this->db->get();
 
