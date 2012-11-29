@@ -717,7 +717,7 @@ class Sinv extends Controller {
 						if ( r.length == 0 ) {
 							apprise("Registro Guardado");
 							//$( "#fedita" ).dialog( "close" );
-							//grid.trigger("reloadGrid");
+							grid.trigger("reloadGrid");
 							return true;
 						} else {
 							$("#fedita").html(r);
