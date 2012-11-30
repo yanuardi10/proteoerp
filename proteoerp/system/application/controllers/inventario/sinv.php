@@ -2427,8 +2427,10 @@ class Sinv extends Controller {
 					jQuery("#bpos1").trigger("reloadGrid");
 
 				}
-			},
-			afterInsertRow:
+			}
+		');
+
+		$grid->setAfterInsertRow('
 			function( rid, aData, rowe){
 				if ( aData.activo == "N" ){
 					$(this).jqGrid( "setCell", rid, "activo","", {color:"#FFFFFF", background:"#960F18" });
