@@ -234,7 +234,7 @@ class Scst extends Controller {
 
 		//Campos para el detalle
 		$this->_autoasignar($numero);
-		$this->_autopreciostandar($numero);
+		$this->_autoprecios($numero);
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
 		$detalle->use_function('similar','ofertas');
@@ -451,48 +451,89 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _autopreciostandar($control){
+	function _autoprecios($control){
 		$esstd=$this->datasis->traevalor('SCSTSD','S Para usar el precio standard en la carga de compras a droguerias');
 		if($esstd!=='S') return;
 		if(!empty($control)){
 			$dbcontrol=$this->db->escape($control);
-
 			$dbfarmax = $this->load->database('farmax', TRUE);
-			$query = $dbfarmax->query('SELECT proveed FROM scst WHERE control='.$dbcontrol);
-			if ($query->num_rows() > 0){
-				$row = $query->row_array();
-				$proveed=$row['proveed'];
-			}
-			$dbproveed=$this->db->escape($proveed);
 
-			$tabla    = $dbfarmax->database;
+			if($esstd=='S'){
+				$query = $dbfarmax->query('SELECT proveed FROM scst WHERE control='.$dbcontrol);
+				if ($query->num_rows() > 0){
+					$row = $query->row_array();
+					$proveed=$row['proveed'];
+				}
+				$dbproveed=$this->db->escape($proveed);
 
-			$mSQL="SELECT COALESCE( b.codigo , c.abarras) AS sinv, a.cstandard, COALESCE(e.margen,f.margen) AS margen, a.id
-			FROM ($tabla.`itscst`  AS a)
-			LEFT JOIN `sinv`       AS b ON `a`.`codigo`=`b`.`codigo`
-			LEFT JOIN `farmaxasig` AS c ON `a`.`codigo`=`c`.`barras` AND c.proveed=$dbproveed
-			LEFT JOIN `sinv`       AS d ON `d`.`codigo`=`c`.`abarras`
-			LEFT JOIN `grup`       AS e ON b.grupo=e.grupo
-			LEFT JOIN `grup`       AS f ON d.grupo=f.grupo
-			WHERE `a`.`control` = $dbcontrol";
+				$tabla    = $dbfarmax->database;
 
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0){
-				foreach ($query->result() as $row){
-					if(empty($row->sinv) || empty($row->cstandard)) continue;
+				$mSQL="SELECT COALESCE( b.codigo , c.abarras) AS sinv, a.cstandard, COALESCE(e.margen,f.margen) AS margen, a.id
+				FROM ($tabla.`itscst`  AS a)
+				LEFT JOIN `sinv`       AS b ON `a`.`codigo`=`b`.`codigo`
+				LEFT JOIN `farmaxasig` AS c ON `a`.`codigo`=`c`.`barras` AND c.proveed=$dbproveed
+				LEFT JOIN `sinv`       AS d ON `d`.`codigo`=`c`.`abarras`
+				LEFT JOIN `grup`       AS e ON b.grupo=e.grupo
+				LEFT JOIN `grup`       AS f ON d.grupo=f.grupo
+				WHERE `a`.`control` = $dbcontrol";
 
-					$data = array();
-					$data['precio1']=round(($row->cstandard*100)/(100-$row->margen),2);
-					$data['precio2']=$row->cstandard;
-					$data['precio3']=$row->cstandard;
-					$data['precio4']=$row->cstandard;
-					$where = 'id = '.$row->id;
-					$sql = $dbfarmax->update_string('itscst', $data, $where);
-					$dbfarmax->simple_query($sql);
-					//echo $sql.br();
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					foreach ($query->result() as $row){
+						if(empty($row->sinv) || empty($row->cstandard)) continue;
+
+						$data = array();
+						$data['precio1']=round(($row->cstandard*100)/(100-$row->margen),2);
+						$data['precio2']=$row->cstandard;
+						$data['precio3']=$row->cstandard;
+						$data['precio4']=$row->cstandard;
+						$where = 'id = '.$row->id;
+						$sql = $dbfarmax->update_string('itscst', $data, $where);
+						$dbfarmax->simple_query($sql);
+						//echo $sql.br();
+					}
+				}
+			}else{
+				$query = $dbfarmax->query('SELECT proveed FROM scst WHERE control='.$dbcontrol);
+				if ($query->num_rows() > 0){
+					$row = $query->row_array();
+					$proveed=$row['proveed'];
+				}
+				$dbproveed=$this->db->escape($proveed);
+
+				$tabla    = $dbfarmax->database;
+
+				$mSQL="SELECT
+				COALESCE(b.margen1,d.margen1) AS margen1,
+				COALESCE(b.margen2,d.margen2) AS margen2,
+				COALESCE(b.margen3,d.margen3) AS margen3,
+				COALESCE(b.margen4,d.margen4) AS margen4,
+				a.costo,a.iva,a.id
+				FROM ($tabla.`itscst`  AS a)
+				LEFT JOIN `sinv`       AS b ON `a`.`codigo`=`b`.`codigo`
+				LEFT JOIN `farmaxasig` AS c ON `a`.`codigo`=`c`.`barras` AND c.proveed=$dbproveed
+				LEFT JOIN `sinv`       AS d ON `d`.`codigo`=`c`.`abarras`
+				WHERE `a`.`control` = $dbcontrol";
+
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					foreach ($query->result() as $row){
+						$data=array();
+						for($i=1;$i<5;$i++){
+							$obj='margen'.$i;
+							if(empty($row->$obj) && $row->$obj>0 && $row->$obj<100){
+								$ind = 'precio'.$i;
+								$data[$ind] = round($row->costo*100/(100-$row->$obj),2);
+							}
+						}
+						if(count($data)>0){
+							$where = 'id = '.$row->id;
+							$sql = $dbfarmax->update_string('itscst', $data, $where);
+							$dbfarmax->simple_query($sql);
+						}
+					}
 				}
 			}
-
 		}
 	}
 
@@ -905,7 +946,7 @@ class Scst extends Controller {
 						$row['civared']  =$redutasa;
 
 						unset($row['pcontrol']);
-						if($contribu=='ESPECIAL' and strtoupper($rif[0])!='V'){
+						if($contribu=='ESPECIAL' && strtoupper($rif[0])!='V'){
 							$por_rete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($row['proveed']));
 							if($por_rete!=100){
 								$por_rete=0.75;
