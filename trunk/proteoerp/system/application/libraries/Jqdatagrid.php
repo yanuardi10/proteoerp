@@ -171,7 +171,9 @@ class Jqdatagrid
 
 	private $multiSelect = false;
 
-	private $onSelectRow = '';  
+	private $onSelectRow = '';
+	
+	private $afterInsertRow = '';  
 
 	private $ondblClickRow = 'i';
 
@@ -395,6 +397,17 @@ class Jqdatagrid
 	public function setOnSelectRow($element)
 	{
 		$this->onSelectRow = $element;
+	}
+
+
+	/**
+	* Set After Insert
+	* @param text $element
+	* @return void
+	*/
+	public function setAfterInsertRow($element)
+	{
+		$this->afterInsertRow = $element;
 	}
 
 
@@ -684,10 +697,14 @@ class Jqdatagrid
 		if ($this->onSelectRow)
 			$html .= $margen.",onSelectRow: $this->onSelectRow\r\n";
 
+		if ($this->afterInsertRow)
+			$html .= $margen.", afterInsertRow: $this->afterInsertRow\r\n";
+
 		//if ($this->afterShow) $html .= $margen.",afterShowForm: $this->afterShow \r\n";
 
 
 		if($this->multiSelect == true ){
+			$html .= $margen.",gridComplete: function() { $(this).jqGrid('hideCol', 'cb');}";
 			$html .= $margen.",multiselect: true\r\n";
 		}
 
