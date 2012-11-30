@@ -479,7 +479,6 @@ class Sinv extends Controller {
 		$bodyscript .= '
 		var verinactivos = 0;
 		var mstatus = "";
-		var allFields = $( [] ).add( ffecha );
 		';
 
 		// Agregar
@@ -786,6 +785,13 @@ class Sinv extends Controller {
 					$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(data){
 						$("#fedita").html("");
 						$("#fborra").html(data);
+						$("#fborra").dialog({
+							autoOpen: false, height: 350, width: 300, modal: true,
+							buttons: {"Aceptar": function() {
+								$( this ).dialog( "close" );
+								jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+							}}
+						});
 						$("#fborra").dialog( "open" );
 					});
 				}
@@ -794,16 +800,6 @@ class Sinv extends Controller {
 			}
 		};';
 
-		$bodyscript .= '
-		$("#fborra").dialog({
-			autoOpen: false, height: 350, width: 300, modal: true,
-			buttons: {
-				"Aceptar": function() {
-					$( this ).dialog( "close" );
-					jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
-				}
-			}
-		});';
 
 		//Wraper de javascript
 		$bodyscript .= '
