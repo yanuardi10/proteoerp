@@ -969,6 +969,34 @@ class b2b extends validaciones {
 						if(!$rt){
 							memowrite($mSQL,'B2B');
 							$er++;
+						}else{
+							//Ingresa los codigos de barras adicionales
+							if(isset($arr[$in]['suplemen']) && !empty($arr[$in]['suplemen'])){
+								$bbarras=explode('|',$arr[$in]['suplemen']);
+								$barraspos=array('codigo'=>$codigolocal);
+								foreach( $bbarras as $bar){
+									$bar=trim($bar);
+									if(preg_match('/^[0-9A-Za-z]+$/', $bar)>0){
+										$dbbar=$this->db->escape($bar);
+
+										$csinv=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM sinv WHERE codigo=$dbbar OR barras=$dbbar");
+										$cbarr=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM barraspos WHERE suplemen=$dbbar");
+
+										$csinv=(empty($csinv))? 0: $csinv;
+										$cbarr=(empty($cbarr))? 0: $cbarr;
+										if($csinv+$cbarr ==0){
+											$barraspos['suplemen']=$bar;
+											$mSQL=$this->db->insert_string('barraspos',$barraspos);
+											$rt=$this->db->simple_query($mSQL);
+											if(!$rt){
+												memowrite($mSQL,'B2B');
+												$er++;
+											}
+										}
+									}
+								}
+							}
+							//Fin de los codigos de barras adicionales
 						}
 					}
 					if($er==0){

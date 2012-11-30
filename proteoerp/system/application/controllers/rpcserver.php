@@ -99,8 +99,10 @@ class Rpcserver extends Controller {
 
 					//Prepara los articulos
 					$it=array();
-					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,TRIM(b.barras) AS barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal
-						FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo
+					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,TRIM(b.barras) AS barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal, GROUP_CONCAT(c.suplemen SEPARATOR '|') AS suplemen
+						FROM sitems AS a
+						JOIN sinv AS b ON a.codigoa=b.codigo
+						LEFT JOIN barraspos AS c ON a.codigoa=c.codigo
 						WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
 					$qquery = $this->db->query($mmSQL,array($numero));
 					foreach ($qquery->result_array() as $rrow){
