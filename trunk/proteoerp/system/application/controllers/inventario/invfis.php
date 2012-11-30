@@ -466,10 +466,10 @@ class Invfis extends Controller {
 			(`codigo`,`grupo`,`existen`,`contado`,`agregar`,`quitar`,`sustituir`,`fecha`,`modificado`,`actualizado`,`pond`)
 			SELECT TRIM(a.codigo),TRIM(a.grupo),IFNULL(b.existen,0) AS existen,0 contado,0 agregar,0 quitar,0 sustituir, NOW() fecha,CAST(NULL AS DATE ) modificado, CAST(NULL AS DATE) actualizado,a.pond
 			FROM sinv a
-			LEFT LEFT JOIN itsinv b ON a.codigo=b.codigo AND b.alma=${dbalma}";
+			LEFT JOIN itsinv b ON a.codigo=b.codigo AND b.alma=${dbalma}";
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ $error.='Error llenando la tabla parcial '; memowrite($mSQL,'INVFIS'); }
-			
+
 			$mSQL="UPDATE sitems SET despacha='S' WHERE tipoa='D'";
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ $error.='Error colocando las devoluciones como despachados '; memowrite($mSQL,'INVFIS'); }
