@@ -20,6 +20,11 @@ class Sinv extends Controller {
 			$this->db->simple_query('ALTER TABLE barraspos ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
 
+		if ( !$this->datasis->iscampo('sinv','url') ) {
+			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN url VARCHAR(200) NULL COMMENT "Pagina Web"');
+		};
+
+
 		if ( $this->datasis->traevalor('SUNDECOP') == 'S') {
 			$campos = $this->db->list_fields('sinv');
 			if (!in_array('mpps',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `mpps`        VARCHAR(20) NULL  COMMENT 'Numero de Ministerior de Salud'");
@@ -634,10 +639,6 @@ class Sinv extends Controller {
 */
 
 
-
-
-
-
 		// Fotos
 		$bodyscript .= '
 		function verfotos(){
@@ -649,6 +650,22 @@ class Sinv extends Controller {
 			}
 		};
 		';
+
+		// Pagina Web
+		$bodyscript .= '
+		function irurl(){
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret  = $("#newapi'.$grid0.'").getRowData(id);
+				if ( ret.url.length > 10 )
+					window.open(ret.url);
+			} else {
+				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
+			}
+		};
+		';
+
+
 
 		$bodyscript .= '
 		function sundecop() {
@@ -1900,16 +1917,6 @@ class Sinv extends Controller {
 		));
 
 
-		$grid->addField('id');
-		$grid->label('Id');
-		$grid->params(array(
-			'align'         => "'center'",
-			'frozen'        => 'true',
-			'width'         => 40,
-			'editable'      => 'false',
-			'search'        => 'false'
-		));
-
 
 		$grid->addField('gasto');
 		$grid->label('Gasto');
@@ -1967,34 +1974,6 @@ class Sinv extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-/*
-		$grid->addField('modificado');
-		$grid->label('Modificado');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-
-
-		$grid->addField('descufijo');
-		$grid->label('Descufijo');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-*/
 
 		$grid->addField('alto');
 		$grid->label('Alto');
@@ -2039,19 +2018,6 @@ class Sinv extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
-/*
-		$grid->addField('forma');
-		$grid->label('Forma');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:50, maxlength: 50 }',
-		));
-*/
 
 		$grid->addField('exento');
 		$grid->label('Exento');
@@ -2352,6 +2318,27 @@ class Sinv extends Controller {
 			));
 		}
 
+		$grid->addField('url');
+		$grid->label('Sitio Web');
+		$grid->params(array(
+			'align'         => "'left'",
+			'frozen'        => 'true',
+			'width'         => 100,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('260');
@@ -2365,8 +2352,9 @@ class Sinv extends Controller {
 			function(id){
 				if (id){
 					var ret = $(gridId1).getRowData(id);
-					url= "'.site_url("inventario/fotos/thumbnail").'/"+id;
-					$("#ladicional").html("<center><img src=\'"+url+"\' width=\'160\' ondblclick=\'verfotos()\'><center><div id=\'textofoto\' style=\'text-align:center;\'></div>");
+					var url= "'.site_url("inventario/fotos/thumbnail").'/"+id;
+					$("#ladicional").html("<center><img src=\'"+url+"\' width=\'160\' ondblclick=\'verfotos()\' onclick=\'irurl()\'><center><div id=\'textofoto\' style=\'text-align:center;\'></div>");
+
 					$("#radicional").html(detalle(id));
 					$.get(\''.site_url("inventario/sinv/sinvitems").'/\'+id,
 						function(data){
@@ -2624,11 +2612,10 @@ class Sinv extends Controller {
 		$edit->aumento = new inputField('Aumento %', 'aumento');
 		$edit->aumento->css_class='inputnum';
 		$edit->aumento->size=5;
-		$edit->aumento->maxlength=8;
-		$edit->aumento->autocomplete=false;
+		$edit->aumento->maxlength=6;
 		$edit->aumento->rule='numeric';
 		$edit->aumento->autocomplete = false;
-		$edit->aumento->append('Solo si es fracci&oacute;n');
+		$edit->aumento->append('Solo fraccion');
 
 		$edit->barras = new inputField('C&oacute;digo Barras', 'barras');
 		$edit->barras->size=15;
@@ -2640,7 +2627,7 @@ class Sinv extends Controller {
 		$edit->tipo->option('Articulo' ,'Art&iacute;culo');
 		$edit->tipo->option('Servicio' ,'Servicio');
 		$edit->tipo->option('Descartar','Descartar');
-		$edit->tipo->option('Fraccion' ,'Fracci&oacute;n');
+		$edit->tipo->option('Fraccion' ,'Fraccion');
 		$edit->tipo->option('Lote'     ,'Lote');
 		$edit->tipo->option('Combo'    ,'Combo');
 		//$edit->tipo->option('Consumo','Consumo');
@@ -2658,8 +2645,8 @@ class Sinv extends Controller {
 		$edit->clave->rule = 'trim|strtoupper';
 
 		$edit->ubica = new inputField('Ubicaci&oacute;n', 'ubica');
-		$edit->ubica->size=10;
-		$edit->ubica->maxlength=8;
+		$edit->ubica->size=9;
+		$edit->ubica->maxlength=9;
 		$edit->ubica->rule = 'trim|strtoupper';
 
 		$AddDepto='<a href="javascript:add_depto();" title="Haz clic para Agregar un nuevo Departamento">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
@@ -2708,7 +2695,7 @@ class Sinv extends Controller {
 		$edit->comision->css_class='inputnum';
 		$edit->comision->rule='numeric|callback_positivo|trim';
 
-		$edit->fracci  = new inputField('Fracci&oacute;n x Unid.', 'fracci');
+		$edit->fracci  = new inputField('Cant. X Empaque', 'fracci');
 		$edit->fracci ->size=10;
 		$edit->fracci->maxlength=4;
 		$edit->fracci->css_class='inputnum';
@@ -2746,6 +2733,10 @@ class Sinv extends Controller {
 		$edit->descrip2->size=45;
 		$edit->descrip2->maxlength=45;
 		$edit->descrip2->rule = 'trim|strtoupper';
+
+		$edit->url = new inputField('Sitio Web', 'url');
+		$edit->url->size=80;
+		$edit->url->maxlength=200;
 
 		$edit->peso  = new inputField('Peso', 'peso');
 		$edit->peso->size=10;
@@ -2786,7 +2777,7 @@ class Sinv extends Controller {
 		//$edit->marca->append($AddMarca);
 
 		$edit->modelo  = new inputField('Modelo', 'modelo');
-		$edit->modelo->size=24;
+		$edit->modelo->size=20;
 		$edit->modelo->maxlength=20;
 		$edit->modelo->rule = 'trim|strtoupper';
 

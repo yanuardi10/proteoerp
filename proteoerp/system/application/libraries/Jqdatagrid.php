@@ -167,7 +167,10 @@ class Jqdatagrid
 
 	private $afterPager  = '';
 
+/*
+	private $beforeShow = '';
 	private $afterShow = '';
+*/
 
 	private $multiSelect = false;
 
@@ -378,16 +381,27 @@ class Jqdatagrid
 		$this->afterPager = $element;
 	}
 
-	/**
-	* After Submit Function
+/*
+	*
+	* After Show Form
 	* @param text $element
 	* @return void
-	*/
+	*
 	public function setAfterShow($element)
 	{
 		$this->afterShow = $element;
 	}
 
+	**
+	* Before Show Form
+	* @param text $element
+	* @return void
+	*
+	public function setBeforeShow($element)
+	{
+		$this->beforeShow = $element;
+	}
+*/
 
 	/**
 	* Set ON Selection
@@ -700,8 +714,13 @@ class Jqdatagrid
 		if ($this->afterInsertRow)
 			$html .= $margen.", afterInsertRow: $this->afterInsertRow\r\n";
 
-		//if ($this->afterShow) $html .= $margen.",afterShowForm: $this->afterShow \r\n";
+/*
+		if ($this->beforeShow) 
+			$html .= $margen.",beforeShowForm: $this->beforeShow \r\n";
 
+		if ($this->afterShow) 
+			$html .= $margen.",afterShowForm: $this->afterShow \r\n";
+*/
 
 		if($this->multiSelect == true ){
 			$html .= $margen.",gridComplete: function() { $(this).jqGrid('hideCol', 'cb');}";
