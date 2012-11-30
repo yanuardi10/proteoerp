@@ -1075,33 +1075,27 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 						?>
 					</td>
 				</tr>
-				<tr>
-					<td class='littletableheaderc'><?php echo $form->aumento->label;  ?></td>
-					<td class="littletablerow">    <?php echo $form->aumento->output; ?></td>
-				</tr>
 			</table>
 		</td>
 		<td colspan='2' valign='top'>
 			<table border=0 width="100%">
 				<tr>
 					<td class='littletableheaderc'><?php echo $form->descrip->label  ?></td>
-					<td class="littletablerow">    <?php echo $form->descrip->output ?></td>
+					<td colspan="3" class="littletablerow">    <?php echo $form->descrip->output ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'>Adicional</td>
-					<td class="littletablerow"><?=$form->descrip2->output   ?></td>
+					<td colspan="3" class="littletablerow"><?=$form->descrip2->output   ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'><?=$form->marca->label ?></td>
 					<td class="littletablerow"> <?=$form->marca->output   ?></td>
+					<td class='littletableheaderc'><?php echo $form->ubica->label;  ?></td>
+					<td class="littletablerow">    <?php echo $form->ubica->output; ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'><?=$form->modelo->label ?></td>
 					<td class="littletablerow">    <?=$form->modelo->output   ?></td>
-				</tr>
-				<tr>
-					<td class='littletableheaderc'><?php echo $form->ubica->label;  ?></td>
-					<td class="littletablerow">    <?php echo $form->ubica->output; ?></td>
 				</tr>
 			</table>
 		</td>
@@ -1137,7 +1131,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 					<td valign='top'  align='center'>
 						<table border='0'>
 							<tr>
-								<td width='90' class="littletableheaderc"><?=$form->exento->label   ?></td>
+								<td width='100' class="littletableheaderc"><?=$form->exento->label   ?></td>
 								<td class="littletablerow" ><?=$form->exento->output ?></td>
 							</tr>
 						</table>
@@ -1158,7 +1152,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<li><a href="#tab4">Sundecop</a></li>
 		<?php } ?>
 		<li><a href="#tab5">Promociones</a></li>
-		<li><a href="#tab6">Precio al Mayor</a></li>
+		<li><a href="#tab6">Descuentos al Mayor</a></li>
 		<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
 		<li id="litab7"><a href="#tab7">Articulos del Combo</a></li>
 		<?php }?>
@@ -1261,6 +1255,12 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		</td>
 	</tr>
 	</table>
+	<table width="100%" border='0'>
+	<tr>
+		<td class='littletableheaderc'><?php echo $form->url->label ?></td> 
+		<td class="littletablerow"><?php echo $form->url->output; ?></td>
+	</tr>
+	</table>
 </div>
 <div id="tab2" style='background:#EFEFFF'>
 	<table width='100%'>
@@ -1288,6 +1288,10 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 				<tr>
 					<td class="littletableheaderc"><?=$form->redecen->label ?></td>
 					<td class="littletablerow"><?=$form->redecen->output?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc'><?php echo $form->aumento->label;  ?></td>
+					<td class="littletablerow">    <?php echo $form->aumento->output; ?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -1327,16 +1331,12 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 					<td class="littletablerow" align='right'><?php echo $form->precio4->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletablerow" align='right'><?php echo $form->pm->label  ?>%</td>
-					<td class="littletablerow" align='right'><?php echo $form->pm->output ?></td>
-					<td class="littletableheaderc">&nbsp;</td>
-					<td class="littletableheaderc">&nbsp;</td>
+					<td colspan="2" class="littletablerow" align='right'><?php echo $form->pm->label  ?>%</td>
+					<td colspan="2" class="littletablerow" align='left'><?php echo $form->pm->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletablerow" align='right'><?php echo $form->mmargen->label  ?>%</td>
-					<td class="littletablerow" align='right'><?php echo $form->mmargen->output ?></td>
-					<td class="littletableheaderc">&nbsp;</td>
-					<td class="littletableheaderc">&nbsp;</td>
+					<td colspan="2" class="littletablerow" align='right'><?php echo $form->mmargen->label  ?>%</td>
+					<td colspan="2" class="littletablerow" align='left'><?php echo $form->mmargen->output ?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -1715,6 +1715,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</table>
 	<br/>
 <?php
+/*
 $query = $this->db->query("SELECT suplemen FROM barraspos WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
 if ($query->num_rows()>0 ) {
 ?>
@@ -1748,7 +1749,7 @@ if ($query->num_rows()>0 ) {
 	</tr>
 	</table>
 	</fieldset>
-<?php }  // rows>0 ?>
+<?php }  // rows>0 */ ?>
 
 <?php
 $query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto, id FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".addslashes($form->_dataobject->get('codigo'))."'");
