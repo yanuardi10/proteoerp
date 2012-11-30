@@ -2457,10 +2457,11 @@ class Scst extends Controller {
 		$form->aaaa = new containerField('iii',$script."\n<table width='100%' style='background-color:#FBEC88;text-align:center;font-size:12px'><tr><td>".$proveed."</td></tr><tr><td>".$compra."</td></tr><tr><td>".$montos."</td></tr></table><br>&nbsp;");
 
 		$form->cprecio = new  dropdownField ('Cambiar precios', 'cprecio');
-		//$form->cprecio->option('D','Dejar el precio mayor');
+		$form->cprecio->option('D','Dejar el precio mayor');
 		$form->cprecio->option('N','No');
 		$form->cprecio->option('S','Si');
-		$form->cprecio->style = 'width:100px;';
+		$form->cprecio->rule='enum[D,N,S]';
+		$form->cprecio->style = 'width:150px;';
 		$form->cprecio->rule  = 'required';
 
 		$form->fecha = new dateonlyField('Fecha de recepci&oacute;n de la compra', 'fecha','d/m/Y');
@@ -2481,7 +2482,7 @@ class Scst extends Controller {
 		if($form->on_success()){
 			$cprecio   = $form->cprecio->newValue;
 			$actualiza = $form->fecha->newValue;
-			$cambio    = ($cprecio=='S') ? true : false;
+			$cambio    = $cprecio;
 
 			$id = $this->datasis->dameval("SELECT id FROM scst WHERE control=$control");
 			$rt = $this->_actualizar($id,$cambio,$actualiza);
@@ -2569,16 +2570,25 @@ class Scst extends Controller {
 
 							if($itrow->precio1>0 && $itrow->precio2>0 && $itrow->precio3>0 && $itrow->precio4>0){
 								//Cambio de precios
-								if($cprecio){
+								if($cprecio=='S'){
 									$mSQL='UPDATE sinv SET
-									precio1='.$this->db->escape($itrow->precio1).',
-									precio2='.$this->db->escape($itrow->precio2).',
-									precio3='.$this->db->escape($itrow->precio3).',
-									precio4='.$this->db->escape($itrow->precio4).'
+									precio1='.round(floatval($itrow->precio1),2).',
+									precio2='.round(floatval($itrow->precio2),2).',
+									precio3='.round(floatval($itrow->precio3),2).',
+									precio4='.round(floatval($itrow->precio4),2).'
 									WHERE codigo='.$dbcodigo;
 									$ban=$this->db->simple_query($mSQL);
 									if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-								}//Fin del cambio de precios
+								}elseif($cprecio=='D'){
+									$pps=array('precio1','precio2','precio3','precio4');
+									foreach($pps as $obj){
+										$pp  =round(floatval($itrow->$obj),2);
+										$mSQL="UPDATE sinv SET ${obj}=${pp} WHERE ${pp}>${obj} AND codigo=${dbcodigo}";
+										$ban =$this->db->simple_query($mSQL);
+										if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+									}
+								}
+								//Fin del cambio de precios
 							}
 
 							//Actualiza los margenes y bases
