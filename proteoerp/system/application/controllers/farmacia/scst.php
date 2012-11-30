@@ -453,7 +453,7 @@ class Scst extends Controller {
 
 	function _autoprecios($control){
 		$esstd=$this->datasis->traevalor('SCSTSD','S Para usar el precio standard en la carga de compras a droguerias');
-		if($esstd!=='S') return;
+
 		if(!empty($control)){
 			$dbcontrol=$this->db->escape($control);
 			$dbfarmax = $this->load->database('farmax', TRUE);
@@ -519,14 +519,19 @@ class Scst extends Controller {
 				if ($query->num_rows() > 0){
 					foreach ($query->result() as $row){
 						$data=array();
+						$iva = floatval($row->iva);
 						for($i=1;$i<5;$i++){
 							$obj='margen'.$i;
-							if(empty($row->$obj) && $row->$obj>0 && $row->$obj<100){
+							if($row->$obj>0 && $row->$obj<100){
 								$ind = 'precio'.$i;
-								$data[$ind] = round($row->costo*100/(100-$row->$obj),2);
+								$data[$ind] = round(($row->costo*100/(100-$row->$obj))*(1+($iva/100)),2);
 							}
 						}
 						if(count($data)>0){
+							//Arregla el precio4
+							if(isset($data['precio3']) && isset($data['precio4']) && $data['precio3']==$data['precio4']){
+								$data['precio4']=$data['precio4']/1.01;
+							}
 							$where = 'id = '.$row->id;
 							$sql = $dbfarmax->update_string('itscst', $data, $where);
 							$dbfarmax->simple_query($sql);
