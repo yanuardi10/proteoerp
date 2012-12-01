@@ -10,7 +10,7 @@ class Sinv extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		$this->datasis->modulo_nombre( 'SINV', $ventana=0 );
+		//$this->datasis->modulo_nombre( 'SINV', $ventana=0 );
 	}
 
 	function index(){
@@ -4778,7 +4778,6 @@ class Sinv extends Controller {
 		echo utf8_encode($g->render());
 	}
 
-
 	// Qr del Inventario
 	function sinvqr($id = 0 ){
 		$this->load->library('qr');
@@ -4787,6 +4786,12 @@ class Sinv extends Controller {
 		echo $this->qr->imgcode("Codigo: ".trim($reg['codigo'])."\n".trim($reg['descrip'])."\nBarras: ".trim($reg['barras']).trim($reg['ficha']) );
 	}
 
+	function ibarras($id = 0){
+		//error_reporting(0);
+		require_once 'Image/Barcode2.php';
+		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
+		Image_Barcode2::draw($codigo, 'code128', 'png');
+	}
 
 	function instalar(){
 
