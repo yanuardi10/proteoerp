@@ -2381,10 +2381,12 @@ class Sinv extends Controller {
 						function(data){
 							$("#itsinv").html(data);
 					});
-					$.get(\''.site_url("inventario/fotos/comenta").'/\'+id,
-						function(data){
-							$("#textofoto").html(data);
-					});
+'.
+//					$.get(\''.site_url("inventario/fotos/comenta").'/\'+id,
+//						function(data){
+//							$("#textofoto").html(data);
+//					});
+'
 					jQuery("#bpos1").jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'bpos1/').'/"+id+"/", page:1});
 					jQuery("#bpos1").trigger("reloadGrid");
 
@@ -2761,10 +2763,8 @@ class Sinv extends Controller {
 
 		$edit->ficha = new textareaField('Ficha Tecnica', 'ficha');
 		$edit->ficha->rule = 'trim';
-		$edit->ficha->cols = 70;
-		$edit->ficha->rows =3;
-
-
+		$edit->ficha->cols = 85;
+		$edit->ficha->rows =11;
 
 		$edit->peso  = new inputField('Peso', 'peso');
 		$edit->peso->size=10;
@@ -4778,6 +4778,16 @@ class Sinv extends Controller {
 		echo utf8_encode($g->render());
 	}
 
+
+	// Qr del Inventario
+	function sinvqr($id = 0 ){
+		$this->load->library('qr');
+		$reg = $this->datasis->damereg("SELECT codigo, descrip, barras, ficha FROM sinv WHERE id=$id");
+		header('Content-type: image/pnp');
+		echo $this->qr->imgcode("Codigo: ".trim($reg['codigo'])."\n".trim($reg['descrip'])."\nBarras: ".trim($reg['barras']).trim($reg['ficha']) );
+	}
+
+
 	function instalar(){
 
 		$campos = $this->db->list_fields('sinv');
@@ -5132,15 +5142,6 @@ class Sinv extends Controller {
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
-
-	// Qr del Inventario
-	function sinvqr($id = 0 ){
-		$this->load->library('qr');
-		$descrip = $this->datasis->dameval("SELECT CONCAT(codigo,' ',descrip) FROM sinv WHERE id=$id");
-		header('Content-type: image/pnp');
-		echo $this->qr->imgcode($descrip);
-	}
-
 
 }
 ?>
