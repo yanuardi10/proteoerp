@@ -70,9 +70,11 @@ $(function(){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$("#proveed").attr("readonly", "readonly");
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
 			$('#proveed').val(ui.item.proveed);
+			setTimeout(function() {  $("#proveed").removeAttr("readonly"); }, 1500);
 		}
 	});
 });
@@ -84,7 +86,6 @@ function importe(id){
 
 	var iimporte= roundNumber(cana*precio,2);
 	$("#importe_"+ind).val(iimporte);
-	//$("#it_importe_val_"+ind).text(nformat(iimporte,2));
 	totalizar();
 }
 
@@ -92,9 +93,12 @@ function costo(id){
 	var ind     = id.toString();
 	var cana    = Number($("#cantidad_"+ind).val());
 	var importe = Number($("#importe_"+ind).val());
-	var precio  = roundNumber(importe/cana,2);
-	$("#costo_"+ind).val(precio);
-	$("#it_importe_val_"+ind).text(nformat(importe,2));
+	if(cana>0){
+		var precio  = roundNumber(importe/cana,2);
+		$("#costo_"+ind).val(precio);
+	}else{
+		$("#importe_"+ind).val('0.0');
+	}
 	totalizar();
 }
 
@@ -122,32 +126,36 @@ function totalizar(){
 		nom=this.name
 		pos=this.name.lastIndexOf('_');
 		if(pos>0){
-			ind     = this.name.substring(pos+1);
-			cana    = Number($("#cantidad_"+ind).val());
-			itiva   = Number($("#iva_"+ind).val());
-			importe = Number(this.value);
-			itpeso  = Number($("#sinvpeso_"+ind).val());
+			if(this.value!=''){
+				ind     = this.name.substring(pos+1);
+				cana    = Number($("#cantidad_"+ind).val());
+				itiva   = Number($("#iva_"+ind).val());
+				importe = Number(this.value);
+				itpeso  = Number($("#sinvpeso_"+ind).val());
 
-			peso    = peso+(itpeso*cana);
-			iva     = iva+importe*(itiva/100);
-			totals  = totals+importe;
+				peso    = peso+(itpeso*cana);
+				iva     = iva+importe*(itiva/100);
+				totals  = totals+importe;
 
-			if(itiva-tasa_general==0){
-				cgenera = cgenera+importe;
-				civagen = civagen+iva;
-			}else if(itiva-tasa_reducid==0){
-				creduci = creduci+importe;
-				civared = civared+iva;
-			}else if(itiva-tasa_adicion==0){
-				cadicio = cadicio+importe;
-				civaadi = civaadi+iva;
-			}else{
-				cexento = cexento+importe;
+				if(itiva-tasa_general==0){
+					cgenera = cgenera+importe;
+					civagen = civagen+iva;
+				}else if(itiva-tasa_reducid==0){
+					creduci = creduci+importe;
+					civared = civared+iva;
+				}else if(itiva-tasa_adicion==0){
+					cadicio = cadicio+importe;
+					civaadi = civaadi+iva;
+				}else{
+					cexento = cexento+importe;
+				}
 			}
 		}
 	});
-	montotot = $("#montotot").val();
-	montoiva = $("#montoiva").val();
+
+	civas=roundNumber(cgenera*(tasa_general/100)+creduci*(tasa_reducid/100)+cadicio*(tasa_adicion/100),2);
+	montotot = Number($("#montotot").val());
+	montoiva = Number($("#montoiva").val());
 
 	$("#peso").val(roundNumber(peso,2));
 
@@ -156,15 +164,15 @@ function totalizar(){
 	}else{
 		totals = montotot;
 	}
-	if(Math.abs(iva-montoiva) >=0.02 ){
-		$("#montoiva").val(roundNumber(iva,2));
+	if(Math.abs(civas-montoiva) >=0.02 ){
+		$("#montoiva").val(roundNumber(civas,2));
 	}else{
 		iva = montoiva;
 	}
 
-	$("#montonet").val(roundNumber(totals+iva,2));
+	$("#montonet").val(roundNumber(totals+civas,2));
 	$("#peso_val").text(nformat(peso,2));
-	$("#montonet_val").text(nformat(totals+iva,2));
+	$("#montonet_val").text(nformat(totals+civas,2));
 	$("#montotot_val").text(nformat(totals,2));
 }
 
@@ -205,6 +213,7 @@ function add_itscst(){
 		}
 	});
 	$("#costo_"+can).numeric(".");
+	$("#importe_"+can).numeric(".");
 	autocod(can);
 	$('#codigo_'+can).focus();
 
@@ -322,7 +331,7 @@ function autocod(id){
 <?php } ?>
 
 <table width='100%' align='center'>
-<?php 
+<?php
 $nana='NONO';
 if (!$solo){
 ?>
@@ -385,7 +394,7 @@ if (!$solo){
 				</tr>
 			</table>
 			</fieldset>
-			
+
 		</tr>
 	<tr>
 </table>
