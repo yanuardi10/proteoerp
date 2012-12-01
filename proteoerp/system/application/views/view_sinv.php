@@ -1148,18 +1148,24 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<li><a href="#tab1">Parametros</a></li>
 		<li><a href="#tab2">Precios</a></li>
 		<li><a href="#tab3">Existencias</a></li>
+
 		<?php if ( $this->datasis->traevalor('SUNDECOP') == 'S') { ?>
 		<li><a href="#tab4">Sundecop</a></li>
 		<?php } ?>
+
 		<li><a href="#tab5">Promociones</a></li>
 		<li><a href="#tab6">Descuentos al Mayor</a></li>
+
 		<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
 		<li id="litab7"><a href="#tab7">Articulos del Combo</a></li>
 		<?php }?>
+
 		<?php if ( $this->datasis->traevalor('SINVPRODUCCION') == 'S') { ?>
 		<li><a href="#tab8">Ingredientes</a></li>
 		<li><a href="#tab9">Labores     </a></li>
 		<?php } ?>
+
+		<li><a href="#tab10">Ficha Tec.</a></li>
 
 	</ul>
 	<div id="tab1" style='background:#EFEFFF'>
@@ -1504,10 +1510,6 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 					<td class="littletableheaderc"><?=$form->exdes->label  ?></td>
 					<td class="littletablerow" align='right'><?=$form->exdes->output ?></td>
 				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->ubica->label ?></td>
-					<td class="littletablerow" align='right'><?=$form->ubica->output   ?></td>
-				</tr>
 			</table>
 			</fieldset>
 		</td>
@@ -1558,10 +1560,6 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 				</tr>
 
 			</table>
-
-			
-			
-			
 			</fieldset>
 		</td>
 	</tr>

@@ -24,6 +24,10 @@ class Sinv extends Controller {
 			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN url VARCHAR(200) NULL COMMENT "Pagina Web"');
 		};
 
+		if ( !$this->datasis->iscampo('sinv','ficha') ) {
+			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN ficha TEXT NULL COMMENT "Ficha Tecnica"');
+		};
+
 
 		if ( $this->datasis->traevalor('SUNDECOP') == 'S') {
 			$campos = $this->db->list_fields('sinv');
@@ -76,6 +80,7 @@ class Sinv extends Controller {
 		</td></tr>\n
 		
 		";
+
 
 		$grid->setWpAdicional($WpAdic);
 
@@ -665,6 +670,18 @@ class Sinv extends Controller {
 		};
 		';
 
+		// Codigo QR
+		$bodyscript .= '
+		function codqr(){
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret  = $("#newapi'.$grid0.'").getRowData(id);
+				window.open(\''.site_url("inventario/sinv/sinvqr").'/\'+ret.id, \'_blank\', \'width=420,height=450,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-225), screeny=((screen.availWidth/2)-250)\');
+			} else {
+				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
+			}
+		};
+		';
 
 
 		$bodyscript .= '
@@ -709,9 +726,8 @@ class Sinv extends Controller {
 			}
 		});
 
-		$("#sundecop").click( function(){
-			sundecop();
-		});
+		$("#sundecop").click( function(){ sundecop();});
+
 ';
 
 
@@ -2353,7 +2369,12 @@ class Sinv extends Controller {
 				if (id){
 					var ret = $(gridId1).getRowData(id);
 					var url= "'.site_url("inventario/fotos/thumbnail").'/"+id;
-					$("#ladicional").html("<center><img src=\'"+url+"\' width=\'160\' ondblclick=\'verfotos()\' onclick=\'irurl()\'><center><div id=\'textofoto\' style=\'text-align:center;\'></div>");
+					var sitio = "";
+					var codqr = "<button onclick=\'codqr();\'>QR</button>";
+					if ( ret.url.length > 12 )
+						sitio = "<button onclick=\'irurl();\'>Pagina Web</button>";
+						
+					$("#ladicional").html("<center><img src=\'"+url+"\' width=\'160\' ondblclick=\'verfotos()\' ><br>"+codqr+sitio+"<center><div id=\'textofoto\' style=\'text-align:center;\'></div>");
 
 					$("#radicional").html(detalle(id));
 					$.get(\''.site_url("inventario/sinv/sinvitems").'/\'+id,
@@ -2737,6 +2758,13 @@ class Sinv extends Controller {
 		$edit->url = new inputField('Sitio Web', 'url');
 		$edit->url->size=80;
 		$edit->url->maxlength=200;
+
+		$edit->ficha = new textareaField('Ficha Tecnica', 'ficha');
+		$edit->ficha->rule = 'trim';
+		$edit->ficha->cols = 70;
+		$edit->ficha->rows =3;
+
+
 
 		$edit->peso  = new inputField('Peso', 'peso');
 		$edit->peso->size=10;
@@ -5104,5 +5132,15 @@ class Sinv extends Controller {
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
+
+	// Qr del Inventario
+	function sinvqr($id = 0 ){
+		$this->load->library('qr');
+		$descrip = $this->datasis->dameval("SELECT CONCAT(codigo,' ',descrip) FROM sinv WHERE id=$id");
+		header('Content-type: image/pnp');
+		echo $this->qr->imgcode($descrip);
+	}
+
+
 }
 ?>
