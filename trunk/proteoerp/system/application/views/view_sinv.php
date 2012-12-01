@@ -1828,6 +1828,26 @@ if ($query->num_rows()>0 ) {
 		</tr>
 	</table>
 </div>
+<div id="tab10" style='background:#EFEFFF'>
+	<table width='100%'>
+		<tr>
+			<td>
+				<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
+				<legend class="titulofieldset" >Ficha tenica</legend>
+				<table width='100%'>
+				<tr>
+					<td class="littletablerow"><?=$form->ficha->output ?></td>
+				</tr>
+				</table>
+				</fieldset>
+			</td>
+		</tr>
+	</table>
+</div>
+
+
+
+
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
 
