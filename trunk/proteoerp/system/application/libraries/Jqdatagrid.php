@@ -951,6 +951,8 @@ class Jqdatagrid
 
 		$page       = $this->CI->input->get_post('page');
 		$filters    = $this->CI->input->get_post('filters');
+
+		$comodin = $this->CI->datasis->traevalor('COMODIN');
 		
 		if ( empty($sortby) )  {
 			$sortby  = $orden;
@@ -1025,7 +1027,7 @@ class Jqdatagrid
 		if ( !empty($mwhere) ) {
 			foreach($mwhere as $busca){
 				if ( trim(strtoupper($busca[0])) == 'LIKE') {
-					$this->CI->db->like( $busca[1], $busca[2], $busca[3] );
+					$this->CI->db->like( $busca[1], str_replace($comodin,'%', $busca[2]), $busca[3] );
 				} else {
 					if ( in_array($busca[0], array('>','<')) || in_array($busca[0],array('<>','>=','<=','!=')) ){
 						$this->CI->db->where( $busca[1].' '.$busca[0], $busca[2] );
@@ -1036,11 +1038,12 @@ class Jqdatagrid
 			}
 		}
 
+		
 		if ( !empty($filters) ) {
 			$mQUERY = $this->constructWhere($filters);
 			foreach($mQUERY as $busca){
 				if ( trim(strtoupper($busca[0])) == 'LIKE') {
-					$this->CI->db->like( $busca[1], $busca[2], $busca[3] );
+					$this->CI->db->like( $busca[1], str_replace($comodin,'%', $busca[2]), $busca[3] );
 				} else {
 					$this->CI->db->where( $busca[1], $busca[2] );
 				}
@@ -1105,7 +1108,14 @@ class Jqdatagrid
 		}else{
 			$rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());;
 		}
-			
+
+		//INTENTA ver si el Problema es el escape de %
+		if ( empty($rs) ) {
+			$lq = str_replace('\%','%',$this->CI->db->last_query());
+			$rs = $this->CI->datasis->codificautf8($this->CI->db->query($lq)->result_array());;
+		}
+		
+		
 		memowrite("ar".$this->CI->db->last_query(),'JQGETDATA');
 		$queryString = $this->CI->db->last_query();
 		

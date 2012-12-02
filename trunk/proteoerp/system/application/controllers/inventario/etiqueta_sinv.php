@@ -31,6 +31,22 @@ class etiqueta_sinv extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function menuaja(){
+		$thtml='<b>Seleccione m&eacute;todo para generar los habladores</b>';
+
+		$html[]=anchor('inventario/etiqueta_sinv/num_compra'  ,'Por n&uacute;mero compra'   ).': generar habladores con todos los productos pertenecientes a una compra';
+		$html[]=anchor('inventario/etiqueta_sinv/lee_barras'  ,'Por c&oacute;digo de barras').': permite generar habladores por productos seleccionados';
+		$html[]=anchor('inventario/etiqueta_sinv/filteredgrid','Por filtro de productos'    ).': permite generar los habladores filtrandolos por cacter&iacute;sticas comunes';
+
+		//$data['title']  = '<h1>Men&uacute; de Habladores</h1>';
+		//$data['content']= $thtml.ul($html);
+		//$this->load->view('view_ventanas', $data);
+		//echo ul($html);
+		
+	}
+
+
+
 	function filteredgrid(){
 		$this->rapyd->load('datafilter2','datagrid');
 
@@ -200,7 +216,7 @@ class etiqueta_sinv extends Controller {
 			'filtro'  =>array('numero'=>'N&uacute;mero','nombre'=>'Nombre'),
 			'retornar'=>array('control'=>'control'),
 			'titulo'  =>'Buscar Codigo');
-		$bSCST=$this->datasis->modbus($mSCST);
+		$bSCST = $this->datasis->modbus($mSCST);
 
 		$filter = new DataForm('inventario/etiqueta_sinv/num_compra/process');
 
