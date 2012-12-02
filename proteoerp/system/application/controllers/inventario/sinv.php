@@ -683,7 +683,7 @@ class Sinv extends Controller {
 		};
 		';
 
-
+		//VALORES PARA EL SUNDECOP
 		$bodyscript .= '
 		function sundecop() {
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
@@ -2370,7 +2370,7 @@ class Sinv extends Controller {
 					var ret = $(gridId1).getRowData(id);
 					var url= "'.site_url("inventario/fotos/thumbnail").'/"+id;
 					var sitio = "";
-					var codqr = "<button onclick=\'codqr();\'>QR</button>";
+					var codqr = "<button onclick=\'codqr();\'>Etiqueta</button>";
 					if ( ret.url.length > 12 )
 						sitio = "<button onclick=\'irurl();\'>Pagina Web</button>";
 						
@@ -2833,6 +2833,7 @@ class Sinv extends Controller {
 		$edit->ultimo = new inputField('Ultimo', 'ultimo');
 		$edit->ultimo->css_class='inputnum';
 		$edit->ultimo->size=10;
+		//$edit->ultimo->insertValue='100';
 		$edit->ultimo->maxlength=13;
 		$edit->ultimo->onkeyup = 'calculos(\'S\');';
 		$edit->ultimo->rule='required|mayorcero';
@@ -2842,6 +2843,7 @@ class Sinv extends Controller {
 		$edit->pond->css_class='inputnum';
 		$edit->pond->size=10;
 		$edit->pond->maxlength=13;
+		//$edit->pond->insertValue='100';
 		$edit->pond->onkeyup = 'calculos(\'S\');';
 		$edit->pond->rule='required|mayorcero';
 		$edit->pond->autocomplete = false;
@@ -2849,6 +2851,7 @@ class Sinv extends Controller {
 		$edit->standard = new inputField('Standard', 'standard');
 		$edit->standard->css_class='inputnum';
 		$edit->standard->size=10;
+		//$edit->standard->insertValue='100';
 		$edit->standard->maxlength=13;
 		$edit->standard->insertValue=0;
 		$edit->standard->autocomplete = false;
@@ -4786,11 +4789,11 @@ class Sinv extends Controller {
 		echo $this->qr->imgcode("Codigo: ".trim($reg['codigo'])."\n".trim($reg['descrip'])."\nBarras: ".trim($reg['barras']).trim($reg['ficha']) );
 	}
 
-	function ibarras($id = 0){
+	function ibarras($id = 0, $alto=20){
 		//error_reporting(0);
 		require_once 'Image/Barcode2.php';
 		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
-		Image_Barcode2::draw($codigo, 'code128', 'png');
+		Image_Barcode2::draw($codigo, 'code128', 'png', true, $alto);
 	}
 
 	function instalar(){

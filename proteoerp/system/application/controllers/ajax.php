@@ -192,7 +192,7 @@ class Ajax extends Controller {
 		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL  = "SELECT CONCAT(actividad,' (', minimo,')') actividad, id 
+			$mSQL  = "SELECT minimo, actividad, id 
 			FROM tarifa 
 			WHERE actividad LIKE $qdb 
 			ORDER BY actividad LIMIT ".$this->autolimit;
@@ -200,7 +200,9 @@ class Ajax extends Controller {
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
 					$retArray['value']    = $row['id'];
-					$retArray['label']    = utf8_encode($row['actividad']);
+					$retArray['minimo']   = $row['minimo'];
+					$retArray['actividad']= utf8_encode($row['actividad']);
+					$retArray['label']    = utf8_encode($row['actividad'].' ( '.$row['minimo'].')');
 					array_push($retorno, $retArray);
 				}
 			}
