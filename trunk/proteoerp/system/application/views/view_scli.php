@@ -247,12 +247,15 @@ else:
 			<fieldset style='border: 2px outset #8AF8F8;background:#EEFFFF;'>
 			<table width= '100%' >
 			<tr>
-				<td class="littletableheaderc"><?=$form->tarifa->label  ?></td>
-				<td class="littletablerow"><?php echo $form->tarifa->output.$form->tactividad->output ?></td>
+				<td class="littletableheaderc" width='100'><?=$form->tarifa->label  ?></td>
+				<td class="littletablerow"><?php 
+					echo $form->tarifa->output.$form->tactividad->output;
+					echo ' ('.$form->tminimo->output.')'; 
+					?></td>
 			</tr>				
 			<tr>
-				<td class="littletableheaderc"><?=$form->upago->label  ?></td>
-				<td class="littletablerow"><?=$form->upago->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->upago->label;  ?></td>
+				<td class="littletablerow"><?php echo $form->upago->output; ?></td>
 			</tr>				
 		</table>
 	</div>

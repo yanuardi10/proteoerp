@@ -1855,6 +1855,8 @@ $(function() {
 							$("#tarifa").val("");
 							$("#tactividad").val("");
 							$("#tactividad_val").text("");
+							$("#tminimo").val("");
+							$("#tminimo_val").text("");
 						}else{
 							$.each(data,
 								function(i, val){
@@ -1871,8 +1873,10 @@ $(function() {
 			$("#tarifa").attr("readonly", "readonly");
 
 			$("#tarifa").val(ui.item.value);
-			$("#tactividad").val(ui.item.label);
-			$("#tactividad_val").text(ui.item.label);
+			$("#tactividad").val(ui.item.actividad);
+			$("#tactividad_val").text(ui.item.actividad);
+			$("#tminimo").val(ui.item.minimo);
+			$("#tminimo_val").text(ui.item.minimo);
 			setTimeout(function() {  $("#tarifa").removeAttr("readonly"); }, 1500);
 		}
 	});
@@ -2007,7 +2011,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 ';
 
 		$do = new DataObject('scli');
-		$do->pointer('tarifa' ,'tarifa.id =scli.tarifa' ,'tarifa.actividad  AS tactividad'  ,'left');
+		$do->pointer('tarifa' ,'tarifa.id =scli.tarifa' ,'`tarifa`.`actividad`  AS tactividad, `tarifa`.`minimo`  AS tminimo'  ,'left');
 
 		$edit = new DataEdit('Clientes', $do);
 		$edit->back_url = site_url('ventas/scli/filteredgrid');
@@ -2250,15 +2254,21 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->upago->maxlength =6;
 
 		$edit->tarifa = new inputField('Tarifa', 'tarifa');
-		$edit->tarifa->rule = 'trim';
-		$edit->tarifa->size = 15;
-		$edit->tarifa->maxlength =15;
+		$edit->tarifa->rule = 'trim|callback_chtarifa';
+		$edit->tarifa->size = 6;
+		//$edit->tarifa->maxlength =15;
 		
 		$edit->tactividad = new inputField('', 'tactividad');
-		$edit->tactividad->db_name     = 'tarifa';
+		$edit->tactividad->db_name     = 'tactividad';
 		$edit->tactividad->pointer     = true;
 		$edit->tactividad->type='inputhidden';
 		$edit->tactividad->in = 'tarifa';
+
+		$edit->tminimo = new inputField('', 'tminimo');
+		$edit->tminimo->db_name     = 'tminimo';
+		$edit->tminimo->pointer     = true;
+		$edit->tminimo->showformat  = 'decimal';
+		$edit->tminimo->type='inputhidden';
 
 		//$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 
@@ -2306,7 +2316,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			return $rt;
 		}
 	}
-
 
 	function filtergridcredi(){
 		$this->rapyd->load('datafilter','datagrid');
@@ -2582,6 +2591,17 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			$devo .= $this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=".$this->db->escape($cliente));
 		}
 		echo $devo;
+	}
+
+	function chtarifa($id){
+		$dbid = $this->db->escape($id);
+		$cana=$this->datasis->dameval("SELECT COUNT(*) FROM tarifa WHERE id=$dbid");
+		if($cana>0){
+			return true;
+		}else{
+			$this->validation->set_message('chtarifa','El campo %s debe contener una tarifa v&aacute;lida.');
+			return false;
+		}
 	}
 
 	function chtolera($monto){
