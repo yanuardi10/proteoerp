@@ -59,13 +59,18 @@ function cost(pertenece){
 //Calcula los precios respetando el margen
 function calculos(pertenece){
  	if (pertenece=='M') v=6; else v=5;
-	var iva   =  parseFloat($("#iva").val());
+	var iva  = parseFloat($("#iva").val());
 	var costo= cost(pertenece);
 	for(i=1;i<v;i++){
 		margen=parseFloat($("#margen"+i).val());
-		nmargen = roundNumber(margen,2);
-		nbase   = roundNumber(costo*100/(100-margen),2);
-		nprecio = roundNumber(nbase*((iva+100)/100),2);
+		if(margen>=100){ margen=99.99; }
+		if(margen=='' || margen==null){
+			nbase=nprecio=0;
+		}else{
+			nmargen = roundNumber(margen,2);
+			nbase   = roundNumber(costo*100/(100-margen),2);
+			nprecio = roundNumber(nbase*((iva+100)/100),2);
+		}
 		$("#base" + i).val(nbase);
 		$("#precio" + i).val(nprecio);
 	}
@@ -80,9 +85,13 @@ function cambioprecio(pertenece){
 	for(i=1;i<v;i++){
 		precio=parseFloat($("#precio"+i).val());
 		base=precio*100/(100+iva);
-		nbase=roundNumber(base,2);
-		margen=100-(costo*100)/nbase;
-		nmargen=roundNumber(margen,2);
+		if(base==0){
+			nbase=roundNumber(base,2);
+			margen=100-(costo*100)/nbase;
+			nmargen=roundNumber(margen,2);
+		}else{
+			nmargen=nbase=0;
+		}
 		$("#base"+i).val(nbase);
 		$("#margen" + i).val(nmargen);
 	}
@@ -96,12 +105,16 @@ function cambiobase(pertenece){
 	if(pertenece=='M') v=6; else v=5;
 	for(i=1;i<v;i++){
 		base=parseFloat($("#base"+i).val());
-		precio=(base*(iva+100)/100);
-		nprecio=roundNumber(precio,2);
+		if(base>0){
+			precio=(base*(iva+100)/100);
+			nprecio=roundNumber(precio,2);
 
-		margen=100-(costo*100)/base;
-		nmargen=roundNumber(margen,2);
-		document.getElementById("margen"+i).value = nmargen;
+			margen=100-(costo*100)/base;
+			nmargen=roundNumber(margen,2);
+			document.getElementById("margen"+i).value = nmargen;
+		}else{
+			nmargen=nprecio=0;
+		}
 		$("#margen" + i).val(nmargen);
 		$("#precio"+i).val(nprecio);
 	}
@@ -211,55 +224,67 @@ function redonde(pertenece){
 }
 
 function requeridos(load){
+	var ultimo = Number($("#ultimo").val());
+	var pond   = Number($("#pond").val());
+
 	switch($("#formcal").val()){
 		case 'U':{
-			if ($("#ultimo").val() > 0){
-				bloquea_precios(false);
+			if(ultimo > 0){
+				//bloquea_precios(false);
 			}else{
-				bloquea_precios(true);
+				//bloquea_precios(true);
 				if(!load)
 				alert("Si en Forma de cálculo selecciona ULTIMO, debe de completar el valor del campo ULTIMO con un valor válido");
+				$('#ultimo').focus();
+				$('#ultimo').select();
 			}
 			break;
 		}
 		case 'P':{
-			if ($("#pond").val() > 0){
-				bloquea_precios(false);
+
+			if (pond > 0){
+				//bloquea_precios(false);
 			}else{
-				bloquea_precios(true);
+				//bloquea_precios(true);
 				if(!load)
 				alert("Si en Forma de cálculo selecciona PROMEDIO, debe de completar el valor del campo PROMEDIO con un valor válido");
+				$('#pond').focus();
+				$('#pond').select();
 			}
 			break;
 		}
 		case 'M':{
-			if (($("#ultimo").val() > 0) || ($("#pond").val() > 0)){
-				bloquea_precios(false);
+
+			if ((ultimo > 0) || (pond > 0)){
+				//bloquea_precios(false);
 			}else{
-				bloquea_precios(true);
+				//bloquea_precios(true);
 				if(!load)
 				alert("Si en Forma de cálculo selecciona MAYOR, debe de completar el valor del campo PROMEDIO ó ULTIMO con un valor válido");
+				if(pond > ultimo){
+					$('#pond').focus();
+					$('#pond').select();
+				}else{
+					$('#ultimo').focus();
+					$('#ultimo').select();
+				}
 			}
 			break;
 		}
-		default:bloquea_precios(true);
+		default:{
+			//bloquea_precios(false);
+		}
 	}
 }
 
 function bloquea_precios(ban){
-	t=4;
 	if(ban){
-		for (i = 1; i <= t; i++) {
-			$("#margen"+i).attr('disabled','disabled');
-			$("#base"+i).attr(  'disabled','disabled');
-			$("#precio"+i).attr('disabled','disabled');
-		}
+		$('input[id^="margen"]').attr('disabled','disabled');
+		$('input[id^="base"]'  ).attr('disabled','disabled');
+		$('input[id^="precio"]').attr('disabled','disabled');
 	}else{
-		for (i = 1; i <= t; i++){
-			if($("#margen"+i).val()==false)$("#margen"+i).val(t-i + "0");
-			$("#margen"+i).attr('disabled','');
-			$("#base"+i).attr(  'disabled','');
-			$("#precio"+i).attr('disabled','');
-		}
+		$('input[id^="margen"]').removeAttr('disabled');
+		$('input[id^="base"]'  ).removeAttr('disabled');
+		$('input[id^="precio"]').removeAttr('disabled');
 	}
 }

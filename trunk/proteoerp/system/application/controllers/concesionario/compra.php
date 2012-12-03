@@ -179,6 +179,7 @@ class compra extends scst {
 		$edit->clase = new  dropdownField('Clase','vh_clase');
 		$edit->clase->option('AUTOMOVIL','Automovil');
 		$edit->clase->option('CAMIONETA','Camioneta');
+		$edit->clase->option('CAMION'   ,'Camion');
 		$edit->clase->style='width:200px;';
 		$edit->clase->size = 6;
 		$edit->clase->rule='required';
@@ -188,10 +189,33 @@ class compra extends scst {
 		$edit->transmision->option('','Seleccionar');
 		$edit->transmision->option('AUTOMATICO','Automatico');
 		$edit->transmision->option('MANUAL'    ,'Manual');
+		$edit->transmision->option('MANUAL'    ,'ZF');
+		$edit->transmision->option('MANUAL'    ,'ZF-ITON');
 		$edit->transmision->style='width:200px;';
 		$edit->transmision->size = 6;
 		$edit->transmision->rule='required';
 		$edit->transmision->group = 'Datos del veh&iacute;culo';
+
+		$edit->neumaticos = new inputField('Cantidad de neum&aacute;ticos','vh_neumaticos');
+		$edit->neumaticos->rule='max_length[50]|numeric|required';
+		$edit->neumaticos->size =15;
+		$edit->neumaticos->maxlength =50;
+		$edit->neumaticos->autocomplete=false;
+		$edit->neumaticos->group = 'Datos del veh&iacute;culo';
+
+		$edit->tiponeumatucos = new inputField('Tipo de neum&aacute;ticos','vh_tiponeumaticos');
+		$edit->tiponeumatucos->rule='max_length[50]|required';
+		$edit->tiponeumatucos->size =15;
+		$edit->tiponeumatucos->maxlength =50;
+		$edit->tiponeumatucos->autocomplete=false;
+		$edit->tiponeumatucos->group = 'Datos del veh&iacute;culo';
+
+		$edit->distanciaeje = new inputField('Distancia entre ejes','vh_distanciaeje');
+		$edit->distanciaeje->rule='max_length[50]|numeric|required';
+		$edit->distanciaeje->size =15;
+		$edit->distanciaeje->maxlength =50;
+		$edit->distanciaeje->autocomplete=false;
+		$edit->distanciaeje->group = 'Datos del veh&iacute;culo';
 
 		$edit->peso = new inputField('Peso Kg.','peso');
 		$edit->peso->rule='max_length[10]|numeric|required';
@@ -297,20 +321,23 @@ class compra extends scst {
 				$this->_actualizar($this->claves['control'], 'S');
 
 				$data=array();
-				$data['id_scst']    = $this->claves['id'];
-				$data['codigo_sinv']= $edit->codigo->newValue;
-				$data['modelo']     = $edit->descrip->newValue;
-				$data['color']      = $edit->color->newValue;
-				$data['motor']      = $edit->motor->newValue;
-				$data['carroceria'] = $edit->carroceria->newValue;
-				$data['uso']        = $edit->uso->newValue;
-				$data['tipo']       = $edit->tipo->newValue;
-				$data['clase']      = $edit->clase->newValue;
-				$data['anio']       = $edit->anio->newValue;
-				$data['peso']       = $edit->peso->newValue;
-				$data['transmision']= $edit->transmision->newValue;
-				$data['placa']      = $edit->placa->newValue;
-				$data['precioplaca']= $edit->precioplaca->newValue;
+				$data['id_scst']        = $this->claves['id'];
+				$data['codigo_sinv']    = $edit->codigo->newValue;
+				$data['modelo']         = $edit->descrip->newValue;
+				$data['color']          = $edit->color->newValue;
+				$data['motor']          = $edit->motor->newValue;
+				$data['carroceria']     = $edit->carroceria->newValue;
+				$data['uso']            = $edit->uso->newValue;
+				$data['tipo']           = $edit->tipo->newValue;
+				$data['clase']          = $edit->clase->newValue;
+				$data['anio']           = $edit->anio->newValue;
+				$data['peso']           = $edit->peso->newValue;
+				$data['transmision']    = $edit->transmision->newValue;
+				$data['placa']          = $edit->placa->newValue;
+				$data['precioplaca']    = $edit->precioplaca->newValue;
+				$data['neumaticos']     = $edit->neumaticos->newValue;
+				$data['tiponeumatucos'] = $edit->tiponeumatucos->newValue;
+				$data['distanciaeje']   = $edit->distanciaeje->newValue;
 
 				$mSQL = $this->db->insert_string('sinvehiculo', $data);
 				$this->db->simple_query($mSQL);
