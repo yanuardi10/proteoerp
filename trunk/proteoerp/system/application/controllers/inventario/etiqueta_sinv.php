@@ -46,7 +46,6 @@ class etiqueta_sinv extends Controller {
 	}
 
 
-
 	function filteredgrid(){
 		$this->rapyd->load('datafilter2','datagrid');
 
