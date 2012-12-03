@@ -394,7 +394,7 @@ class Sinv extends Controller {
 		function cambiamarca(){
 			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
 			if ( s.length == 0 ){
-				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
+				$.prompt("<h1>Debe seleccionar al menos un Producto</h1>");
 			} else {
 				$.prompt( "<h1>Cambiar Marca de los productos seleccionados:</h1><br/><center>'.$marca.'</center><br/>",
 				{
@@ -800,10 +800,31 @@ class Sinv extends Controller {
 		}
 		';
 
+		$mSQL = 'SELECT nombre, nombre descrip FROM formatos WHERE nombre LIKE "ETIQUETA%" AND (proteo IS NOT NULL OR tcpdf IS NOT NULL) AND (proteo!="" OR tcpdf!="") ORDER BY nombre';
+		$etiq = $this->datasis->llenaopciones($mSQL, false, 'mforma');
+		$etiq = str_replace('"',"'",$etiq);
+
+
 		// Etiquetas
 		$bodyscript .= '
 		function etiquetas(){
-			window.open(\''.site_url("inventario/etiqueta_sinv/menu").'\', \'_blank\', \'width=800, height=600, scrollbars=yes, status=yes, resizable=yes,screenx=((screen.availHeight/2)-300), screeny=((screen.availWidth/2)-400)\');
+			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
+			$.prompt( 
+			"<h1>Generar Etiquetas:</h1><br/><center>Cantidad: <input class=\'inputnum\' type=\'text\' id=\'mcantidad\' name=\'mcantidad\' value=\'1\' size=\'3\' />&nbsp;&nbsp; Forma: '.$etiq.' Tipo: <select id=\'mtipo\' name=\'mtipo\'><option value=\'A\'>A</option><option value=\'B\'>B</option></select></center><br/>", 
+			{
+				buttons: { Seleccionados: 1, Filtrados: 2 , Cancelar: false },
+				submit: function(e,v,m,f){
+					if (v == 1) {
+						if ( s.length == 0 ){
+							apprise("<h1>Debe seleccionar al menos un Producto</h1>");
+						} else {
+							ventana = window.open("'.site_url("formatos/ver").'/"+f.mforma+"/"+f.mcantidad+"/"+s.toString().replace(/,/g,"_"),"Etiquetas","width=800,height=600");
+						}
+					} else if ( v==2 )  {
+						ventana = window.open("'.site_url("formatos/ver").'/"+f.mforma+"/"+f.mcantidad+"/0","Etiquetas","width=800,height=600");
+					}
+				}
+			});
 		};
 		';
 
@@ -856,6 +877,7 @@ class Sinv extends Controller {
 		$bodyscript .= "";
 		return $bodyscript;
 	}
+
 
 	//***************************
 	//Definicion del Grid y la Forma

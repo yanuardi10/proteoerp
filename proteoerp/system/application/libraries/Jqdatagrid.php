@@ -735,7 +735,6 @@ class Jqdatagrid
 			$html .= $margen.",toolbar: [$this->Toolbar]\r\n";
 		}
 		
-		//$html .= ",onCellSelect: function(response,postdata){ alert('aaaaaa');}\r\n";
 		$querydata = array( 'dtgFields' => $this->_field );
 		$this->CI->session->set_userdata($querydata);
 
