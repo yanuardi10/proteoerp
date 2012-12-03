@@ -2636,9 +2636,9 @@ class Sinv extends Controller {
 		$edit->aumento->css_class='inputnum';
 		$edit->aumento->size=5;
 		$edit->aumento->maxlength=6;
-		$edit->aumento->rule='numeric';
+		$edit->aumento->rule='numeric|callback_chfraccion';
 		$edit->aumento->autocomplete = false;
-		$edit->aumento->append('Solo fraccion');
+		$edit->aumento->append('Solo si es fracci&oacute;n');
 
 		$edit->barras = new inputField('C&oacute;digo Barras', 'barras');
 		$edit->barras->size=15;
@@ -2653,6 +2653,7 @@ class Sinv extends Controller {
 		$edit->tipo->option('Fraccion' ,'Fraccion');
 		$edit->tipo->option('Lote'     ,'Lote');
 		$edit->tipo->option('Combo'    ,'Combo');
+		$edit->tipo->rule='callback_chtipo';
 		//$edit->tipo->option('Consumo','Consumo');
 
 		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
@@ -3313,7 +3314,17 @@ class Sinv extends Controller {
 		$data['title']   = heading(substr($edit->descrip->value,0,30));
 		$this->load->view('view_ventanas', $data);
 */
+	}
 
+	function chfraccion($tipo){
+		if($tipo[0]=='F'){
+			$caja=$this->input->post('caja');
+			if(empty($caja)){
+				$this->validation->set_message('chfraccion',"El campo %s es requerido cuando el tipo de producto es fracci&oacute;n.");
+				return false;
+			}
+		}
+		return true;
 	}
 
 	function _pre_insert($do){

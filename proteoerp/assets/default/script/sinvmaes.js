@@ -85,7 +85,7 @@ function cambioprecio(pertenece){
 	for(i=1;i<v;i++){
 		precio=parseFloat($("#precio"+i).val());
 		base=precio*100/(100+iva);
-		if(base==0){
+		if(base!=0){
 			nbase=roundNumber(base,2);
 			margen=100-(costo*100)/nbase;
 			nmargen=roundNumber(margen,2);
@@ -105,7 +105,7 @@ function cambiobase(pertenece){
 	if(pertenece=='M') v=6; else v=5;
 	for(i=1;i<v;i++){
 		base=parseFloat($("#base"+i).val());
-		if(base>0){
+		if(base!=0){
 			precio=(base*(iva+100)/100);
 			nprecio=roundNumber(precio,2);
 
