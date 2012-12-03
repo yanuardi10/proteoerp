@@ -331,12 +331,24 @@ class inicio extends Controller {
 				`concesionario` VARCHAR(100) NULL DEFAULT NULL,
 				`concesionariorif` VARCHAR(20) NULL DEFAULT NULL,
 				`poliza` VARCHAR(50) NULL DEFAULT NULL,
+				`neumaticos` INT NULL DEFAULT NULL,
+				`tipo_neumatico` VARCHAR(50) NULL DEFAULT NULL,
+				`distanciaeje` FLOAT NULL DEFAULT NULL,
 				PRIMARY KEY (`id`)
 			)
 			COMMENT='Vehiculos a la venta'
 			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM;";
+			ENGINE=MyISAM";
 			$this->db->simple_query($mSQL);
 		}
+
+		if(!$this->db->field_exists('neumaticos', 'sinvehiculo')){
+			$mSQL = "ALTER TABLE `sinvehiculo`
+			ADD COLUMN `neumaticos` INT NULL DEFAULT NULL AFTER `poliza`,
+			ADD COLUMN `tipo_neumatico` VARCHAR(50) NULL DEFAULT NULL AFTER `neumaticos`,
+			ADD COLUMN `distanciaeje` FLOAT NULL DEFAULT NULL AFTER `marca`;";
+			$this->db->simple_query($mSQL);
+		}
+
 	}
 }

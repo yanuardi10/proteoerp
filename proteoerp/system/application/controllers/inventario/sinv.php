@@ -78,7 +78,7 @@ class Sinv extends Controller {
 			</table>
 			</div>
 		</td></tr>\n
-		
+
 		";
 
 
@@ -391,12 +391,12 @@ class Sinv extends Controller {
 		$marca = $this->datasis->llenaopciones($mSQL, true, 'mmarca');
 		$marca = str_replace('"',"'",$marca);
 		$funciones .= '
-		function cambiamarca(){ 
+		function cambiamarca(){
 			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
 			if ( s.length == 0 ){
 				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
 			} else {
-				$.prompt( "<h1>Cambiar Marca de los productos seleccionados:</h1><br/><center>'.$marca.'</center><br/>", 
+				$.prompt( "<h1>Cambiar Marca de los productos seleccionados:</h1><br/><center>'.$marca.'</center><br/>",
 				{
 					buttons: { Aplicar: true, Cancelar: false },
 					submit: function(e,v,m,f){
@@ -438,12 +438,12 @@ class Sinv extends Controller {
 		$mgrupo = $this->datasis->llenaopciones($mSQL, true, 'mgrupo');
 		$mgrupo = str_replace('"',"'",$mgrupo);
 		$funciones .= '
-		function cambiagrupo(){ 
+		function cambiagrupo(){
 			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
 			if ( s.length == 0 ){
 				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
 			} else {
-				$.prompt( "<h1>Cambiar Grupo de los productos seleccionados:</h1><br/><center>'.$mgrupo.'</center><br/>", 
+				$.prompt( "<h1>Cambiar Grupo de los productos seleccionados:</h1><br/><center>'.$mgrupo.'</center><br/>",
 				{
 					buttons: { Aplicar: true, Cancelar: false },
 					submit: function(e,v,m,f){
@@ -498,7 +498,7 @@ class Sinv extends Controller {
 			var murl = "'.site_url('inventario/sinv/dataedit/create').'";
 			var grid = jQuery("#newapi'.$grid0.'");
 			mstatus = "I";
-			if (id)  murl = murl+"/"+id ; 
+			if (id)  murl = murl+"/"+id ;
 			$.post(murl,
 			function(data){
 				$("#fborra").html("");
@@ -2373,7 +2373,7 @@ class Sinv extends Controller {
 					var codqr = "<button onclick=\'codqr();\'>Etiqueta</button>";
 					if ( ret.url.length > 12 )
 						sitio = "<button onclick=\'irurl();\'>Pagina Web</button>";
-						
+
 					$("#ladicional").html("<center><img src=\'"+url+"\' width=\'160\' ondblclick=\'verfotos()\' ><br>"+codqr+sitio+"<center><div id=\'textofoto\' style=\'text-align:center;\'></div>");
 
 					$("#radicional").html(detalle(id));
@@ -3213,10 +3213,6 @@ class Sinv extends Controller {
 		$edit->it2usuario = new autoUpdateField('it2usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->it2usuario->db_name = 'usuario';
 		$edit->it2usuario->rel_id = 'sinvpitem';
-
-
-
-
 
 		/*INICIO SINV LABOR  ESTACIONES*/
 		$edit->it3estacion = new  dropdownField('Estacion <#o#>', 'it3estacion_<#i#>');
