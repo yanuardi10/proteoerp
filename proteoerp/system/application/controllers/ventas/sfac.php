@@ -14,6 +14,10 @@ class Sfac extends Controller {
 	}
 
 	function index(){
+		if(!$this->datasis->iscampo('sfac','upago')){
+			$mSQL="ALTER TABLE sfac ADD upago INT(10) ";
+			$this->db->query($mSQL);
+		}
 		$this->datasis->modintramenu( 1000, 650, 'ventas/sfac' );
 		redirect($this->url.'jqdatag');
 	}
@@ -1185,6 +1189,46 @@ class Sfac extends Controller {
 			*/
 		};
 	}
+
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setDatam()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			if ( empty($data['entregado']) )
+				unset($data['entregado']);
+			$this->db->where('id', $id);
+			$this->db->update('sfac', $data);
+			logusu('SFAC',"Registro $id MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			$transac = $this->datasis->dameval("SELECT transac FROM sfac WHERE id=$id");
+			$upago   = $this->datasis->dameval("SELECT upago   FROM sfac WHERE id=$id");
+			$cliente = $this->datasis->dameval("SELECT cod_cli FROM sfac WHERE id=$id");
+
+			$this->db->query("UPDATE sfac   SET tipo_doc='X' WHERE transac='$transac' ");
+			$this->db->query("UPDATE sitems SET tipoa='X'    WHERE transac=$id AND fecha=curdate()");
+			$this->db->query("UPDATE scli   SET upago=$upago WHERE cliente=".$this->db->escape($cliente));
+			logusu('SFAC',"Factura $id ANULADA");
+
+			echo "Factura Anulada";
+		};
+	}
+
 
 
 	//***************************
@@ -3148,6 +3192,11 @@ function sfacreiva(mid){
 			$this->db->simple_query($mSQL);
 			$this->db->simple_query("UPDATE sfac SET entregado=fecha");
 		}
+		if(!$this->datasis->iscampo('sfac','upago')){
+			$mSQL="ALTER TABLE sfac ADD upago INT(10) ";
+			$this->db->query($mSQL);
+		}
+
 	}
 
 	function grid(){
