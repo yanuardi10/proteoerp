@@ -20,13 +20,6 @@ else:
 	$html.='</tr>';
 
 
-/*foreach($form->detail_fields['itstra'] AS $ind=>$data)
-	$campos[]=$data['field'];
-$campos='<tr id="tr_itstra_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
-$campos=str_replace("\n",'',$campos);
-$campos.=' <td class="littletablerow"><a href=# onclick="del_itstra(<#i#>);return false;">Eliminar</a></td></tr>';
-*/
-
 $campos=$form->js_escape($html);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
