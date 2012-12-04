@@ -34,6 +34,15 @@ class Caub extends validaciones {
 			$this->db->simple_query('ALTER TABLE caub ADD COLUMN odbc VARCHAR(100)');
 		}
 
+		if ( !$this->datasis->iscampo('caub','tipo') ) {
+			$this->db->simple_query('ALTER TABLE caub ADD COLUMN tipo CHAR(1)');
+		}
+
+		$this->db->simple_query('UPDATE caub SET tipo="S" WHERE tipo="" OR tipo IS NULL ');
+		$this->db->simple_query('UPDATE caub SET tipo="N" WHERE gasto="S" OR invfis = "S" ');
+
+
+
 		$c=$this->datasis->dameval('SELECT COUNT(*) FROM caub WHERE ubica="AJUS"');
 		if(!($c>0)) $this->db->simple_query('INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ("AJUS","AJUSTES","S","N")');
 		$this->db->simple_query('UPDATE caub SET ubides="AJUSTES", gasto="S",invfis="N" WHERE  ubica="AJUS" ');
@@ -41,10 +50,6 @@ class Caub extends validaciones {
 		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='INFI'");
 		if(!($c>0)) $this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')");
 		$this->db->simple_query("UPDATE caub SET ubides='INVENTARIO FISICO', gasto='S',invfis='S' WHERE ubica='INFI'");
-		
-		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='PEDI'");
-		if(!($c>0))	$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('PEDI','PEDIDOS','N','N')");
-		$this->db->simple_query("UPDATE caub SET ubides='PEDIDOS', gasto='N',invfis='N' WHERE ubica='PEDI'");
 		
 		$this->db->simple_query("ALTER TABLE `caub`  ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,  DROP PRIMARY KEY,  ADD PRIMARY KEY ( `id`)");
 		
@@ -62,132 +67,6 @@ class Caub extends validaciones {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-	$LayoutStyle = '
-html, body {margin: 0; padding: 0; overflow: hidden; font-size: 75%;}
-/*Splitter style */
-#LeftPane  {padding: 2px; overflow: auto;}
-#RightPane {padding: 2px; overflow: auto;}
-.ui-layout-west .ui-jqgrid tr.jqgrow td { border-bottom: 1px solid;}
-
-input.text { margin-bottom:12px; width:95%; padding: .4em; }
-fieldset { padding:0; border:0; margin-top:25px; }
-h1 { font-size: 1.2em; margin: .6em 0; }
-.ui-dialog .ui-state-error { padding: .3em; }
-.validateTips { border: 1px solid transparent; padding: 0.3em; }
-';
-
-//label, input { display:block; }
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".boton1" ).button();
-});
-
-</script>
-
-<div class="formcont">
-	<div id="forma1" title="Create new user"></div>
-</div>
-
-';
-
-/*
-$(function() {
-	// a workaround for a flaw in the demo system (http://dev.jqueryui.com/ticket/4375), ignore!
-	$("#dialog:ui-dialog").dialog( "destroy" );
-		
-	var name = $( "#name" ),
-		email = $( "#email" ),
-		password = $( "#password" ),
-		allFields = $( [] ).add( name ).add( email ).add( password ),
-		tips = $( ".validateTips" );
-
-	function updateTips( t ) {
-		tips
-		.text( t )
-		.addClass( "ui-state-highlight" );
-		setTimeout(function() {
-			tips.removeClass( "ui-state-highlight", 1500 );
-		}, 500 );
-	}
-
-	function checkLength( o, n, min, max ) {
-		if ( o.val().length > max || o.val().length < min ) {
-			o.addClass( "ui-state-error" );
-			updateTips( "Length of " + n + " must be between " +
-				min + " and " + max + "." );
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	function checkRegexp( o, regexp, n ) {
-		if ( !( regexp.test( o.val() ) ) ) {
-			o.addClass( "ui-state-error" );
-			updateTips( n );
-			return false;
-		} else {
-			return true;
-		}
-	}
-		
-	$( "#forma1" ).dialog({
-		autoOpen: false,
-		height: 300,
-		width: 350,
-		modal: true,
-		buttons: {
-			"Crear cuenta": function() {
-				var bValid = true;
-				allFields.removeClass( "ui-state-error" );
-
-				bValid = bValid && checkLength( name, "username", 3, 16 );
-				bValid = bValid && checkLength( email, "email", 6, 80 );
-				bValid = bValid && checkLength( password, "password", 5, 16 );
-
-				bValid = bValid && checkRegexp( name, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
-				// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
-				bValid = bValid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
-
-				if ( bValid ) {
-					$( "#users tbody" ).append( "<tr>" +
-						"<td>" + name.val() + "</td>" + 
-						"<td>" + email.val() + "</td>" + 
-						"<td>" + password.val() + "</td>" +
-					"</tr>" ); 
-					$( this ).dialog( "close" );
-				}
-			},
-			Cancel: function() {
-				$( this ).dialog( "close" );
-			}
-		},
-		close: function() {
-			allFields.val( "" ).removeClass( "ui-state-error" );
-		}
-	});
-
-	$("#boton1").click( function(){
-		var id   = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-		var msql = "";
-		if (id)	{
-			$.post("'.base_url().'inventario/caub/jforma/"+id, function(data){
-				$("#forma1").html(data);
-			});
-			$("#forma1").dialog("open");
-		} else {
-			$.prompt("<h1>Por favor Seleccione un Almacen</h1>");
-		}
-	});
-
-
-});
-*/
-
-
-
-
 		$funciones = 'jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid({ondblClickRow: function(id){ alert("id="+id); }});';
 
 		$param['listados'] = $this->datasis->listados('CAUB', 'JQ');
@@ -195,37 +74,15 @@ $(function() {
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
-		
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
 
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-</div>
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1 boton1"></div></td>
-	</tr>
-</table>
-</div> <!-- #LeftPane -->
-';
+		//Botones Panel Izq
+		$WestPanel = $grid->deploywestp();
 
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
 
 		$param['WestPanel']   = $WestPanel;
-		//$param['EastPanel']  = $EastPanel;
-		$param['LayoutStyle'] = $LayoutStyle;
+		//$param['EastPanel']   = $EastPanel;
+		//$param['LayoutStyle'] = $LayoutStyle;
 		$param['SouthPanel']  = $SouthPanel;
 		$param['funciones']   = $funciones;
 		//$param['bodyscript']  = $bodyscript;
@@ -292,6 +149,7 @@ $(function() {
 		$grid->addField('gasto');
 		$grid->label('Gasto');
 		$grid->params(array(
+				'align'       => "'center'",
 				'width'       => 40,
 				'editable'    => 'true',
 				'search'      => 'false',
@@ -303,11 +161,24 @@ $(function() {
 		$grid->addField('invfis');
 		$grid->label('Inv.F');
 		$grid->params(array(
+				'align'       => "'center'",
 				'width'       => 40,
 				'editable'    => 'true',
 				'edittype'    => "'select'",
 				'search'      => 'false',
 				'editoptions' => '{value: {"S":"Si", "N":"No"} }'
+			)
+		);
+
+		$grid->addField('tipo');
+		$grid->label('Disp.');
+		$grid->params(array(
+				'align'       => "'center'",
+				'width'       => 40,
+				'editable'    => 'true',
+				'edittype'    => "'select'",
+				'search'      => 'false',
+				'editoptions' => '{value: {"S":"Disponible", "N":"No Disponible"} }'
 			)
 		);
 

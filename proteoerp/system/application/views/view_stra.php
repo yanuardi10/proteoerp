@@ -15,7 +15,7 @@ else:
 		$html.='<td class="littletablerow" '.$align.'>'.$pivot.'</td>';
 	}
 	if($form->_status!='show') {
-		$html.='<td class="littletablerow"><a href=# onclick=\'del_itordi(<#i#>);return false;\'>'.img('images/delete.jpg').'</a></td>';
+		$html.='<td class="littletablerow"><a href=# onclick=\'del_itstra(<#i#>);return false;\'>'.img('images/delete.jpg').'</a></td>';
 	}
 	$html.='</tr>';
 
@@ -24,7 +24,9 @@ else:
 	$campos[]=$data['field'];
 $campos='<tr id="tr_itstra_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
 $campos=str_replace("\n",'',$campos);
-$campos.=' <td class="littletablerow"><a href=# onclick="del_itstra(<#i#>);return false;">Eliminar</a></td></tr>';*/
+$campos.=' <td class="littletablerow"><a href=# onclick="del_itstra(<#i#>);return false;">Eliminar</a></td></tr>';
+*/
+
 $campos=$form->js_escape($html);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -97,18 +99,17 @@ function del_itstra(id){
 	$('#tr_itstra_'+id).remove();
 }
 </script>
-<?php } ?>
+<?php } 
+//	<tr>
+//		<td align=right><?php echo $container_tr ? ></td>
+//	</tr>
+
+?>
 
 <table align='center' width='100%'>
 	<tr>
-		<td align=right><?php echo $container_tr?></td>
-	</tr>
-	<tr>
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
-			<tr>
-				<th colspan='4' class="littletableheader">Transferencia <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
-			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->envia->label   ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->envia->output  ?>&nbsp;</td>
@@ -128,17 +129,14 @@ function del_itstra(id){
 	<tr><td>&nbsp;</td></tr>
 	<tr>
 		<td>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:250px'>
+		
 		<table width='100%'>
 			<tr>
-				<th colspan='4' class="littletableheader">Lista de Art&iacute;culos</th>
-			</tr>
-			<tr>
-				<td class="littletableheader">C&oacute;digo</td>
-				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader">Cantidad</td>
-				<?php if($form->_status!='show') {?>
-					<td class="littletableheader">&nbsp;</td>
-				<?php } ?>
+				<td width="160" bgcolor='#7098D0'>C&oacute;digo</td>
+				<td bgcolor='#7098D0'>Descripci&oacute;n</td>
+				<td width="110" align="center" bgcolor='#7098D0'>Cantidad</td>
+				<td width="20" bgcolor='#7098D0'>&nbsp;</td>
 			</tr>
 			<?php for($i=0;$i<$form->max_rel_count['itstra'];$i++) {
 				$obj1="codigo_$i";
@@ -150,7 +148,7 @@ function del_itstra(id){
 				<td class="littletablerow"><?php echo $form->$obj2->output ?></td>
 				<td class="littletablerow"align="right"><?php echo $form->$obj3->output ?></td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletablerow"><a href=#onclick='del_itstra(<?php echo $i; ?>);return false;'><?php echo img("images/delete.jpg"); ?></a></td>
+					<td class="littletablerow"><a href="#" onclick='del_itstra(<?php echo $i; ?>);return false;'><?php echo img("images/delete.jpg"); ?></a></td>
 				<?php } ?>
 			</tr>
 			<?php } ?>
@@ -164,6 +162,7 @@ function del_itstra(id){
 				<?php } ?>
 			</tr>
 		</table>
+		</div>
 		<?php echo $form_end ?> <?php echo $container_bl ?> <?php echo $container_br ?>
 		</td>
 	</tr>
