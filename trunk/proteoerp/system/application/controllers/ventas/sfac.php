@@ -42,6 +42,68 @@ class Sfac extends Controller {
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"boton2",  "img"=>"images/agrega4.png", "alt" => 'Agregar',          "label"=>"Agregar Factura"));
+		//$grid->wbotonadd(array("id"=>"cobroser","img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
+		$WestPanel = $grid->deploywestp();
+
+		//Panel Central
+		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
+		$adic = array(
+			array("id"=>"fcobroser", "title"=>"Cobro de servicio")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
+		$param['WestPanel']    = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['readyLayout']  = $readyLayout;
+		$param['SouthPanel']   = $SouthPanel;
+		$param['listados']     = $this->datasis->listados('SFAC', 'JQ');
+		$param['otros']        = $this->datasis->otros('SFAC', 'JQ');
+		$param['centerpanel']  = $centerpanel;
+		//$param['funciones']    = $funciones;
+		$param['temas']        = array('proteo','darkness','anexos1');
+		$param['bodyscript']   = $bodyscript;
+		$param['tabs']         = false;
+		$param['encabeza']     = $this->titp;
+		$param['tamano']       = $this->datasis->getintramenu( substr($this->url,0,-1) );
+
+		$this->load->view('jqgrid/crud2',$param);
+
+	}
+
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqmes(){
+
+		$grid = $this->defgrid();
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdatam/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdatam/'));
+
+		$grid->setTitle("Facturacion de Servicio Mensual");
+
+
+		$param['grids'][] = $grid->deploy();
+
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
+		// Configura los Paneles
+		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
+
+
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
+		//$grid->wbotonadd(array("id"=>"boton2",  "img"=>"images/agrega4.png", "alt" => 'Agregar',          "label"=>"Agregar Factura"));
 		$grid->wbotonadd(array("id"=>"cobroser","img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
 		$WestPanel = $grid->deploywestp();
 
@@ -70,6 +132,7 @@ class Sfac extends Controller {
 		$this->load->view('jqgrid/crud2',$param);
 
 	}
+
 
 	//***************************
 	//Funciones de los Botones
@@ -1060,6 +1123,23 @@ class Sfac extends Controller {
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdatam()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('sfac');
+		$mWhere[] = array('', 'fecha', date('Ymd'), '' );
+		$mWhere[] = array('', 'usuario', $this->session->userdata('usuario'),'');
+		$response   = $grid->getData('sfac', array(array()), array(), false, $mWHERE, 'id', 'desc' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
 
 	/**
 	* Guarda la Informacion
