@@ -809,8 +809,8 @@ class Sinv extends Controller {
 		$bodyscript .= '
 		function etiquetas(){
 			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
-			$.prompt( 
-			"<h1>Generar Etiquetas:</h1><br/><center>Cantidad: <input class=\'inputnum\' type=\'text\' id=\'mcantidad\' name=\'mcantidad\' value=\'1\' size=\'3\' />&nbsp;&nbsp; Forma: '.$etiq.' Tipo: <select id=\'mtipo\' name=\'mtipo\'><option value=\'A\'>A</option><option value=\'B\'>B</option></select></center><br/>", 
+			$.prompt(
+			"<h1>Generar Etiquetas:</h1><br/><center>Cantidad: <input class=\'inputnum\' type=\'text\' id=\'mcantidad\' name=\'mcantidad\' value=\'1\' size=\'3\' />&nbsp;&nbsp; Forma: '.$etiq.' Tipo: <select id=\'mtipo\' name=\'mtipo\'><option value=\'A\'>A</option><option value=\'B\'>B</option></select></center><br/>",
 			{
 				buttons: { Seleccionados: 1, Filtrados: 2 , Cancelar: false },
 				submit: function(e,v,m,f){
@@ -2612,6 +2612,7 @@ class Sinv extends Controller {
 		$do->pointer('grup' , 'grup.grupo=sinv.grupo' , 'grup.grupo AS grupgrupo' , 'left');
 		$do->pointer('line' , 'line.linea=grup.linea' , 'line.linea AS linelinea' , 'left');
 		$do->pointer('dpto' , 'dpto.depto=line.depto' , 'dpto.depto AS dptodepto' , 'left');
+		$do->pointer('sinv AS csinv', 'csinv.codigo=sinv.enlace','csinv.descrip AS cdescrip,csinv.precio1,csinv.precio2,csinv.precio3,csinv.precio4','left');
 		$do->rel_one_to_many('sinvcombo' , 'sinvcombo' , array('codigo' => 'combo'));
 		$do->rel_one_to_many('sinvpitem' , 'sinvpitem' , array('codigo' => 'producto'));
 		$do->rel_one_to_many('sinvplabor', 'sinvplabor', array('codigo' => 'producto'));
@@ -2653,6 +2654,11 @@ class Sinv extends Controller {
 		$edit->enlace->maxlength=15;
 		$edit->enlace->rule = 'trim';
 		//$edit->enlace->append('Solo si es fracci&oacute;n');
+
+		$edit->cdescrip = new inputField('', 'cdescrip');
+		$edit->cdescrip->pointer=true;
+		$edit->cdescrip->db_name='cdescrip';
+		$edit->cdescrip->type='inputhidden';
 
 		$edit->aumento = new inputField('Aumento %', 'aumento');
 		$edit->aumento->css_class='inputnum';
@@ -2719,7 +2725,6 @@ class Sinv extends Controller {
 		}else{
 			$edit->linea->option('','Seleccione un Departamento primero');
 		}
-
 
 		$AddGrupo='<a href="javascript:add_grupo();" title="Haz clic para Agregar un nuevo Grupo;">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->grupo = new dropdownField('Grupo', 'grupo');
@@ -2927,6 +2932,14 @@ class Sinv extends Controller {
 			$edit->$objeto->in="margen$i";
 			$edit->$objeto->onkeyup = 'cambioprecio(\'I\');';
 			$edit->$objeto->rule='required|mayorcero';
+
+			//para el caso de las fraccciones
+			$objeto="cprecio$i";
+			$edit->$objeto = new inputField('', $objeto);
+			$edit->$objeto->pointer=true;
+			$edit->cdescrip->db_name=$objeto;
+			$edit->cdescrip->type='inputhidden';
+
 		}
 
 		$edit->existen = new inputField('Cantidad Actual','existen');
@@ -3335,7 +3348,7 @@ class Sinv extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading(substr($edit->descrip->value,0,30));
 		$this->load->view('view_ventanas', $data);
-*/
+*/c
 	}
 
 	function chfraccion($tipo){

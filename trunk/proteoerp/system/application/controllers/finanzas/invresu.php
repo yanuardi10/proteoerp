@@ -101,7 +101,7 @@ jQuery("#genera").click( function(){
 
 		$grid  = new $this->jqdatagrid;
 		$grid->addField('mes');
-		$grid->label('Ano Mes');
+		$grid->label('A&ntilde;o Mes');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -257,7 +257,7 @@ jQuery("#genera").click( function(){
 
 
 		$grid->addField('minicial');
-		$grid->label('Minicial');
+		$grid->label('Monto inicial');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -274,7 +274,7 @@ jQuery("#genera").click( function(){
 
 		$linea = $linea + 1;
 		$grid->addField('mcompras');
-		$grid->label('Mcompras');
+		$grid->label('Monto compras');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -291,7 +291,7 @@ jQuery("#genera").click( function(){
 
 
 		$grid->addField('mventas');
-		$grid->label('Mventas');
+		$grid->label('Monto ventas');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -324,7 +324,7 @@ jQuery("#genera").click( function(){
 
 
 		$grid->addField('mfisico');
-		$grid->label('Mfisico');
+		$grid->label('Monto fisico');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -341,7 +341,7 @@ jQuery("#genera").click( function(){
 
 		$linea = $linea + 1;
 		$grid->addField('mnotas');
-		$grid->label('Mnotas');
+		$grid->label('Montn notas');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -357,7 +357,7 @@ jQuery("#genera").click( function(){
 
 
 		$grid->addField('mfinal');
-		$grid->label('Mfinal');
+		$grid->label('Monto final');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -502,17 +502,17 @@ jQuery("#genera").click( function(){
 		$this->rapyd->uri->keep_persistence();
 
 		$filter = new DataFilter('Libro de inventario','view_invresutotal');
-		//$filter->error_string=$error; 
-		
+		//$filter->error_string=$error;
+
 		// Genera automaticamente si no estan
 		$mes  = date('Y');
 		if ( $this->datasis->dameval("SELECT count(*) FROM sitems WHERE year(fecha)=$mes") == 0 ) {
 			$mSQL = "INSERT IGNORE INTO invresu (mes, codigo) SELECT CONCAT(YEAR(fecha),MONTH(fecha)) mes, codigoa FROM sitems WHERE YEAR(ffecha)=YEAR(curdate()) GROUP BY YEAR(fecha), MONTH(fecha) ";
 			$this->db->simple_query($mSQL);
 		}
-		
+
 		$mes = $this->datasis->dameval("SELECT MID(MAX(mes),1,4) FROM invresu");
-	
+
 		$filter->fecha = new inputField('A&ntilde;o', 'anno');
 		$filter->fecha->size     = 4;
 		$filter->fecha->operator = '=';
@@ -546,7 +546,7 @@ jQuery("#genera").click( function(){
 		$grid->column('Por Despachar' ,'<nformat><#despachar#></nformat>','align=\'right\'');
 		$grid->column('Final'     ,'<nformat><#final#></nformat>'    ,'align=\'right\'');
 		$grid->column('Accion',$uri2, 'align=\'center\'');
-		
+
 		$grid->build();
 
 		$ggrid =form_open('finanzas/invresu/index/search');
@@ -563,30 +563,30 @@ jQuery("#genera").click( function(){
 			valor=$("#porcent").val();
 			uurl=url+"/"+valor;'."
 			$.blockUI({
-				message: $('#displayBox'), 
-				css: { 
-				top:  ($(window).height() - 400) /2 + 'px', 
-				left: ($(window).width() - 400) /2 + 'px', 
-				width: '400px' 
-				}".' 			
-			}); 
+				message: $('#displayBox'),
+				css: {
+				top:  ($(window).height() - 400) /2 + 'px',
+				left: ($(window).width() - 400) /2 + 'px',
+				width: '400px'
+				}".'
+			});
 			$.get(uurl, function(data) {
-				setTimeout($.unblockUI, 2); 
+				setTimeout($.unblockUI, 2);
 				alert(data);
 			});
 			return false;
 		}
 		function bobo(url){'."
 			$.blockUI({
-				message: $('#displayBox'), 
-				css: { 
-				top:  ($(window).height() - 400) /2 + 'px', 
-				left: ($(window).width() - 400) /2 + 'px', 
-				width: '400px' 
-				}".' 			
-			}); 
+				message: $('#displayBox'),
+				css: {
+				top:  ($(window).height() - 400) /2 + 'px',
+				left: ($(window).width() - 400) /2 + 'px',
+				width: '400px'
+				}".'
+			});
 			$.get(url, function(data) {
-				setTimeout($.unblockUI, 2); 
+				setTimeout($.unblockUI, 2);
 				alert(data);
 			});
 			return false;
@@ -599,10 +599,10 @@ jQuery("#genera").click( function(){
 		$porcent .= "</div>";
 
 		$data['content'] = $filter->output.$porcent.$ggrid.$espera;
-		
+
 		$data['title']   = heading('Libro de inventario');
 		$data['style']   = style('impromptu/default.css');
-		
+
 		$data['script']  = script("jquery.js");
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');

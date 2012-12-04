@@ -13,141 +13,11 @@ class mensualidad extends sfac_add {
 		//$this->datasis->modulo_id(216,1);
 	}
 
-	function index(){
-		redirect($this->url.'filteredgrid');
-	}
-
-	function filteredgrid(){
-		$this->rapyd->load('datafilter','datagrid');
-
-		$filter = new DataFilter($this->titp);
-
-		$sel=array('a.id','a.cliente','a.nombre','a.rifci','a.url','a.pin','a.fb','a.twitter','a.upago','a.tarifa'
-		,'b.descrip','b.precio1','CONCAT_WS(" ",dire11,dire12) AS direc');
-		$filter->db->select($sel);
-		$filter->db->from('scli AS a');
-		$filter->db->join('sinv AS b','a.tarifa=b.codigo','left');
-
-		$filter->cliente = new inputField('Cliente','cliente');
-		$filter->cliente->db_name   ='a.cliente';
-		$filter->cliente->rule      ='max_length[5]';
-		$filter->cliente->size      =7;
-		$filter->cliente->maxlength =5;
-
-		$filter->nombre = new inputField('Nombre','nombre');
-		$filter->nombre->db_name   ='a.nombre';
-		$filter->nombre->rule      ='max_length[45]';
-		$filter->nombre->size      =47;
-		$filter->nombre->maxlength =45;
-
-		$filter->rifci = new inputField('RIF/CI','rifci');
-		$filter->rifci->db_name   ='a.rifci';
-		$filter->rifci->rule      ='max_length[13]';
-		$filter->rifci->size      =15;
-		$filter->rifci->maxlength =13;
-
-		$filter->buttons('reset', 'search');
-		$filter->build();
-
-		$uri = anchor($this->url.'facturar/<raencode><#id#></raencode>/create/','<#cliente#>');
-
-		function color($val,$fecha){
-			$act=date('Ym');
-			if($act>=$fecha){
-				$col='red';
-			}else{
-				$col='green';
-			}
-			return '<span style="color:'.$col.'">'.$val.'</span>';
-		}
-
-		$grid = new DataGrid('');
-		$grid->use_function('color');
-		$grid->order_by('nombre');
-		$grid->per_page = 40;
-
-		$grid->column_orderby('Cliente'    ,$uri     ,'cliente','align="left"');
-		$grid->column_orderby('Nombre'     ,'nombre' ,'nombre' ,'align="left"');
-		$grid->column_orderby('RIF/CI'     ,'rifci'  ,'rifci' ,'align="left"');
-		$grid->column_orderby('Direcci&oacute;n','direc'    ,'direc11'    ,'align="left"');
-		//$grid->column_orderby('Pin'        ,'pin'    ,'pin'    ,'align="left"');
-		//$grid->column_orderby('Faebook'    ,'fb'     ,'fb'     ,'align="left"');
-		//$grid->column_orderby('Twitter'    ,'twitter','twitter','align="left"');
-		$grid->column_orderby('Ultimo pago','<color><dbdate_to_human><#upago#>01|m/Y</dbdate_to_human>|<#upago#></color>'  ,'upago'  ,'align="left"');
-		//$grid->column_orderby('Tarifa'     ,'tarifa' ,'tarifa' ,'align="left"');
-		$grid->column_orderby('Servicio'   ,'descrip' ,'descrip' ,'align="left"');
-		$grid->column_orderby('Monto'      ,'precio1','<nformat><#precio1#></nformat>' ,'align="right"');
-		$grid->build();
-
-		$data['filtro']  = $filter->output;
-		$data['content'] = $grid->output;
-		$data['head']    = $this->rapyd->get_head().script('jquery.js');
-		$data['title']   = heading($this->titp);
-		$this->load->view('view_ventanas', $data);
-	}
-
-
-	function facturar($id=null,$status){
-		$this->genesal=true;
-		$this->back_url=$this->url.'filteredgrid';
-
-		$sel=array('a.nombre','a.rifci','b.codigo','b.descrip','b.base1'
-		,'b.precio1','b.precio2','b.precio3','b.precio4','a.dire11'
-		,'b.iva','a.cliente','a.upago');
-		$this->db->select($sel);
-		$this->db->from('scli AS a');
-		$this->db->join('sinv AS b','a.tarifa=b.codigo');
-		$this->db->where('a.id',$id);
-
-		$query = $this->db->get();
-
-		$submit = $this->input->post('btn_submit');
-		if ($query->num_rows() > 0 && $submit===false && $status=='create'){
-			$row = $query->row();
-
-			$desde = dbdate_to_human($row->upago.'01','m/Y');
-
-			$_POST['pfac']        = '';
-			$_POST['fecha']       = date('d/m/Y');
-			$_POST['cajero']      = $this->secu->getcajero();
-			$_POST['vd']          = $this->secu->getvendedor();
-			$_POST['almacen']     = $this->secu->getalmacen();
-			$_POST['tipo_doc']    = 'F';
-			$_POST['factura']     = '';
-			$_POST['cod_cli']     = $row->cliente;
-			$_POST['sclitipo']    = '1';
-			$_POST['nombre']      = $row->nombre;
-			$_POST['rifci']       = $row->rifci;
-			$_POST['direc']       = $row->dire11;
-
-			$_POST['codigoa_0']   = $row->codigo;
-			$_POST['desca_0']     = $row->descrip;
-			$_POST['detalle_0']   = "Desde $desde";
-			$_POST['cana_0']      = 1;
-			$_POST['preca_0']     = round($row->base1,2);
-			$_POST['tota_0']      = round($row->base1,2);
-			$_POST['precio1_0']   = $row->precio1;
-			$_POST['precio2_0']   = $row->precio2;
-			$_POST['precio3_0']   = $row->precio3;
-			$_POST['precio4_0']   = $row->precio4;
-			$_POST['itiva_0']     = round($row->iva,2);
-			$_POST['sinvpeso_0']  = 0;
-			$_POST['sinvtipo_0']  = 'Servicio';
-
-			$_POST['tipo_0']     = '';
-			$_POST['sfpafecha_0']= '';
-			$_POST['num_ref_0']  = '';
-			$_POST['banco_0']    = '';
-			$_POST['monto_0']    = '';
-		}
-		parent::dataedit();
-	}
-
 	//Para facturar servicios por mes
 	function servxmes($status){
 		$this->genesal=false;
 		$this->back_url=$this->url.'filteredgrid';
-		
+
 		$codigo = $this->datasis->traevalor('SINVTARIFA');
 		$cliente = $this->input->post('cod_cli');
 		$cana    = $this->input->post('cana_0');
@@ -155,6 +25,11 @@ class mensualidad extends sfac_add {
 		$sclir  = $this->datasis->damereg("SELECT * FROM scli WHERE cliente= ".$this->db->escape($cliente));
 		$sinvr  = $this->datasis->damereg("SELECT * FROM sinv WHERE codigo = ".$this->db->escape($codigo));
 
+		$campos = $this->db->list_fields('sfac');
+		if (!in_array('upago',$campos)){
+			$mSQL="ALTER TABLE `sfac` ADD COLUMN `upago` INT(10) NULL DEFAULT NULL COMMENT 'Fecha desde que se pago el servicio mensual' AFTER `maestra`;";
+			$this->db->simple_query($mSQL);
+		}
 
 		if ($status=='insert'){
 
@@ -174,15 +49,16 @@ class mensualidad extends sfac_add {
 			$_POST['nombre']      = $sclir['nombre'];
 			$_POST['rifci']       = $sclir['rifci'];
 			$_POST['direc']       = $sclir['dire11'];
+			$_POST['upago']       = $sclir['upago'];
 			$_POST['codigoa_0']   = $codigo;
-			
+
 			$_POST['desca_0']     = $sinvr['descrip'];
-			
+
 			$_POST['detalle_0']   = "Desde $desde";
 
 			//$_POST['cana_0']      = $cana;
 			//$_POST['preca_0']     = $tarifa;
-			
+
 			$_POST['tota_0']      = $tarifa*$cana;
 			$_POST['precio1_0']   = 0;
 			$_POST['precio2_0']   = 0;
@@ -217,26 +93,22 @@ class mensualidad extends sfac_add {
 		if(empty($upago)) $upago=20120101;
 
 		$ccana=$do->count_rel('sitems');
-		for($i=0;$i<$ccana;$i++){
-			$itcodigoa = trim($do->get_rel('sitems','codigoa',$i));
-			if($itcodigoa==$tarifa){
-				$detalle = $do->get_rel('sitems','detalle',$i);
-				$cana    = $do->get_rel('sitems','cana'   ,$i);
+		$i = 0;
 
-				$objdated = date_create(dbdate_to_human($upago,'Y-m-d'));
-				$objdated->add(new DateInterval('P1M'));
+		$detalle = $do->get_rel('sitems','detalle',$i);
+		$cana    = $do->get_rel('sitems','cana'   ,$i);
 
-				$desde   = date_format($objdated, 'm/Y');;
-				$objdate = date_create(dbdate_to_human($upago,'Y-m-d'));
-				$objdate->add(new DateInterval('P'.$cana.'M'));
-				$hasta   = date_format($objdate, 'm/Y');
+		$objdated = date_create(dbdate_to_human($upago,'Y-m-d'));
+		$objdated->add(new DateInterval('P1M'));
+		$desde   = date_format($objdated, 'm/Y');
 
-				$this->_fhasta = date_format($objdate, 'Ym');
-				$det     = "Desde $desde hasta $hasta";
-				$do->set_rel('sitems','detalle',$det,$i);
-				break;
-			}
-		}
+		$objdate = date_create(dbdate_to_human($upago,'Y-m-d'));
+		$objdate->add(new DateInterval('P'.$cana.'M'));
+		$hasta   = date_format($objdate, 'm/Y');
+
+		$this->_fhasta = date_format($objdate, 'Ym');
+		$det     = "Desde $desde hasta $hasta";
+		$do->set_rel('sitems','detalle',$det,$i);
 	}
 
 	function _post_insert($do){
@@ -251,6 +123,7 @@ class mensualidad extends sfac_add {
 			$dbupago   = $this->db->escape($this->_fhasta);
 			$mSQL = "UPDATE scli SET upago=$dbupago WHERE cliente=$dbcliente";
 			$this->db->simple_query($mSQL);
+			echo 'Entre aqui';
 		}
 
 		return true;
