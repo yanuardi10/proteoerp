@@ -156,10 +156,9 @@ class mensualidad extends sfac_add {
 		$sinvr  = $this->datasis->damereg("SELECT * FROM sinv WHERE codigo = ".$this->db->escape($codigo));
 
 
-		if ($query->num_rows() > 0 && $status=='insert'){
-			$row = $query->row();
+		if ($status=='insert'){
 
-			$desde = dbdate_to_human($row->upago.'01','m/Y');
+			$desde = dbdate_to_human($sclir['upago'].'01','m/Y');
 
 			$tarifa= round($this->input->post('preca_0'),2);
 
