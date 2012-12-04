@@ -123,7 +123,6 @@ class mensualidad extends sfac_add {
 			$dbupago   = $this->db->escape($this->_fhasta);
 			$mSQL = "UPDATE scli SET upago=$dbupago WHERE cliente=$dbcliente";
 			$this->db->simple_query($mSQL);
-			echo 'Entre aqui';
 		}
 
 		return true;
