@@ -149,18 +149,11 @@ class mensualidad extends sfac_add {
 		$this->back_url=$this->url.'filteredgrid';
 		
 		$codigo = $this->datasis->traevalor('SINVTARIFA');
-
 		$cliente = $this->input->post('cod_cli');
 		$cana    = $this->input->post('cana_0');
-		$sel=array('a.nombre','a.rifci','b.codigo','b.descrip','b.base1'
-		,'b.precio1','b.precio2','b.precio3','b.precio4','a.dire11'
-		,'b.iva','a.cliente','a.upago');
 
-		$this->db->select($sel);
-		$this->db->from('scli AS a');
-		$this->db->join('sinv AS b','b.codigo='.$this->db->escape($codigo));
-		$this->db->where('a.cliente',$cliente);
-		$query = $this->db->get();
+		$sclir  = $this->datasis->damereg("SELECT * FROM scli WHERE cliente= ".$this->db->escape($cliente));
+		$sinvr  = $this->datasis->damereg("SELECT * FROM sinv WHERE codigo = ".$this->db->escape($codigo));
 
 
 		if ($query->num_rows() > 0 && $status=='insert'){
@@ -177,32 +170,34 @@ class mensualidad extends sfac_add {
 			$_POST['almacen']     = $this->secu->getalmacen();
 			$_POST['tipo_doc']    = 'F';
 			$_POST['factura']     = '';
-			$_POST['cod_cli']     = $row->cliente;
+			//$_POST['cod_cli']     = $row->cliente;
 			$_POST['sclitipo']    = '1';
-			$_POST['nombre']      = $row->nombre;
-			$_POST['rifci']       = $row->rifci;
-			$_POST['direc']       = $row->dire11;
-			$_POST['codigoa_0']   = $row->codigo;
+			$_POST['nombre']      = $sclir['nombre'];
+			$_POST['rifci']       = $sclir['rifci'];
+			$_POST['direc']       = $sclir['dire11'];
+			$_POST['codigoa_0']   = $codigo;
 			
-			$_POST['desca_0']     = $row->descrip;
+			$_POST['desca_0']     = $sinvr['descrip'];
 			
 			$_POST['detalle_0']   = "Desde $desde";
+
 			//$_POST['cana_0']      = $cana;
 			//$_POST['preca_0']     = $tarifa;
+			
 			$_POST['tota_0']      = $tarifa*$cana;
-			$_POST['precio1_0']   = $row->precio1;
-			$_POST['precio2_0']   = $row->precio2;
-			$_POST['precio3_0']   = $row->precio3;
-			$_POST['precio4_0']   = $row->precio4;
-			$_POST['itiva_0']     = round($row->iva,2);
+			$_POST['precio1_0']   = 0;
+			$_POST['precio2_0']   = 0;
+			$_POST['precio3_0']   = 0;
+			$_POST['precio4_0']   = 0;
+			$_POST['itiva_0']     = round($sinvr['iva'],2);
 			$_POST['sinvpeso_0']  = 0;
 			$_POST['sinvtipo_0']  = 'Servicio';
 
 			//$_POST['tipo_0']     = $this->input->post('fcodigo');
-			$_POST['sfpafecha_0']= '';
+			$_POST['sfpafecha_0']  = '';
 			//$_POST['num_ref_0']  = $this->input->post('fcomprob');
-			$_POST['banco_0']    = '';
-			$_POST['monto_0']    = $_POST['tota_0']*(1+($row->iva/100)) ;
+			$_POST['banco_0']      = '';
+			$_POST['monto_0']      = $_POST['tota_0']*(1+($sinvr['iva']/100)) ;
 
 			echo utf8_encode(parent::dataedit());
 		}
