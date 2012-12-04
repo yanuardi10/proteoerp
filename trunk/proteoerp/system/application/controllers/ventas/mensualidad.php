@@ -148,7 +148,7 @@ class mensualidad extends sfac_add {
 		$this->genesal=false;
 		$this->back_url=$this->url.'filteredgrid';
 		
-		$codigo = $this->traevalor('SINVTARIFA');
+		$codigo = $this->datasis->traevalor('SINVTARIFA');
 
 		$cliente = $this->input->post('cod_cli');
 		$cana    = $this->input->post('cana_0');
@@ -177,7 +177,7 @@ class mensualidad extends sfac_add {
 			$_POST['almacen']     = $this->secu->getalmacen();
 			$_POST['tipo_doc']    = 'F';
 			$_POST['factura']     = '';
-			//$_POST['cod_cli']     = $row->cliente;
+			$_POST['cod_cli']     = $row->cliente;
 			$_POST['sclitipo']    = '1';
 			$_POST['nombre']      = $row->nombre;
 			$_POST['rifci']       = $row->rifci;
