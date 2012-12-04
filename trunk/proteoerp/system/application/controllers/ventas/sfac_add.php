@@ -800,7 +800,12 @@ class sfac_add extends validaciones {
 		$cliente= $do->get('cod_cli');
 		$tipoa  = $do->get('tipo_doc');
 		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
-		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
+		if($con->num_rows() > 0){
+			$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
+		}else{
+			$do->error_message_ar['pre_ins']='Debe cargar la tabla de IVA.';
+			return false;
+		}
 
 		//Validaciones del pago
 		//Totaliza los pagos
