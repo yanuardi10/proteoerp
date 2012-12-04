@@ -268,6 +268,7 @@ class sfac_add extends validaciones {
 
 		$edit->pre_process( 'insert','_pre_insert' );
 		$edit->pre_process( 'update','_pre_update' );
+		$edit->pre_process( 'delete','_pre_delete' );
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -335,6 +336,10 @@ class sfac_add extends validaciones {
 		$edit->nombre->readonly =true;
 		$edit->nombre->autocomplete=false;
 		$edit->nombre->rule= 'required';
+
+		$edit->upago = new hiddenField('Ultimo pago de servicio', 'upago');
+		$edit->upago->readonly =true;
+		$edit->upago->autocomplete=false;
 
 		$edit->rifci   = new hiddenField('RIF/CI','rifci');
 		$edit->rifci->autocomplete=false;
@@ -704,40 +709,6 @@ class sfac_add extends validaciones {
 		return false;
 	}
 
-	function anular($id){
-		$this->rapyd->load('dataobject','datadetails');
-
-		$do = new DataObject('sfac');
-		$do->rel_one_to_many('sitems', 'sitems', array('id'=>'id_sfac'));
-		$do->rel_one_to_many('sfpa'  , 'sfpa'  , array('numero','transac'));
-
-		$do->load($id);
-
-		$tipo_doc = $do->get('tipo_doc');
-		$numero   = $do->get('numero');
-		$fecha    = $do->get('fecha');
-		$referen  = $do->get('referen');
-		$cajero   = $do->get('cajero');
-		$inicial  = $do->get('inicial');
-
-		$dbtipo_doc = $this->db->escape($tipo_doc);
-		$dbnumero   = $this->db->escape($numero);
-		$dbfecha    = $this->db->escape($fecha);
-		$hoy        = date('Y-m-d');
-
-		if($tipo_doc=='F'){
-			if($refere=='C' && $inicial==0){
-				$mSQL ="SELECT abono FROM smov WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero AND fecha=$dbfecha";
-				$abono=$this->datasis->dameval($mSQL);
-				if($abono==0){
-					//Anula la factura
-				}
-			}elseif($fecha == $hoy){
-				//Anula la factura
-			}
-		}
-	}
-
 	//Chequea que la cantidad devuelta no sea mayor que la facturada
 	function chcanadev($val,$i){
 		$tipo_doc = $this->input->post('tipo_doc');
@@ -1044,7 +1015,61 @@ class sfac_add extends validaciones {
 		return false;
 	}
 
+	function _anular($numero,$tipo_doc){
+		$mSQL="DELETE FROM sfpa WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero";
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'sfac_add'); }
+
+		$mSQL="UPDATE sfac SET tipo_doc='X' WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero";
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'sfac_add'); }
+
+		$mSQL="UPDATE sitems SET tipoa='X' WHERE tipoa=$dbtipo_doc AND numa=$dbnumero";
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'sfac_add'); }
+
+		//Descuenta de inventario
+	}
+
 	function _pre_delete($do){
+				$do = new DataObject('sfac');
+		$do->rel_one_to_many('sitems', 'sitems', array('id'=>'id_sfac'));
+		$do->rel_one_to_many('sfpa'  , 'sfpa'  , array('numero','transac'));
+
+		$do->load($id);
+
+		$tipo_doc = $do->get('tipo_doc');
+		$numero   = $do->get('numero');
+		$fecha    = $do->get('fecha');
+		$referen  = $do->get('referen');
+		$cajero   = $do->get('cajero');
+		$inicial  = $do->get('inicial');
+
+		$dbtipo_doc = $this->db->escape($tipo_doc);
+		$dbnumero   = $this->db->escape($numero);
+		$dbfecha    = $this->db->escape($fecha);
+		$hoy        = date('Y-m-d');
+
+		if($tipo_doc=='F'){
+			if($refere=='C' && $inicial==0){
+				$mSQL ="SELECT abono FROM smov WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero AND fecha=$dbfecha";
+				$abono=$this->datasis->dameval($mSQL);
+				if($abono==0){
+					//Anula la factura
+					$this->_anular($numero,$tipo_doc);
+				}else{
+					$do->error_message_ar['pre_del']='No se puede anular la factura por tener abonos.';
+					return false;
+				}
+			}elseif($fecha == $hoy){
+				//Anula la factura
+				$this->_anular($numero,$tipo_doc);
+			}else{
+				$do->error_message_ar['pre_del']='No se puede anular una factura pagada que no sea de hoy.';
+				return false;
+			}
+		}
+		$do->error_message_ar['pre_del']='Factura '.$numero.' anulada';
 		return false;
 	}
 

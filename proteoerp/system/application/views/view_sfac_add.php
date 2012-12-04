@@ -38,8 +38,8 @@ $sfpa_campos=$form->js_escape($sfpa_scampos);
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 echo $form_begin;
-if($form->_status!='show'){ 
-	
+if($form->_status!='show'){
+
 	$sfpade=$sfpach="<option value=''>Ninguno</option>";
 	$mSQL="SELECT cod_banc,nomb_banc FROM tban WHERE cod_banc<>'CAJ'";
 	$query = $this->db->query($mSQL);
@@ -595,7 +595,7 @@ function sfpatipo(id){
 			<table style="margin: 0;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output.$edit->upago->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <b id='nombre_val'><?php echo $form->nombre->value; ?></b><?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr><tr>
 				<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
