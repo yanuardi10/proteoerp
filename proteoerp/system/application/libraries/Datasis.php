@@ -371,7 +371,7 @@ class Datasis {
 				return true;
 		}
 		$CI->session->set_userdata('estaba', $CI->uri->uri_string());
-		redirect('/bienvenido/noautorizado');
+		redirect('/bienvenido/noautorizado/'.$modulo);
 	}
 
 

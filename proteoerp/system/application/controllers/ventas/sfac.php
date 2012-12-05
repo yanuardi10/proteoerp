@@ -1,5 +1,5 @@
 <?php
-require_once(BASEPATH.'application/controllers/validaciones.php');
+//require_once(BASEPATH.'application/controllers/validaciones.php');
 class Sfac extends Controller {
 	var $mModulo='SFAC';
 	var $titp='Facturacion ';
@@ -10,7 +10,7 @@ class Sfac extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+		$this->datasis->modulo_nombre( 'SFAC', 0 );
 	}
 
 	function index(){
@@ -70,7 +70,6 @@ class Sfac extends Controller {
 		$param['tabs']         = false;
 		$param['encabeza']     = $this->titp;
 		$param['tamano']       = $this->datasis->getintramenu( substr($this->url,0,-1) );
-
 		$this->load->view('jqgrid/crud2',$param);
 
 	}
@@ -81,6 +80,7 @@ class Sfac extends Controller {
 	//
 	//***************************
 	function jqmes(){
+		$mModulo='SFAC';
 
 		$grid = $this->defgrid();
 		#Set url
@@ -88,12 +88,9 @@ class Sfac extends Controller {
 
 		#GET url
 		$grid->setUrlget(site_url($this->url.'getdatam/'));
-
 		$grid->setTitle("Facturacion de Servicio Mensual");
 
-
 		$param['grids'][] = $grid->deploy();
-
 		$grid1   = $this->defgridit();
 		$param['grids'][] = $grid1->deploy();
 
@@ -103,11 +100,7 @@ class Sfac extends Controller {
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
-
-
 		//Botones Panel Izq
-		//$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
-		//$grid->wbotonadd(array("id"=>"boton2",  "img"=>"images/agrega4.png", "alt" => 'Agregar',          "label"=>"Agregar Factura"));
 		$grid->wbotonadd(array("id"=>"cobroser","img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
 		$WestPanel = $grid->deploywestp();
 
@@ -1137,8 +1130,9 @@ class Sfac extends Controller {
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('sfac');
-		$mWhere[] = array('', 'fecha', date('Ymd'), '' );
-		$mWhere[] = array('', 'usuario', $this->session->userdata('usuario'),'');
+		$mWHERE[] = array('', 'fecha', date('Ymd'), '' );
+		$mWHERE[] = array('', 'usuario', $this->session->userdata('usuario'),'');
+		
 		$response   = $grid->getData('sfac', array(array()), array(), false, $mWHERE, 'id', 'desc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
