@@ -121,7 +121,7 @@ jQuery("#a1").click( function(){
 			'align'         => "'center'",
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
+			'formoptions'   => '{ label:"Emision" }'
 		));
 
 		$grid->addField('tipo_doc');
@@ -156,7 +156,7 @@ jQuery("#a1").click( function(){
 			'width'         => 90,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
 		));
 
 		$grid->addField('clipro');
@@ -202,7 +202,8 @@ jQuery("#a1").click( function(){
 			'width'         => 80,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 20 }',
+			'editoptions'   => '{ size:20, maxlength: 20 }',
+			'formoptions'   => '{ label:"Fact.Afectada" }'
 		));
 
 		$grid->addField('rif');
