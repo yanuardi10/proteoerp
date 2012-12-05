@@ -159,19 +159,19 @@ class Sfac extends Controller {
 					$("#fcobroser").html(data);
 				});
 				$( "#fcobroser" ).dialog( "open" );
-
 			});
+
 			$( "#fcobroser" ).dialog({
 				autoOpen: false, height: 430, width: 540, modal: true,
 				buttons: {
 					"Guardar": function() {
-						$.post("'.site_url('ventas/mensualidad/servxmes/insert').'", {cod_cli: $("#fcliente").val(),cana_0: $("#fmespaga").val(),tipo_0: $("#fcodigo").val(),num_ref_0: $("#fcomprob").val(),preca_0: $("#ftarifa").val() },
+						$.post("'.site_url('ventas/mensualidad/servxmes/insert').'", { cod_cli: $("#fcliente").val(),cana_0: $("#fmespaga").val(),tipo_0: $("#fcodigo").val(),num_ref_0: $("#fcomprob").val(),preca_0: $("#ftarifa").val() },
 							function(data) {
-								if(data=="Venta Guardada"){
+								if( data.substr(0,14) == "Venta Guardada"){
 									$("#fcobroser").dialog( "close" );
-									grid.trigger("reloadGrid");
+									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
 									apprise(data);
-									'.$this->datasis->jwinopen(site_url('formatos/ver/FACTURA').'/\'+res.id+\'/id\'').';
+									'.$this->datasis->jwinopen(site_url('formatos/ver/FACTSER').'/\'+data.substr(15,10)+\'/id\'').';
 									return true;
 								}else{
 									apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+data);
