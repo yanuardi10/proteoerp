@@ -82,7 +82,7 @@ class Sfac extends Controller {
 	function jqmes(){
 		$mModulo='SFAC';
 
-		$grid = $this->defgrid();
+		$grid = $this->defgrid( false, 'false' );
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdatam/'));
 
@@ -91,10 +91,6 @@ class Sfac extends Controller {
 		$grid->setTitle("Facturacion de Servicio Mensual");
 
 		//$grid->params['editable'] = 'true';
-
-print_r($grid);
-die;
-
 
 		$param['grids'][] = $grid->deploy();
 		$grid1   = $this->defgridit();
@@ -200,7 +196,7 @@ die;
 	//***************************
 	//Definicion del Grid y la Forma
 	//***************************
-	function defgrid( $deployed = false ){
+	function defgrid( $deployed = false, $xmes = 'true' ){
 		$i      = 1;
 		$editar = "false";
 
@@ -264,7 +260,7 @@ die;
 		$grid->label('Vende');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => 'true',
+			'editable'      => $xmes,
 			'width'         => 50,
 			'edittype'      => "'select'",
 			'editrules'     => '{ required:false}',
@@ -361,6 +357,7 @@ die;
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
+
 /*
 		$grid->addField('direc');
 		$grid->label('Direc');
@@ -385,6 +382,7 @@ die;
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
 */
+
 
 		$grid->addField('orden');
 		$grid->label('Orden');
@@ -569,7 +567,7 @@ die;
 		$grid->label('Entregado');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => 'true',
+			'editable'      => $xmes,
 			'width'         => 75,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
@@ -885,7 +883,7 @@ die;
 		$grid->label('Maq. Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => 'true',
+			'editable'      => $xmes,
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
@@ -897,7 +895,7 @@ die;
 		$grid->label('Devolu.M.Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => 'true',
+			'editable'      => $xmes,
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
@@ -1009,7 +1007,7 @@ die;
 		$grid->label('Observ1');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => 'true',
+			'editable'      => $xmes,
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',

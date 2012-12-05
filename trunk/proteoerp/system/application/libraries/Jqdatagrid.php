@@ -207,6 +207,7 @@ class Jqdatagrid
 		$this->_field['field'][$field] = trim($field);
 	}
 
+
 	/**
 	* Crea una clase con sus metodos
 	* @param string $name nombre clase
