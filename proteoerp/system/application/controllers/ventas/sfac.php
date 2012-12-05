@@ -74,6 +74,13 @@ class Sfac extends Controller {
 
 	}
 
+	function imptxt() {
+		header('Content-disposition: attachment; filename=meco.prn');
+		header('Content-type: text');
+		echo 'ESTO ES UNA PRUEBA DE IMPRESION DE TETO';
+			
+	}
+
 
 	//***************************
 	//Layout en la Ventana
@@ -104,6 +111,7 @@ class Sfac extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"cobroser","img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
+		$grid->wbotonadd(array("id"=>"imptxt","img"=>"images/agrega4.png", "alt" => 'Imprimir Servicio',"label"=>"Imprimir Factura"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -151,6 +159,13 @@ class Sfac extends Controller {
 		jQuery("#boton2").click( function(){
 			window.open(\''.site_url('ventas/sfac_add/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 		});';
+
+		$bodyscript .= '
+		jQuery("#imptxt").click( function(){
+			window.open(\''.site_url('ventas/sfac/imptxt').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+		});';
+
+
 
 		//Prepara Pago o Abono
 		$bodyscript .= '
