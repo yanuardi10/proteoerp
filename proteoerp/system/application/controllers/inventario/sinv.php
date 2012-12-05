@@ -2612,7 +2612,7 @@ class Sinv extends Controller {
 		$do->pointer('grup' , 'grup.grupo=sinv.grupo' , 'grup.grupo AS grupgrupo' , 'left');
 		$do->pointer('line' , 'line.linea=grup.linea' , 'line.linea AS linelinea' , 'left');
 		$do->pointer('dpto' , 'dpto.depto=line.depto' , 'dpto.depto AS dptodepto' , 'left');
-		$do->pointer('sinv AS csinv', 'csinv.codigo=sinv.enlace','csinv.descrip AS cdescrip,csinv.precio1,csinv.precio2,csinv.precio3,csinv.precio4','left');
+		$do->pointer('sinv AS csinv', 'csinv.codigo=sinv.enlace','csinv.formcal AS cformcal,csinv.pond AS cpond,csinv.ultimo AS cultimo,csinv.descrip AS cdescrip,csinv.base1,csinv.base2,csinv.base3,csinv.base4','left');
 		$do->rel_one_to_many('sinvcombo' , 'sinvcombo' , array('codigo' => 'combo'));
 		$do->rel_one_to_many('sinvpitem' , 'sinvpitem' , array('codigo' => 'producto'));
 		$do->rel_one_to_many('sinvplabor', 'sinvplabor', array('codigo' => 'producto'));
@@ -2876,6 +2876,14 @@ class Sinv extends Controller {
 		$edit->pond->rule='required|mayorcero';
 		$edit->pond->autocomplete = false;
 
+		//Para el caso de las fraccciones
+		$edit->cultimo = new hiddenField('', 'cultimo');
+		$edit->cultimo->pointer=true;
+		$edit->cultimo->db_name='cultimo';
+		$edit->cpond = new hiddenField('', 'cpond');
+		$edit->cpond->pointer=true;
+		$edit->cpond->db_name='cpond';
+
 		$edit->standard = new inputField('Standard', 'standard');
 		$edit->standard->css_class='inputnum';
 		$edit->standard->size=10;
@@ -2892,6 +2900,10 @@ class Sinv extends Controller {
 		$edit->formcal->option('M','Mayor');
 		$edit->formcal->insertValue='U';
 		$edit->formcal->onchange = 'requeridos();calculos(\'S\');';
+
+		$edit->cformcal = new hiddenField('', 'cformcal');
+		$edit->cformcal->pointer=true;
+		$edit->cformcal->db_name='cformcal';
 
 		$edit->redecen = new dropdownField('Redondear', 'redecen');
 		$edit->redecen->style='width:110px;';
@@ -2934,11 +2946,11 @@ class Sinv extends Controller {
 			$edit->$objeto->rule='required|mayorcero';
 
 			//para el caso de las fraccciones
-			$objeto="cprecio$i";
-			$edit->$objeto = new inputField('', $objeto);
+			$objeto="cbase$i";
+			$edit->$objeto = new hiddenField('', $objeto);
 			$edit->$objeto->pointer=true;
-			$edit->cdescrip->db_name=$objeto;
-			$edit->cdescrip->type='inputhidden';
+			$edit->$objeto->db_name=$objeto;
+			//$edit->$objeto->type='inputhidden';
 
 		}
 
@@ -3348,7 +3360,7 @@ class Sinv extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading(substr($edit->descrip->value,0,30));
 		$this->load->view('view_ventanas', $data);
-*/c
+*/
 	}
 
 	function chfraccion($tipo){
