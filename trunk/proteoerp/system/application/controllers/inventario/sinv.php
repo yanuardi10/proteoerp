@@ -792,9 +792,7 @@ class Sinv extends Controller {
 			mSalida += mClaser+"<td>"+ret.prov3+"</td><td>"+ret.pfecha3.substring(8,10)+"/"+ret.pfecha3.substring(5,7)+"/"+ret.pfecha3.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro3)+"</td></tr>";
 			mSalida += mBlanco;
 			mSalida += "</table>";
-
 			mSalida += "</td></tr>";
-
 			mSalida += "</table>";
 			return mSalida;
 		}

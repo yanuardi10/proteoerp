@@ -90,6 +90,12 @@ class Sfac extends Controller {
 		$grid->setUrlget(site_url($this->url.'getdatam/'));
 		$grid->setTitle("Facturacion de Servicio Mensual");
 
+		//$grid->params['editable'] = 'true';
+
+print_r($grid);
+die;
+
+
 		$param['grids'][] = $grid->deploy();
 		$grid1   = $this->defgridit();
 		$param['grids'][] = $grid1->deploy();

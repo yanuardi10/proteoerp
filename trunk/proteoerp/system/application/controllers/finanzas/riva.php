@@ -32,9 +32,6 @@ class Riva extends Controller {
 
 		$bodyscript = '
 <script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
 
 jQuery("#a1").click( function(){
 	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
@@ -60,37 +57,16 @@ jQuery("#a1").click( function(){
 		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
 
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
+		$WestPanel = $grid->deploywestp();
 
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
-';
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"a1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
 		$WestPanel = $grid->deploywestp();
 
 
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
+
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
+
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
@@ -140,7 +116,7 @@ jQuery("#a1").click( function(){
 		$grid->params(array(
 			'align'         => '"center"',
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 80,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
@@ -176,7 +152,7 @@ jQuery("#a1").click( function(){
 		$grid->label('Numero');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 90,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
