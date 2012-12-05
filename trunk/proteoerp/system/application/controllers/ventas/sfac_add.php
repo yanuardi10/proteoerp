@@ -556,7 +556,7 @@ class sfac_add extends validaciones {
 				$this->claves=$edit->_dataobject->pk;
 				$this->claves['numero']  = $edit->_dataobject->get('numero');
 				$this->claves['tipo_doc']= $edit->_dataobject->get('tipo_doc');
-				$rt= 'Venta Guardada';
+				$rt= 'Venta Guardada '.$this->datasis->dameval("SELECT id FROM sfac WHERE numero=".$edit->_dataobject->get('numero')." AND tipo_doc='F'");
 			}elseif($edit->on_error()){
 				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
 			}
