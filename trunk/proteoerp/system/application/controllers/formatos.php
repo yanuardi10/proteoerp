@@ -108,10 +108,11 @@ class Formatos extends Controller{
 					echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $row->txt)).'<?php ');
 					$_txt=ob_get_contents();
 				@ob_end_clean();
-				if(strlen($_txt)>0)
-					force_download('inprin.prn', $_txt);
-				else
+				if(strlen($_txt)>0){
+					force_download('inprin.prn', preg_replace("/[\r]*\n/","\r\n",$_txt));
+				}else{
 					echo 'Formato no definido';
+				}
 			}else{
 				echo 'Formato no existe';
 			}
