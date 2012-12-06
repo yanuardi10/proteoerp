@@ -78,7 +78,7 @@ class Sfac extends Controller {
 		header('Content-disposition: attachment; filename=meco.prn');
 		header('Content-type: text');
 		echo 'ESTO ES UNA PRUEBA DE IMPRESION DE TETO';
-			
+
 	}
 
 
@@ -162,7 +162,7 @@ class Sfac extends Controller {
 
 		$bodyscript .= '
 		jQuery("#imptxt").click( function(){
-			window.open(\''.site_url('ventas/sfac/imptxt').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			window.open(\''.site_url('formatos/descargartxt/FACTSER').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 		});';
 
 
@@ -186,7 +186,7 @@ class Sfac extends Controller {
 									$("#fcobroser").dialog( "close" );
 									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
 									apprise(data);
-									'.$this->datasis->jwinopen(site_url('formatos/ver/FACTSER').'/\'+data.substr(15,10)+\'/id\'').';
+									'.$this->datasis->jwinopen(site_url('formatos/descargartxt/FACTSER').'/\'+data.substr(15,10)+\'/id\'').';
 									return true;
 								}else{
 									apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+data);
@@ -1151,7 +1151,7 @@ class Sfac extends Controller {
 		$mWHERE = $grid->geneTopWhere('sfac');
 		$mWHERE[] = array('', 'fecha', date('Ymd'), '' );
 		$mWHERE[] = array('', 'usuario', $this->session->userdata('usuario'),'');
-		
+
 		$response   = $grid->getData('sfac', array(array()), array(), false, $mWHERE, 'id', 'desc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
