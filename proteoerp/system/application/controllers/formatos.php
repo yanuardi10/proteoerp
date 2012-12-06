@@ -109,6 +109,8 @@ class Formatos extends Controller{
 					$_txt=ob_get_contents();
 				@ob_end_clean();
 				if(strlen($_txt)>0){
+					if(!array_key_exists('HTTP_USER_AGENT', $_SERVER))
+						$_SERVER['HTTP_USER_AGENT']='curl';
 					force_download('inprin.prn', preg_replace("/[\r]*\n/","\r\n",$_txt));
 				}else{
 					echo 'Formato no definido';

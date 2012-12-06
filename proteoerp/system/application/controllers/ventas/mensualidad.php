@@ -74,7 +74,7 @@ class mensualidad extends sfac_add {
 			$_POST['banco_0']      = '';
 			$_POST['monto_0']      = $_POST['tota_0']*(1+($sinvr['iva']/100)) ;
 
-			echo utf8_encode(parent::dataedit());
+			parent::dataedit();
 		}
 	}
 
@@ -128,174 +128,138 @@ class mensualidad extends sfac_add {
 		return true;
 	}
 
-	/*function facturar($id=null){
-		$this->rapyd->load('dataedit');
-		$iva  = $this->datasis->ivaplica();
+	function lote($status=null,$grupo,$upago,$tarifa){
+		$this->load->helper('download');
+		$this->genesal=false;
+		$this->back_url=$this->url.'filteredgrid';
 
-		$sel=array('a.nombre','a.rifci','b.codigo','b.descrip','b.base1','b.iva');
-		$this->db->select($sel);
-		$this->db->from('scli AS a');
-		$this->db->join('sinv AS b','a.tarifa=b.codigo');
-		$this->db->where('a.id',$id);
+		$dbgrupo = $this->db->escape($grupo);
+		$dbupago = $this->db->escape($upago);
+		$dbtarifa= $this->db->escape($tarifa);
 
-		$query = $this->db->get();
+		if($status=='insert'){
+			$codigo = $this->datasis->traevalor('SINVTARIFA');
+			$iva    = $this->datasis->dameval("SELECT iva FROM sinv WHERE codigo=".$this->db->escape($codigo));
+			$descrip= $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=".$this->db->escape($codigo));
+			$ut     = $this->datasis->dameval("SELECT valor FROM utributa ORDER BY fecha DESC LIMIT 1");
+			$cana   = 1;
+			$data   = '';
 
-		if ($query->num_rows() > 0){
-			$row = $query->row();
+			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc, round(b.minimo*$ut,2) precio1, a.upago, a.telefono, b.id codigo
+				FROM scli AS a
+				JOIN tarifa AS b ON a.tarifa=b.id
+				WHERE a.grupo=$dbgrupo AND a.upago=$dbupago AND a.tarifa=$dbtarifa
+				ORDER BY rifci LIMIT 10";
 
-			$codigo  = $row->codigo;
-			$rifci   = $row->rifci;
-			$nombre  = $row->nombre;
-			$descrip = $row->descrip;
-			$base1   = round($row->base1,2);
-			$tasa    = round($row->iva,2);
+			$query = $this->db->query($mSQL);
+			foreach ($query->result() as $row){
+				$dbcliente= $this->db->escape($row->cliente);
+				$sql      = "SELECT SUM(monto*(tipo_doc IN ('FC','GI','ND'))) AS debe, SUM(monto*(tipo_doc IN ('NC','AB','AN'))) AS haber FROM smov WHERE cod_cli=$dbcliente";
+				$qquery    = $this->db->query($sql);
+				if ($qquery->num_rows() > 0){
+					$rrow = $qquery->row();
+					$saldo=$rrow->debe-$rrow->haber;
+				}else{
+					$saldo=0;
+				}
+				$sql="UPDATE scli SET credito='S',tolera=10,maxtolera=10,limite=$saldo WHERE cliente=$dbcliente";
+				$this->db->simple_query($sql);
+
+				$desde = dbdate_to_human($row->upago.'01','m/Y');
+
+				$_POST['pfac']        = '';
+				$_POST['fecha']       = date('d/m/Y');
+				$_POST['cajero']      = $this->secu->getcajero();
+				$_POST['vd']          = $this->secu->getvendedor();
+				$_POST['almacen']     = $this->secu->getalmacen();
+				$_POST['tipo_doc']    = 'F';
+				$_POST['factura']     = '';
+				$_POST['cod_cli']     = $row->cliente;
+				$_POST['sclitipo']    = '1';
+				$_POST['nombre']      = $row->nombre;
+				$_POST['rifci']       = $row->rifci;
+				$_POST['direc']       = $row->direc;
+				$_POST['upago']       = $row->upago;
+				$_POST['codigoa_0']   = $codigo;
+
+				$_POST['desca_0']     = $descrip;
+
+				$_POST['detalle_0']   = "Desde $desde";
+				$_POST['cana_0']      = $cana;
+				$_POST['preca_0']     = $row->precio1;
+
+				$_POST['tota_0']      = $row->precio1;
+				$_POST['precio1_0']   = 0;
+				$_POST['precio2_0']   = 0;
+				$_POST['precio3_0']   = 0;
+				$_POST['precio4_0']   = 0;
+				$_POST['itiva_0']     = round($iva,2);
+				$_POST['sinvpeso_0']  = 0;
+				$_POST['sinvtipo_0']  = 'Servicio';
+
+				$_POST['tipo_0']       = '';
+				$_POST['sfpafecha_0']  = '';
+				$_POST['num_ref_0']    = '';
+				$_POST['banco_0']      = '';
+				$_POST['monto_0']      = $row->precio1*(1+($iva/100)) ;
+
+				$rt=parent::dataedit();
+				if(preg_match('/Venta Guardada (?P<id>\d+)/', $rt, $matches)){
+					$id=$matches['id'];
+					$url=$this->_direccion='http://localhost/'.site_url('formatos/descargartxt/FACTSER/'.$id);
+					$data .= file_get_contents($url);
+					$data .= "<FIN>\r\n";
+				}
+			}
+			force_download('inprin.prn', preg_replace("/[\r]*\n/","\r\n",$data));
+		}
+	}
+
+	function factucred(){
+		$this->rapyd->load('dataedit','dataform','datagrid');
+
+		$form = new DataForm('ventas/mensualidad/factucred/modifica');
+
+		$form->grupo = new dropdownField('Grupo', 'grupo');
+		$form->grupo->option('','Seleccione un grupo');
+		$form->grupo->options('SELECT grupo, CONCAT(grupo," ",gr_desc) gr_desc FROM grcl ORDER BY gr_desc');
+		$form->grupo->rule = 'required';
+		$form->grupo->size = 6;
+		$form->grupo->maxlength = 4;
+		$form->grupo->style = 'width:200px';
+		//$form->grupo->insertValue = $this->datasis->dameval('SELECT grupo FROM grcl WHERE gr_desc like "CONSUMIDOR FINAL%"');
+
+		$form->submit("btnsubmit","Consultar");
+		$form->build_form();
+
+		$tt='';
+		if ($form->on_success()){
+			$grupo  = $form->grupo->newValue;
+			$dbgrupo= $this->db->escape($grupo);
+			$ut     = $this->datasis->dameval("SELECT valor FROM utributa ORDER BY fecha DESC LIMIT 1");
+
+			$link=anchor($this->url."lote/insert/$grupo/<#upago#>/<#tarifa#>",'Facturar Mes');
+			$sel=array('COUNT(*) AS cana','CONCAT(a.upago,\'01\') AS pago','a.upago','a.tarifa',"SUM(b.minimo*$ut) AS monto");
+			$grid = new DataGrid('Lista de efectos');
+			$grid->db->select($sel);
+			$grid->db->from('scli   AS a');
+			$grid->db->join('tarifa AS b','a.tarifa=b.id');
+			$grid->db->where('a.grupo',$grupo);
+			$grid->db->groupby('a.upago,a.tarifa');
+
+			//$grid->column('Facturar'   );
+			$grid->column_orderby('Cantidad'   , '<#cana#> '.$link ,'cana','align="right"');
+			$grid->column_orderby('Ultimo pago', '<dbdate_to_human><#pago#></dbdate_to_human>','upago','align="center"');
+			$grid->column_orderby('Tarifa'     , 'tarifa','tarifa','align="right"');
+			$grid->column_orderby('Monto'      , '<nformat><#monto#></nformat>' ,'monto' ,'align="right"');
+			$grid->build();
+
+			$tt=$grid->output;
 		}
 
-		$edit = new DataForm($this->url.$id.'/insert');
-
-		$edit->back_url = site_url($this->url.'filteredgrid');
-
-
-		$edit->cliente = new freeField('Cliente', 'rif',$rifci.' - '.$nombre);
-		$edit->cliente->group = 'Datos de la factura';
-
-		$edit->codigo = new freeField('Producto', 'codigo',$codigo.' - '.$descrip);
-		$edit->codigo->group = 'Datos del financieros';
-
-		$edit->base =  new inputField('Monto base de venta','base');
-		$edit->base->size  = 20;
-		$edit->base->rule  = 'required|numeric';
-		$edit->base->group = 'Datos del financieros';
-		$edit->base->insertValue=$base1;
-
-		$edit->cana =  new inputField('Cantidad','cana');
-		$edit->cana->size  = 20;
-		$edit->cana->rule  = 'required|numeric';
-		$edit->cana->group = 'Datos del financieros';
-
-		$edit->total = new freeField('Total a pagar', 'total','<span id="total"></span>');
-		$edit->total->group = 'Datos del financieros';
-
-		$accion="javascript:window.location='".site_url('concesionario/inicio')."'";
-		$edit->button('btn_cargar','Regresar',$accion,'BL');
-		$edit->submit('btnsubmit','Realizar venta');
-		$edit->build_form();
-
-		if($edit->on_success()){
-			$this->genesal=false;
-
-			$sel=array('a.rifci','a.dire11');
-			$this->db->select($sel);
-			$this->db->from('scli AS a');
-			$this->db->where('a.cliente',$edit->cliente->newValue);
-
-			$query = $this->db->get();
-			if ($query->num_rows() > 0){
-				$row    = $query->row();
-				$rifci  = $row->rifci;
-				$dire11 = $row->dire11;
-			}
-
-			$_POST['btn_submit']  = 'Guardar';
-			$_POST['pfac']        = '';
-			$_POST['fecha']       = date('d/m/Y');
-			$_POST['cajero']      = $this->secu->getcajero();
-			$_POST['vd']          = $edit->vd->newValue;
-			$_POST['almacen']     = $edit->almacen->newValue;
-			$_POST['tipo_doc']    = 'F';
-			$_POST['factura']     = '';
-			$_POST['cod_cli']     = $edit->cliente->newValue;
-			$_POST['sclitipo']    = '1';
-			$_POST['nombre']      = $edit->nombre->newValue;
-			$_POST['rifci']       = $rifci ;
-			$_POST['direc']       = $dire11;
-
-			$_POST['codigoa_0']   = 'PLACA';
-			$_POST['desca_0']     = 'PLACA';
-			$_POST['detalle_0']   = 'PLACA '.$placa;
-			$_POST['cana_0']      = 1;
-			$_POST['preca_0']     = $precioplaca;
-			$_POST['tota_0']      = $precioplaca;
-			$_POST['precio1_0']   = $precioplaca;
-			$_POST['precio2_0']   = $precioplaca;
-			$_POST['precio3_0']   = $precioplaca;
-			$_POST['precio4_0']   = $precioplaca;
-			$_POST['itiva_0']     = 0;
-			$_POST['sinvpeso_0']  = 0;
-			$_POST['sinvtipo_0']  = 'Servicio';
-
-			$_POST['codigoa_1']   = $codigo_sinv;
-			$_POST['desca_1']     = $modelo;
-			$_POST['detalle_1']   = '';
-			$_POST['cana_1']      = 1;
-			$_POST['preca_1']     = $edit->base->newValue;
-			$_POST['tota_1']      = $edit->base->newValue;
-			$_POST['precio1_1']   = $precio1;
-			$_POST['precio2_1']   = $precio2;
-			$_POST['precio3_1']   = $precio3;
-			$_POST['precio4_1']   = $precio4;
-			$_POST['itiva_1']     = $edit->tasa->newValue;
-			$_POST['sinvpeso_1']  = $peso;
-			$_POST['sinvtipo_1']  = 'Articulo';
-
-			$totals = $precioplaca+$edit->base->newValue;
-			$iva    = $edit->base->newValue*($edit->tasa->newValue/100);
-			$totalg = $totals+$iva;
-
-			$_POST['tipo_0']      = '';
-			$_POST['sfpafecha_0'] = '';
-			$_POST['num_ref_0']   = '';
-			$_POST['banco_0']     = '';
-			$_POST['monto_0']     = $totalg;
-
-			$_POST['totals']      = $totals;
-			$_POST['iva']         = $iva   ;
-			$_POST['totalg']      = $totalg;
-
-			$rt=$this->dataedit();
-			if($rt=='Venta Guardada'){
-
-				$data=array();
-				$data['id_sfac'] = $this->claves['id'];
-				$mSQL = $this->db->update_string('sinvehiculo', $data,'id='.$this->db->escape($id));
-				$this->db->simple_query($mSQL);
-
-				redirect($this->url.'dataprint/modify/'.$data['id_sfac']);
-				return;
-			}else{
-				$edit->error_string =  htmlentities($rt);
-				$edit->build_form();
-			}
-		}
-
-		$script= '<script type="text/javascript" >
-		$(function() {
-			var calcula = function (){
-				if($("#base").val().length>0) base=parseFloat($("#base").val()); else base=0;
-				if($("#cana").val().length>0) cana=parseFloat($("#cana").val()); else cana=0;
-				tasa='.$tasa.';
-				$("#total").text(nformat(base*(1+(tasa/100)*cana),2));
-			}
-
-			$("#cana").keyup(calcula);
-
-		});
-		</script>';
-
-		$data['content'] = $edit->output;
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-		$data['script'] .= phpscript('nformat.js');
-		$data['head']    = $this->rapyd->get_head();
-		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-		//$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
-		$data['script'] .= $script;
-		$data['title']   = heading($this->tits);
+		$data['content'] =$form->output.$tt;
+		$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head();
+		$data['title']   = '<h1>Facturaci&oacute;n de servicio a cr&eacute;dito</h1>';
 		$this->load->view('view_ventanas', $data);
-
-	}*/
-
+	}
 }
