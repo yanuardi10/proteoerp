@@ -162,7 +162,10 @@ class Sfac extends Controller {
 
 		$bodyscript .= '
 		jQuery("#imptxt").click( function(){
-			window.open(\''.site_url('formatos/descargartxt/FACTSER').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				window.open(\''.site_url('formatos/descargartxt/FACTSER').'/\'+id, \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
 
 
