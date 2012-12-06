@@ -52,7 +52,8 @@ class formatos extends validaciones {
 		$uri3 = anchor('supervisor/formatos/rharbour/modify/<#nombre#>/','Editar');
 		$uri4 = anchor('supervisor/formatos/observa/modify/<#nombre#>/' ,'Editar');
 		$uri5 = anchor('supervisor/formatos/rtcpdf/modify/<#nombre#>/'  ,'Editar');
-		$uri6 = anchor('supervisor/formatos/rtcpdf2/modify/<#nombre#>/'  ,'Editar');
+		$uri6 = anchor('supervisor/formatos/rtcpdf2/modify/<#nombre#>/' ,'Editar');
+		$uri7 = anchor('supervisor/formatos/txt/modify/<#nombre#>/'     ,'Editar');
 
 		$grid = new DataGrid('Lista de Menu de Formatos');
 		$grid->order_by('nombre','asc');
@@ -62,6 +63,7 @@ class formatos extends validaciones {
 		$grid->column('Proteo'   ,$uri1);
 		$grid->column('DataSIS'  ,$uri2);
 		$grid->column('Harbour'  ,$uri3);
+		$grid->column('TXT'      ,$uri7);
 		$grid->column('TCPDF'    ,$uri5);
 		$grid->column('TCPDF2'   ,$uri6);
 
@@ -154,6 +156,65 @@ class formatos extends validaciones {
 			$this->load->view('view_ventanas_sola', $data);
 		}else{
 			echo $edit->error_string;
+		}
+	}
+
+	function txt(){
+		$this->rapyd->uri->keep_persistence();
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit('Proteo', 'formatos');
+		$id=$edit->_dataobject->pk['nombre'];
+		$script='$("#df1").submit(function(){
+		$.post("'.site_url('supervisor/formatos/gajax_txt/update/'.$id).'", {nombre: "'.$id.'", proteo: $("#proteo").val()},
+			function(data){
+				alert("Reporte guardado" + data);
+			},
+			"application/x-www-form-urlencoded;charset='.$this->config->item('charset').'");
+			return false;
+		});';
+
+		$edit->script($script,'modify');
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
+		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
+
+		$edit->txt= new htmlField('', 'txt');
+		$edit->txt->rows =30;
+		$edit->txt->cols=130;
+
+		$edit->buttons('modify', 'save', 'undo','back');
+		$edit->build();
+
+		$this->rapyd->jquery[]='$("#txt").tabby();';
+		$this->rapyd->jquery[]='$("#txt").linedtextarea();';
+		$this->rapyd->jquery[]='estilo=$("#txt").attr("style"); $("#txt").attr("style",estilo+"-moz-tab-size:2 !important; tab-size:2 !important;")';
+
+		if($this->genesal){
+			$data['content'] = $edit->output;
+			$data['title']   = "<h1>Formato '$id'</h1>";
+			$data['head']    = $this->rapyd->get_head();
+			$data['head']   .= script('plugins/jquery-linedtextarea.js').script('plugins/jquery.textarea.js').style('jquery-linedtextarea.css');
+
+			$this->load->view('view_ventanas_sola', $data);
+		}else{
+			echo $edit->error_string;
+		}
+	}
+
+	function gajax_txt(){
+		header('Content-Type: text/html; '.$this->config->item('charset'));
+		$this->genesal=false;
+		$nombre=$this->input->post('nombre');
+		$proteo=$this->input->post('txt');
+
+		if($proteo!==false and $nombre!==false){
+			if(stripos($this->config->item('charset'), 'utf')===false){
+				$_POST['nombre']=utf8_decode($nombre);
+				$_POST['txt']=utf8_decode($proteo);
+			}
+			$this->txt();
 		}
 	}
 
@@ -294,6 +355,7 @@ class formatos extends validaciones {
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
 
 	function cactivo(){
 		$codigo=$this->input->post('codigo');
