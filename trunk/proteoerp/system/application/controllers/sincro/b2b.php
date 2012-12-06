@@ -418,7 +418,13 @@ class b2b extends validaciones {
 		$edit->detalle=new freeField('detalle', 'detalle',$detalle->output);
 		$accion="javascript:window.location='".site_url('sincro/b2b/cargacompra'.$edit->pk_URI())."'";
 		$pcontrol=$edit->_dataobject->get('pcontrol');
-		if(is_null($pcontrol)) $edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
+		if(empty($pcontrol)){
+			$edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
+		}else{
+			$sql ='SELECT COUNT(*) FROM scst WHERE control='.$this->db->escape($pcontrol);
+			$cana=$this->datasis->dameval($sql);
+			if(empty($cana)) $edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
+		}
 		$edit->buttons('save','undo','back');
 
 		$edit->script($script,'show');
