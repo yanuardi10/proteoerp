@@ -226,7 +226,7 @@ class mensualidad extends sfac_add {
 		$form->grupo->rule = 'required';
 		$form->grupo->size = 6;
 		$form->grupo->maxlength = 4;
-		$form->grupo->style = 'width:200px';
+		$form->grupo->style = 'width:300px';
 		//$form->grupo->insertValue = $this->datasis->dameval('SELECT grupo FROM grcl WHERE gr_desc like "CONSUMIDOR FINAL%"');
 
 		$form->submit("btnsubmit","Consultar");
@@ -239,7 +239,7 @@ class mensualidad extends sfac_add {
 			$ut     = $this->datasis->dameval("SELECT valor FROM utributa ORDER BY fecha DESC LIMIT 1");
 
 			$link=anchor($this->url."lote/insert/$grupo/<#upago#>/<#tarifa#>",'Facturar Mes');
-			$sel=array('COUNT(*) AS cana','CONCAT(a.upago,\'01\') AS pago','a.upago','a.tarifa',"SUM(b.minimo*$ut) AS monto");
+			$sel=array('COUNT(*) AS cana','CONCAT(a.upago,\'01\') AS pago','a.upago','a.tarifa','b.actividad',"SUM(b.minimo*$ut) AS monto");
 			$grid = new DataGrid('Lista de efectos');
 			$grid->db->select($sel);
 			$grid->db->from('scli   AS a');
@@ -249,8 +249,8 @@ class mensualidad extends sfac_add {
 
 			//$grid->column('Facturar'   );
 			$grid->column_orderby('Cantidad'   , '<#cana#> '.$link ,'cana','align="right"');
-			$grid->column_orderby('Ultimo pago', '<dbdate_to_human><#pago#></dbdate_to_human>','upago','align="center"');
-			$grid->column_orderby('Tarifa'     , 'tarifa','tarifa','align="right"');
+			$grid->column_orderby('&Uacute;ltimo pago', '<dbdate_to_human><#pago#></dbdate_to_human>','upago','align="center"');
+			$grid->column_orderby('Tarifa'     , '(<#tarifa#>) <#actividad#>','tarifa');
 			$grid->column_orderby('Monto'      , '<nformat><#monto#></nformat>' ,'monto' ,'align="right"');
 			$grid->build();
 

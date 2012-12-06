@@ -595,7 +595,7 @@ function sfpatipo(id){
 			<table style="margin: 0;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output.$edit->upago->output; ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output.$form->upago->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <b id='nombre_val'><?php echo $form->nombre->value; ?></b><?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr><tr>
 				<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
