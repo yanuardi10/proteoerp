@@ -1378,25 +1378,25 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 					<td class="littletableheaderc">1</td>
 					<td class="littletablerow" align='right'><?php echo $form->margen1->output ?></td>
 					<td class="littletablerow" align='right'><?php echo $form->base1->output   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->precio1->output.$form->cprecio1->output; ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->precio1->output.$form->cbase1->output; ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">2</td>
 					<td class="littletablerow" align='right'><?php echo $form->margen2->output ?></td>
 					<td class="littletablerow" align='right'><?php echo $form->base2->output   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->precio2->output.$form->cprecio2->output; ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->precio2->output.$form->cbase2->output; ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">3</td>
 					<td class="littletablerow" align='right'><?php echo $form->margen3->output ?></td>
 					<td class="littletablerow" align='right'><?php echo $form->base3->output   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->precio3->output.$form->cprecio3->output; ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->precio3->output.$form->cbase3->output; ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">4</td>
 					<td class="littletablerow" align='right'><?php echo $form->margen4->output ?></td>
 					<td class="littletablerow" align='right'><?php echo $form->base4->output   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->precio4->output.$form->cprecio4->output; ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->precio4->output.$form->cbase4->output; ?></td>
 				</tr>
 				<tr>
 					<td colspan="2" class="littletablerow" align='right'><?php echo $form->pm->label  ?>%</td>
