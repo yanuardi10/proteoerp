@@ -836,7 +836,11 @@ class sfac_add extends validaciones {
 			$dbcliente=$this->db->escape($cliente);
 			$rrow    = $this->datasis->damerow("SELECT limite,formap,credito,tolera,TRIM(socio) AS socio FROM scli WHERE cliente=$dbcliente");
 			if($rrow!=false){
-				$cdias   = $rrow['formap'];
+				if(empty($rrow['tolera']))  $rrow['tolera'] =0;
+				if(empty($rrow['limite']))  $rrow['limite'] =0;
+				if(empty($rrow['credito'])) $rrow['credito']='N';
+
+				$cdias   = (empty($rrow['formap']))? 0: $rrow['formap'];
 				$pcredito= $rrow['credito'];
 				$tolera  = (100+$rrow['tolera'])/100;
 				$socio   = $rrow['socio'];
@@ -885,7 +889,11 @@ class sfac_add extends validaciones {
 				$dbsocio= $this->db->escape($socio);
 				$rrow   = $this->datasis->damerow("SELECT limite,formap,credito,tolera,socio FROM scli WHERE cliente=$dbsocio");
 				if($rrow!=false){
-					$mastercdias   = $rrow['formap'];
+					if(empty($rrow['tolera']))  $rrow['tolera'] =0;
+					if(empty($rrow['limite']))  $rrow['limite'] =0;
+					if(empty($rrow['credito'])) $rrow['credito']='N';
+
+					$mastercdias   = (empty($rrow['formap']))? 0: $rrow['formap'];
 					$mastercredito = $rrow['credito'];
 					$mastertolera  = (100+$rrow['tolera'])/100;
 					$mastersocio   = $rrow['socio'];
