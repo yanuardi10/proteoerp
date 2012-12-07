@@ -251,7 +251,7 @@ class venta extends sfac_add {
 			$_POST['totalg']      = $totalg;
 
 			$rt=$this->dataedit();
-			if($rt=='Venta Guardada'){
+			if(preg_match('/Venta Guardada (?P<id>\d+)/', $rt, $matches)){
 
 				$data=array();
 				$data['id_sfac'] = $this->claves['id'];

@@ -189,8 +189,8 @@ class compra extends scst {
 		$edit->transmision->option('','Seleccionar');
 		$edit->transmision->option('AUTOMATICO','Automatico');
 		$edit->transmision->option('MANUAL'    ,'Manual');
-		$edit->transmision->option('MANUAL'    ,'ZF');
-		$edit->transmision->option('MANUAL'    ,'ZF-ITON');
+		$edit->transmision->option('ZF'     ,'ZF');
+		$edit->transmision->option('ZF-ITON','ZF-ITON');
 		$edit->transmision->style='width:200px;';
 		$edit->transmision->size = 6;
 		$edit->transmision->rule='required';
