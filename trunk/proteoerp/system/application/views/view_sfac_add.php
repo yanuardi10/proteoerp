@@ -4,7 +4,7 @@ $container_bl=join('&nbsp;', $form->_button_container['BL']);
 $container_br=join('&nbsp;', $form->_button_container['BR']);
 $container_tr=join('&nbsp;', $form->_button_container['TR']);
 
-if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
+if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record' || strlen($form->output)==0):
 	echo $form->output;
 else:
 
@@ -102,6 +102,8 @@ $(function(){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$('#cod_cli').attr("readonly", "readonly");
+
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
 
@@ -113,6 +115,7 @@ $(function(){
 
 			$('#direc').val(ui.item.direc);
 			$('#direc_val').text(ui.item.direc);
+			setTimeout(function() {  $("#cod_cli").removeAttr("readonly"); }, 1500);
 		}
 	});
 
@@ -126,17 +129,36 @@ $(function(){
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
-						add(sugiere);
+						if(data.length==0){
+							$('#factura').val('');
+
+							$('#nombre').val('');
+							$('#nombre_val').text('');
+
+							$('#rifci').val('');
+							$('#rifci_val').text('');
+
+							$('#cod_cli').val('');
+							$('#sclitipo').val('1');
+
+							$('#direc').val('');
+							$('#direc_val').text('');
+
+							truncate();
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+							add(sugiere);
+						}
 					},
 			})
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$('#factura').attr("readonly", "readonly");
 			$('#factura').val(ui.item.value);
 
 			$('#nombre').val(ui.item.nombre);
@@ -203,6 +225,7 @@ $(function(){
 						}
 					},
 			});
+			setTimeout(function() {  $("#factura").removeAttr("readonly"); }, 1500);
 		}
 	});
 
@@ -477,18 +500,35 @@ function autocod(id){
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
-						add(sugiere);
+						if(data.length==0){
+							$('#codigoa_'+id).val('')
+							$('#desca_'+id).val('');
+							$('#precio1_'+id).val('');
+							$('#precio2_'+id).val('');
+							$('#precio3_'+id).val('');
+							$('#precio4_'+id).val('');
+							$('#itiva_'+id).val('');
+							$('#sinvtipo_'+id).val('');
+							$('#sinvpeso_'+id).val('');
+							$('#pond_'+id).val('');
+							$('#ultimo_'+id).val('');
+							$('#cana_'+id).val('');
+							post_modbus_sinv(id);
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+							add(sugiere);
+						}
 					},
 			})
 		},
 		minLength: 2,
 		select: function( event, ui ) {
-			//id='0';
+			$('#codigoa_'+id).attr("readonly", "readonly");
+
 			$('#codigoa_'+id).val(ui.item.codigo);
 			$('#desca_'+id).val(ui.item.descrip);
 			$('#precio1_'+id).val(ui.item.base1);
@@ -511,6 +551,7 @@ function autocod(id){
 			jQuery.each(arr, function() { this.selectedIndex=tipo; });
 			importe(id);
 			totalizar();
+			setTimeout(function() {  $('#codigoa_'+id).removeAttr("readonly"); }, 1500);
 		}
 	});
 }
@@ -592,14 +633,14 @@ function sfpatipo(id){
 		</td><td style="width:50%">
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
 			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
-			<table style="margin: 0;">
+			<table style="margin: 0;width:100%">
 			<tr>
-				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*</td>
 				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output.$form->upago->output; ?>&nbsp;</td>
-				<td class="littletablerow">   <b id='nombre_val'><?php echo $form->nombre->value; ?></b><?php echo $form->nombre->output;  ?>&nbsp;</td>
+				<td class="littletablerow">   <b id='rifci_val'><?php echo $form->rifci->value; ?></b><?php echo $form->rifci->output;   ?>&nbsp;</td>
 			</tr><tr>
-				<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
-				<td class="littletablerow" colspan='2'><b id='rifci_val'><?php echo $form->rifci->value; ?></b><?php echo $form->rifci->output;   ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->nombre->label; ?></td>
+				<td class="littletablerow" colspan='2'><b id='nombre_val'><?php echo $form->nombre->value; ?></b><?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr><tr>
 				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><b id='direc_val'><?php echo $form->direc->value; ?></b><?php echo $form->direc->output ?>&nbsp;</td>
