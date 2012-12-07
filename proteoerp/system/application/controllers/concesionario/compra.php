@@ -352,7 +352,7 @@ class compra extends scst {
 				$data['placa']          = $edit->placa->newValue;
 				$data['precioplaca']    = $edit->precioplaca->newValue;
 				$data['neumaticos']     = $edit->neumaticos->newValue;
-				$data['tiponeumatucos'] = $edit->tiponeumatucos->newValue;
+				$data['tipo_neumatico'] = $edit->tiponeumatucos->newValue;
 				$data['distanciaeje']   = $edit->distanciaeje->newValue;
 
 				$mSQL = $this->db->insert_string('sinvehiculo', $data);
