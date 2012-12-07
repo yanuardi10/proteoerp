@@ -86,6 +86,7 @@ class Rpcserver extends Controller {
 		if($this->secu->cliente($usr,$pwd)){
 			$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva,exento,tasa,reducida,sobretasa,montasa,monredu,monadic FROM sfac WHERE cod_cli=? AND numero $op ? AND tipo_doc='F' LIMIT $cant";
 			$query = $this->db->query($mSQL,array($usr,$ult_ref));
+			$barr_exis=$this->db->table_exists('barraspos');
 			//memowrite($this->db->last_query(),'B2B');
 			if ($query->num_rows() > 0){
 				$pivot=array();
@@ -99,15 +100,23 @@ class Rpcserver extends Controller {
 
 					//Prepara los articulos
 					$it=array();
-					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,TRIM(b.barras) AS barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal, GROUP_CONCAT(c.suplemen SEPARATOR '|') AS suplemen
+					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,a.cana,a.preca,a.tota AS tota,a.iva,
+					TRIM(b.barras) AS barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,
+					b.unidad, b.tipo, b.tdecimal
 						FROM sitems AS a
 						JOIN sinv AS b ON a.codigoa=b.codigo
-						LEFT JOIN barraspos AS c ON a.codigoa=c.codigo
-						WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
+						WHERE numa=? AND tipoa='F'";
 					$qquery = $this->db->query($mmSQL,array($numero));
 					foreach ($qquery->result_array() as $rrow){
 						foreach($rrow AS $ind=>$val){
 							$rrow[$ind]=base64_encode($val);
+						}
+						if($barr_exis){
+							$sql= "SELECT GROUP_CONCAT(c.suplemen SEPARATOR '|') AS suplemen FROM barraspos WHERE codigo=".$this->db->escape($rrow['codigo']);
+							$suple=$this->datasis->dameval($sql);
+							if(strlen($suple)>0){
+								$rrow['suplemen'] = base64_encode($suple);
+							}
 						}
 						$it[]=$rrow;
 					}
