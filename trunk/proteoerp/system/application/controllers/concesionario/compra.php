@@ -164,6 +164,7 @@ class compra extends scst {
 		$edit->uso = new  dropdownField('Tipo de uso','vh_uso');
 		$edit->uso->option('P','Particular');
 		$edit->uso->option('T','Trabajo');
+		$edit->uso->option('C','Carga');
 		$edit->uso->style='width:200px;';
 		$edit->uso->size = 6;
 		$edit->uso->rule='required';
