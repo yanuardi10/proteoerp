@@ -192,9 +192,9 @@ class Ajax extends Controller {
 		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL  = "SELECT minimo, actividad, id 
-			FROM tarifa 
-			WHERE actividad LIKE $qdb 
+			$mSQL  = "SELECT minimo, actividad, id
+			FROM tarifa
+			WHERE actividad LIKE $qdb
 			ORDER BY actividad LIMIT ".$this->autolimit;
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -278,12 +278,11 @@ class Ajax extends Controller {
 		$qdb  = $this->db->escape($mid.'%');
 		$qba  = $this->db->escape($mid);
 
-		$data = '[{ }]';
+		$data = '[]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
 			$mSQL="
-
 				SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo,
 				a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo,a.peso, a.ultimo, a.pond, a.barras
 				FROM sinv AS a

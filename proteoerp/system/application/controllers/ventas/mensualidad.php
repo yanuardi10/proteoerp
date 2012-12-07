@@ -149,7 +149,7 @@ class mensualidad extends sfac_add {
 				FROM scli AS a
 				JOIN tarifa AS b ON a.tarifa=b.id
 				WHERE a.grupo=$dbgrupo AND a.upago=$dbupago AND a.tarifa=$dbtarifa
-				ORDER BY rifci LIMIT 10";
+				ORDER BY rifci";
 
 			$query = $this->db->query($mSQL);
 			foreach ($query->result() as $row){
@@ -162,6 +162,7 @@ class mensualidad extends sfac_add {
 				}else{
 					$saldo=0;
 				}
+				$saldo += $row->precio1;
 				$sql="UPDATE scli SET credito='S',tolera=10,maxtolera=10,limite=$saldo WHERE cliente=$dbcliente";
 				$this->db->simple_query($sql);
 
@@ -204,6 +205,7 @@ class mensualidad extends sfac_add {
 				$_POST['monto_0']      = $row->precio1*(1+($iva/100)) ;
 
 				$rt=parent::dataedit();
+
 				if(preg_match('/Venta Guardada (?P<id>\d+)/', $rt, $matches)){
 					$id=$matches['id'];
 					$url=$this->_direccion='http://localhost/'.site_url('formatos/descargartxt/FACTSER/'.$id);
@@ -234,12 +236,12 @@ class mensualidad extends sfac_add {
 
 		$tt='';
 		if ($form->on_success()){
-			$grupo  = $form->grupo->newValue;
+			$grupo  = trim($form->grupo->newValue);
 			$dbgrupo= $this->db->escape($grupo);
 			$ut     = $this->datasis->dameval("SELECT valor FROM utributa ORDER BY fecha DESC LIMIT 1");
 
 			$link=anchor($this->url."lote/insert/$grupo/<#upago#>/<#tarifa#>",'Facturar Mes');
-			$sel=array('COUNT(*) AS cana','CONCAT(a.upago,\'01\') AS pago','a.upago','a.tarifa','b.actividad',"SUM(b.minimo*$ut) AS monto");
+			$sel=array('COUNT(*) AS cana','CONCAT(a.upago,\'01\') AS pago','a.upago','TRIM(a.tarifa) AS tarifa','b.actividad',"SUM(b.minimo*$ut) AS monto");
 			$grid = new DataGrid('Lista de efectos');
 			$grid->db->select($sel);
 			$grid->db->from('scli   AS a');

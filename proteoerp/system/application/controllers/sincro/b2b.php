@@ -382,39 +382,6 @@ class b2b extends validaciones {
 		$detalle->build();
 		//echo $detalle->db->last_query();
 
-		$script='
-		function pcrear(id){
-			var pasar=["barras","descrip","ultimo","iva","codigo","pond","precio1","precio2","precio3","precio4"];
-			var url  = "'.site_url('farmacia/sinv/dataedit/create').'";
-			form_virtual(pasar,id,url);
-		}
-		function pasig(id){
-			var pasar=["barras","proveed","descrip"];
-			var url  = "'.site_url('farmacia/scst/asignardataedit/create').'";
-			form_virtual(pasar,id,url);
-		}
-		function form_virtual(pasar,id,url){
-			var data='.json_encode($detalle->data).';
-			var w = window.open("'.site_url('farmacia/scst/dummy').'","asignar","width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx="+((screen.availWidth/2)-400)+",screeny="+((screen.availHeight/2)-300)+"");
-			var fform  = document.createElement("form");
-			fform.setAttribute("target", "asignar");
-			fform.setAttribute("action", url );
-			fform.setAttribute("method", "post");
-			for(i=0;i<pasar.length;i++){
-				Val=eval("data[id]."+pasar[i]);
-				iinput = document.createElement("input");
-				iinput.setAttribute("type", "hidden");
-				iinput.setAttribute("name", pasar[i]);
-				iinput.setAttribute("value", Val);
-				fform.appendChild(iinput);
-			}
-			var cuerpo = document.getElementsByTagName("body")[0];
-			cuerpo.appendChild(fform);
-			fform.submit();
-			w.focus();
-			cuerpo.removeChild(fform);
-		}';
-
 		$edit->detalle=new freeField('detalle', 'detalle',$detalle->output);
 		$accion="javascript:window.location='".site_url('sincro/b2b/cargacompra'.$edit->pk_URI())."'";
 		$pcontrol=$edit->_dataobject->get('pcontrol');
@@ -427,7 +394,7 @@ class b2b extends validaciones {
 		}
 		$edit->buttons('save','undo','back');
 
-		$edit->script($script,'show');
+		//$edit->script($script,'show');
 		$edit->build();
 
 		$this->rapyd->jquery[]='$("#dialog").dialog({
