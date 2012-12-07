@@ -193,6 +193,7 @@ class venta extends sfac_add {
 				$rifci  = $row->rifci;
 				$dire11 = $row->dire11;
 			}
+			$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo='PLACA'");
 
 			$_POST['btn_submit']  = 'Guardar';
 			$_POST['pfac']        = '';
@@ -209,7 +210,7 @@ class venta extends sfac_add {
 			$_POST['direc']       = $dire11;
 
 			$_POST['codigoa_0']   = 'PLACA';
-			$_POST['desca_0']     = 'PLACA';
+			$_POST['desca_0']     = (empty($descrip))? 'PLACA':$descrip;
 			$_POST['detalle_0']   = 'PLACA '.$placa;
 			$_POST['cana_0']      = 1;
 			$_POST['preca_0']     = $precioplaca;
