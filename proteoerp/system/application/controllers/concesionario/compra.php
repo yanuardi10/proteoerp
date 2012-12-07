@@ -170,7 +170,23 @@ class compra extends scst {
 		$edit->uso->group = 'Datos del veh&iacute;culo';
 
 		$edit->tipo = new  dropdownField('Tipo','vh_tipo');
-		$edit->tipo->option('UTILITARIO','Utilitario');
+		$edit->tipo->option('UTILITARIO'        ,'Utilitario');
+		$edit->tipo->option('CHASIS'            ,'Chasis');
+		$edit->tipo->option('CAVA REFRIGERADA'  ,'Cava Refrigerada');
+		$edit->tipo->option('CAVA TERMINA'      ,'Cava Termina');
+		$edit->tipo->option('CAVA SECA'         ,'Cava Seca');
+		$edit->tipo->option('PLATAFORMA'        ,'Plataforma');
+		$edit->tipo->option('PLATAFORMA GRUA'   ,'Plataforma Grua');
+		$edit->tipo->option('PLATAFORMA BARANDA','Plataforma Barandas');
+		$edit->tipo->option('AUTOBUS'           ,'Autobus');
+		$edit->tipo->option('VOLTEO'            ,'Volteo');
+		$edit->tipo->option('CUADRILLERO'       ,'Cuadrillero');
+		$edit->tipo->option('CHUTO'             ,'Chuto');
+		$edit->tipo->option('TANQUE'            ,'Tanque');
+		$edit->tipo->option('JAULA GANADERA'    ,'Jaula Ganadera');
+		$edit->tipo->option('FERRETERO'         ,'Ferretero');
+		$edit->tipo->option('AMBULACIA'         ,'Ambulacia');
+
 		$edit->tipo->style='width:200px;';
 		$edit->tipo->size = 6;
 		$edit->tipo->rule='required';
