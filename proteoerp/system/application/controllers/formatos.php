@@ -51,8 +51,12 @@ class Formatos extends Controller{
 			$query = $this->db->query('SELECT proteo FROM formatos WHERE nombre='.$_dbfnombre);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
+				$forma= $row->proteo;
+				if(empty($forma)){
+					$forma=$this->_crearep($_fnombre);
+				}
 				ob_start();
-					echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
+					echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $forma)).'<?php ');
 					$_html=ob_get_contents();
 				@ob_end_clean();
 				if(strlen($_html)>0)
@@ -60,6 +64,7 @@ class Formatos extends Controller{
 				else
 					echo 'Formato no definido';
 			}else{
+				$forma=$this->_crearep($_fnombre);
 				echo 'Formato no existe';
 			}
 		}else{
@@ -78,8 +83,12 @@ class Formatos extends Controller{
 			$query = $this->db->query('SELECT proteo FROM formatos WHERE nombre='.$_dbfnombre);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
+				$forma= $row->proteo;
+				if(empty($forma)){
+					$forma=$this->_crearep($_fnombre);
+				}
 				ob_start();
-					echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
+					echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $forma)).'<?php ');
 					$_html=ob_get_contents();
 				@ob_end_clean();
 				if(strlen($_html)>0)
@@ -87,6 +96,7 @@ class Formatos extends Controller{
 				else
 					echo 'Formato no definido';
 			}else{
+				$forma=$this->_crearep($_fnombre);
 				echo 'Formato no existe';
 			}
 		}else{
@@ -140,10 +150,15 @@ class Formatos extends Controller{
 			$_dbfnombre= $this->db->escape($_fnombre);
 			$query = $this->db->query('SELECT proteo FROM formatos WHERE nombre='.$_dbfnombre);
 			if ($query->num_rows() > 0){
-				$row = $query->row();
-				eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
+				$row  = $query->row();
+				$forma= $row->proteo;
+				if(empty($forma)){
+					$forma=$this->_crearep($_fnombre);
+				}
+				eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $forma)).'<?php ');
 			}else{
-				echo 'Formato no existe';
+				$forma=$this->_crearep($_fnombre);
+				eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $forma)).'<?php ');
 			}
 		}else{
 			echo 'Faltan parametros';
@@ -219,6 +234,23 @@ class Formatos extends Controller{
 		return $this->traeyeva($rhead);
 	}
 
+	function _crearep($nombre){
+		$nombre = strtoupper($nombre);
+		$arch = "./formrep/formatos/proteo/${nombre}.for";
+		if (file_exists($arch)){
+			$forma=file_get_contents($arch);
+			$data = array('nombre' => $nombre, 'proteo' => $forma);
+			$mSQL = $this->db->insert_string('formatos', $data).' ON DUPLICATE KEY UPDATE proteo=VALUES(proteo)';
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){
+				return '';
+			}
+			return $forma;
+		}else{
+			return '';
+		}
+
+	}
 
 	function traeyeva($parte){
 		$mhtml =  $this->datasis->dameval('SELECT proteo FROM formatos WHERE nombre="X_'.$parte.'"');
@@ -236,5 +268,3 @@ class Formatos extends Controller{
 		if(!in_array('txt'     ,$campos)) $this->db->simple_query("ALTER TABLE `formatos` ADD COLUMN `txt` TEXT NULL AFTER `harbour`");
 	}
 }
-/////////////////////////////////////////////////////////////////
-?>
