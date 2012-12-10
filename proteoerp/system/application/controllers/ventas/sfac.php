@@ -93,8 +93,9 @@ class Sfac extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"cobroser","img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
-		$grid->wbotonadd(array("id"=>"imptxt","img"=>"images/agrega4.png", "alt" => 'Imprimir Servicio',"label"=>"Imprimir Factura"));
+		$grid->wbotonadd(array("id"=>"cobroser", "img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
+		$grid->wbotonadd(array("id"=>"imptxt",   "img"=>"assets/default/images/print.png", "alt" => 'Imprimir Servicio',"label"=>"Imprimir Factura"));
+		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -109,8 +110,8 @@ class Sfac extends Controller {
 		//$param['EastPanel']  = $EastPanel;
 		$param['readyLayout']  = $readyLayout;
 		$param['SouthPanel']   = $SouthPanel;
-		$param['listados']     = $this->datasis->listados('SFAC', 'JQ');
-		$param['otros']        = $this->datasis->otros('SFAC', 'JQ');
+		//$param['listados']     = $this->datasis->listados('SFAC', 'JQ');
+		//$param['otros']        = $this->datasis->otros('SFAC', 'JQ');
 		$param['centerpanel']  = $centerpanel;
 		//$param['funciones']    = $funciones;
 		$param['temas']        = array('proteo','darkness','anexos1');
@@ -123,7 +124,10 @@ class Sfac extends Controller {
 
 	}
 
+	//******************************************************************
+	//
 	//Funciones de los Botones
+	//
 	function bodyscript( $grid0, $grid1 ){
 		$bodyscript = '
 		<script type="text/javascript">
@@ -184,6 +188,7 @@ class Sfac extends Controller {
 			window.open(\''.site_url('ventas/sfac_add/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 		});';
 
+		//Imprime factura a Impresora de texto
 		$bodyscript .= '
 		jQuery("#imptxt").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
@@ -191,6 +196,16 @@ class Sfac extends Controller {
 				window.open(\''.site_url('formatos/descargartxt/FACTSER').'/\'+id, \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
+
+
+		//Precierre
+		$bodyscript .= '
+		jQuery("#precierre").click( function(){
+			$.prompt("<h1>Seguro que desea hacer cierre?</h1>")
+			window.open(\''.site_url('ventas/rcaj/precierre/99/').'/'.$this->secu->getcajero().'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+		});';
+
+
 
 		//Prepara Pago o Abono
 		$bodyscript .= '
