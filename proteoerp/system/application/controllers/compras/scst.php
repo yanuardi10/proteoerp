@@ -59,6 +59,7 @@ class Scst extends Controller {
 		$grid->wbotonadd(array("id"=>"cprecios", "img"=>"images/precio.png",   "alt" => 'Precios',             "label"=>"Cambiar Precios"));
 		$grid->wbotonadd(array("id"=>"serie",    "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
 		$grid->wbotonadd(array("id"=>"reversar", "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
+		$grid->wbotonadd(array("id"=>"vehiculo", "img"=>"images/arrow_up.png", "alt" => 'Seriales Vehiculares', "label"=>"Seriales Vehiculares"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
@@ -68,6 +69,7 @@ class Scst extends Controller {
 		$adic = array(
 			array("id"=>"fcompra",  "title"=>"Modificar Compra"),
 			array("id"=>"factuali", "title"=>"Actualizar"),
+			array("id"=>"fvehi"   , "title"=>"Seriales Vehiculares"),
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -146,10 +148,33 @@ class Scst extends Controller {
 			$.post("'.site_url('compras/scst/solo/create').'",
 			function(data){
 				$("#factuali").html("");
+				$("#fvehi").html("");
 				$("#fcompra").html(data);
-				$( "#fcompra" ).dialog( "open" );
+				$("#fcompra").dialog( "open" );
 			})
 		};';
+
+		$bodyscript .= '
+		jQuery("#vehiculo").click( function(){
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var rt= $.ajax({ type: "POST", url: "'.site_url($this->url.'getvehicular').'/"+id, async: false }).responseText;
+				if(rt=="1"){
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url('compras/scst/dataeditvehiculo/modify').'/"+id, function(data){
+						$("#factuali").html("");
+						$("#fcompra").html("");
+						$("#fvehi").html(data);
+						$("#fvehi").dialog("open");
+					});
+				}else{
+					$.prompt("<h1>La compra seleccionada no posee veh&iacute;culos</h1>");
+				}
+			} else {
+				$.prompt("<h1>Por favor Seleccione una compra</h1>");
+			}
+		});';
 
 		$bodyscript .= '
 		function scstedit() {
@@ -162,6 +187,7 @@ class Scst extends Controller {
 					mId = id;
 					$.post("'.site_url('compras/scst/solo/modify').'/"+id, function(data){
 						$("#factuali").html("");
+						$("#fvehi").html("");
 						$("#fcompra").html(data);
 						$("#fcompra" ).dialog( "open" );
 					});
@@ -302,6 +328,43 @@ class Scst extends Controller {
 					Cancelar: function() { $( this ).dialog( "close" ); }
 				},
 				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});';
+
+		$bodyscript .= '
+			$( "#fvehi" ).dialog({
+				autoOpen: false, height: 570, width: 860, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url: murl,
+								data: $("#df1").serialize(),
+								success: function(r,s,x){
+									try{
+										var json = JSON.parse(r);
+										if ( json.status == "A" ) {
+											$( "#fvehi" ).dialog( "close" );
+											jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+											$("#fvehi").html("");
+											apprise("Seriales Guardado");
+											return true;
+										} else {
+											apprise(json.mensaje);
+										}
+									}catch(e){
+										$("#fvehi").html(r);
+									}
+								}
+							});
+						}
+					},
+					Cancelar: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 			});
 		});';
 
@@ -310,7 +373,6 @@ class Scst extends Controller {
 		return $bodyscript;
 
 	}
-
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -2373,6 +2435,17 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	//Chequea que los registros no esten repatidos en los datos vehiculares
+	function chrepetido($valor,$campo){
+		$this->db->where($campo,$valor);
+		$cana=$this->db->count_all_results('sinvehiculo');
+		if($cana>0){
+			$this->validation->set_message('chrepetido', "Ya existe un veh&iacute;culo con el mismo $campo registrado.");
+			return false;
+		}
+		return true;
+	}
+
 	function chcodigoa($codigo){
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM sinv WHERE activo=\'S\' AND codigo='.$this->db->escape($codigo));
 		if(empty($cana) || $cana==0){
@@ -2511,12 +2584,342 @@ class Scst extends Controller {
 		}
 	}
 
+	//Proporciona por ajax el
+	function getvehicular($id=null){
+		//$id  = $this->input->post('id');
+		if(!empty($id)){
+			$dbid= $this->db->escape($id);
+			$mSQL="SELECT COUNT(*) AS cana
+				FROM scst   AS a
+				JOIN itscst AS b ON a.control=b.control
+				JOIN sinv   AS c ON b.codigo=c.codigo
+				WHERE c.serial='V' AND a.id=$dbid";
+			$cana = $this->datasis->dameval($mSQL);
+		}else{
+			$cana=0;
+		}
+
+		if ($cana > 0){
+			echo 1;
+		}else{
+			echo 0;
+		}
+	}
+
+	//Permite colocar los seriale a los vehiculos
+	function dataeditvehiculo($sta,$id){
+		$this->rapyd->load('dataobject','datadetails');
+
+		//Cheque que tenga vehiculos
+		$dbid=$this->db->escape($id);
+		$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$dbid");
+		if(empty($cana)){
+			$mSQL="SELECT c.codigo,c.descrip,c.peso,b.cantidad AS cana
+				FROM scst   AS a
+				JOIN itscst AS b ON a.control=b.control
+				JOIN sinv   AS c ON b.codigo=c.codigo
+				WHERE c.serial='V' AND a.id=$dbid";
+			$query = $this->db->query($mSQL);
+
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $row){
+					for($i=0;$i<$row->cana;$i++){
+						$data=array(
+							'codigo_sinv'=>$row->codigo,
+							'modelo'     =>$row->descrip,
+							'peso'       =>$row->peso,
+							'recibido'   =>'N',
+							'anio'       =>date('Y'),
+							'color'      =>'',
+							'motor'      =>'',
+							'carroceria' =>'',
+							'id_scst'    =>$id
+						);
+						$sql = $this->db->insert_string('sinvehiculo', $data);
+						$this->db->simple_query($sql);
+					}
+				}
+			}else{
+				echo 'Compra no tiene Veh&iacute;culos.';
+				exit();
+			}
+		}
+
+		$do = new DataObject('scst');
+		$do->rel_one_to_many('sinvehiculo', 'sinvehiculo', array('id'=>'id_scst'));
+		$do->pointer('sprv' ,'sprv.proveed=scst.proveed','sprv.nombre AS sprvnombre','left');
+		//$do->rel_pointer('itscst','sinv','itscst.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
+
+		$edit = new DataDetails('Compras',$do);
+		$edit->set_rel_title('itscst','Producto <#o#>');
+		$edit->on_save_redirect=false;
+
+		$edit->pre_process('insert' ,'_pre_vehi_insert');
+		$edit->pre_process('update' ,'_pre_vehi_update');
+		$edit->pre_process('delete' ,'_pre_vehi_delete');
+		$edit->post_process('update','_post_vehi_update');
+
+		$edit->proveed = new inputField('Proveedor', 'proveed');
+		$edit->proveed->size     = 7;
+		$edit->proveed->maxlength= 5;
+		$edit->proveed->autocomplete=false;
+		$edit->proveed->mode = 'autohide';
+		$edit->proveed->rule = 'required';
+
+		$edit->nombre = new hiddenField('Nombre', 'nombre');
+		$edit->nombre->mode = 'autohide';
+		$edit->nombre->size = 50;
+		$edit->nombre->maxlength=40;
+
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->size = 10;
+		$edit->fecha->rule ='required';
+		$edit->fecha->calendar=false;
+		$edit->fecha->mode = 'autohide';
+		$transac=$edit->get_from_dataobjetct('transac');
+
+		$edit->vence = new DateonlyField('Vence', 'vence','d/m/Y');
+		$edit->vence->insertValue = date('Y-m-d');
+		$edit->vence->size = 10;
+		$edit->vence->rule ='required';
+		$edit->vence->mode = 'autohide';
+		$edit->vence->calendar=false;
+
+		$edit->serie = new inputField('N&uacute;mero', 'serie');
+		$edit->serie->size = 15;
+		$edit->serie->autocomplete=false;
+		$edit->serie->rule = 'required';
+		$edit->serie->mode = 'autohide';
+		$edit->serie->maxlength=12;
+
+		$edit->cfis = new inputField('Numero fiscal', 'nfiscal');
+		$edit->cfis->size = 15;
+		$edit->cfis->autocomplete=false;
+		$edit->cfis->mode = 'autohide';
+		$edit->cfis->rule = 'required';
+		$edit->cfis->maxlength=12;
+
+		$edit->almacen = new  dropdownField ('Almacen', 'depo');
+		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
+		$edit->almacen->rule = 'required';
+		$edit->almacen->mode = 'autohide';
+		$edit->almacen->style='width:145px;';
+
+		$edit->tipo = new dropdownField('Tipo', 'tipo_doc');
+		$edit->tipo->option('FC','Factura a Cr&eacute;dito');
+		$edit->tipo->option('NC','Nota de Cr&eacute;dito'); //Falta implementar los metodos post para este caso
+		//$edit->tipo->option('NE','Nota de Entrega');        //Falta implementar los metodos post para este caso
+		$edit->tipo->rule = 'required';
+		$edit->tipo->style='width:140px;';
+
+		$edit->observa1 = new textareaField('Observaci&oacute;n', 'observa1');
+		$edit->observa1->cols=90;
+		$edit->observa1->rows=3;
+
+		$edit->montotot  = new inputField('Subtotal', 'montotot');
+		$edit->montotot->onkeyup='cmontotot()';
+		$edit->montotot->size = 12;
+		$edit->montotot->autocomplete=false;
+		$edit->montotot->css_class='inputnum';
+
+		$edit->montoiva  = new inputField('IVA', 'montoiva');
+		$edit->montoiva->onkeyup='cmontoiva()';
+		$edit->montoiva->size = 12;
+		$edit->montoiva->autocomplete=false;
+		$edit->montoiva->css_class='inputnum';
+
+		$edit->montonet  = new hiddenField('Total', 'montonet');
+		//$edit->montonet->size = 20;
+		//$edit->montonet->css_class='inputnum';
+
+		$edit->idrel = new hiddenField('', 'id_<#i#>');
+		$edit->idrel->rel_id   = 'sinvehiculo';
+		$edit->idrel->size=10;
+		$edit->idrel->db_name='id';
+
+		$edit->codigo = new hiddenField('C&oacute;digo', 'codigo_<#i#>');
+		$edit->codigo->rel_id   = 'sinvehiculo';
+		$edit->codigo->size=10;
+		$edit->codigo->db_name='codigo_sinv';
+		$edit->codigo->autocomplete=false;
+		$edit->codigo->rule     = 'required|callback_chcodigoa';
+
+		$edit->modelo = new hiddenField('Modelo', 'modelo_<#i#>');
+		$edit->modelo->rel_id   = 'sinvehiculo';
+		$edit->modelo->size     = 30;
+		$edit->modelo->db_name  = 'modelo';
+		$edit->modelo->group    = 'Datos del veh&iacute;culo';
+
+		$edit->anio = new inputField('A&ntildeo','anio_<#i#>');
+		$edit->anio->rel_id   = 'sinvehiculo';
+		$edit->anio->rule='exact_length[4]|numeric|required';
+		$edit->anio->db_name  = 'anio';
+		$edit->anio->size =5;
+		$edit->anio->maxlength =4;
+		$edit->anio->insertValue=date('Y');
+		$edit->anio->autocomplete=false;
+
+		$edit->color = new inputField('Color','color_<#i#>');
+		$edit->color->rel_id   = 'sinvehiculo';
+		$edit->color->db_name = 'color';
+		$edit->color->rule='max_length[50]|strtoupper|required';
+		$edit->color->size =10;
+		$edit->color->maxlength =50;
+		$edit->color->autocomplete=false;
+
+		$edit->motor = new inputField('Serial de Motor','motor_<#i#>');
+		$edit->motor->rel_id   = 'sinvehiculo';
+		$edit->motor->rule='max_length[50]|strtoupper|callback_chrepetidos[motor]|required';
+		$edit->motor->db_name  = 'motor';
+		$edit->motor->size =20;
+		$edit->motor->maxlength =50;
+		$edit->motor->autocomplete=false;
+
+		$edit->carroceria = new inputField('Serial de Carrocer&iacute;a','carroceria_<#i#>');
+		$edit->carroceria->rel_id   = 'sinvehiculo';
+		$edit->carroceria->rule='max_length[50]|strtoupper|callback_chrepetidos[carroceria]|required';
+		$edit->carroceria->db_name  = 'carroceria';
+		$edit->carroceria->size =20;
+		$edit->carroceria->maxlength =50;
+		$edit->carroceria->autocomplete=false;
+
+		$edit->uso = new  dropdownField('Tipo de uso','uso_<#i#>');
+		$edit->uso->rel_id   = 'sinvehiculo';
+		$edit->uso->db_name  = 'uso';
+		$edit->uso->option('P','Particular');
+		$edit->uso->option('T','Trabajo');
+		$edit->uso->option('C','Carga');
+		$edit->uso->style='width:150px;';
+		$edit->uso->size = 6;
+		$edit->uso->rule='required';
+
+		$edit->tipo = new  dropdownField('Tipo','tipo_<#i#>');
+		$edit->tipo->rel_id   = 'sinvehiculo';
+		$edit->tipo->db_name  = 'tipo';
+		$edit->tipo->option('UTILITARIO'        ,'Utilitario');
+		$edit->tipo->option('CHASIS'            ,'Chasis');
+		$edit->tipo->option('CAVA REFRIGERADA'  ,'Cava Refrigerada');
+		$edit->tipo->option('CAVA TERMINA'      ,'Cava Termina');
+		$edit->tipo->option('CAVA SECA'         ,'Cava Seca');
+		$edit->tipo->option('PLATAFORMA'        ,'Plataforma');
+		$edit->tipo->option('PLATAFORMA GRUA'   ,'Plataforma Grua');
+		$edit->tipo->option('PLATAFORMA BARANDA','Plataforma Barandas');
+		$edit->tipo->option('AUTOBUS'           ,'Autobus');
+		$edit->tipo->option('VOLTEO'            ,'Volteo');
+		$edit->tipo->option('CUADRILLERO'       ,'Cuadrillero');
+		$edit->tipo->option('CHUTO'             ,'Chuto');
+		$edit->tipo->option('TANQUE'            ,'Tanque');
+		$edit->tipo->option('JAULA GANADERA'    ,'Jaula Ganadera');
+		$edit->tipo->option('FERRETERO'         ,'Ferretero');
+		$edit->tipo->option('AMBULACIA'         ,'Ambulacia');
+		$edit->tipo->style='width:150px;';
+		$edit->tipo->size = 6;
+		$edit->tipo->rule='required';
+
+		$edit->clase = new  dropdownField('Clase','clase_<#i#>');
+		$edit->clase->rel_id   = 'sinvehiculo';
+		$edit->clase->db_name = 'clase';
+		$edit->clase->option('AUTOMOVIL','Automovil');
+		$edit->clase->option('MOTO'     ,'Moto');
+		$edit->clase->option('CAMIONETA','Camioneta');
+		$edit->clase->option('CAMION'   ,'Camion');
+		$edit->clase->style='width:120px;';
+		$edit->clase->size = 6;
+		$edit->clase->rule='required';
+
+		$edit->transmision = new  dropdownField('Transmisi&oacute;n','transmision_<#i#>');
+		$edit->transmision->rel_id   = 'sinvehiculo';
+		$edit->transmision->db_name='transmision';
+		$edit->transmision->option('','Seleccionar');
+		$edit->transmision->option('AUTOMATICO','Automatico');
+		$edit->transmision->option('MANUAL'    ,'Manual');
+		$edit->transmision->style='width:120px;';
+		$edit->transmision->size = 6;
+		$edit->transmision->rule='required';
+
+		$edit->peso = new inputField('Peso Kg.','peso_<#i#>');
+		$edit->peso->rel_id   = 'sinvehiculo';
+		$edit->peso->db_name  = 'peso';
+		$edit->peso->rule='max_length[10]|numeric|required';
+		$edit->peso->css_class='inputnum';
+		$edit->peso->size =12;
+		$edit->peso->maxlength =12;
+
+		$edit->placa = new inputField('Placa','placa_<#i#>');
+		$edit->placa->rel_id   = 'sinvehiculo';
+		$edit->placa->db_name  = 'placa';
+		$edit->placa->rule='max_length[50]|strtoupper|callback_chrepetidos[placa]';
+		$edit->placa->size =12;
+		$edit->placa->maxlength =50;
+		$edit->placa->autocomplete=false;
+
+		$mSQL="SELECT a.costo FROM itscst AS a JOIN scst   AS b ON a.control=b.control WHERE codigo='PLACA' AND b.id=${dbid} GROUP BY a.costo";
+		$qquery = $this->db->query($mSQL);
+		$edit->precioplaca = new dropdownField('Precio placa.','precioplaca_<#i#>');
+		$edit->precioplaca->rel_id   = 'sinvehiculo';
+		$edit->precioplaca->db_name  = 'precioplaca';
+		$edit->precioplaca->rule='max_length[10]|numeric|required';
+		$edit->precioplaca->style='width:100px;';
+		if ($qquery->num_rows() > 1){
+			$edit->precioplaca->option('','Seleccionar');
+		}
+		foreach ($qquery->result() as $rrow){
+			$edit->precioplaca->option($rrow->costo,nformat($rrow->costo));
+		}
+
+
+
+		$recep  =strtotime($edit->get_from_dataobjetct('recep'));
+		$fecha  =strtotime($edit->get_from_dataobjetct('fecha'));
+		$actuali=strtotime($edit->get_from_dataobjetct('actuali'));
+
+		if($actuali >= $fecha){
+			$edit->carroceria->type='inputhidden';
+			$edit->motor->type='inputhidden';
+		}
+
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+
+			echo json_encode($rt);
+		}else{
+			$conten['form'] =& $edit;
+			$this->load->view('view_seriales_vehi', $conten);
+		}
+	}
+
 	function _actualizar($id, $cprecio, $actuali=null){
 		$error = 0;
-		$pasa  = $this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND id= '.$id );
+		$pasa  = $this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND id= '.$id);
 
 		if( $pasa==0 ){
 			$control=$this->datasis->dameval('SELECT control FROM scst WHERE  id='.$id);
+
+			//Chequea si tiene vehiculos y estan registrados los seriales
+			$SQL="SELECT COUNT(*) AS cana
+				FROM itscst AS b
+				JOIN sinv   AS c ON b.codigo=c.codigo
+				WHERE b.control=".$this->db->escape($control);
+			$cana = $this->datasis->dameval($SQL);
+			if($cana>0){
+				$SQL="SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$id AND (motor IS NULL OR motor='' OR carroceria IS NULL OR carroceria='')";
+				$cana = $this->datasis->dameval($SQL);
+				if($cana > 0){
+					$this->error_string='Debe cargar los seriales de los veh&iacute;culos para poder recibir la compra ';
+					return false;
+				}
+			}
+			//Fin de la validacion vehicular
+
+
+
 			$SQL='SELECT tipo_doc,transac,depo,proveed,fecha,vence, nombre,tipo_doc,nfiscal,fafecta,reteiva,
 			cexento,cgenera,civagen,creduci,civared,cadicio,civaadi,cstotal,ctotal,cimpuesto,numero
 			FROM scst WHERE control=?';
@@ -2831,6 +3234,30 @@ class Scst extends Controller {
 			echo 'Factura no ha sido cargada';
 			return ;
 		}
+
+		//Chequea si tiene vehiculos y estan registrados los seriales
+		$dbcontrol=$this->db->escape($control);
+		$id_scst=$this->datasis->dameval("SELECT id FROM scst WHERE control=$dbcontrol");
+		$SQL="SELECT COUNT(*) AS cana
+			FROM itscst AS b
+			JOIN sinv   AS c ON b.codigo=c.codigo
+			WHERE b.control=$dbcontrol";
+		$cana = $this->datasis->dameval($SQL);
+		if($cana>0){
+			$SQL="SELECT COUNT(*) AS cana
+			FROM sinvehiculo AS a
+			JOIN sfac AS b ON a.id_sfac=b.id
+			WHERE a.id_scst=$id_scst AND b.tipo_doc<>'X'";
+			$cana = $this->datasis->dameval($SQL);
+			if($cana > 0){
+				echo 'Compra con venta vehicular, no se puede reversar';
+				return ;
+			}else{
+				$mSQL = "DELETE FROM sinvehicular WHERE id_scst=$id_scst";
+				$this->db->simple_query($mSQL);
+			}
+		}
+		//Fin de la validacion vehicular
 
 		// ******* Borra de a CxC *******\\
 		$mSQL = "DELETE FROM sprm WHERE transac='$mTRANSAC'";
@@ -3238,6 +3665,19 @@ class Scst extends Controller {
 	function _post_delete($do){
 		$codigo=$do->get('numero');
 		logusu('scst',"Compra $codigo ELIMINADA");
+	}
+
+	function _pre_vehi_insert($do){ return false; }
+	function _pre_vehi_delete($do){ return false;}
+
+	function _pre_vehi_update($do){
+		return true;
+	}
+
+	function _post_vehi_update($do){
+		$codigo  = $do->get('numero');
+		$control = $do->get('control');
+		logusu('scst',"Compra $codigo control $control SERIALES CAMBIADOS");
 	}
 
 }

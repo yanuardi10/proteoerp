@@ -74,7 +74,8 @@ class mensualidad extends sfac_add {
 			$_POST['banco_0']      = '';
 			$_POST['monto_0']      = $_POST['tota_0']*(1+($sinvr['iva']/100)) ;
 
-			parent::dataedit();
+			echo parent::dataedit();
+
 		}
 	}
 

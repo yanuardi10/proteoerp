@@ -3073,7 +3073,7 @@ class Sfac extends Controller {
 				$saldo=0;
 			}
 
-			if($saldo >0 && ($credito > ($limite-$saldo) || $cdias<=0 || $pcredito=='N')){
+			if($credito > ($limite-$saldo) || $cdias<=0 || $pcredito=='N'){
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito propio';
 				return false;
 			}
@@ -3091,7 +3091,7 @@ class Sfac extends Controller {
 				$asaldo=0;
 			}
 
-			if($saldo >0 && ($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $pcredito=='N')){
+			if($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $pcredito=='N'){
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito de grupo';
 				return false;
 			}

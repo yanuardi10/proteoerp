@@ -1,5 +1,5 @@
 <?php
-require_once(BASEPATH.'application/controllers/ventas/sfac_add.php');
+require_once(BASEPATH.'application/controllers/ventas/sfac.php');
 class venta extends sfac_add {
 
 	var $titp='Veh&iacute;culos';
@@ -211,7 +211,8 @@ class venta extends sfac_add {
 
 			$_POST['codigoa_0']   = 'PLACA';
 			$_POST['desca_0']     = (empty($descrip))? 'PLACA':$descrip;
-			$_POST['detalle_0']   = 'PLACA '.$placa;
+			//$_POST['detalle_0']   = 'PLACA '.$placa;
+			$_POST['detalle_0']   = '';
 			$_POST['cana_0']      = 1;
 			$_POST['preca_0']     = $precioplaca;
 			$_POST['tota_0']      = $precioplaca;
