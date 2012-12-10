@@ -2759,16 +2759,17 @@ class Sinv extends Controller {
 		$edit->serial2->in='activo';
 
 		$edit->serial = new dropdownField ('Usa Seriales', 'serial');
-		$edit->serial->style='width:50px;';
+		$edit->serial->style='width:80px;';
 		$edit->serial->option('N','No');
 		$edit->serial->option('S','Si');
+		$edit->serial->option('V','Vehicular');
 		$edit->serial->in='activo';
 
 		$edit->tdecimal2 = new freeField('','free','Usa Decimales');
 		$edit->tdecimal2->in='activo';
 
 		$edit->tdecimal = new dropdownField('Usa Decimales', 'tdecimal');
-		$edit->tdecimal->style='width:50px;';
+		$edit->tdecimal->style='width:80px;';
 		$edit->tdecimal->option('N','No');
 		$edit->tdecimal->option('S','Si');
 		$edit->tdecimal->in='activo';

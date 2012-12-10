@@ -163,10 +163,10 @@ class formatos extends validaciones {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit('Proteo', 'formatos');
+		$edit = new DataEdit('Reporte TXT', 'formatos');
 		$id=$edit->_dataobject->pk['nombre'];
 		$script='$("#df1").submit(function(){
-		$.post("'.site_url('supervisor/formatos/gajax_txt/update/'.$id).'", {nombre: "'.$id.'", proteo: $("#proteo").val()},
+		$.post("'.site_url('supervisor/formatos/gajax_txt/update/'.$id).'", {nombre: "'.$id.'", txt: $("#txt").val()},
 			function(data){
 				alert("Reporte guardado" + data);
 			},
@@ -180,7 +180,7 @@ class formatos extends validaciones {
 		$edit->back_cancel_save=true;
 		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
-		$edit->txt= new htmlField('', 'txt');
+		$edit->txt= new htmlField(' ', 'txt');
 		$edit->txt->rows =30;
 		$edit->txt->cols=130;
 

@@ -549,6 +549,7 @@ class sfac_add extends validaciones {
 			$data['title']   = heading($this->titp);
 			$this->load->view('view_ventanas', $data);
 		}else{
+
 			$edit->on_save_redirect=false;
 			$edit->build();
 
@@ -861,7 +862,7 @@ class sfac_add extends validaciones {
 				$saldo=0;
 			}
 
-			if($saldo >0 && ($credito > ($limite-$saldo) || $cdias<=0 || $pcredito=='N')){
+			if($credito > ($limite-$saldo) || $cdias<=0 || $pcredito=='N'){
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito propio';
 				return false;
 			}
@@ -879,7 +880,7 @@ class sfac_add extends validaciones {
 				$asaldo=0;
 			}
 
-			if($saldo >0 && ($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $pcredito=='N')){
+			if($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $pcredito=='N'){
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito de grupo';
 				return false;
 			}
@@ -1014,7 +1015,6 @@ class sfac_add extends validaciones {
 
 		$this->pfac = $_POST['pfac'];
 		$do->rm_get('pfac');
-
 		return true;
 	}
 
