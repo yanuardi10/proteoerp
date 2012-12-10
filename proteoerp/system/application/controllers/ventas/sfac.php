@@ -1,5 +1,4 @@
 <?php
-//require_once(BASEPATH.'application/controllers/validaciones.php');
 class Sfac extends Controller {
 	var $mModulo='SFAC';
 	var $titp='Facturaci&oacute;n ';
@@ -14,6 +13,7 @@ class Sfac extends Controller {
 	}
 
 	function index(){
+		$this->instalar();
 		$this->datasis->modintramenu( 1000, 650, 'ventas/sfac' );
 		redirect($this->url.'jqdatag');
 	}
@@ -192,8 +192,6 @@ class Sfac extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
 
-
-
 		//Prepara Pago o Abono
 		$bodyscript .= '
 			$( "#cobroser" ).click(function() {
@@ -290,7 +288,6 @@ class Sfac extends Controller {
 			'editoptions'   => '{ size:3, maxlength: 1 }',
 		));
 
-
 		$grid->addField('numero');
 		$grid->label('Numero');
 		$grid->params(array(
@@ -303,7 +300,6 @@ class Sfac extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
 
-
 		$grid->addField('fecha');
 		$grid->label('Fecha');
 		$grid->params(array(
@@ -315,7 +311,6 @@ class Sfac extends Controller {
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-
 
 		$grid->addField('vence');
 		$grid->label('Vence');
@@ -1225,22 +1220,12 @@ class Sfac extends Controller {
 
 		unset($data['oper']);
 		unset($data['id']);
-		if($oper == 'add'){
-			/*
-			if(false == empty($data)){
-				$this->db->insert('sfac', $data);
-				echo "Registro Agregado";
-
-				logusu('SFAC',"Registro ????? INCLUIDO");
-			} else*/
-			echo "Fallo Agregado!!!";
-
-		} elseif($oper == 'edit') {
+		if($oper == 'edit') {
 			if ( empty($data['entregado']) )
 				unset($data['entregado']);
 			$this->db->where('id', $id);
 			$this->db->update('sfac', $data);
-			logusu('SFAC',"Registro $id MODIFICADO");
+			logusu('SFAC',"Factura $id MODIFICADO");
 			echo "Registro Modificado";
 
 		} elseif($oper == 'del') {
@@ -3644,6 +3629,12 @@ class Sfac extends Controller {
 			$this->db->simple_query("ALTER TABLE sfac ADD entregado DATE ");
 			$this->db->simple_query("UPDATE sfac SET entregado=fecha");
 		}
+
+		if(!in_array('comiadi'  ,$campos)){
+			$this->db->simple_query("ALTER TABLE sfac ADD comiadi DECIMAL(10,2) DEFAULT 0 ");
+		}
+
+
 		if(!in_array('upago'  ,$campos)){
 			$this->db->query("ALTER TABLE sfac ADD upago INT(10)");
 		}

@@ -379,7 +379,7 @@ class Datasis {
 	 *
 	 *   Integracion con tmenus
 	 *
-	 */
+	*/
 	function sidapuede( $modulo, $opcion ){
 		if ($this->essuper())
 			return true;
