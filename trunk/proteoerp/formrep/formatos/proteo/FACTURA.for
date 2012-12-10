@@ -1,16 +1,15 @@
 <?php
-$maxlin=40; //Maximo de lineas de items.
+$maxlin=39; //Maximo de lineas de items.
 
 if(count($parametros)==0) show_error('Faltan parametros');
 $id   = $parametros[0];
 $dbid = $this->db->escape($id);
 
-$mSQL = "SELECT If(a.referen='E','Efectivo',IF( a.referen='C','Cr&eacute;dito',IF(a.referen='M','Mixto','Pendiente'))) AS referen,
-	a.tipo_doc,a.numero,a.cod_cli,a.nombre,a.rifci,CONCAT(a.direc,a.dire1) AS direccion,a.factura,a.fecha,a.vence,a.vd,
-	a.iva,a.totals,a.totalg, a.exento,b.nombre AS nomvend,tipo_doc, a.numero,a.peso,c.telefono
-FROM sfac a
-JOIN scli AS c ON a.cod_cli=c.cliente
-LEFT JOIN vend b ON a.vd=b.vendedor
+$mSQL = "
+SELECT If(a.referen='E','Efectivo',IF( a.referen='C','Cr&eacute;dito',IF(a.referen='M','Mixto','Pendiente'))) AS referen,
+	a.tipo_doc,a.numero,a.cod_cli,a.nombre,a.rifci,CONCAT(trim(c.dire11),' ', c.dire12) AS direccion,a.factura,a.fecha,a.vence,a.vd,
+	a.iva,a.totals,a.totalg, a.exento,a.tasa, a.montasa, a.reducida, a.monredu, a.sobretasa,a.monadic, b.nombre AS nomvend,tipo_doc, a.numero,a.peso,c.telefono 
+FROM sfac a JOIN scli AS c ON a.cod_cli=c.cliente LEFT JOIN vend b ON a.vd=b.vendedor
 WHERE a.id=${dbid}";
 
 $mSQL_1 = $this->db->query($mSQL);
@@ -25,9 +24,19 @@ $rifci    = trim($row->rifci);
 $nombre   = trim($row->nombre);
 $stotal   = nformat($row->totals);
 $gtotal   = nformat($row->totalg);
+$exento   = nformat($row->exento);
+
+$tasa      = nformat($row->tasa);
+$montasa   = nformat($row->montasa);
+$reducida  = nformat($row->reducida);
+$monredu   = nformat($row->monredu);
+$sobretasa = nformat($row->sobretasa);
+$monadic   = nformat($row->monadic);
+
 $peso     = nformat($row->peso);
 $impuesto = nformat($row->iva);
-$direccion= trim($row->direccion);
+$direc    = trim($row->direccion);
+$direc    = $row->direccion;
 $tipo_doc = $row->tipo_doc;
 $referen  = $row->referen;
 $telefono = trim($row->telefono);
@@ -47,8 +56,7 @@ else
 $lineas = 0;
 $uline  = array();
 
-$mSQL="SELECT
-	codigoa AS codigo,desca,cana,preca,tota AS importe,iva,detalle
+$mSQL="SELECT codigoa AS codigo,desca,cana,preca,tota AS importe,iva,detalle
 FROM sitems
 WHERE numa=$dbnumero AND tipoa=$dbtipo_doc";
 
@@ -92,46 +100,54 @@ $detalle  = $mSQL_2->result();
 <?php
 //************************
 //     Encabezado
+//
 //************************
-$encabezado = <<<encabezado
-	<p style="height: 50px"> </p>
-	<table style="width: 100%;" class="header">
+$encabezado = "
+	<p style='height: 50px;'> </p>
+	<table style='width:100%;font-size: 9pt;' class='header' cellpadding='0' cellspacing='0'>
 		<tr>
-			<td><h1 style="text-align: left">${documento}</h1></td>
-			<td><h1 style="text-align: right">N&uacute;mero: ${numero}</h1></td>
+			<td><h1 style='text-align:left; border-bottom:1px solid;font-size:12pt;'>${documento} Nro. ${numero}</h1></td>
+			<td style='width:230px;'><h1 style='text-align:left;border-bottom:1px solid;font-size:12pt;'>Fecha de Emision: ${fecha}</h1></td>
 		</tr><tr>
-			<td>Rif/CI: <b>${rifci}</b> Cliente:<b>${cod_cli}</b></td>
-			<td>Fecha:  <b>${fecha}</b></td>
+			<td>RIF, CI o Pasaporte: <b>${rifci}</b></td>
+			<td>Fecha de Vencimiento: <b>${vence}</b></td>
 		</tr><tr>
-			<td>Nombre: <b>${nombre}</b></td>
-			<td>Vence:  <b>${vence}</b></td>
+			<td>Razon Social: <b>${nombre}</b></td>
+			<td>Codigo de Cliente: <b>${cod_cli}</b></td>
 		</tr><tr>
-			<td>Direcci&oacute;n: <b>${direccion}</b></td>
-			<td>D/Afectado:  <b>${factura} </b></td>
+			<td>Domicilio Fiscal: <b>${direc}</b></td>";
+if ( empty($factura) )
+	$encabezado .= "			<td>&nbsp;</b></td>";
+else
+	$encabezado .= "			<td>Documento Afectado:  <b>${factura} </b></td>";
+
+$encabezado .= "
 		</tr><tr>
 			<td>Tel&eacute;fono:  <b>${telefono}</b></td>
 			<td>Condici&oacute;n: <b>${referen}</b></td>
 		</tr>
 	</table>
-encabezado;
+";
 // Fin  Encabezado
 
 //************************
 //   Encabezado Tabla
 //************************
-$encabezado_tabla=<<<encabezado_tabla
-	<table class="change_order_items" style="padding-top:0; ">
+$estilo  = "style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;";
+$encabezado_tabla="
+	<table class=\"change_order_items\" style=\"padding-top:0; \">
 		<thead>
 			<tr>
-				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 10pt;'>Art&iacute;culo</th>
-				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 10pt;'>Cantidad</th>
-				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 10pt;'>Precio</th>
-				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 10pt;'>Importe</th>
-				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 10pt;'>IVA%</th>
+				<th ${estilo}width:130px;' >Codigo</th>
+				<th ${estilo}' >Descripcion de la Venta del Bien o Servicio</th>
+				<th ${estilo}width:50px;' >Cant.</th>
+				<th ${estilo}width:80px;' >Precio U.</th>
+				<th ${estilo}width:90px;' >Monto</th>
+				<th ${estilo}width:35px;' >IVA%</th>
 			</tr>
 		</thead>
 		<tbody>
-encabezado_tabla;
+";
 //Fin Encabezado Tabla
 
 //************************
@@ -139,32 +155,26 @@ encabezado_tabla;
 //************************
 $pie_final=<<<piefinal
 		</tbody>
-
 		<tfoot style='border:1px solid;background:#EEEEEE;'>
 			<tr>
 				<td style="text-align: right;"></td>
-				<td colspan="2" style="text-align: right;"><b>Base Imponible :</b></td>
-				<td colspan="2" style="text-align: right;font-size:14px;font-weight:bold;">${stotal}</td>
+				<td colspan="2" style="text-align: right;"><b>Monto Total Exento o Exonerado del IVA:</b></td>
+				<td colspan="3" style="text-align: right;font-size:14px;font-weight:bold;">${exento}</td>
 			</tr>
 			<tr>
 				<td  style="text-align: right;"></td>
-				<td colspan="2" style="text-align: right;"><b>Descuento Pronto Pago 0% :</b></td>
-				<td colspan="2" style="text-align: right;font-size:14px;font-weight:bold;">0</td>
-			</tr>
-			<tr>
-				<td  style="text-align: right;"></td>
-				<td colspan="2" style="text-align: right;"><b>Base Imponible seg&uacute;n Alicuota :</b></td>
-				<td colspan="2" style="text-align: right;font-size:16px;font-weight:bold;" >${stotal}</td>
+				<td colspan="2" style="text-align: right;"><b>Monto Total de la Base Imponible seg&uacute;n Alicuota :</b></td>
+				<td colspan="3" style="text-align: right;font-size:16px;font-weight:bold;" >${montasa}</td>
 			</tr>
 			<tr>
 				<td style="text-align: right;"></td>
 				<td colspan="2" style="text-align: right;"><b>Monto Total del Impuesto seg&uacute;n Alicuota:</b></td>
-				<td colspan="2" style="text-align: right;font-size:16px;font-weight:bold;">${impuesto}</td>
+				<td colspan="3" style="text-align: right;font-size:16px;font-weight:bold;">${tasa}</td>
 			</tr>
 			<tr style='border-top: 1px solid;background:#AAAAAA;'>
 				<td style="text-align: right;"></td>
-				<td colspan="2" style="text-align: right;"><b>MONTO TOTAL DE LA VENTA:</b></td>
-				<td colspan="2" style="text-align: right;font-size:20px;font-weight:bold;">${gtotal}</td>
+				<td colspan="2" style="text-align: right;"><b>VALOR TOTAL DE LA VENTA O SERVICIO:</b></td>
+				<td colspan="3" style="text-align: right;font-size:20px;font-weight:bold;">${gtotal}</td>
 			</tr>
 		</tfoot>
 
@@ -176,7 +186,7 @@ $pie_continuo=<<<piecontinuo
 		</tbody>
 		<tfoot>
 			<tr>
-				<td colspan="5" style="text-align: right;">CONTINUA...</td>
+				<td colspan="6" style="text-align: right;">CONTINUA...</td>
 			</tr>
 		</tfoot>
 	</table>
@@ -191,17 +201,18 @@ $i       = 0;
 foreach ($detalle AS $items){ $i++;
 	do {
 		if($npagina){
-			$this->incluir('X_CINTILLO');
+			//$this->incluir('X_CINTILLO');
 			echo $encabezado;
 			echo $encabezado_tabla;
 			$npagina=false;
 		}
 ?>
 			<tr class="<?php if(!$mod) echo 'even_row'; else  echo 'odd_row'; ?>">
+				<td style="text-align: center;"><?php echo trim($items->codigo); ?></td>
 				<td>
 					<?php
 					if(!$clinea){
-						$ddetall = trim($items->codigo).' '.trim($items->detalle);
+						$ddetall = trim($items->detalle);
 						$descrip = trim($items->desca);
 						if(strlen($ddetall) > 0) $descrip .= "\n".$ddetall;
 						$descrip = str_replace("\r",'',$descrip);
@@ -228,7 +239,7 @@ foreach ($detalle AS $items){ $i++;
 					if(count($arr_des)==0 && $clinea) $clinea=false;
 					?>
 				</td>
-				<td style="text-align: center;"><?php echo ($clinea)? '': nformat($items->cana); ?></td>
+				<td style="text-align: right;"><?php echo ($clinea)? '': nformat($items->cana); ?></td>
 				<td style="text-align: right;" ><?php echo ($clinea)? '': nformat($items->preca); ?></td>
 				<td class="change_order_total_col"><?php echo ($clinea)? '':nformat($items->preca*$items->cana); ?></td>
 				<td style="text-align: right;" ><?php echo ($clinea)? '': nformat($items->iva); ?></td>
@@ -243,6 +254,7 @@ foreach ($detalle AS $items){ $i++;
 }
 for(1;$lineas<$maxlin;$lineas++){ ?>
 			<tr class="<?php if(!$mod) echo 'even_row'; else  echo 'odd_row'; ?>">
+				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>

@@ -398,7 +398,7 @@ class Stra extends Controller {
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('1950');
+		$grid->setHeight('192');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
@@ -694,7 +694,7 @@ class Stra extends Controller {
 		//$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		#GET url
-		//$grid->setUrlget(site_url($this->url.'getdata/'));
+		$grid->setUrlget(site_url($this->url.'getdatait/'));
 
 		if ($deployed) {
 			return $grid->deploy();
@@ -706,20 +706,22 @@ class Stra extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait()
+	function getdatait($id = 0)
 	{
-		$id = $this->uri->segment(4);
-		if ($id === false ){
+
+
+		if ($id === 0 ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM stra");
 		}
 		if(empty($id)) return '';
-		$numero   = $this->datasis->dameval("SELECT numero   FROM stra WHERE id=$id");
+		$numero   = $this->datasis->dameval("SELECT numero FROM stra WHERE id=$id");
 
 		$grid    = $this->jqdatagrid;
 		$mSQL    = "SELECT * FROM itstra WHERE numero='$numero' ORDER BY descrip ";
 		$response   = $grid->getDataSimple($mSQL);
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
+
 	}
 
 	/**
