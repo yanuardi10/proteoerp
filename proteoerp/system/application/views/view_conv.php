@@ -110,14 +110,8 @@ function del_itconv(id){
 
 <table align='center' width="95%">
 	<tr>
-		<td align=right><?php echo $container_tr?></td>
-	</tr>
-	<tr>
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
-			<tr>
-				<th colspan='5' class="littletableheader">Conversiones <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
-			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
@@ -126,26 +120,23 @@ function del_itconv(id){
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->observa1->label;  ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->observa1->output; ?>&nbsp;</td>
-				<td class="littletableheader">&nbsp;</td>
-				<td class="littletablerow">   &nbsp;</td>
+				<td colspan='3' class="littletablerow">   <?php echo $form->observa1->output; ?>&nbsp;</td>
 			</tr>
 		</table><br>
 		</td>
 	</tr>
 	<tr>
 		<td>
+
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:250px'>
 		<table width='100%'>
 			<tr>
-				<th colspan='6' class="littletableheader">Lista de Art&iacute;culos</th>
-			</tr>
-			<tr>
-				<td class="littletableheader">C&oacute;digo</td>
-				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader">Entrada</td>
-				<td class="littletableheader">Salida</td>
+				<td width='135' bgcolor='#7098D0' align='center'>C&oacute;digo</td>
+				<td             bgcolor='#7098D0' align='center'>Descripci&oacute;n</td>
+				<td width='80'  bgcolor='#7098D0' align='center'>Entrada</td>
+				<td width='80'  bgcolor='#7098D0' align='center'>Salida</td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheader">&nbsp;</td>
+					<td width='20' bgcolor='#7098D0' align='center'>&nbsp;</td>
 				<?php } ?>
 			</tr>
 
@@ -177,6 +168,7 @@ function del_itconv(id){
 				<td id='cueca'></td>
 			</tr>
 		</table>
+		</div>
 		<?php echo $container_bl ?>
 		<?php echo $container_br ?>
 		</td>

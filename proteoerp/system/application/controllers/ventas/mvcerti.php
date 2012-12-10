@@ -31,7 +31,7 @@ class Mvcerti extends validaciones {
 				COLLATE='latin1_swedish_ci'
 				ENGINE=MyISAM
 				ROW_FORMAT=DEFAULT
-";
+			";
 			$this->db->simple_query($mSQL);
 			
 			$mSQL = "CREATE ALGORITHM=UNDEFINED SQL SECURITY INVOKER VIEW `view_mvcerti` AS
@@ -41,6 +41,16 @@ class Mvcerti extends validaciones {
 				
 			$this->db->simple_query($mSQL);
 			
+		}
+
+		if (!$this->datasis->istabla('view_mvcerti')) {
+			$mSQL = "CREATE ALGORITHM=UNDEFINED 
+					DEFINER=`datasis`@`%` 
+					SQL SECURITY INVOKER VIEW `view_mvcerti` AS 
+					select `a`.`id` AS `id`,if((`a`.`status` = 'A'),'ACTIVO','CERRADO') AS `status`,`a`.`cliente` AS `cliente`,`b`.`nombre` AS `nombre`,`a`.`fecha` AS `fecha`,`a`.`numero` AS `numero`,`a`.`obra` AS `obra` 
+					from (`mvcerti` `a` join `scli` `b` on((`a`.`cliente` = `b`.`cliente`))) 
+					order by `a`.`id` desc";
+			$this->db->simple_query($mSQL);
 		}
 	}
 
@@ -61,68 +71,62 @@ class Mvcerti extends validaciones {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$param['grid'] = $grid->deploy();
+		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
-
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/formatos/ver/MVCERTI/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-</script>
-';
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="otros">
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"imprimir",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>""));
+		$WestPanel = $grid->deploywestp();
 
-<table id="west-grid" align="center">
-	<tr><td><div class="tema1">
-		<table id="listados"></table>
-		</div>
-	</td></tr>
-	<tr><td>
-		<table id="otros"></table>
-	</td></tr>
-</table>
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-</div> <!-- #LeftPane -->
-';
+		$funciones = '
+		function consulmv(){
+			mnumero=$("#numero").val();
+			if(mnumero.length==0){
+				alert("Debe introducir primero el numero de certificado");
+			}else{
+				mnumero=mnumero.toUpperCase();
+				$("#numero").val(mnumero);
+				window.open("'.site_url('ventas/mvcerti/traepdf/').'/"+mnumero,"CONSULTA MV","height=350,width=410");
+			}
+		}
+		';
 
-//<a style="width:190px" href="#" id="a1">Imprimir Copia</a>
 
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
-		//$param['WestPanel']  = $WestPanel;
+		//$param['WestPanel']   = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
-		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('MVCERTI', 'JQ');
-		$param['otros']    = $this->datasis->otros('MVCERTI', 'JQ');
-		$param['tema1'] = 'darkness';
-		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
-		$this->load->view('jqgrid/crud',$param);
+		$param['funciones']   = $funciones;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('MVCERTI', 'JQ');
+		$param['otros']       = $this->datasis->otros('MVCERTI', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+
 	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= "\n\t</script>\n";
+		$bodyscript = "";
+		return $bodyscript;
+	}
+
+
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -216,8 +220,33 @@ jQuery("#a1").click( function(){
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		//$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		//$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+
+		$grid->setFormOptionsE('
+			closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true,
+			afterSubmit: function(a,b){
+				if (a.responseText.length > 0) $.prompt(a.responseText);
+					return [true, a ];
+			},
+			beforeShowForm: function(frm){
+					$(\'<a href="#">MISION V<span class="ui-icon ui-icon-disk"></span></a>\').click(function(){
+						consulmv();
+					}).addClass("fm-button ui-state-default ui-corner-all fm-button-icon-left").prependTo("#Act_Buttons>td.EditButton");
+				},
+			afterShowForm: function(frm){$("select").selectmenu({style:"popup"});}'
+		);
+
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
+			beforeShowForm: function(frm){
+					$(\'<a href="#">MISION V<span class="ui-icon ui-icon-disk"></span></a>\').click(function(){
+						consulrmv();
+					}).addClass("fm-button ui-state-default ui-corner-all fm-button-icon-left").prependTo("#Act_Buttons>td.EditButton");
+				},
+			afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} '
+		);
+
+
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
@@ -312,7 +341,7 @@ jQuery("#a1").click( function(){
 		return TRUE;
 		}
 	}
-
+*/
 	function traepdf($certificado){
 		$this->load->helper('pdf2text');
 
@@ -338,7 +367,7 @@ jQuery("#a1").click( function(){
 			echo 'Certificado no encontrado';
 		}
 	}
-*/
+
 }
 
 ?>
