@@ -4,6 +4,7 @@ class Sfac extends Controller {
 	var $titp='Facturaci&oacute;n ';
 	var $tits='Facturaci&oacute;n';
 	var $url ='ventas/sfac/';
+	var $genesal=true;
 
 	function Sfac(){
 		parent::Controller();
@@ -2482,10 +2483,6 @@ class Sfac extends Controller {
 		redirect('ventas/scli/dataedit/show/'.$id);
 	}
 
-
-
-
-
 	//Forma de facturacion
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
@@ -2764,8 +2761,17 @@ class Sfac extends Controller {
 
 			echo json_encode($rt);
 		}else{
-			$conten['form']  =& $edit;
-			$data['content'] =  $this->load->view('view_sfac_add', $conten);
+			if($this->genesal){
+				$conten['form']  =& $edit;
+				$data['content'] =  $this->load->view('view_sfac_add', $conten);
+			}else{
+				$rt=array(
+					'status' =>'B',
+					'mensaje'=> utf8_encode(html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string))),
+					'pk'     =>''
+				);
+				echo json_encode($rt);
+			}
 		}
 	}
 
@@ -2775,7 +2781,9 @@ class Sfac extends Controller {
 		$edit = new DataEdit('Imprimir factura', 'sfac');
 		$id=$edit->get_from_dataobjetct('id');
 		$urlid=$edit->pk_URI();
-		$url=site_url('formatos/descargar/FACTURA'.$urlid);
+		$sfacforma=$this->datasis->traevalor('FORMATOSFAC','Especifica el metodo a ejecutar para descarga de formato de factura en Proteo Ej. descargartxt...');
+		if(empty($sfacforma)) $sfacforma='descargar';
+		$url=site_url('formatos/'.$sfacforma.'/FACTURA'.$urlid);
 		if(isset($this->back_url))
 			$edit->back_url = site_url($this->back_url);
 		else
@@ -2963,7 +2971,7 @@ class Sfac extends Controller {
 		if(empty($tipo)) return true;
 		$this->validation->set_message('chtipo', 'El campo %s es obligatorio');
 
-		if(empty($val) && ($tipo=='NC' || $tipo=='DP'))
+		if(empty($val) && ($tipo=='NC' || $tipo=='DP' || $tipo=='DE'))
 			return false;
 		else
 			return true;
@@ -3491,6 +3499,15 @@ class Sfac extends Controller {
 					$sql= $this->db->insert_string('itccli', $data);
 					$ban=$this->db->simple_query($sql);
 					if($ban==false){ memowrite($sql,'sfac'); $error++;}
+				}
+
+				//Chequea si es una venta vehicular
+				if($this->db->table_exists('sinvehiculo')){
+					$dbfactura=$this->db->escape($factura);
+					$id=$this->datasis->dameval("SELECT id FROM sfac WHERE numero=$dbfactura AND tipo_doc='F'");
+					if(!empty($id)){
+						$this->db->simple_query("UPDATE sinvehiculo SET id_sfac=NULL WHERE id_sfac=$id");
+					}
 				}
 			}
 		}
