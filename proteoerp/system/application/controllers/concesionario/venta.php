@@ -1,6 +1,6 @@
 <?php
 require_once(BASEPATH.'application/controllers/ventas/sfac.php');
-class venta extends sfac_add {
+class venta extends sfac {
 
 	var $titp='Veh&iacute;culos';
 	var $tits='Ventas de Veh&iacute;culos';
@@ -17,6 +17,7 @@ class venta extends sfac_add {
 		if(is_null($id)) redirect('concesionario/inicio');
 		$this->rapyd->load('dataedit');
 		$iva  = $this->datasis->ivaplica();
+		$sfpacana=3;
 
 		$sel=array('a.codigo_sinv','a.modelo','a.color','a.motor','a.carroceria','a.uso','a.anio','a.placa','b.iva',
 		'a.peso','a.precioplaca','a.transmision','b.precio1','b.precio2','b.precio3','b.precio4','b.descrip','a.clase','a.tipo');
@@ -56,6 +57,7 @@ class venta extends sfac_add {
 			if($("#vh_precio").val().length>0) base=parseFloat($("#vh_precio").val()); else base=0;
 			if($("#vh_tasa").val().length>0  ) tasa=parseFloat($("#vh_tasa").val())  ; else tasa=0;
 			$("#vh_monto").text(nformat(base*(1+(tasa/100))+'.$precioplaca.',2));
+			$("#totalg").val(roundNumber(base*(1+(tasa/100))+'.$precioplaca.',2));
 		}
 
 		function calculaiva(){
@@ -72,6 +74,43 @@ class venta extends sfac_add {
 
 		function post_modbus_sprv(){
 			$("#nombre_val").text($("#nombre").val());
+		}
+
+		//Totaliza el monto por pagar
+		function apagar(nom){
+			var pago=0;
+			jQuery.each($(\'input[id^="monto_"]:not(#\'+nom+\')\'), function() {
+				pago+=Number($(this).val());
+			});
+			return pago;
+		}
+
+		//Determina lo que falta por pagar
+		function faltante(nom){
+			totalg=Number($("#totalg").val());
+			paga  = apagar(nom);
+			resto = totalg-paga;
+			return resto;
+		}
+
+		function saldo(forma){
+			var falta=faltante(forma.name);
+			$(forma).val(falta);
+		}
+
+		function sfpatipo(id){
+			id     = id.toString();
+			tipo   = $("#tipo_"+id).val();
+			sfpade = <?php echo $form->js_escape($sfpade); ?>;
+			sfpach = <?php echo $form->js_escape($sfpach); ?>;
+			banco  = $("#banco_"+id).val();
+			if(tipo==\'DE\' || tipo==\'NC\' || tipo==\'DP\'){
+				$("#banco_"+id).html(sfpade);
+			}else{
+				$("#banco_"+id).html(sfpach);
+			}
+			$("#banco_"+id).val(banco);
+			return true;
 		}
 		';
 
@@ -128,11 +167,19 @@ class venta extends sfac_add {
 		$edit->color = new freeField('Color','vh_color',$color);
 		$edit->color->group = 'Datos del veh&iacute;culo';
 
-		$edit->motor = new freeField('Serial de Motor','vh_motor','<b>'.$motor.'</b>');
+		$edit->motor = new freeField('<b>Serial de Motor</b>','vh_motor','<b style="font-size:1.5em">'.$motor.'</b>');
 		$edit->motor->group = 'Datos del veh&iacute;culo';
 
-		$edit->carroceria = new freeField('Serial de Carrocer&iacute;a','vh_carroceria','<b>'.$carroceria.'</b>');
+		$edit->carroceria = new freeField('<b>Serial de Carrocer&iacute;a</b>','vh_carroceria','<b style="font-size:1.5em">'.$carroceria.'</b>');
 		$edit->carroceria->group = 'Datos del veh&iacute;culo';
+
+		if($uso=='P'){
+			$uso='Particular';
+		}elseif($uso=='C'){
+			$uso='Carga';
+		}elseif($uso=='T'){
+			$uso='Trabajo';
+		}
 
 		$edit->uso = new  freeField('Uso','vh_uso',$uso);
 		$edit->uso->group = 'Datos del veh&iacute;culo';
@@ -149,30 +196,104 @@ class venta extends sfac_add {
 		$edit->peso = new freeField('Peso Kg.','peso',nformat($peso));
 		$edit->peso->group = 'Datos del veh&iacute;culo';
 
-		$edit->placa = new freeField('Placa','vh_placa',$placa);
-		$edit->placa->group = 'Datos del veh&iacute;culo';
+		if(empty($placa)){
+			$edit->placa =  new inputField('Placa','vh_placa');
+			//$edit->placa->rule  = 'required';
+			$edit->placa->size  = 10;
+			$edit->placa->group = 'Datos del veh&iacute;culo';
+		}else{
+			$edit->placa = new freeField('Placa','vh_placa',$placa);
+			$edit->placa->group = 'Datos del veh&iacute;culo';
+		}
 
-		$edit->precioplaca = new freeField('Precio placa.','vh_precioplaca',$precioplaca);
+		$edit->precioplaca = new freeField('Precio placa.','vh_precioplaca',nformat($precioplaca));
 		$edit->precioplaca->group = 'Datos del financieros';
+		$edit->precioplaca->showformat='decimal';
 
 		$edit->base =  new dropdownField('Monto base de venta','vh_precio');
 		$edit->base->rule  = 'required|numeric';
-		$edit->base->style = 'width:180px';
+		$edit->base->style = 'width:150px';
 		$edit->base->group = 'Datos del financieros';
 		$edit->base->option($precio1,nformat($precio1));
 		$edit->base->option($precio2,nformat($precio2));
 		$edit->base->option($precio3,nformat($precio3));
 		$edit->base->option($precio4,nformat($precio4));
 
-		$edit->tasa =  new dropdownField('Tasa %','vh_tasa');
+		$edit->tasa =  new hiddenField('Tasa %','vh_tasa');
 		$edit->tasa->rule  = 'required|numeric';
-		$edit->tasa->style = 'width:100px';
-		$edit->tasa->mode  = 'autohide';
 		$edit->tasa->insertValue=$iva['tasa'];
 		$edit->tasa->group = 'Datos del financieros';
-		foreach($iva AS $nom=>$val) $edit->tasa->option($val,nformat($val).'%');
 
-		$edit->precio =  new freeField('Monto a pagar','monto','<b id="vh_monto">0.0</b>');
+		$edit->ttasa = new freeField(' ','v_tasa',nformat($iva['tasa']));
+		$edit->ttasa->in='tasa';
+
+		$edit->precio =  new freeField('<b>Monto a pagar</b>','monto','<b id="vh_monto" style="font-size:2em">0.0</b>');
+		$edit->totalg =  new hiddenField(' ','totalg');
+		$edit->totalg->insertValue=0;
+		$edit->totalg->in = 'precio';
+
+
+		for($i=0;$i<$sfpacana;$i++){
+			$o=$i+1;
+
+			$obj = "tipo_${i}";
+			$edit->$obj = new  dropdownField("${o}-Tipo", $obj);
+			$edit->$obj->option('','CREDITO');
+			$edit->$obj->options('SELECT tipo, nombre FROM tarjeta WHERE activo=\'S\' ORDER BY nombre');
+			$edit->$obj->db_name    = 'tipo';
+			$edit->$obj->rel_id     = 'sfpa';
+			$edit->$obj->insertValue= 'EF';
+			$edit->$obj->style      = 'width:150px;';
+			$edit->$obj->onchange   = "sfpatipo(${i})";
+			$edit->$obj->group = "<b  style='font-size:1.5em'>Forma de pago ${o}|sfpa_${i}";
+
+			$obj = "sfpafecha_${i}";
+			$edit->$obj = new dateonlyField("${o}-Fecha",$obj);
+			$edit->$obj->rel_id   = 'sfpa';
+			$edit->$obj->db_name  = 'fecha';
+			$edit->$obj->size     = 10;
+			$edit->$obj->maxlength= 8;
+			$edit->$obj->rule ="condi_required|callback_chtipo[${i}]";
+			$edit->$obj->group = "<b  style='font-size:1.5em'>Forma de pago ${o}|sfpa_${i}";
+
+			$obj = "numref_${i}";
+			$edit->$obj = new inputField("${o}-N&uacute;mero", $obj);
+			$edit->$obj->size     = 12;
+			$edit->$obj->db_name  = 'num_ref';
+			$edit->$obj->rel_id   = 'sfpa';
+			$edit->$obj->rule     = "condi_required|callback_chtipo[${i}]";
+			$edit->$obj->group = "<b  style='font-size:1.5em'>Forma de pago ${o}|sfpa_${i}";
+
+			$obj = "banco_${i}";
+			$edit->$obj = new dropdownField("${o}-Banco", $obj);
+			$edit->$obj->option('','Ninguno');
+			$edit->$obj->db_name='banco';
+			$edit->$obj->rel_id ='sfpa';
+			$edit->$obj->style  ='width:180px;';
+			$edit->$obj->rule   ="condi_required|callback_chtipo[${i}]";
+			$edit->$obj->group = "<b  style='font-size:1.5em'>Forma de pago ${o}|sfpa_${i}";
+			$edit->$obj->options('SELECT cod_banc,nomb_banc
+				FROM tban
+				WHERE cod_banc<>\'CAJ\'
+			UNION ALL
+				SELECT codbanc,CONCAT_WS(\' \',TRIM(banco),numcuent)
+				FROM banc
+				WHERE tbanco <> \'CAJ\' ORDER BY nomb_banc');
+
+
+			$obj = "monto_${i}";
+			$edit->$obj = new inputField("${o}-Monto", $obj);
+			$edit->$obj->db_name   = 'monto';
+			$edit->$obj->css_class = 'inputnum';
+			$edit->$obj->rel_id    = 'sfpa';
+			$edit->$obj->size      = 10;
+			//$edit->$obj->rule      = 'required|mayorcero';
+			$edit->$obj->insertValue='0';
+			$edit->$obj->autocomplete=false;
+			$edit->$obj->showformat ='decimal';
+			$edit->$obj->onfocus    = 'saldo(this);';
+			$edit->$obj->group      = "<b  style='font-size:1.5em'>Forma de pago ${o}|sfpa_${i}";
+		}
 
 		$accion="javascript:window.location='".site_url('concesionario/inicio')."'";
 		$edit->button('btn_cargar','Regresar',$accion,'BL');
@@ -194,6 +315,12 @@ class venta extends sfac_add {
 				$dire11 = $row->dire11;
 			}
 			$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo='PLACA'");
+
+			if(isset($_POST['vh_placa'])){
+				$dbplaca=$this->db->escape(strtoupper($_POST['vh_placa']));
+				$mSQL="UPDATE sinvehiculo SET placa=$dbplaca WHERE id=".$this->db->escape($id);
+				$this->db->simple_query($mSQL);
+			}
 
 			$_POST['btn_submit']  = 'Guardar';
 			$_POST['pfac']        = '';
@@ -222,7 +349,7 @@ class venta extends sfac_add {
 			$_POST['precio4_0']   = $precioplaca;
 			$_POST['itiva_0']     = 0;
 			$_POST['sinvpeso_0']  = 0;
-			$_POST['sinvtipo_0']  = 'Servicio';
+			$_POST['sinvtipo_0']  = 'Articulo';
 
 			$_POST['codigoa_1']   = $codigo_sinv;
 			$_POST['desca_1']     = $modelo;
@@ -242,43 +369,40 @@ class venta extends sfac_add {
 			$iva    = $edit->base->newValue*($edit->tasa->newValue/100);
 			$totalg = $totals+$iva;
 
-			$_POST['tipo_0']      = '';
-			$_POST['sfpafecha_0'] = '';
-			$_POST['num_ref_0']   = '';
-			$_POST['banco_0']     = '';
-			$_POST['monto_0']     = $totalg;
+
+			for($i=0;$i<$sfpacana;$i++){
+
+				if($_POST['monto_'.$i]==0){
+					unset($_POST['tipo_'.$i]);
+					unset($_POST['tipo_'.$i]);
+					unset($_POST['sfpafecha_'.$i]);
+					unset($_POST['num_ref_'.$i]);
+					unset($_POST['banco_'.$i]);
+					unset($_POST['monto_'.$i]);
+				}
+			}
+
 
 			$_POST['totals']      = $totals;
 			$_POST['iva']         = $iva   ;
 			$_POST['totalg']      = $totalg;
 
-			$rt=$this->dataedit();
-			if(preg_match('/Venta Guardada (?P<id>\d+)/', $rt, $matches)){
+			ob_start();
+				parent::$this->dataedit();
+				$rt=ob_get_contents();
+			@ob_end_clean();
+			$ret=json_decode($rt);
 
+			if($ret->status=='A'){
 				$data=array();
-				$data['id_sfac'] = $this->claves['id'];
+				$data['id_sfac'] = $ret->pk->id;
 				$mSQL = $this->db->update_string('sinvehiculo', $data,'id='.$this->db->escape($id));
 				$this->db->simple_query($mSQL);
 
-				//$content = $rt.br();
-				//$content.= anchor('formatos/ver/FACTURA/'.$this->claves['id'],'Descargar factura').br();
-				//$content.= anchor($this->url,'Regresar');
-                //
-				//$data['content'] = $content;
-				//$data['script']  = script('jquery.js');
-				//$data['script'] .= script('jquery-ui.js');
-				//$data['script'] .= script('plugins/jquery.numeric.pack.js');
-				//$data['script'] .= script('plugins/jquery.floatnumber.js');
-				//$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-				//$data['script'] .= phpscript('nformat.js');
-				//$data['head']    = $this->rapyd->get_head();
-				//$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-				//$data['title']   = heading($this->tits);
-				//$this->load->view('view_ventanas', $data);
 				redirect($this->url.'dataprint/modify/'.$data['id_sfac']);
 				return;
 			}else{
-				$edit->error_string =  htmlentities($rt);
+				$edit->error_string = htmlentities(utf8_decode($ret->mensaje));
 				$edit->build_form();
 			}
 		}
