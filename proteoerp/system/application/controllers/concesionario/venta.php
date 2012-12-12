@@ -53,6 +53,18 @@ class venta extends sfac {
 
 		}
 
+		$sfpade=$sfpach="<option value=''>Ninguno</option>";
+		$mSQL="SELECT cod_banc,nomb_banc FROM tban WHERE cod_banc<>'CAJ'";
+		$query = $this->db->query($mSQL);
+		foreach ($query->result() as $row){
+			$sfpach.="<option value='".trim($row->cod_banc)."'>".trim($row->nomb_banc)."</option>";
+		}
+		$mSQL="SELECT codbanc AS cod_banc,CONCAT_WS(' ',TRIM(banco),numcuent) AS nomb_banc FROM banc WHERE tbanco <> 'CAJ' ORDER BY nomb_banc";
+		$query = $this->db->query($mSQL);
+		foreach ($query->result() as $row){
+			$sfpade.="<option value='".trim($row->cod_banc)."'>".trim($row->nomb_banc)."</option>";
+		}
+
 		$jsc='function calcula(){
 			if($("#vh_precio").val().length>0) base=parseFloat($("#vh_precio").val()); else base=0;
 			if($("#vh_tasa").val().length>0  ) tasa=parseFloat($("#vh_tasa").val())  ; else tasa=0;
@@ -101,8 +113,8 @@ class venta extends sfac {
 		function sfpatipo(id){
 			id     = id.toString();
 			tipo   = $("#tipo_"+id).val();
-			sfpade = <?php echo $form->js_escape($sfpade); ?>;
-			sfpach = <?php echo $form->js_escape($sfpach); ?>;
+			sfpade = '.$form->js_escape($sfpade).';
+			sfpach = '.$form->js_escape($sfpach).';
 			banco  = $("#banco_"+id).val();
 			if(tipo==\'DE\' || tipo==\'NC\' || tipo==\'DP\'){
 				$("#banco_"+id).html(sfpade);

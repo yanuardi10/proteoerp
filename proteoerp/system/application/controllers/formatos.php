@@ -121,7 +121,9 @@ class Formatos extends Controller{
 				if(strlen($_txt)>0){
 					if(!array_key_exists('HTTP_USER_AGENT', $_SERVER))
 						$_SERVER['HTTP_USER_AGENT']='curl';
-					force_download('inprin.prn', preg_replace("/[\r]*\n/","\r\n",$_txt));
+
+					if(!isset($_arch_nombre)) $_arch_nombre='inprin.prn';
+					force_download($_arch_nombre, preg_replace("/[\r]*\n/","\r\n",$_txt));
 				}else{
 					echo 'Formato no definido';
 				}
