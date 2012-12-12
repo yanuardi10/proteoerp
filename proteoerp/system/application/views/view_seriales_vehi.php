@@ -106,7 +106,7 @@ $(function(){
 		$ccodigo =$form->$it_codigo->value;
 	?>
 	<tr style='background:#7098D0' >
-		<td class="littletablerow" colspan='5'  style="text-align:center;"><b><?php echo  $form->$it_codigo->value.$form->$it_desca->output;  ?></b></td>
+		<td class="littletablerow" colspan='5'  style="text-align:center;"><b><?php echo  $form->$it_codigo->value.$form->$it_desca->value.$form->$it_desca->output;  ?></b></td>
 	</tr>
 	<?php } ?>
 
