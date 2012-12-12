@@ -2906,7 +2906,7 @@ class Scst extends Controller {
 			$SQL="SELECT COUNT(*) AS cana
 				FROM itscst AS b
 				JOIN sinv   AS c ON b.codigo=c.codigo
-				WHERE b.control=".$this->db->escape($control);
+				WHERE c.serial='V' AND b.control=".$this->db->escape($control);
 			$cana = $this->datasis->dameval($SQL);
 			if($cana>0){
 				$SQL="SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$id AND (motor IS NULL OR motor='' OR carroceria IS NULL OR carroceria='')";
