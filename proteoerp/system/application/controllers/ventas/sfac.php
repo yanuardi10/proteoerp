@@ -39,6 +39,13 @@ class Sfac extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
+		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
+		if($fiscal=='S'){
+			$grid->wbotonadd(array("id"=>"bcierrex","img"=>"assets/default/images/print.png", "alt" => 'Imprimir Cierre X',"label"=>"Cierre X"));
+			$grid->wbotonadd(array("id"=>"bcierrez","img"=>"assets/default/images/print.png", "alt" => 'Imprimir Cierre Z',"label"=>"Cierre Z"));
+		}
+
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -97,6 +104,7 @@ class Sfac extends Controller {
 		$grid->wbotonadd(array("id"=>"cobroser", "img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
 		$grid->wbotonadd(array("id"=>"imptxt",   "img"=>"assets/default/images/print.png", "alt" => 'Imprimir Servicio',"label"=>"Imprimir Factura"));
 		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
+
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -189,6 +197,19 @@ class Sfac extends Controller {
 			window.open(\''.site_url('ventas/sfac/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 		});';
 
+		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
+		if($fiscal=='S'){
+			$bodyscript .= '
+			jQuery("#bcierrex").click( function(){
+				window.open(\''.site_url('formatos/descargartxt/CIERREX').'\', \'_blank\', \'width=300,height=300,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			});';
+
+			$bodyscript .= '
+			jQuery("#bcierrez").click( function(){
+				window.open(\''.site_url('formatos/descargartxt/CIERREZ').'\', \'_blank\', \'width=300,height=300,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			});';
+		}
+
 		//Imprime factura a Impresora de texto
 		$bodyscript .= '
 		jQuery("#imptxt").click( function(){
@@ -198,15 +219,12 @@ class Sfac extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
 
-
 		//Precierre
 		$bodyscript .= '
 		jQuery("#precierre").click( function(){
-			$.prompt("<h1>Seguro que desea hacer cierre?</h1>")
+			//$.prompt("<h1>Seguro que desea hacer cierre?</h1>")
 			window.open(\''.site_url('ventas/rcaj/precierre/99/').'/'.$this->secu->getcajero().'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 		});';
-
-
 
 		//Prepara Pago o Abono
 		$bodyscript .= '

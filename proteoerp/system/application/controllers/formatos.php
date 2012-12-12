@@ -114,8 +114,12 @@ class Formatos extends Controller{
 			$query = $this->db->query('SELECT txt FROM formatos WHERE nombre='.$_dbfnombre);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
+				$forma= $row->txt;
+				if(empty($forma)){
+					$forma=$this->_crearep($_fnombre,'txt');
+				}
 				ob_start();
-					echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $row->txt)).'<?php ');
+					echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $forma)).'<?php ');
 					$_txt=ob_get_contents();
 				@ob_end_clean();
 				if(strlen($_txt)>0){
@@ -125,9 +129,11 @@ class Formatos extends Controller{
 					if(!isset($_arch_nombre)) $_arch_nombre='inprin.prn';
 					force_download($_arch_nombre, preg_replace("/[\r]*\n/","\r\n",$_txt));
 				}else{
+					$forma=$this->_crearep($_fnombre,'txt');
 					echo 'Formato no definido';
 				}
 			}else{
+				$forma=$this->_crearep($_fnombre,'txt');
 				echo 'Formato no existe';
 			}
 		}else{
@@ -236,12 +242,12 @@ class Formatos extends Controller{
 		return $this->traeyeva($rhead);
 	}
 
-	function _crearep($nombre){
+	function _crearep($nombre,$tipo='proteo'){
 		$nombre = strtoupper($nombre);
-		$arch = "./formrep/formatos/proteo/${nombre}.for";
+		$arch = "./formrep/formatos/${tipo}/${nombre}.for";
 		if (file_exists($arch)){
 			$forma=file_get_contents($arch);
-			$data = array('nombre' => $nombre, 'proteo' => $forma);
+			$data = array('nombre' => $nombre, $tipo => $forma);
 			$mSQL = $this->db->insert_string('formatos', $data).' ON DUPLICATE KEY UPDATE proteo=VALUES(proteo)';
 			$ban=$this->db->simple_query($mSQL);
 			if($ban==false){
