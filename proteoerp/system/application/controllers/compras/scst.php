@@ -2628,7 +2628,6 @@ class Scst extends Controller {
 							'codigo_sinv'=>$row->codigo,
 							'modelo'     =>$row->descrip,
 							'peso'       =>$row->peso,
-							'recibido'   =>'N',
 							'anio'       =>date('Y'),
 							'color'      =>'',
 							'motor'      =>'',
