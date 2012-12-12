@@ -2922,7 +2922,7 @@ class Sinv extends Controller {
 			$edit->$objeto->maxlength=6;
 			$edit->$objeto->onkeyup = 'calculos(\'I\');';
 			$edit->$objeto->autocomplete=false;
-			$edit->$objeto->rule='required|mayorcero';
+			$edit->$objeto->rule='required';
 
 			$objeto="base$i";
 			$edit->$objeto = new inputField("Base $i", $objeto);

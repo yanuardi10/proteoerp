@@ -1,19 +1,19 @@
 <?php
 class agregar extends Controller {
-	
+
 	function agregar(){
 		parent::Controller();
 		$this->load->library("rapyd");
 		//$this->datasis->modulo_id(201,1);
 	}
-	
-	function index() {	
+
+	function index() {
 		redirect('compras/agregar/encab/create');
 	}
 
 	function encab(){
 		$this->rapyd->load("dataedit");
-		
+
 		$modbus=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
@@ -23,46 +23,46 @@ class agregar extends Controller {
 			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
 			'titulo'  =>'Buscar Proveedor');
-		
+
 		$boton=$this->datasis->modbus($modbus);
-		
+
 		$edit = new DataEdit("Ingresar Compras","scst");
 
 		$edit->pre_process( 'insert','_pre_insert');
 		$edit->post_process('insert','_post_insert');
 
 		$edit->back_url = "compras/scst";
-		
+
 		$edit->proveedor = new inputField("Proveedor", "proveed");
 		$edit->proveedor->size = 10;
 		$edit->proveedor->maxlength=5;
 		$edit->proveedor->readonly=1;
 		$edit->proveedor->rule= "required";
 		$edit->proveedor->append($boton);
-		
+
 		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size = 50;
 		$edit->nombre->maxlength=40;
 		$edit->nombre->readonly=1;
 		$edit->nombre->in='proveedor';
-		
+
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
 		$edit->fecha->mode="autohide";
 		$edit->fecha->rule= "require";
 		$edit->fecha->size = 11;
-			
+
 		$edit->numero = new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 15;
 		$edit->numero->rule= "required";
 		$edit->numero->mode="autohide";
 		$edit->numero->maxlength=8;
-		
+
 		$edit->cfis = new inputField("Control fiscal", "nfiscal");
 		$edit->cfis->size = 15;
 		$edit->cfis->maxlength=12;
 		$edit->cfis->rule= "required";
-		
+
 		$edit->almacen = new dropdownField("Almacen", "depo");
 		$edit->almacen->size = 15;
 		$edit->almacen->maxlength=8;
@@ -71,26 +71,26 @@ class agregar extends Controller {
 		$edit->almacen->rule= "required";
 		$edit->almacen->style='width:150px;';
 
-		$edit->tipo = new dropdownField("Tipo", "tipo_doc");  
-		$edit->tipo->option("FC","Factura Credito");  
+		$edit->tipo = new dropdownField("Tipo", "tipo_doc");
+		$edit->tipo->option("FC","Factura Credito");
 		$edit->tipo->option("NC","Nota Credito");
 		$edit->tipo->option("NE","Nota Entrega");
-		$edit->tipo->rule = "required";  
-	  $edit->tipo->size = 20;  
+		$edit->tipo->rule = "required";
+	  $edit->tipo->size = 20;
 	  $edit->tipo->style='width:150px;';
 
 		$edit->buttons("save", "undo", "delete", "back");
 		$edit->build();
 
-		$data['content'] = $edit->output; 
+		$data['content'] = $edit->output;
 		$data["head"]    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Compras</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function detalles($control=NULL){
 		$this->rapyd->load("datagrid");
-		
+
 		$mSQL="SELECT * FROM scst WHERE control='$control'";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
@@ -110,22 +110,22 @@ class agregar extends Controller {
 		$grid->column("Cantidad","cantidad"  ,"align='right'");
 		$grid->column("Precio"  ,"costo"     ,"align='right'");
 		$grid->column("Importe"  ,"importe"  ,"align='right'");
-		
+
 		$grid->add("compras/agregar/mdetalle/$control/create");
 		$grid->add("compras/agregar/encab/modify/$control/",'Modificar encabezado');
 		$grid->build();
-    
+
 		$pdata['items']  = $grid->output;
-		$data['content'] = $this->load->view('view_agcompras', $pdata,true); 
+		$data['content'] = $this->load->view('view_agcompras', $pdata,true);
 		$data["head"]    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Agregar Art&iacute;culos</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function mdetalle($control){
 		$this->rapyd->load("dataedit");
 		$_POST['control']=$control;
-		
+
 		$modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
@@ -153,13 +153,13 @@ class agregar extends Controller {
 			);
 
 		$boton=$this->datasis->modbus($modbus);
-		
+
 		$edit = new DataEdit("Ingresar Art&iacute;culos","itscst");
 		$edit->pre_process( 'insert','_pre_minsert');
 		$edit->post_process('insert','_post_minsert');
 		$edit->post_process('delete','_post_mdelete');
 		$edit->back_url = "compras/agregar/detalles/$control";
-		
+
 		if($edit->_status=='modify'){
 			$codigo=$edit->_dataobject->get('codigo');
 			$mSQL="SELECT margen1,margen2,margen3,margen4,precio1,precio2,precio3,precio4, ultimo, pond,formcal,existen,tipo,iva FROM sinv WHERE codigo='$codigo'";
@@ -213,14 +213,14 @@ class agregar extends Controller {
 		}
 
 		$mp=form_hidden($data);
-		
+
 		$edit->codigo = new inputField("Codigo", "codigo");
 		$edit->codigo->size = 16;
 		$edit->codigo->maxlength=15;
 		$edit->codigo->readonly=1;
 		$edit->codigo->rule= "required";
 		$edit->codigo->append($boton);
-		
+
 		$edit->descrip = new inputField("Decripcion", "descrip");
 		$edit->descrip->maxlength=40;
 		$edit->descrip->size = 41;
@@ -228,7 +228,7 @@ class agregar extends Controller {
 		$edit->descrip->mode="autohide";
 		$edit->descrip->readonly=1;
 		$edit->descrip->in='codigo';
-		
+
 		$edit->costo = new inputField("Costo", "costo");
 		$edit->costo->size = 15;
 		$edit->costo->maxlength=20;
@@ -249,21 +249,21 @@ class agregar extends Controller {
 		$edit->importe->rule= "required";
 		$edit->importe->insertValue='0.0';
 		$edit->importe->css_class='inputnum';
-		
+
 		$edit->flote = new DateonlyField("Fecha de lote", "flote","d/m/Y");
 		$edit->flote->insertValue = date("Y-m-d");
 		$edit->flote->size = 11;
 		//$edit->fecha->rule= "require";
-		
+
 		$mfecha=$this->datasis->dameval("SELECT fecha FROM scst WHERE control='$control'");
 		$ivas=$this->datasis->ivaplica($mfecha);
 		$edit->iva = new dropdownField("Iva al que fue comprado", "iva");
 		$edit->iva->style = "width:100px;";
-		$edit->iva->option("0","Excento");  
+		$edit->iva->option("0","Excento");
 		foreach($ivas AS $val)
 			$edit->iva->option($val,"$val %");
 
-		$edit->cpre = new containerField("cpre",'<a href="javascript:pajuste()">Modificar M&aacute;rgenes</a>, <a href="javascript:majuste()">Modificar Precios</a>');  		
+		$edit->cpre = new containerField("cpre",'<a href="javascript:pajuste()">Modificar M&aacute;rgenes</a>, <a href="javascript:majuste()">Modificar Precios</a>');
 
 		for($i=1;$i<=4;$i++){
 			$obj="margen$i";
@@ -273,14 +273,14 @@ class agregar extends Controller {
          'maxlength' => '6',
          'size'      => '6',
          'class'     => 'inputnum');
-      
+
       if($edit->_status=='modify'){
       	$base =$edit->_dataobject->get('precio'.$i);
       	$data['value']=round(100-($costo*100/$base),2);
       }
 			if(isset($_POST[$obj]))$data['value']=$_POST[$obj];
 			$edit->$obj = new freeField("Ajuste $i",$obj,'Costo + '.form_input($data).'% = ');
-			
+
 			$obj="base$i";
 			$edit->$obj = new inputField("Base $i", "base$i");
 			$edit->$obj->size = 15;
@@ -289,7 +289,7 @@ class agregar extends Controller {
 			$edit->$obj->rule= "required";
 			$edit->$obj->css_class='inputnum';
 			$edit->$obj->in="margen$i";
-			
+
 			$obj="precio$i";
 			$data = array(
       	'name'      => $obj,
@@ -306,8 +306,8 @@ class agregar extends Controller {
 			$edit->$obj = new freeField("Precio $i",$obj,'+ IVA = '.form_input($data));
 			$edit->$obj->in="margen$i";
 		}
-		
-		$edit->container = new containerField("mp",$mp);  
+
+		$edit->container = new containerField("mp",$mp);
 
 		$edit->buttons("save", "undo", "delete", "back");
 		$edit->build();
@@ -318,30 +318,30 @@ class agregar extends Controller {
 			$(".inputnum").numeric(".");
 			$("input[id^=\'precio\'],input[id^=\'margen\'],input[id^=\'base\']").floatnumber(".",2);
 			$("#costo").floatnumber(".",2);
-			
+
 			$("#costo,#cantidad").keyup(function () {
     	  var precio  =parseFloat($("#costo").val());
 				var cantidad=parseFloat($("#cantidad").val());
 				n = precio*cantidad;
         s = n.toFixed(2);
-        $("#importe").val(s); 
+        $("#importe").val(s);
         cmargen();
     	});
-    	
+
     	$("#importe").keyup(function () {
     	  var importe =parseFloat($("#importe").val());
 				var cantidad=parseFloat($("#cantidad").val());
 				n = importe/cantidad;
         s = n.toFixed(2);
-        $("#costo").val(s); 
+        $("#costo").val(s);
         cmargen();
     	});
-    	
+
     	$("input[@id^=\'precio\']").keyup(function () { cprecio(); });
     	$("input[@id^=\'base\']").keyup(function () { cbase(); });
     	$("input[@id^=\'margen\']").keyup(function () { cmargen();});
 		})
-		
+
 		function cprecio(){
 			iva  = parseFloat($("#iiva").val());
 			costo= ocosto();
@@ -353,16 +353,16 @@ class agregar extends Controller {
 				precio=parseFloat($("#"+nprec).val());
 				base  =precio*100/(100+iva);
 				margen=100-(costo*100/base);
-				
+
 				base  =base.toFixed(2);
 				margen=margen.toFixed(2);
 				precio=precio.toFixed(2);
-				
+
 				$("#"+nbase).val(base);
 				$("#"+nmarg).val(margen);
 			}
 		}
-		
+
 		function cbase(){
 			iva  = parseFloat($("#iiva").val());
 			costo= ocosto();
@@ -370,19 +370,19 @@ class agregar extends Controller {
 				nbase="base"+i;
 				nmarg="margen"+i;
 				nprec="precio"+i;
-				
+
 				base  =parseFloat($("#"+nbase).val());
 				precio=base*(1+iva/100);
 				margen=100-(costo*100/base);
-				
+
 				margen=margen.toFixed(2);
 				precio=precio.toFixed(2);
-				
+
 				$("#"+nprec).val(precio);
 				$("#"+nmarg).val(margen);
 			}
 		}
-		
+
 		function cmargen(){
 			iva  = parseFloat($("#iiva").val());
 			costo= ocosto();
@@ -390,19 +390,19 @@ class agregar extends Controller {
 				nbase="base"+i;
 				nmarg="margen"+i;
 				nprec="precio"+i;
-				
+
 				margen=parseFloat($("#"+nmarg).val());
 				base  =costo*100/(100-margen);
 				precio=base*(1+iva/100);
-				
+
 				base  =base.toFixed(2);
 				precio=precio.toFixed(2);
-				
+
 				$("#"+nbase).val(base);
 				$("#"+nprec).val(precio);
 			}
 		}
-		
+
 		function ocosto(){
 			costo   = parseFloat($("#costo").val());
 			formcal = $("#formcal").val();
@@ -414,7 +414,7 @@ class agregar extends Controller {
 			}
 			return costo;
 		}
-		
+
 		//Ajusta conservando margenes
 		function majuste(){
 			for(var i=1;i<=4;i++){
@@ -424,7 +424,7 @@ class agregar extends Controller {
 			}
 			cmargen();
 		}
-		
+
 		//Ajusta conservando precios
 		function pajuste(){
 			for(var i=1;i<=4;i++){
@@ -434,14 +434,14 @@ class agregar extends Controller {
 			}
 			cprecio();
 		}
-		
+
 		function dbuscar(){
 			 codigo=$("#codigo").val();
 			 $.ajax({
 			  type: "POST",
 			  url: "'.$jqlink.'",
 			  data: "codigo="+codigo+"&mfecha='.$mfecha.'",
-			  success: function(msg){ 
+			  success: function(msg){
 			  	sal=parseFloat(msg);
 					$("#iva option").each(function () {
 						opt=parseFloat($(this).val());
@@ -450,7 +450,7 @@ class agregar extends Controller {
 							return;
 						}
 					});
-			  } 
+			  }
 			});
 
 			tipo=$("#itipo").val();
@@ -469,7 +469,7 @@ class agregar extends Controller {
 		//tasa, redutasa, sobretasa
 		$codigo=$this->input->post('codigo');
 		$mfecha=$this->input->post('mfecha');
-		if ($codigo===false OR $mfecha===false){ 
+		if ($codigo===false OR $mfecha===false){
 			echo $this->datasis->dameval('IVA');
 			return 0;
 		}
@@ -478,19 +478,19 @@ class agregar extends Controller {
 		$iva=$this->datasis->dameval("SELECT iva FROM sinv WHERE codigo='$codigo'");
 		$ivas=$this->datasis->ivaplica();
 		$key=array_search($iva,$ivas);
-		if($key===false){ 
+		if($key===false){
 			echo $fivas['tasa'];
 			return 0;
 		}
 		echo $fivas[$key];
 		return 0;
 	}
-	
+
 	function ccana($cana){
 		if($cana>0) return TRUE;
 		$this->validation->set_message('ccana', "Debe ingresar una cantidad positiva");
 		return FALSE;
-			
+
 	}
 
 	function _pre_minsert($do){
@@ -517,9 +517,9 @@ class agregar extends Controller {
 		   $do->set('depo'   , $row['depo']);
 		   $do->set('transac', $row['transac']);
 		} else{
-			return false;	
+			return false;
 		}
-    
+
     $do->db->set('hora'   , 'CURRENT_TIME()', FALSE);
 		$do->db->set('estampa', 'CURDATE()', FALSE);
     $do->set('control', $control);
@@ -538,12 +538,12 @@ class agregar extends Controller {
 		}
 		return True;
 	}
-	
+
 	function _post_insert($do){
 		$codigo=$this->input->post('control');
 		redirect("/compras/agregar/detalles/$codigo");
 	}
-	
+
 	function _post_minsert($do){
 		$control=$this->input->post('control');
 		$proveed=$this->db->escape($do->get('proveed'));
@@ -551,7 +551,7 @@ class agregar extends Controller {
 		$sal=$this->datasis->damerow($mSQL);
 		$sal['montonet']=$sal['montotot']+$sal['montoiva'];
 		$sal['credito'] =$sal['montonet'];
-		
+
 		$tcontri=$this->datasis->traevalor('CONTRIBUYENTE');
 		if(eregi('ESPECIAL', $tcontri)){
 			$mSQL="SELECT reteiva sprv WHERE proveed=$proveed";
@@ -573,12 +573,12 @@ class agregar extends Controller {
 		$sql    = 'INSERT INTO ntransa (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
     $query  =$this->db->query($sql);
     $transac=$this->db->insert_id();
-    
+
 		$sql    = 'INSERT INTO nscst (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
     $query  =$this->db->query($sql);
     $control =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
     $_POST['control']=$control;
-    
+
     $do->db->set('hora'   , 'CURRENT_TIME()', FALSE);
 		$do->db->set('estampa', 'CURDATE()', FALSE);
     $do->set('control', $control);
@@ -586,9 +586,5 @@ class agregar extends Controller {
 		$do->set('usuario', $this->session->userdata('usuario'));
 	}
 
-	function instalar(){
-		$mSQL='ALTER TABLE itscst ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		$this->db->simple_query($mSQL);
-	}
 }
 ?>
