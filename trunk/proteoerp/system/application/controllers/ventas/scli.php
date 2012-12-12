@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once(BASEPATH.'application/controllers/validaciones.php');
 class Scli extends Controller {
 	var $genesal = true;
@@ -271,7 +271,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 				window.open("http://www.cne.gov.ve/web/registro_electoral/ce.php?nacionalidad="+vrif.substr(0,1)+"&cedula="+vrif.substr(1),"CONSULCNE","height=400,width=510");
 			}
 		};';
-		
+
 
 		// Buscar en el SENIAT
 		$postready .= '
@@ -285,12 +285,12 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 				window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 			}
 		};';
-		
+
 		return $postready;
-		
+
 	}
-	
-	
+
+
 	//***************************
 	//Funciones de los Botones
 	//***************************
@@ -373,7 +373,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 							grid.trigger("reloadGrid");
 							'.$this->datasis->jwinopen(site_url('formatos/ver/SCLI').'/\'+res.id+\'/id\'').';
 							return true;
-						} else { 
+						} else {
 							$("#fedita").html(r);
 						}
 					}
@@ -1559,14 +1559,15 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$residuo= $numero;
 		$mbase  = 36;
 		$conve='';
+		$mtempo  = $residuo % $mbase;
 		while($residuo > $mbase-1){
-			$mtempo  = $residuo % $mbase;
 			$residuo = intval($residuo/$mbase);
 			if($mtempo >9 ){
 				$conve .= chr($mtempo+55);
 			}else{
 				$conve .= $mtempo;
 			}
+			$mtempo  = $residuo % $mbase;
 		}
 		if($mtempo >9 ){
 			$conve .= chr($mtempo+55);
@@ -1598,7 +1599,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		$saldo  = 0;
 		$saldo  = $this->datasis->dameval("SELECT sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) saldo FROM smov WHERE cod_cli=".$this->db->escape($cod_cli));
-		
+
 		$salida = '';
 
 //{color:"#FFFFFF", \'background-color\':"#AF1001"
@@ -2257,7 +2258,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->tarifa->rule = 'trim|callback_chtarifa';
 		$edit->tarifa->size = 6;
 		//$edit->tarifa->maxlength =15;
-		
+
 		$edit->tactividad = new inputField('', 'tactividad');
 		$edit->tactividad->db_name     = 'tactividad';
 		$edit->tactividad->pointer     = true;
@@ -2283,7 +2284,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			$conten["form"]   =&  $edit;
 			$conten["script"] = $script;
 			$data['content']  = $this->load->view('view_scli', $conten);
-/*			
+/*
 			$data['content'] .= $this->pi18n->fallas();
 			$data['smenu']    = $this->load->view('view_sub_menu', $smenu,true);
 			$data['title']    = heading('('.$edit->cliente->value.') '.substr($edit->nombre->value,0,30));
@@ -2396,7 +2397,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('L&iacute;mite de cr&eacute;dito', 'scli');
-		$edit->back_url = site_url('ajax/reccierraventana'); 
+		$edit->back_url = site_url('ajax/reccierraventana');
 		$edit->back_save   = true;
 		$edit->back_cancel = true;
 		$edit->back_cancel_save   = true;
