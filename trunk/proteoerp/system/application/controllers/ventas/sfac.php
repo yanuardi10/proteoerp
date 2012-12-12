@@ -136,7 +136,7 @@ class Sfac extends Controller {
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('ventas/sfac_add/dataprint/modify').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+				window.open(\''.site_url('ventas/sfac/dataprint/modify').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
 
@@ -186,7 +186,7 @@ class Sfac extends Controller {
 
 		$bodyscript .= '
 		jQuery("#boton2").click( function(){
-			window.open(\''.site_url('ventas/sfac_add/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			window.open(\''.site_url('ventas/sfac/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 		});';
 
 		//Imprime factura a Impresora de texto
@@ -3246,15 +3246,15 @@ class Sfac extends Controller {
 	function _anular($numero,$tipo_doc){
 		$mSQL="DELETE FROM sfpa WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero";
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'sfac_add'); }
+		if($ban==false){ memowrite($mSQL,'sfac'); }
 
 		$mSQL="UPDATE sfac SET tipo_doc='X' WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero";
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'sfac_add'); }
+		if($ban==false){ memowrite($mSQL,'sfac'); }
 
 		$mSQL="UPDATE sitems SET tipoa='X' WHERE tipoa=$dbtipo_doc AND numa=$dbnumero";
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'sfac_add'); }
+		if($ban==false){ memowrite($mSQL,'sfac'); }
 
 		//Descuenta de inventario
 	}
