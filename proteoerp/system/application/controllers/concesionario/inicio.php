@@ -14,7 +14,7 @@ class inicio extends Controller {
 		$this->load->library('rapyd');
 		//$this->datasis->modulo_id(216,1);
 		$this->instalar();
-		$mSQL="INSERT IGNORE INTO `sinv` (`codigo`, `descrip`, `unidad`, `tipo`, `comision`, `pond`, `ultimo`, `pvp_s`, `pvp_bs`, `iva`, `margen1`, `margen2`, `margen3`,`activo`) VALUES ('PLACA', 'PLACA', 'UNID.', 'Servicio', 0, 500, 500, 0, 0, 0, 0, 0, 0, 'S')";
+		$mSQL="INSERT IGNORE INTO `sinv` (`codigo`, `descrip`, `unidad`, `tipo`, `comision`, `pond`, `ultimo`, `pvp_s`, `pvp_bs`, `iva`, `margen1`, `margen2`, `margen3`,`activo`) VALUES ('PLACA', 'PLACA', 'UNID.', 'Articulo', 0, 500, 500, 0, 0, 0, 0, 0, 0, 'S')";
 		$this->db->simple_query($mSQL);
 	}
 
@@ -78,7 +78,9 @@ class inicio extends Controller {
 		$grid->column_orderby('A&ntilde;o' ,'anio','anio','align="center"');
 		$grid->column_orderby('Peso','<nformat><#peso#></nformat>','peso','align="right"');
 
-		$grid->add($this->urlext.'compra','Comprar Veh&iacute;culo');
+		if($this->secu->puede('210')){
+			$grid->add($this->urlext.'compra','Comprar Veh&iacute;culo');
+		}
 		$grid->build();
 
 		$data['filtro']  = $filter->output;
