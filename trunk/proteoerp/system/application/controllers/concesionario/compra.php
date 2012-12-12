@@ -10,7 +10,7 @@ class compra extends scst {
 		parent::Controller();
 		$this->back_dataedit='compras/scst/datafilter';
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(216,1);
+		$this->datasis->modulo_id(210,1);
 	}
 
 	function index(){
