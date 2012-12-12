@@ -535,6 +535,19 @@ class DataForm{
 		return $result;
 	}
 
+	function js_escape($string){
+		$string=str_replace("\r",'',$string);
+		$string=str_replace("\n",'',$string);
+		$string=preg_replace('/\s\s+/', ' ', $string);
+		$string=addslashes($string);
+		$string=str_replace('<','\<',$string);
+		$string=str_replace('>','\>',$string);
+		$string=str_replace(';','\;',$string);
+		//$string=str_replace('<',"'+String.fromCharCode(60)+'",$string);
+		//$string=str_replace('>',"'+String.fromCharCode(62)+'",$string);
+		$string='\''.$string.'\'';
+		return $string;
+	}
 
  /**
   * process form, and perform dataobject action (update/insert)
