@@ -109,21 +109,6 @@ class venta extends sfac {
 			var falta=faltante(forma.name);
 			$(forma).val(falta);
 		}
-
-		function sfpatipo(id){
-			id     = id.toString();
-			tipo   = $("#tipo_"+id).val();
-			sfpade = '.$form->js_escape($sfpade).';
-			sfpach = '.$form->js_escape($sfpach).';
-			banco  = $("#banco_"+id).val();
-			if(tipo==\'DE\' || tipo==\'NC\' || tipo==\'DP\'){
-				$("#banco_"+id).html(sfpade);
-			}else{
-				$("#banco_"+id).html(sfpach);
-			}
-			$("#banco_"+id).val(banco);
-			return true;
-		}
 		';
 
 		$edit = new DataForm($this->url.'venta/'.$id.'/insert');
@@ -471,6 +456,22 @@ class venta extends sfac {
 
 		});
 		'.$jsc.'
+
+		function sfpatipo(id){
+			id     = id.toString();
+			tipo   = $("#tipo_"+id).val();
+			sfpade = '.$edit->js_escape($sfpade).';
+			sfpach = '.$edit->js_escape($sfpach).';
+			banco  = $("#banco_"+id).val();
+			if(tipo==\'DE\' || tipo==\'NC\' || tipo==\'DP\'){
+				$("#banco_"+id).html(sfpade);
+			}else{
+				$("#banco_"+id).html(sfpach);
+			}
+			$("#banco_"+id).val(banco);
+			return true;
+		}
+
 		</script>';
 
 		$data['content'] = $edit->output;
