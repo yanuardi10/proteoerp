@@ -258,7 +258,7 @@ class Scst extends Controller {
 									var res = $.parseJSON(r);
 									if ( res.status == "A"){
 										apprise(res.mensaje);
-										$( "#factuali" ).dialog( "close" );
+										$( "#factuali" ).dialog("close");
 										grid.trigger("reloadGrid");
 										'.$this->datasis->jwinopen(site_url('formatos/ver/COMPRA').'/\'+mid+"/id"').';
 										return true;
@@ -2911,10 +2911,13 @@ class Scst extends Controller {
 			if($cana>0){
 				$SQL="SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$id AND (motor IS NULL OR motor='' OR carroceria IS NULL OR carroceria='')";
 				$cana = $this->datasis->dameval($SQL);
-				if($cana > 0){
+				$SQL="SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$id";
+				$cana2 = $this->datasis->dameval($SQL);
+				if($cana > 0 || $cana2==0){
 					$this->error_string='Debe cargar los seriales de los veh&iacute;culos para poder recibir la compra ';
 					return false;
 				}
+
 			}
 			//Fin de la validacion vehicular
 
