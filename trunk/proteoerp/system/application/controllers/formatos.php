@@ -107,7 +107,7 @@ class Formatos extends Controller{
 		$this->load->helper('download');
 		$parametros= func_get_args();
 		if (count($parametros)>0){
-			$_arch_nombre=implode('-',$parametros);
+			//$_arch_nombre=implode('-',$parametros);
 			$_fnombre=array_shift($parametros);
 			$_dbfnombre=$this->db->escape($_fnombre);
 			$query = $this->db->query('SELECT txt FROM formatos WHERE nombre='.$_dbfnombre);
