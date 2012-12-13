@@ -126,7 +126,7 @@ class Sfac extends Controller {
 		$param['temas']        = array('proteo','darkness','anexos1');
 		$param['bodyscript']   = $bodyscript;
 		$param['tabs']         = false;
-		$param['encabeza']     = $this->titp;
+		$param['encabeza']     = "Cobro de Servicio";
 		$param['tamano']       = $this->datasis->getintramenu( substr($this->url,0,-1) );
 
 		$this->load->view('jqgrid/crud2',$param);
