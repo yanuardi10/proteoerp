@@ -233,7 +233,7 @@ class Ajax extends Controller {
 		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc, round(b.minimo*$ut,2) precio1, a.upago, a.telefono, b.id codigo
+			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc, round(b.minimo*$ut,2) precio1, a.upago, a.telefono, b.id codigo,b.minimo AS utribu
 				FROM scli AS a
 				JOIN tarifa AS b ON a.tarifa=b.id
 				WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb})
@@ -251,6 +251,7 @@ class Ajax extends Controller {
 					$retArray['precio1']  = $row['precio1'];
 					$retArray['telefono'] = $row['telefono'];
 					$retArray['upago']    = $row['upago'];
+					$retArray['utribu']   = $row['utribu'];
 					$retArray['direc']    = utf8_encode($row['direc']);
 					array_push($retorno, $retArray);
 				}

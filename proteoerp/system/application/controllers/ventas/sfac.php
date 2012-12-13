@@ -149,6 +149,15 @@ class Sfac extends Controller {
 		});';
 
 		$bodyscript .= '
+		jQuery("#boton1").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('ventas/sfac/dataprint/modify').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
+		});';
+
+		$bodyscript .= '
 		function sfacadd() {
 			$.post("'.site_url($this->url.'dataedit/create').'",
 			function(data){
@@ -1826,6 +1835,7 @@ class Sfac extends Controller {
 								$("#ftelefono").val("");
 								$("#ftarifa").val("");
 								$("#fupago").val("");
+								$("#utribu").text("0,000");
 							}else{
 								$.each(data,
 									function(i, val){
@@ -1846,6 +1856,7 @@ class Sfac extends Controller {
 					$("#fcodtar").val(ui.item.codigo);
 					$("#fdire11").val(ui.item.direc);
 					$("#fupago").val(ui.item.upago);
+					$("#utribu").text(nformat(ui.item.utribu,3));
 					totaliza();
 				}
 			});
@@ -1882,8 +1893,8 @@ class Sfac extends Controller {
 		<tr>
 			<td class="CaptionTD" align="right">Ultimo Pago: </td>
 			<td>&nbsp;<input name="fupago" id="fupago" type="text" value="201112" maxlengh="12" size="8" /></td>
-			<td  class="CaptionTD"  align="right">Tarifa</td>
-			<td>&nbsp;<input name="fcodtar" id="fcodtar" type="text" value="" maxlengh="12" size="15"  /></td>
+			<td  class="CaptionTD"  align="right">Unidades Trub.</td>
+			<td>&nbsp;<b id="utribu">0,000</b><input type="hidden" name="fcodtar" id="fcodtar" type="text" value="" maxlengh="12" size="15"  /></td>
 			<td  class="CaptionTD"  align="right">Monto</td>
 			<td>&nbsp;<input name="ftarifa" id="ftarifa" type="text" value="" maxlengh="12" size="12"  /></td>
 		</tr>
@@ -2792,6 +2803,117 @@ class Sfac extends Controller {
 			}
 		}
 	}
+
+	function dataprintser($st,$uid){
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit('Imprimir factura', 'sfac');
+		$id=$edit->get_from_dataobjetct('id');
+		$urlid=$edit->pk_URI();
+		$sfacforma=$this->datasis->traevalor('FORMATOSFAC','Especifica el metodo a ejecutar para descarga de formato de factura en Proteo Ej. descargartxt...');
+		if(empty($sfacforma)) $sfacforma='descargartxt';
+		$url=site_url('formatos/'.$sfacforma.'/FACTURA'.$urlid);
+		if(isset($this->back_url))
+			$edit->back_url = site_url($this->back_url);
+		else
+			$edit->back_url = site_url('ajax/reccierraventana');
+			//$edit->back_url = site_url($this->url.'dataedit/show/'.$uid);
+
+		$edit->back_save   = true;
+		$edit->back_delete = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+		//$edit->on_save_redirect   = false;
+
+		//$edit->post_process('update','_post_print_update');
+		$edit->pre_process('insert' ,'_pre_print_insert');
+		//$edit->pre_process('update' ,'_pre_print_update');
+		$edit->pre_process('delete' ,'_pre_print_delete');
+
+		//$edit->container = new containerField('impresion','La descarga se realizara en 5 segundos, en caso de no hacerlo haga click '.anchor('formatos/descargar/FACTURA'.$urlid,'aqui'));
+
+		$edit->nfiscal = new inputField('Control F&iacute;scal','nfiscal');
+		$edit->nfiscal->rule='max_length[12]|required';
+		$edit->nfiscal->size =14;
+		$edit->nfiscal->maxlength =12;
+		$edit->nfiscal->autocomplete=false;
+
+		$edit->tipo_doc = new inputField('Factura','tipo_doc');
+		$edit->tipo_doc->rule='max_length[1]';
+		$edit->tipo_doc->size =3;
+		$edit->tipo_doc->mode='autohide';
+		$edit->tipo_doc->maxlength =1;
+
+		$edit->numero = new inputField('N&uacute;mero','numero');
+		$edit->numero->rule='max_length[8]';
+		$edit->numero->mode='autohide';
+		$edit->numero->size =10;
+		$edit->numero->in='tipo_doc';
+		$edit->numero->maxlength =8;
+
+		$edit->fecha = new dateField('Fecha','fecha');
+		$edit->fecha->rule = 'chfecha';
+		$edit->fecha->mode = 'autohide';
+		$edit->fecha->size = 10;
+		$edit->fecha->maxlength =8;
+
+		$edit->cod_cli = new inputField('Cliente','cod_cli');
+		$edit->cod_cli->rule='max_length[5]';
+		$edit->cod_cli->size =7;
+		$edit->cod_cli->mode='autohide';
+		$edit->cod_cli->maxlength =5;
+
+		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre->rule='max_length[40]';
+		$edit->nombre->size =42;
+		$edit->nombre->mode='autohide';
+		$edit->nombre->in='cod_cli';
+		$edit->nombre->maxlength =40;
+
+		$edit->rifci = new inputField('Rif/Ci','rifci');
+		$edit->rifci->rule='max_length[13]';
+		$edit->rifci->size =15;
+		$edit->rifci->mode='autohide';
+		$edit->rifci->maxlength =13;
+
+		$edit->totalg = new inputField('Monto','totalg');
+		$edit->totalg->rule='max_length[12]|numeric';
+		$edit->totalg->css_class='inputnum';
+		$edit->totalg->size =14;
+		$edit->totalg->showformat='decimal';
+		$edit->totalg->mode='autohide';
+		$edit->totalg->maxlength =12;
+
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+
+			echo json_encode($rt);
+		}else{
+			$rt=array(
+				'status' =>'B',
+				'mensaje'=> utf8_encode(html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string))),
+				'pk'     =>''
+			);
+			//echo json_encode($rt);
+			echo $edit->output;
+		}
+
+		//$script= '<script type="text/javascript" >
+		//$(function() {
+		//	setTimeout(\'window.location="'.$url.'"\',5000);
+		//});
+		//</script>';
+
+
+	}
+
 
 	function dataprint($st,$uid){
 		$this->rapyd->load('dataedit');
