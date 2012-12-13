@@ -657,7 +657,7 @@ class Libros extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		$campo = $this->db->list_fields('siva');
+		$campos = $this->db->list_fields('siva');
 		if (!in_array('serie',$campos)){
 			$mSQL="ALTER TABLE `siva`  ADD COLUMN `serie` VARCHAR(20) NULL DEFAULT NULL AFTER `serial`;";
 			$this->db->simple_query($mSQL);
