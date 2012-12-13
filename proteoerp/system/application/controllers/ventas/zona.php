@@ -258,7 +258,7 @@ jQuery("#a1").click( function(){
 	}
 
 	function instala(){
-		 $campos = $this->db->list_fields('table_name');
+		 $campos = $this->db->list_fields('zona');
 
 		if (!in_array('id',$campos)){
 			$this->db->simple_query('ALTER TABLE zona DROP PRIMARY KEY');
