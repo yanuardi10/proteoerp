@@ -2462,7 +2462,7 @@ class ventassuper{
 		FROM fiscalz AS a
 		LEFT JOIN fiscalz AS b ON a.numero-1 = b.numero AND a.serial=b.serial
 		WHERE a.fecha BETWEEN $fdesde AND $fhasta";
-echo $mSQL;
+
 		$query = $this->db->query($mSQL);
 
 		if ($query->num_rows() > 0){
@@ -2550,7 +2550,7 @@ echo $mSQL;
 					}
 
 				}else{ //para las ventas al detal
-					$mSQL_1 = $emSQL."SELECT 
+					$mSQL_1 = $emSQL."SELECT
 						 NULL  AS id,
 						'V' AS libro,
 						IF(MID(a.numero,1,2)='NC','NC','FC') AS tipo_doc,
