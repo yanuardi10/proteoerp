@@ -110,8 +110,8 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.anchor('#',img(array('src'=>'assets/default/images/report-database.jpeg','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/repodupli\');return false;')).'</td>
-					<td>Detecta Reportes Duplicados</td>
+					<td>'.anchor('supervisor/mantenimiento/sfacdif',img(array('src'=>'assets/default/images/report-database.jpeg','border'=>'0','alt'=>'Actualizar'))).'</td>
+					<td>Detectar inconsistencias en Facturas</td>
 				</tr>
 			</table>
 		</div>
@@ -666,6 +666,65 @@ function bobo(url){'."
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function sfacdif(){
+		$this->datasis->modulo_id('900',1);
+		$this->rapyd->load('dataform','datagrid2');
+		$this->rapyd->uri->keep_persistence();
+
+		$edit = new DataForm('supervisor/mantenimiento/sfacdif/process');
+
+		$edit->fecha = new dateonlyField('Fecha','fecha');
+		$edit->fecha->rule       = 'chfecha';
+		$edit->fecha->dbformat   = 'Ymd';
+		$edit->fecha->size       = 10;
+		$edit->fecha->insertValue= date('Y-m-d');
+		$edit->fecha->maxlength  = 8;
+
+		$edit->submit('btnsubmit','Procesar');
+		$edit->build_form();
+
+		$tabla='';
+		if($edit->on_success()){
+			$dbfecha = $this->db->escape($edit->fecha->newValue);
+			$mSQL="CALL `sp_sfacdif`($dbfecha)";
+			$query = $this->db->query($mSQL);
+			$arr=array();
+			foreach ($query->result_array() as $row){
+				$arr[]=$row;
+			}
+
+			$grid = new DataGrid2('',$arr);
+			//$grid->per_page = 15;
+
+			$grid->column('Transac'        ,'transac' );
+			$grid->column('Tipo'           ,'<#tipo_doc#><#numsfac#>' );
+			$grid->column('Fecha'          ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$grid->column('Referencia'     ,'ref' );
+			$grid->column('N.fiscal'       ,'nfiscal' );
+			$grid->column('N.sfac'         ,'numsfac' );
+			$grid->column('N.sfpa'         ,'numsfpa' );
+			$grid->column('N.sitems'       ,'numitem' );
+			$grid->column('SFAC'           ,'<nformat><#sfac#></nformat>' );
+			$grid->column('SFPA'           ,'<nformat><#sfpa#></nformat>' );
+			$grid->column('SITEMS'         ,'<nformat><#sitems#></nformat>' );
+			$grid->column('Dif.Pag'        ,'<nformat><#dife1#></nformat>' );
+			$grid->column('Dif.ite'        ,'<nformat><#dife2#></nformat>' );
+			$grid->column('Usuario sfac'   ,'ususfac' );
+			$grid->column('Usuario sfpa'   ,'ususfpa' );
+			$grid->column('Usuario sitems' ,'usuitem' );
+
+			$grid->totalizar('dife1','dife2');
+			$grid->build();
+			$tabla=$grid->output;
+		}
+
+		$data['content'] = $edit->output.$tabla;
+		$data['title']   = heading('Diferencia en facturaci&ocute;1n');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
 
 	function contadores(){
 		$this->datasis->modulo_id('900',1);
