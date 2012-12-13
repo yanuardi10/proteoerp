@@ -1,5 +1,5 @@
 <?php 
-require_once(BASEPATH.'application/controllers/validaciones.php');
+//require_once(BASEPATH.'application/controllers/validaciones.php');
 class Club extends Controller {
 	var $mModulo = 'CLUB';
 	var $titp    = 'Modulo CLUB';
@@ -81,7 +81,7 @@ class Club extends Controller {
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
-				$.post("'.site_url('supermercado/club/dataedit/modify').'/"+id, function(data){
+				$.post("'.site_url('supermercado/club/dataedit/modify').'/"+ret.cod_tar, function(data){
 					$("#fedita").html(data);
 					$("#fedita").dialog( "open" );
 				});
@@ -578,6 +578,7 @@ class Club extends Controller {
 		};
 	}
 
+/*
 	function dataedit(){
 		$this->rapyd->load('dataedit');
 
@@ -764,7 +765,7 @@ class Club extends Controller {
 }
 
 
-/*
+
 class Club extends validaciones {
  
 	function Club(){
@@ -816,6 +817,7 @@ class Club extends validaciones {
 		$data['title']   ='<h1>Modulo de Club de Compras</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
+*/
 
 	function dataedit(){
 		$modbus=array(
@@ -849,11 +851,11 @@ class Club extends validaciones {
 		';
 
 		$this->rapyd->load("dataedit");
-
 		$edit = new DataEdit("Club de Compras", "club");
+
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
-		$edit->back_url = site_url("supermercado/club/filteredgrid");
+		//$edit->back_url = site_url("supermercado/club/filteredgrid");
 		
 		$edit->pre_process('delete','_pre_delete');
 		$edit->pre_process('insert','_pre_insert');
@@ -966,36 +968,49 @@ class Club extends validaciones {
 		$edit->cod_cli->group = "Informaci&oacute;n financiera";
 
 		//$edit->buttons("modify", "save", "undo", "delete", "back");
-		$edit->buttons("modify","save","undo","back");
+		//$edit->buttons("modify","save","undo","back");
 		$edit->build();
 		
+		//$data['content'] = $edit->output;
+		//$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		//$data['title']   ='<h1>Modulo de Club de Compras</h1>';
+
+		$script = '';
+
 		$data['content'] = $edit->output;
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$data['title']   ='<h1>Modulo de Club de Compras</h1>';
-		$this->load->view('view_ventanas', $data);
+		$data['script']  = $script;
+		$this->load->view('jqgrid/ventanajq', $data);
+
+
+		//$this->load->view('view_ventanas', $data);
 	}
 	
 	function _pre_delete($do){
 		return FALSE;
 	}
+
 	function _pre_insert($do){
 		$do->set('modifi', date('Ymd'));
 	}
+
 	function _post_insert($do){
 		$codigo=$do->get('cedula');
 		$cod_tar=$do->get('cod_tar');
 		logusu('club',"CLUB DE COMPRAS $cod_tar $codigo CREADO");
 	}
+
 	function _post_update($do){
 		$codigo=$do->get('cedula');
 		$cod_tar=$do->get('cod_tar');
 		logusu('club',"CLUB DE COMPRAS $cod_tar $codigo  MODIFICADO");
 	}
+
 	function _post_delete($do){
 		$codigo=$do->get('cedula');
 		$cod_tar=$do->get('cod_tar');
 		logusu('club',"CLUB DE COMPRAS $cod_tar $codigo ELIMINADO ");
 	}
+
 	function chexiste($codigo){
 		$codigo=$this->input->post('cod_tar');
 		$check=$this->datasis->dameval("SELECT COUNT(*) FROM club WHERE cod_tar='$codigo'");
@@ -1012,5 +1027,5 @@ class Club extends validaciones {
 		}
 	}
 }
-* */
+
 ?>

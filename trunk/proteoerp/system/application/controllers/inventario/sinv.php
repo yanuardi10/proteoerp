@@ -2474,6 +2474,8 @@ class Sinv extends Controller {
 		$response   = $grid->getData('sinv', array(array()), array(), false, $mWHERE, 'codigo' );
 		$rs = $grid->jsonresult( $response);
 
+		memowrite(print_r($mWHERE,true),'VVV');
+		
 		//Guarda en la BD el Where para usarlo luego
 		$querydata = array( 'data1' => $this->session->userdata('dtgQuery') );
 		$emp = strpos($querydata['data1'],'WHERE ');
@@ -2488,7 +2490,6 @@ class Sinv extends Controller {
 			$querydata['data1'] = '';
 
 		$ids = $this->datasis->guardasesion($querydata);
-
 		echo $rs;
 	}
 
