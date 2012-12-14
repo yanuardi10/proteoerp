@@ -248,6 +248,8 @@ class mensualidad extends sfac_add {
 			$grid->db->from('scli   AS a');
 			$grid->db->join('tarifa AS b','a.tarifa=b.id');
 			$grid->db->where('a.grupo',$grupo);
+			$grid->db->where('a.upago IS NOT NULL');
+			$grid->db->where('a.upago <>','');
 			$grid->db->groupby('a.upago,a.tarifa');
 
 			//$grid->column('Facturar'   );

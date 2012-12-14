@@ -2903,21 +2903,23 @@ class Scst extends Controller {
 			$control=$this->datasis->dameval('SELECT control FROM scst WHERE  id='.$id);
 
 			//Chequea si tiene vehiculos y estan registrados los seriales
-			$SQL="SELECT COUNT(*) AS cana
-				FROM itscst AS b
-				JOIN sinv   AS c ON b.codigo=c.codigo
-				WHERE c.serial='V' AND b.control=".$this->db->escape($control);
-			$cana = $this->datasis->dameval($SQL);
-			if($cana>0){
-				$SQL="SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$id AND (motor IS NULL OR motor='' OR carroceria IS NULL OR carroceria='')";
+			if($this->db->table_exists('sinvehiculo')){
+				$SQL="SELECT COUNT(*) AS cana
+					FROM itscst AS b
+					JOIN sinv   AS c ON b.codigo=c.codigo
+					WHERE c.serial='V' AND b.control=".$this->db->escape($control);
 				$cana = $this->datasis->dameval($SQL);
-				$SQL="SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$id";
-				$cana2 = $this->datasis->dameval($SQL);
-				if($cana > 0 || $cana2==0){
-					$this->error_string='Debe cargar los seriales de los veh&iacute;culos para poder recibir la compra ';
-					return false;
-				}
+				if($cana>0){
+					$SQL="SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$id AND (motor IS NULL OR motor='' OR carroceria IS NULL OR carroceria='')";
+					$cana = $this->datasis->dameval($SQL);
+					$SQL="SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$id";
+					$cana2 = $this->datasis->dameval($SQL);
+					if($cana > 0 || $cana2==0){
+						$this->error_string='Debe cargar los seriales de los veh&iacute;culos para poder recibir la compra ';
+						return false;
+					}
 
+				}
 			}
 			//Fin de la validacion vehicular
 

@@ -111,7 +111,8 @@ class Sfac extends Controller {
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fcobroser", "title"=>"Cobro de servicio")
+			array("id"=>"fcobroser", "title"=>"Cobro de servicio"),
+			array("id"=>"fimpser"  , "title"=>"Imprimir Factura")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -161,6 +162,7 @@ class Sfac extends Controller {
 		function sfacadd() {
 			$.post("'.site_url($this->url.'dataedit/create').'",
 			function(data){
+				$("#fimpser").html("");
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
 			})
@@ -174,6 +176,7 @@ class Sfac extends Controller {
 				mId = id;
 				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
 					$("#fborra").html("");
+					$("#fimpser").html("");
 					$("#fedita").html(data);
 					$("#fedita").dialog({ buttons: { Ok: function() { $( this ).dialog( "close" ); } } });
 					$("#fedita").dialog( "open" );
@@ -192,6 +195,7 @@ class Sfac extends Controller {
 					mId = id;
 					$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(data){
 						$("#fedita").html("");
+						$("#fimpser").html("");
 						$("#fborra").html(data);
 						$("#fborra").dialog( "open" );
 					});
@@ -220,13 +224,13 @@ class Sfac extends Controller {
 		}
 
 		//Imprime factura a Impresora de texto
-		$bodyscript .= '
-		jQuery("#imptxt").click( function(){
-			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				window.open(\''.site_url('formatos/descargartxt/FACTSER').'/\'+id, \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
-			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
-		});';
+		//$bodyscript .= '
+		//jQuery("#imptxt").click( function(){
+		//	var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+		//	if (id)	{
+		//		window.open(\''.site_url('formatos/descargartxt/FACTSER').'/\'+id, \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+		//	} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
+		//});';
 
 		//Precierre
 		$bodyscript .= '
@@ -237,11 +241,62 @@ class Sfac extends Controller {
 
 		//Prepara Pago o Abono
 		$bodyscript .= '
-			$( "#cobroser" ).click(function() {
+			$("#cobroser").click(function() {
 				$.post("'.site_url('ventas/sfac/fcobroser').'", function(data){
 					$("#fcobroser").html(data);
 				});
 				$( "#fcobroser" ).dialog( "open" );
+			});
+
+			$("#imptxt").click(function(){
+				var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					$.post("'.site_url('ventas/sfac/dataprintser/modify').'/"+id, function(data){
+						$("#fimpser").html(data);
+					});
+					$("#fimpser").dialog( "open" );
+				}else{
+					$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+				}
+			});
+
+			$("#fimpser").dialog({
+				autoOpen: false, height: 420, width: 400, modal: true,
+				buttons: {
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					$.ajax({
+						type: "POST",
+						dataType: "html",
+						async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									$("#fimpser").dialog( "close" );
+									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+									apprise("Registro Guardado");
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#fimpser").html(r);
+							}
+						}
+					})},
+				"Imprimir": function() {
+						var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+						location.href="'.site_url('formatos/descargartxt/FACTSER').'/"+id;
+					},
+				"Cancelar": function() { $( this ).dialog( "close" ); }
+				},
+				close: function() {
+					$("#fimpser").html("");
+				}
 			});
 
 			$("#fedita").dialog({
@@ -2877,13 +2932,8 @@ class Sfac extends Controller {
 		$edit->rifci->mode='autohide';
 		$edit->rifci->maxlength =13;
 
-		$edit->totalg = new inputField('Monto','totalg');
-		$edit->totalg->rule='max_length[12]|numeric';
-		$edit->totalg->css_class='inputnum';
-		$edit->totalg->size =14;
-		$edit->totalg->showformat='decimal';
-		$edit->totalg->mode='autohide';
-		$edit->totalg->maxlength =12;
+		$total   = $edit->get_from_dataobjetct('totalg');
+		$edit->totalg = new freeField('<b>Monto a pagar</b>','monto','<b id="vh_monto" style="font-size:2em">'.nformat($total).'</b>');
 
 		$edit->build();
 
@@ -2904,12 +2954,6 @@ class Sfac extends Controller {
 			//echo json_encode($rt);
 			echo $edit->output;
 		}
-
-		//$script= '<script type="text/javascript" >
-		//$(function() {
-		//	setTimeout(\'window.location="'.$url.'"\',5000);
-		//});
-		//</script>';
 
 
 	}
