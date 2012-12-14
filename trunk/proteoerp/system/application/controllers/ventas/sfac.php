@@ -346,7 +346,11 @@ class Sfac extends Controller {
 									$("#fcobroser").dialog( "close" );
 									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
 									apprise(data);
-									'.$this->datasis->jwinopen(site_url('formatos/descargartxt/FACTSER').'/\'+data.substr(15,10)+\'/id\'').';
+									$("#fcobroser").html("");
+									$.post("'.site_url('ventas/sfac/dataprintser/modify').'/"+data.substr(15,10), function(data){
+										$("#fimpser").html(data);
+									});
+									$("#fimpser").dialog( "open" );
 									return true;
 								}else{
 									apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+data);
