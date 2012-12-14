@@ -293,64 +293,13 @@ class inicio extends Controller {
 	}
 
 	function instalar(){
-		if (!$this->db->table_exists('sinvehiculo')) {
-			$mSQL="CREATE TABLE `sinvehiculo` (
-				`id` INT(10) NOT NULL AUTO_INCREMENT,
-				`id_sfac` INT(10) NULL DEFAULT NULL,
-				`id_scst` INT(10) NULL DEFAULT NULL,
-				`codigo_sinv` VARCHAR(15) NULL DEFAULT '0',
-				`modelo` VARCHAR(50) NULL DEFAULT '0',
-				`color` VARCHAR(50) NULL DEFAULT '0',
-				`motor` VARCHAR(50) NULL DEFAULT '0',
-				`carroceria` VARCHAR(50) NULL DEFAULT '0',
-				`uso` VARCHAR(50) NULL DEFAULT '0',
-				`tipo` VARCHAR(50) NULL DEFAULT '0',
-				`clase` VARCHAR(50) NULL DEFAULT '0',
-				`anio` VARCHAR(50) NULL DEFAULT '0',
-				`peso` DECIMAL(10,2) NULL DEFAULT '0.00',
-				`transmision` VARCHAR(50) NULL DEFAULT '0.00',
-				`placa` VARCHAR(10) NULL DEFAULT NULL,
-				`precioplaca` DECIMAL(10,2) NULL DEFAULT NULL,
-				`tasa` DECIMAL(10,2) NULL DEFAULT NULL,
-				`nombre` VARCHAR(200) NULL DEFAULT NULL,
-				`casa` VARCHAR(100) NULL DEFAULT NULL,
-				`calle` VARCHAR(100) NULL DEFAULT NULL,
-				`urb` VARCHAR(100) NULL DEFAULT NULL,
-				`ciudad` VARCHAR(100) NULL DEFAULT NULL,
-				`municipio` VARCHAR(100) NULL DEFAULT NULL,
-				`estado` VARCHAR(100) NULL DEFAULT NULL,
-				`cpostal` VARCHAR(10) NULL DEFAULT NULL,
-				`ctelefono1` VARCHAR(4) NULL DEFAULT NULL,
-				`telefono1` VARCHAR(8) NULL DEFAULT NULL,
-				`ctelefono2` VARCHAR(4) NULL DEFAULT NULL,
-				`telefono2` VARCHAR(8) NULL DEFAULT NULL,
-				`distrito` VARCHAR(100) NULL DEFAULT NULL,
-				`aseguradora` VARCHAR(200) NULL DEFAULT NULL,
-				`vence` DATE NULL DEFAULT NULL,
-				`nomban` VARCHAR(200) NULL DEFAULT NULL,
-				`banrif` VARCHAR(20) NULL DEFAULT NULL,
-				`representante` VARCHAR(100) NULL DEFAULT NULL,
-				`concesionario` VARCHAR(100) NULL DEFAULT NULL,
-				`concesionariorif` VARCHAR(20) NULL DEFAULT NULL,
-				`poliza` VARCHAR(50) NULL DEFAULT NULL,
-				`neumaticos` INT NULL DEFAULT NULL,
-				`tipo_neumatico` VARCHAR(50) NULL DEFAULT NULL,
-				`distanciaeje` FLOAT NULL DEFAULT NULL,
-				PRIMARY KEY (`id`)
-			)
-			COMMENT='Vehiculos a la venta'
-			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM";
-			$this->db->simple_query($mSQL);
-		}
-
-		if(!$this->db->field_exists('neumaticos', 'sinvehiculo')){
-			$mSQL = "ALTER TABLE `sinvehiculo`
-			ADD COLUMN `neumaticos` INT NULL DEFAULT NULL AFTER `poliza`,
-			ADD COLUMN `tipo_neumatico` VARCHAR(50) NULL DEFAULT NULL AFTER `neumaticos`,
-			ADD COLUMN `distanciaeje` FLOAT NULL DEFAULT NULL AFTER `marca`;";
-			$this->db->simple_query($mSQL);
-		}
+		//if(!$this->db->field_exists('neumaticos', 'sinvehiculo')){
+		//	$mSQL = "ALTER TABLE `sinvehiculo`
+		//	ADD COLUMN `neumaticos` INT NULL DEFAULT NULL AFTER `poliza`,
+		//	ADD COLUMN `tipo_neumatico` VARCHAR(50) NULL DEFAULT NULL AFTER `neumaticos`,
+		//	ADD COLUMN `distanciaeje` FLOAT NULL DEFAULT NULL AFTER `marca`;";
+		//	$this->db->simple_query($mSQL);
+		//}
 
 	}
 }
