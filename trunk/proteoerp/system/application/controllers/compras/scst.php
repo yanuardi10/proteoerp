@@ -16,21 +16,7 @@ class Scst extends Controller {
 	}
 
 	function index(){
-		if ( !$this->datasis->iscampo('scst','id') ) {
-			$this->db->simple_query('ALTER TABLE scst DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE scst ADD UNIQUE INDEX control (control)');
-			$this->db->simple_query('ALTER TABLE scst ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-
-			$this->db->simple_query("update tmenus set secu=1 where titulo='Incluye'");
-			$this->db->simple_query("update tmenus set secu=2 where titulo='Modifica'");
-			$this->db->simple_query("update tmenus set secu=3 where titulo='Prox'");
-			$this->db->simple_query("update tmenus set secu=4 where titulo='Ante'");
-			$this->db->simple_query("update tmenus set secu=5 where titulo='Elimina'");
-			$this->db->simple_query("update tmenus set secu=6 where titulo='Busca'");
-			$this->db->simple_query("update tmenus set secu=7 where titulo='Tabla'");
-			$this->db->simple_query("update tmenus set secu=8 where titulo='Lista'");
-			$this->db->simple_query("update tmenus set secu=9 where titulo='Otros'");
-		};
+		$this->instalar();
 		$this->datasis->modintramenu( 900, 650, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -3685,4 +3671,73 @@ class Scst extends Controller {
 		logusu('scst',"Compra $codigo control $control SERIALES CAMBIADOS");
 	}
 
+	function instalar(){
+		if (!$this->db->table_exists('sinvehiculo')) {
+			$mSQL="CREATE TABLE `sinvehiculo` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`id_sfac` INT(10) NULL DEFAULT NULL,
+				`id_scst` INT(10) NULL DEFAULT NULL,
+				`codigo_sinv` VARCHAR(15) NULL DEFAULT NULL,
+				`modelo` VARCHAR(50) NULL DEFAULT NULL,
+				`color` VARCHAR(50) NULL DEFAULT NULL,
+				`motor` VARCHAR(50) NULL DEFAULT NULL,
+				`carroceria` VARCHAR(50) NULL DEFAULT NULL,
+				`uso` VARCHAR(50) NULL DEFAULT NULL,
+				`tipo` VARCHAR(50) NULL DEFAULT NULL,
+				`clase` VARCHAR(50) NULL DEFAULT NULL,
+				`anio` VARCHAR(50) NULL DEFAULT NULL,
+				`peso` DECIMAL(10,2) NULL DEFAULT '0.00',
+				`transmision` VARCHAR(50) NULL DEFAULT NULL,
+				`placa` VARCHAR(10) NULL DEFAULT NULL,
+				`precioplaca` DECIMAL(10,2) NULL DEFAULT NULL,
+				`tasa` DECIMAL(10,2) NULL DEFAULT NULL,
+				`nombre` VARCHAR(200) NULL DEFAULT NULL,
+				`casa` VARCHAR(100) NULL DEFAULT NULL,
+				`calle` VARCHAR(100) NULL DEFAULT NULL,
+				`urb` VARCHAR(100) NULL DEFAULT NULL,
+				`ciudad` VARCHAR(100) NULL DEFAULT NULL,
+				`municipio` VARCHAR(100) NULL DEFAULT NULL,
+				`estado` VARCHAR(100) NULL DEFAULT NULL,
+				`cpostal` VARCHAR(10) NULL DEFAULT NULL,
+				`ctelefono1` VARCHAR(4) NULL DEFAULT NULL,
+				`telefono1` VARCHAR(8) NULL DEFAULT NULL,
+				`ctelefono2` VARCHAR(4) NULL DEFAULT NULL,
+				`telefono2` VARCHAR(8) NULL DEFAULT NULL,
+				`distrito` VARCHAR(100) NULL DEFAULT NULL,
+				`aseguradora` VARCHAR(200) NULL DEFAULT NULL,
+				`vence` DATE NULL DEFAULT NULL,
+				`nomban` VARCHAR(200) NULL DEFAULT NULL,
+				`banrif` VARCHAR(20) NULL DEFAULT NULL,
+				`representante` VARCHAR(100) NULL DEFAULT NULL,
+				`concesionario` VARCHAR(100) NULL DEFAULT NULL,
+				`concesionariorif` VARCHAR(20) NULL DEFAULT NULL,
+				`poliza` VARCHAR(50) NULL DEFAULT NULL,
+				`neumaticos` INT(11) NULL DEFAULT NULL,
+				`tipo_neumatico` VARCHAR(50) NULL DEFAULT NULL,
+				`distanciaeje` FLOAT NULL DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			)
+			COMMENT='Vehiculos a la venta'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
+		}
+
+		if ( !$this->datasis->iscampo('scst','id') ) {
+			$this->db->simple_query('ALTER TABLE scst DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE scst ADD UNIQUE INDEX control (control)');
+			$this->db->simple_query('ALTER TABLE scst ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+
+			$this->db->simple_query("update tmenus set secu=1 where titulo='Incluye'");
+			$this->db->simple_query("update tmenus set secu=2 where titulo='Modifica'");
+			$this->db->simple_query("update tmenus set secu=3 where titulo='Prox'");
+			$this->db->simple_query("update tmenus set secu=4 where titulo='Ante'");
+			$this->db->simple_query("update tmenus set secu=5 where titulo='Elimina'");
+			$this->db->simple_query("update tmenus set secu=6 where titulo='Busca'");
+			$this->db->simple_query("update tmenus set secu=7 where titulo='Tabla'");
+			$this->db->simple_query("update tmenus set secu=8 where titulo='Lista'");
+			$this->db->simple_query("update tmenus set secu=9 where titulo='Otros'");
+		};
+
+	}
 }
