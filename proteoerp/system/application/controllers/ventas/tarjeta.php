@@ -133,7 +133,7 @@ jQuery("#a1").click( function(){
 			'width'         => 40,
 			'edittype'      => "'select'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{value: {"A":"Activo","I":"Inactivo" }, style:"width:100px" }'
+			'editoptions'   => '{value: {"S":"Activo","N":"Inactivo" }, style:"width:100px" }'
 		));
 
 		$grid->addField('comision');
