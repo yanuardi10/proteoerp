@@ -17,11 +17,11 @@ funciones
 	existetabla($tabla)
 	istabla($tabla)
 	iscampo($tabla,$campo)
-	isindice($tabla, $indice)             // SI EXISTE EL INDICE
-	agregacol($tabla,$columna,$tipo)      // AGREGA COLUMNA A TABLA
-	guardasesion($datos)                  // GUARDA DATOS DE SESION EN MYSQL
+	isindice($tabla, $indice)                // SI EXISTE EL INDICE
+	agregacol($tabla,$columna,$tipo)         // AGREGA COLUMNA A TABLA
+	guardasesion($datos)                     // GUARDA DATOS DE SESION EN MYSQL
 	modintramenu( $ancho, $alto, $ejecutar ) // Modifica tamano de ventana Intramenu
-
+	creaintramenu( $opcion = array() )    // Crea opcion en el menu
 
 	//FUNCIONES DE FECHA
 	adia()                                // ARREGLO DE DIAS
@@ -1446,9 +1446,21 @@ class Datasis {
 		$CI->db->simple_query($mSQL);
 	}
 
+
 	//**************************************************
 	//
-	//       Modifica Intramenu
+	//       Inserta Intramenu
+	//
+	function creaintramenu( $data = array() ) {
+		$CI =& get_instance();
+		if ( !empty($opcion) ) 
+			$this->db->insert('intramenu', $data);
+	}
+
+
+	//**************************************************
+	//
+	//       Lee Intramenu
 	//
 	function getintramenu( $ejecutar ){
 		$CI =& get_instance();

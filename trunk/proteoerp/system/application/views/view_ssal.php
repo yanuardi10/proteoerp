@@ -14,8 +14,11 @@ $scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'
 $scampos .='<td class="littletablerow" align="left" >'.$campos['itdescrip']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cantidad']['field'].  '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['costo']['field']. '</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itssal(<#i#>);return false;">Eliminar</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itssal(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
+
+
+
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
@@ -48,9 +51,6 @@ function del_itssal(id){
 
 <table align='center' width="95%">
 	<tr>
-		<td align=right><?php echo $container_tr?></td>
-	</tr>
-	<tr>
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
@@ -79,17 +79,15 @@ function del_itssal(id){
 	</tr>
 	<tr>
 		<td>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:250px'>
 		<table width='100%'>
 			<tr>
-				<th colspan='6' class="littletableheader">Lista de Art&iacute;culos</th>
-			</tr>
-			<tr>
-				<td class="littletableheader">C&oacute;digo</td>
-				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader">Cantidad</td>
-				<td class="littletableheader">Costo</td>
+				<td width='135' bgcolor='#7098D0' align='center'>C&oacute;digo</td>
+				<td bgcolor='#7098D0'>Descripci&oacute;n</td>
+				<td bgcolor='#7098D0'>Cantidad</td>
+				<td bgcolor='#7098D0'>Costo</td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheader">&nbsp;</td>
+					<td bgcolor='#7098D0'>&nbsp;</td>
 				<?php } ?>
 			</tr>
 
@@ -108,7 +106,7 @@ function del_itssal(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itssal(<?=$i ?>);return false;'>Eliminar</a>
+					<a href='#' onclick='del_itssal(<?=$i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
 				</td>
 				<?php } ?>
 			</tr>
@@ -118,6 +116,7 @@ function del_itssal(id){
 				<td id='cueca'></td>
 			</tr>
 		</table>
+		</div>
 		<?php echo $container_bl ?>
 		<?php echo $container_br ?>
 		</td>
