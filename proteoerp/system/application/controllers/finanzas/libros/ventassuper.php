@@ -2461,7 +2461,8 @@ class ventassuper{
 			a.ncnumero AS ncnumero
 		FROM fiscalz AS a
 		LEFT JOIN fiscalz AS b ON a.numero-1 = b.numero AND a.serial=b.serial
-		WHERE a.fecha BETWEEN $fdesde AND $fhasta";
+		WHERE a.fecha BETWEEN $fdesde AND $fhasta
+		";
 
 		$query = $this->db->query($mSQL);
 
@@ -2550,99 +2551,106 @@ class ventassuper{
 					}
 
 				}else{ //para las ventas al detal
-					$mSQL_1 = $emSQL."SELECT
-						 NULL  AS id,
-						'V' AS libro,
-						IF(MID(a.numero,1,2)='NC','NC','FC') AS tipo_doc,
-						'FP'                                 AS fuente,
-						CONCAT('0',MID(a.caja,1,1))          AS sucursal,
-						a.fecha          AS fecha,
-						a.numero AS numa,
-						a.numero AS final,
-						a.caja,
-						' '       AS nfiscal,
-						' '       AS nhfiscal,
-						a.serial  AS referen,
-						' '       AS planilla,
-						c.cod_tar AS clipro,
-						CONCAT(c.nombres,' ', c.apellidos) AS nombre,
-						'CO'                               AS contribu,
-						a.rifci                            AS rif,
-						'01'                               AS registro,
-						'S'                                AS nacional,
-						a.exento,
-						a.baseg,
-						a.ivag AS impug,
-						a.basea,
-						a.ivaa AS impua,
-						a.baser,
-						a.ivar AS impur,
-						a.baseg+a.basea+a.baser AS stotal,
-						a.ivag+a.ivar+a.ivaa    AS impuesto,
-						a.total AS gtotal,
-						0       AS reiva,
-						${mes}01     AS fechal,
-						0            AS fafecta,
-						a.hora,
-						$dbcierrez AS cierrez
-					FROM sfacfis AS a
-					LEFT JOIN viefac AS b ON a.fecha=b.fecha AND a.cajero=b.cajero AND a.referencia=b.numero
-					LEFT JOIN club c ON b.cliente = c.cod_tar
-					WHERE
-					a.numero>$dbffdesde AND a.numero<=$dbffhasta AND a.serial=${dbserial}
-					AND a.rifci REGEXP '^[VEJG][0-9]{9}$'
-					AND a.tipo_doc='FC'";
-					$flag=$this->db->simple_query($mSQL_1);
-					if($flag==false){
-						memowrite('2'.$mSQL_1,'genesfacfiscalpdv');
+
+					if($ffhasta>$ffdesde){
+						$mSQL_1 = $emSQL."SELECT
+							 NULL  AS id,
+							'V' AS libro,
+							IF(a.tipo_doc='NC','NC','FC') AS tipo_doc,
+							'FP'                                 AS fuente,
+							CONCAT('0',MID(a.caja,1,1))          AS sucursal,
+							a.fecha          AS fecha,
+							a.numero AS numa,
+							a.numero AS final,
+							a.caja,
+							' '       AS nfiscal,
+							' '       AS nhfiscal,
+							a.serial  AS referen,
+							' '       AS planilla,
+							c.cod_tar AS clipro,
+							CONCAT(c.nombres,' ', c.apellidos) AS nombre,
+							'CO'                               AS contribu,
+							a.rifci                            AS rif,
+							'01'                               AS registro,
+							'S'                                AS nacional,
+							a.exento,
+							a.baseg,
+							a.ivag AS impug,
+							a.basea,
+							a.ivaa AS impua,
+							a.baser,
+							a.ivar AS impur,
+							a.baseg+a.basea+a.baser AS stotal,
+							a.ivag+a.ivar+a.ivaa    AS impuesto,
+							a.total AS gtotal,
+							0       AS reiva,
+							${mes}01     AS fechal,
+							0            AS fafecta,
+							a.hora,
+							$dbcierrez AS cierrez
+						FROM sfacfis AS a
+						LEFT JOIN viefac AS b ON a.fecha=b.fecha AND a.cajero=b.cajero AND a.referencia=b.numero
+						LEFT JOIN club c ON b.cliente = c.cod_tar
+						WHERE
+						a.numero>$dbffdesde AND a.numero<=$dbffhasta AND a.serial=${dbserial}
+						AND a.rifci REGEXP '^[VEJG][0-9]{9}$'
+						AND a.tipo_doc='FC'";
+						$flag=$this->db->simple_query($mSQL_1);
+						if($flag==false){
+							memowrite('2'.$mSQL_1,'genesfacfiscalpdv');
+						}
 					}
 
-					$mSQL_1 = $emSQL."SELECT
-						 NULL  AS id,
-						'V' AS libro,
-						IF(MID(a.numero,1,2)='NC','NC','FC') AS tipo_doc,
-						'FP'                                 AS fuente,
-						CONCAT('0',MID(a.caja,1,1))          AS sucursal,
-						a.fecha          AS fecha,
-						a.numero AS numa,
-						a.numero AS final,
-						a.caja,
-						' '       AS nfiscal,
-						' '       AS nhfiscal,
-						a.serial  AS referen,
-						' '       AS planilla,
-						c.cod_tar AS clipro,
-						CONCAT(c.nombres,' ', c.apellidos) AS nombre,
-						'CO'                               AS contribu,
-						c.cedula                           AS rif,
-						'01'                               AS registro,
-						'S'                                AS nacional,
-						a.exento,
-						a.baseg,
-						a.ivag AS impug,
-						a.basea,
-						a.ivaa AS impua,
-						a.baser,
-						a.ivar AS impur,
-						a.baseg+a.basea+a.baser AS stotal,
-						a.ivag+a.ivar+a.ivaa    AS impuesto,
-						a.total AS gtotal,
-						0       AS reiva,
-						${mes}01     AS fechal,
-						0            AS fafecta,
-						a.hora,
-						$dbcierrez AS cierrez
-					FROM sfacfis AS a
-					LEFT JOIN club c ON a.rifci = c.cedula
-					WHERE
-					a.numero>$dbncdesde AND a.numero<=$dbnchasta AND a.serial=${dbserial}
-					AND c.cedula REGEXP '^[VEJG][0-9]{9}$'
-					AND a.tipo_doc='NC'";
-					$flag=$this->db->simple_query($mSQL_1);
-					if($flag==false){
-						memowrite('3'.$mSQL_1,'genesfacfiscalpdv');
+					if($nchasta>$ncdesde){
+						$mSQL_1 = $emSQL."SELECT
+							 NULL  AS id,
+							'V' AS libro,
+							IF(a.tipo_doc='NC','NC','FC') AS tipo_doc,
+							'FP'                                 AS fuente,
+							CONCAT('0',MID(a.caja,1,1))          AS sucursal,
+							a.fecha          AS fecha,
+							a.numero AS numa,
+							a.numero AS final,
+							a.caja,
+							' '       AS nfiscal,
+							' '       AS nhfiscal,
+							a.serial  AS referen,
+							' '       AS planilla,
+							c.cod_tar AS clipro,
+							CONCAT(c.nombres,' ', c.apellidos) AS nombre,
+							'CO'                               AS contribu,
+							c.cedula                           AS rif,
+							'01'                               AS registro,
+							'S'                                AS nacional,
+							(-1)*a.exento,
+							(-1)*a.baseg,
+							(-1)*a.ivag AS impug,
+							(-1)*a.basea,
+							(-1)*a.ivaa AS impua,
+							(-1)*a.baser,
+							(-1)*a.ivar AS impur,
+							(-1)*(a.baseg+a.basea+a.baser) AS stotal,
+							(-1)*(a.ivag+a.ivar+a.ivaa)    AS impuesto,
+							(-1)*a.total AS gtotal,
+							0       AS reiva,
+							${mes}01     AS fechal,
+							0            AS fafecta,
+							a.hora,
+							$dbcierrez AS cierrez
+						FROM sfacfis AS a
+						LEFT JOIN club c ON a.rifci = c.cedula
+						WHERE
+						a.numero>$dbncdesde AND a.numero<=$dbnchasta AND a.serial=${dbserial}
+						AND c.cedula REGEXP '^[VEJG][0-9]{9}$'
+						AND a.tipo_doc='NC'";
+						$flag=$this->db->simple_query($mSQL_1);
+						if($flag==false){
+							memowrite('3'.$mSQL_1,'genesfacfiscalpdv');
+						}
 					}
 				}
+
+				$NC=$FC=false;
 
 				$mSQL_2="SELECT tipo,
 					SUM(exento)    AS exento,
@@ -2652,37 +2660,67 @@ class ventassuper{
 					SUM(geneimpu)  AS ivag,
 					SUM(reduimpu)  AS ivar,
 					SUM(adicimpu)  AS ivaa
-				FROM siva WHERE  numero>${dbffdesde} AND numero<=${dbffhasta}  AND serial=$dbserial AND tipo IN ('FC','NC') AND fuente='FP'
+				FROM siva WHERE  numero>${dbffdesde} AND numero<=${dbffhasta}  AND serial=$dbserial AND tipo='FC' AND fuente='FP'
 				GROUP BY tipo";
-
 				$query_2 = $this->db->query($mSQL_2);
 				$cant=$query_2->num_rows();
-				$NC=$FC=false;
 
-				foreach ($query_2->result() as $rrow){
-					if($rrow->tipo=='FC'){ $FC=TRUE;
-						$data['nombre']    = 'VENTAS A NO CONTRIBUYENTE';
-						$data['exento']    = $row->exento-$rrow->exento;
-						$data['general']   = $row->base  -$rrow->baseg;
-						$data['reducida']  = $row->base1 -$rrow->baser;
-						$data['adicional'] = $row->base2 -$rrow->basea;
-						$data['geneimpu']  = $row->iva   -$rrow->ivag;
-						$data['reduimpu']  = $row->iva1  -$rrow->ivar;
-						$data['adicimpu']  = $row->iva2  -$rrow->ivaa;
-						$data['numhasta']  = $row->factura;
-						$data['numero']    = $ffdesde;
-					}elseif($rrow->tipo=='NC'){ $NC=TRUE;
-						$data['nombre']    = 'NOTAS DE CREDITO A NO CONTRIBUYENTE';
-						$data['exento']    = (-1)*($row->ncexento+$rrow->exento);
-						$data['general']   = (-1)*($row->ncbase  +$rrow->baseg);
-						$data['reducida']  = (-1)*($row->ncbase1 +$rrow->baser);
-						$data['adicional'] = (-1)*($row->ncbase2 +$rrow->basea);
-						$data['geneimpu']  = (-1)*($row->nciva   +$rrow->ivag);
-						$data['reduimpu']  = (-1)*($row->nciva1  +$rrow->ivar);
-						$data['adicimpu']  = (-1)*($row->nciva2  +$rrow->ivaa);
-						$data['numhasta']  = $row->ncnumero;
-						$data['numero']    = $ncdesde;
+				if ($query_2->num_rows() > 0){
+					$rrow = $query_2->row();
+					$FC=true;
+					$data['nombre']    = 'VENTAS A NO CONTRIBUYENTE';
+					$data['exento']    = $row->exento-$rrow->exento;
+					$data['general']   = $row->base  -$rrow->baseg;
+					$data['reducida']  = $row->base1 -$rrow->baser;
+					$data['adicional'] = $row->base2 -$rrow->basea;
+					$data['geneimpu']  = $row->iva   -$rrow->ivag;
+					$data['reduimpu']  = $row->iva1  -$rrow->ivar;
+					$data['adicimpu']  = $row->iva2  -$rrow->ivaa;
+					$data['numhasta']  = str_pad($row->factura+1,8,'0',STR_PAD_LEFT);
+					$data['numero']    = $ffdesde;
+
+					$data['contribu'] = 'NO';
+					$data['stotal']   =$data['exento']+$data['general']+$data['reducida']+$data['adicional'];
+					$data['impuesto'] =$data['geneimpu']+$data['reduimpu']+$data['adicimpu'];
+					$data['gtotal']   =$data['stotal']+$data['impuesto'];
+
+					if($data['gtotal']!=0){
+						$mmSQL =$this->db->insert_string('siva', $data);
+						$flag=$this->db->simple_query($mmSQL);
+						if(!$flag){memowrite('4'.$mmSQL,'genesfacfiscalpdv'); return 0; };
 					}
+				}
+
+
+				$mSQL_2="SELECT tipo,
+					SUM(exento)    AS exento,
+					SUM(general)   AS baseg,
+					SUM(reducida)  AS baser,
+					SUM(adicional) AS basea,
+					SUM(geneimpu)  AS ivag,
+					SUM(reduimpu)  AS ivar,
+					SUM(adicimpu)  AS ivaa
+				FROM siva WHERE  numero>${dbncdesde} AND numero<=${dbnchasta}  AND serial=$dbserial AND tipo='NC' AND fuente='FP'
+				GROUP BY tipo";
+				$query_2 = $this->db->query($mSQL_2);
+				$cant=$query_2->num_rows();
+
+				if ($query_2->num_rows() > 0){
+					$rrow = $query_2->row();
+
+					$NC=true;
+					$data['nombre']    = 'NOTAS DE CREDITO A NO CONTRIBUYENTE';
+					$data['exento']    = (-1)*($row->ncexento+$rrow->exento);
+					$data['general']   = (-1)*($row->ncbase  +$rrow->baseg);
+					$data['reducida']  = (-1)*($row->ncbase1 +$rrow->baser);
+					$data['adicional'] = (-1)*($row->ncbase2 +$rrow->basea);
+					$data['geneimpu']  = (-1)*($row->nciva   +$rrow->ivag);
+					$data['reduimpu']  = (-1)*($row->nciva1  +$rrow->ivar);
+					$data['adicimpu']  = (-1)*($row->nciva2  +$rrow->ivaa);
+					$data['numhasta']  = str_pad($row->ncnumero+1,8,'0',STR_PAD_LEFT);
+					$data['numero']    = $ncdesde;
+
+					$data['contribu'] = 'NO';
 					$data['stotal']   =$data['exento']+$data['general']+$data['reducida']+$data['adicional'];
 					$data['impuesto'] =$data['geneimpu']+$data['reduimpu']+$data['adicimpu'];
 					$data['gtotal']   =$data['stotal']+$data['impuesto'];
@@ -2695,7 +2733,7 @@ class ventassuper{
 				}
 
 				//Si no hay ventas a contribuyente
-				if(!$NC){
+				if(!$NC){ //$NC=false;
 					$data['nombre']    = 'NOTAS DE CREDITO A NO CONTRIBUYENTE';
 					$data['exento']    = (-1)*($row->ncexento);
 					$data['general']   = (-1)*($row->ncbase  );
@@ -2707,17 +2745,18 @@ class ventassuper{
 					$data['numhasta']  = $row->ncnumero;
 					$data['numero']    = $ncdesde;
 
+					$data['contribu'] = 'NO';
 					$data['stotal']   =$data['exento']+$data['general']+$data['reducida']+$data['adicional'];
 					$data['impuesto'] =$data['geneimpu']+$data['reduimpu']+$data['adicimpu'];
 					$data['gtotal']   =$data['stotal']+$data['impuesto'];
 
-					if($data['gtotal']<0){
+					if($data['gtotal']!=0){
 						$mmSQL =$this->db->insert_string('siva', $data);
 						$flag=$this->db->simple_query($mmSQL);
 						if($flag ==false ){ memowrite('5'.$mmSQL,'genesfacfiscalpdv'); return 0; };
 					}
 				}
-				if(!$FC){
+				if(!$FC){ //$FC=false;
 					$data['nombre']    = 'VENTAS A NO CONTRIBUYENTE';
 					$data['exento']    = $row->exento;
 					$data['general']   = $row->base  ;
@@ -2729,11 +2768,12 @@ class ventassuper{
 					$data['numhasta']  = $row->factura;
 					$data['numero']    = $ffdesde;
 
+					$data['contribu'] = 'NO';
 					$data['stotal']   =$data['exento']+$data['general']+$data['reducida']+$data['adicional'];
 					$data['impuesto'] =$data['geneimpu']+$data['reduimpu']+$data['adicimpu'];
 					$data['gtotal']   =$data['stotal']+$data['impuesto'];
 
-					if($data['gtotal']>0){
+					if($data['gtotal']!=0){
 						$mmSQL =$this->db->insert_string('siva', $data);
 						$flag=$this->db->simple_query($mmSQL);
 						if(!$flag){memowrite('6'.$mmSQL,'genesfacfiscalpdv'); return 0; };
