@@ -22,6 +22,11 @@ class mensualidad extends sfac {
 		$cliente = $this->input->post('cod_cli');
 		$cana    = $this->input->post('cana_0');
 
+		if(empty($cana) || empty($cliente)){
+			echo 'Los campos de cliente y cantidad son obligatorios.';
+			return;
+		}
+
 		$sclir  = $this->datasis->damereg("SELECT * FROM scli WHERE cliente= ".$this->db->escape($cliente));
 		$sinvr  = $this->datasis->damereg("SELECT * FROM sinv WHERE codigo = ".$this->db->escape($codigo));
 
@@ -81,7 +86,7 @@ class mensualidad extends sfac {
 
 			$getdata=json_decode($rt,true);
 			if($getdata['status']=='A'){
-				echo "Registro guardado ".$getdata['pk']['id'];
+				echo "Venta Guardada ".$getdata['pk']['id'];
 			}else{
 				echo $getdata['mensaje'];
 			}
