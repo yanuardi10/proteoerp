@@ -79,7 +79,7 @@ class mensualidad extends sfac {
 				$rt = ob_get_contents();
 			@ob_end_clean();
 
-			$getdata=json_decode($rt);
+			$getdata=json_decode($rt,true);
 			if($getdata['status']=='A'){
 				echo "Registro guardado ".$getdata['pk']['id'];
 			}else{
