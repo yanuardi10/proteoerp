@@ -81,6 +81,7 @@ class Sfac extends Controller {
 		$mModulo='SFAC';
 
 		$grid = $this->defgrid( false, 'false' );
+		$grid->setAdd(false);
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdatam/'));
 
