@@ -1,6 +1,6 @@
 <?php
-require_once(BASEPATH.'application/controllers/ventas/sfac_add.php');
-class mensualidad extends sfac_add {
+require_once(BASEPATH.'application/controllers/ventas/sfac.php');
+class mensualidad extends sfac {
 
 	var $titp='Mensualidad';
 	var $tits='Cobro de servicios mensuales';
@@ -74,7 +74,17 @@ class mensualidad extends sfac_add {
 			$_POST['banco_0']      = '';
 			$_POST['monto_0']      = $_POST['tota_0']*(1+($sinvr['iva']/100)) ;
 
-			echo parent::dataedit();
+			ob_start();
+				parent::dataedit();
+				$rt = ob_get_contents();
+			@ob_end_clean();
+
+			$getdata=json_decode($rt);
+			if($getdata['status']=='A'){
+				echo "Registro guardado ".$getdata['pk']['id'];
+			}else{
+				echo $getdata['mensaje'];
+			}
 
 		}
 	}
@@ -137,6 +147,7 @@ class mensualidad extends sfac_add {
 		$dbgrupo = $this->db->escape($grupo);
 		$dbupago = $this->db->escape($upago);
 		$dbtarifa= $this->db->escape($tarifa);
+		$data   = '';
 
 		if($status=='insert'){
 			$codigo = $this->datasis->traevalor('SINVTARIFA');
@@ -144,7 +155,6 @@ class mensualidad extends sfac_add {
 			$descrip= $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=".$this->db->escape($codigo));
 			$ut     = $this->datasis->dameval("SELECT valor FROM utributa ORDER BY fecha DESC LIMIT 1");
 			$cana   = 1;
-			$data   = '';
 
 			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc, round(b.minimo*$ut,2) precio1, a.upago, a.telefono, b.id codigo
 				FROM scli AS a
@@ -163,8 +173,8 @@ class mensualidad extends sfac_add {
 				}else{
 					$saldo=0;
 				}
-				$saldo += $row->precio1;
-				$sql="UPDATE scli SET credito='S',tolera=10,maxtolera=10,limite=$saldo WHERE cliente=$dbcliente";
+				$saldo += $row->precio1*(1+($iva/100));
+				$sql="UPDATE scli SET credito='S',tolera=10,maxtole=10,limite=$saldo,formap=30 WHERE cliente=$dbcliente";
 				$this->db->simple_query($sql);
 
 				$desde = dbdate_to_human($row->upago.'01','m/Y');
@@ -205,10 +215,15 @@ class mensualidad extends sfac_add {
 				$_POST['banco_0']      = '';
 				$_POST['monto_0']      = $row->precio1*(1+($iva/100)) ;
 
-				$rt=parent::dataedit();
+				ob_start();
+					parent::dataedit();
+					$rt = ob_get_contents();
+				@ob_end_clean();
 
-				if(preg_match('/Venta Guardada (?P<id>\d+)/', $rt, $matches)){
-					$id=$matches['id'];
+				$getdata=json_decode($rt,true);
+
+				if($getdata['status']=='A'){
+					$id=$getdata['pk']['id'];
 					$url=$this->_direccion='http://localhost/'.site_url('formatos/descargartxt/FACTSER/'.$id);
 					$data .= file_get_contents($url);
 					$data .= "<FIN>\r\n";
