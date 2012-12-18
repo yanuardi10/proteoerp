@@ -38,7 +38,7 @@ class Sfac extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
 		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
 		if($fiscal=='S'){
@@ -142,15 +142,6 @@ class Sfac extends Controller {
 	function bodyscript( $grid0, $grid1 ){
 		$bodyscript = '
 		<script type="text/javascript">
-		jQuery("#boton1").click( function(){
-			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('ventas/sfac/dataprint/modify').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
-			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
-		});';
-
-		$bodyscript .= '
 		jQuery("#boton1").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
