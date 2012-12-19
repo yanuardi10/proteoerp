@@ -64,6 +64,7 @@ $(function(){
 		cdropdown(i);
 		cdescrip(i);
 		autocod(i.toString());
+		importe(i);
 	}
 	for(var i=0;i < <?php echo $form->max_rel_count['sfpa']; ?>;i++){
 		sfpatipo(i);
@@ -247,9 +248,10 @@ function importe(id){
 	var ind     = id.toString();
 	var cana    = Number($("#cana_"+ind).val());
 	var preca   = Number($("#preca_"+ind).val());
-	var importe = roundNumber(cana*preca,2);
-	$("#tota_"+ind).val(importe);
-	$("#tota_"+ind+"_val").text(nformat(importe,2));
+	var iimporte = roundNumber(cana*preca,2);
+	var itiva   = Number($('#itiva_'+ind).val());
+	$("#tota_"+ind).val(iimporte);
+	$("#tota_"+ind+"_val").text(nformat(iimporte*(1+(itiva/100)),2));
 
 	totalizar();
 }
@@ -347,12 +349,13 @@ function add_sfpa(){
 
 function post_precioselec(ind,obj){
 	if(obj.value=='o'){
+		var itiva   = Number($('#itiva_'+ind).val());
 		otro = prompt('Precio nuevo','');
 		otro = Number(otro);
 		if(otro>0){
 			var opt=document.createElement("option");
 			opt.text = nformat(otro,2);
-			opt.value= otro;
+			opt.value= roundNumber(otro*100/(100+itiva),2);
 			obj.add(opt,null);
 			obj.selectedIndex=obj.length-1;
 		}
@@ -393,10 +396,12 @@ function post_modbus_sinv(nind){
 	totalizar();
 }
 
+//Saca el dropdown de los precios
 function cdropdown(nind){
 	var tipo_doc=$("#tipo_doc").val();
-	var ind=nind.toString();
-	var preca=$("#preca_"+ind).val();
+	var ind   = nind.toString();
+	var preca = $("#preca_"+ind).val();
+	var itiva = Number($('#itiva_'+ind).val());
 	var pprecio  = document.createElement("select");
 	if(tipo_doc=='D') return false;
 
@@ -410,12 +415,13 @@ function cdropdown(nind){
 	var ii=0;
 	var id='';
 
-	if(preca==null || preca.length==0) ban=1;
+	if(preca==null || preca.length==0 || Number(preca)==0) ban=1;
 	for(ii=1;ii<5;ii++){
 		id =ii.toString();
-		val=$("#precio"+id+"_"+ind).val();
-		opt=document.createElement("option");
-		opt.text =nformat(val,2);
+		val  = Number($("#precio"+id+"_"+ind).val());
+		ntt  = val*(1+(itiva/100));
+		opt  = document.createElement("option");
+		opt.text =nformat(ntt,2);
 		opt.value=val;
 		pprecio.add(opt,null);
 		if(val==preca){
@@ -425,7 +431,7 @@ function cdropdown(nind){
 	}
 	if(ban==0){
 		opt=document.createElement("option");
-		opt.text = nformat(preca,2);
+		opt.text = nformat(Number(preca)*(1+(itiva/100)),2);
 		opt.value= preca;
 		pprecio.add(opt,null);
 		pprecio.selectedIndex=4;

@@ -60,6 +60,7 @@ class Sfac extends Controller {
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$param['WestPanel']    = $WestPanel;
+		$param['script']       = script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		//$param['EastPanel']  = $EastPanel;
 		$param['readyLayout']  = $readyLayout;
 		$param['SouthPanel']   = $SouthPanel;
@@ -292,7 +293,7 @@ class Sfac extends Controller {
 			});
 
 			$("#fedita").dialog({
-				autoOpen: false, height: 500, width: 790, modal: true,
+				autoOpen: false, height: 500, width: 800, modal: true,
 				buttons: {
 				"Guardar": function() {
 					var bValid = true;
@@ -2950,8 +2951,6 @@ class Sfac extends Controller {
 			//echo json_encode($rt);
 			echo $edit->output;
 		}
-
-
 	}
 
 
