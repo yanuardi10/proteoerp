@@ -556,7 +556,7 @@ class Contenedor extends validaciones {
 		$edit->nombre  = new uploadField("Archivo", "nombre");
 		$edit->nombre->upload_path = $upload_path;
 		$edit->nombre->rule = 'required';
-		$edit->nombre->allowed_types = "pdf|doc|xls|txt";
+		$edit->nombre->allowed_types = "pdf|doc|xls|txt|xlsx";
 		$edit->nombre->append('Formatos permitidos: pdf,doc,xls y txt');
 		//$edit->img->thumb = array (63,91);
 

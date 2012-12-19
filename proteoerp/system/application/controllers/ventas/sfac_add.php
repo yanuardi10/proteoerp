@@ -830,6 +830,7 @@ class sfac_add extends validaciones {
 		$do->set('montasa'  ,$montasa  );
 		$do->set('monredu'  ,$monredu  );
 		$do->set('monadic'  ,$monadic  );
+		$do->set('fecha'    ,date('Y-m-d'));
 
 		$fecha  = $do->get('fecha');
 		//Validacion del limite de credito del cliente

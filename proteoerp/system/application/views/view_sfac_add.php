@@ -59,6 +59,9 @@ var sfpa_cont=<?php echo $form->max_rel_count['sfpa'];?>;
 
 $(function(){
 	$(".inputnum").numeric(".");
+	$("#fecha").datepicker({ dateFormat: "dd/mm/yy" });
+	$('input[name^="sfpafecha_"]').datepicker({ dateFormat: "dd/mm/yy" });
+
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['sitems']; ?>;i++){
 		cdropdown(i);
@@ -236,7 +239,22 @@ $(function(){
 			return false;
 		}
 	});
+
+	$('input[name^="codigoa_"]').keypress(function(e) {
+		if(e.keyCode == 13) {
+			return false;
+		}
+	});
 });
+
+function scliadd() {
+	$.post('<?php echo site_url('ventas/scli/dataeditexpress/create'); ?>',
+	function(data){
+		$("#scliexp").html("");
+		$("#scliexp").html(data);
+		$("#scliexp").dialog( "open" );
+	})
+};
 
 function truncate(){
 	$('tr[id^="tr_sitems_"]').remove();
@@ -343,6 +361,7 @@ function add_sfpa(){
 	$("#__ITPL__sfpa").after(htm);
 	falta =faltante();
 	$("#monto_"+can).val(roundNumber(falta,2));
+	$("#sfpafecha_"+can).datepicker({ dateFormat: "dd/mm/yy" });
 	sfpa_cont=sfpa_cont+1;
 	return can;
 }
@@ -619,8 +638,8 @@ function sfpatipo(id){
 			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->numero->value; ?></legend>
 			<table style="margin: 0;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;     ?>*</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;    ?></td>
+				<td class="littletableheader"><?php echo $form->tipo_doc->label;  ?></td>
+				<td class="littletablerow"   ><?php echo $form->tipo_doc->output; ?></td>
 				<td class="littletableheader"><?php echo $form->cajero->label;    ?>*</td>
 				<td class="littletablerow">   <?php echo $form->cajero->output;   ?></td>
 			</tr><tr>
@@ -629,8 +648,8 @@ function sfpatipo(id){
 				<td class="littletableheader"><?php echo $form->almacen->label;   ?>*</td>
 				<td class="littletablerow">   <?php echo $form->almacen->output;  ?></td>
 			</tr><tr>
-				<td class="littletableheader"><?php echo $form->tipo_doc->label;  ?></td>
-				<td class="littletablerow"   ><?php echo $form->tipo_doc->output; ?></td>
+				<td class="littletableheader"><?php echo $form->fecha->label;     ?></td>
+				<td class="littletablerow">   <?php echo $form->fecha->output;    ?></td>
 				<td class="littletableheader"><?php echo $form->factura->label;   ?></td>
 				<td class="littletablerow"   ><?php echo $form->factura->output;  ?></td>
 			</tr>
@@ -641,7 +660,8 @@ function sfpatipo(id){
 			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
 			<table style="margin: 0;width:100%">
 			<tr>
-				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*</td>
+				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*
+				<a href="<?php echo site_url('ventas/scli/dataeditexpress/create'); ?>" target="_blank" onClick="window.open(this.href, this.target, 'width=300,height=400,screenx='+((screen.availWidth/2)-200)+',screeny='+((screen.availHeight/2)-150)); return false;"><?php echo image('add1-.png'); ?></a></td>
 				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output.$form->upago->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <b id='rifci_val'><?php echo $form->rifci->value; ?></b><?php echo $form->rifci->output;   ?>&nbsp;</td>
 			</tr><tr>
