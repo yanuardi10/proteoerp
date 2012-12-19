@@ -52,7 +52,8 @@ class Sfac extends Controller {
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fedita", "title"=>"Agregar/Editar Registro")
+			array("id"=>"fedita" , "title"=>"Agregar/Editar Registro"),
+			array('id'=>'scliexp', 'title'=>'Ficha de Cliente' )
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -103,18 +104,20 @@ class Sfac extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"cobroser", "img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
-		$grid->wbotonadd(array("id"=>"imptxt",   "img"=>"assets/default/images/print.png", "alt" => 'Imprimir Servicio',"label"=>"Imprimir Factura"));
-		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
+		$grid->wbotonadd(array('id'=>'cobroser', 'img' =>'images/agrega4.png'             , 'alt' => 'Cobro de Servicio','label'=>'Cobro de Servicio'));
+		$grid->wbotonadd(array('id'=>'imptxt',   'img' =>'assets/default/images/print.png', 'alt' => 'Imprimir Servicio','label'=>'Imprimir Factura'));
+		$grid->wbotonadd(array('id'=>'precierre','img' =>'images/dinero.png'              , 'alt' => 'Cierre de Caja'   ,'label'=>'Cierre de Caja'));
+
 
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
-		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+		$centerpanel = $grid->centerpanel( $id = 'radicional', $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fcobroser", "title"=>"Cobro de servicio"),
-			array("id"=>"fimpser"  , "title"=>"Imprimir Factura")
+			array('id'=>'fcobroser', 'title'=>'Cobro de servicio'),
+			array('id'=>'fimpser'  , 'title'=>'Imprimir Factura' ),
+			array('id'=>'scliexp'  , 'title'=>'Ficha de Cliente' )
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -129,7 +132,7 @@ class Sfac extends Controller {
 		$param['temas']        = array('proteo','darkness','anexos1');
 		$param['bodyscript']   = $bodyscript;
 		$param['tabs']         = false;
-		$param['encabeza']     = "Cobro de Servicio";
+		$param['encabeza']     = 'Cobro de Servicio';
 		$param['tamano']       = $this->datasis->getintramenu( substr($this->url,0,-1) );
 
 		$this->load->view('jqgrid/crud2',$param);
@@ -216,15 +219,6 @@ class Sfac extends Controller {
 			});';
 		}
 
-		//Imprime factura a Impresora de texto
-		//$bodyscript .= '
-		//jQuery("#imptxt").click( function(){
-		//	var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-		//	if (id)	{
-		//		window.open(\''.site_url('formatos/descargartxt/FACTSER').'/\'+id, \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
-		//	} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
-		//});';
-
 		//Precierre
 		$bodyscript .= '
 		jQuery("#precierre").click( function(){
@@ -256,36 +250,39 @@ class Sfac extends Controller {
 			$("#fimpser").dialog({
 				autoOpen: false, height: 420, width: 400, modal: true,
 				buttons: {
-				"Guardar": function() {
-					var bValid = true;
-					var murl = $("#df1").attr("action");
-					$.ajax({
-						type: "POST",
-						dataType: "html",
-						async: false,
-						url: murl,
-						data: $("#df1").serialize(),
-						success: function(r,s,x){
-							try{
-								var json = JSON.parse(r);
-								if (json.status == "A"){
-									$("#fimpser").dialog( "close" );
-									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
-									apprise("Registro Guardado");
-									return true;
-								} else {
-									apprise(json.mensaje);
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						$.ajax({
+							type: "POST",
+							dataType: "html",
+							async: false,
+							url: murl,
+							data: $("#df1").serialize(),
+							success: function(r,s,x){
+								try{
+									var json = JSON.parse(r);
+									if (json.status == "A"){
+										$("#fimpser").dialog( "close" );
+										jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+										apprise("Registro Guardado");
+										return true;
+									} else {
+										apprise(json.mensaje);
+									}
+								}catch(e){
+									$("#fimpser").html(r);
 								}
-							}catch(e){
-								$("#fimpser").html(r);
 							}
-						}
-					})},
-				"Imprimir": function() {
-						var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-						location.href="'.site_url('formatos/descargartxt/FACTSER').'/"+id;
+						})},
+					"Imprimir": function() {
+							var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+							location.href="'.site_url('formatos/descargartxt/FACTSER').'/"+id;
 					},
-				"Cancelar": function() { $( this ).dialog( "close" ); }
+					"Cancelar": function() {
+						$( this ).dialog( "close" );
+						$("#fimpser").html("");
+					}
 				},
 				close: function() {
 					$("#fimpser").html("");
@@ -295,37 +292,41 @@ class Sfac extends Controller {
 			$("#fedita").dialog({
 				autoOpen: false, height: 500, width: 800, modal: true,
 				buttons: {
-				"Guardar": function() {
-					var bValid = true;
-					var murl = $("#df1").attr("action");
-					//allFields.removeClass( "ui-state-error" );
-					$.ajax({
-						type: "POST",
-						dataType: "html",
-						async: false,
-						url: murl,
-						data: $("#df1").serialize(),
-						success: function(r,s,x){
-							try{
-								var json = JSON.parse(r);
-								if ( json.status == "A" ) {
-									$( "#fedita" ).dialog( "close" );
-									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
-									apprise("Registro Guardado");
-									'.$this->datasis->jwinopen(site_url($this->url.'dataprint/modify').'/\'+json.pk.id').';
-									return true;
-								} else {
-									apprise(json.mensaje);
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						//allFields.removeClass( "ui-state-error" );
+						$.ajax({
+							type: "POST",
+							dataType: "html",
+							async: false,
+							url: murl,
+							data: $("#df1").serialize(),
+							success: function(r,s,x){
+								try{
+									var json = JSON.parse(r);
+									if ( json.status == "A" ) {
+										$( "#fedita" ).dialog( "close" );
+										jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+										apprise("Registro Guardado");
+										'.$this->datasis->jwinopen(site_url($this->url.'dataprint/modify').'/\'+json.pk.id').';
+										return true;
+									} else {
+										apprise(json.mensaje);
+									}
+								}catch(e){
+									$("#fedita").html(r);
 								}
-							}catch(e){
-								$("#fedita").html(r);
 							}
-						}
-				})},
-				"Cancelar": function() { $( this ).dialog( "close" ); }
+						})
+					},
+					"Cancelar": function() {
+						$( this ).dialog( "close" );
+						$("#fedita").html("");
+					}
 				},
 				close: function() {
-					//allFields.val( "" ).removeClass( "ui-state-error" );
+					$("#fedita").html("");
 				}
 			});
 
@@ -351,11 +352,13 @@ class Sfac extends Controller {
 							}
 						);
 					},
-					Cancel: function() { $( this ).dialog( "close" ); }
+					Cancel: function() {
+						$( this ).dialog( "close" );
+						$("#fcobroser").html("");
+					}
 				},
 				close: function() {
-					//allFields.val( "" ).removeClass( "ui-state-error" );
-					//alert("Cerrado");
+					$("#fcobroser").html("");
 				}
 			});
 		';
@@ -2593,9 +2596,9 @@ class Sfac extends Controller {
 		$edit->sclitipo->insertValue = 1;
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
-		$edit->fecha->insertValue = date('Y-m-d');
-		$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
+		$edit->fecha->when = array('show');
+		$edit->fecha->calendar = false;
 		$edit->fecha->size = 10;
 
 		$edit->tipo_doc = new  dropdownField('Documento', 'tipo_doc');
@@ -2762,6 +2765,7 @@ class Sfac extends Controller {
 		$edit->sfpafecha->db_name  = 'fecha';
 		$edit->sfpafecha->size     = 10;
 		$edit->sfpafecha->maxlength= 8;
+		$edit->sfpafecha->calendar = false;
 		$edit->sfpafecha->rule ='condi_required|callback_chtipo[<#i#>]';
 
 		$edit->numref = new inputField('Numero <#o#>', 'num_ref_<#i#>');
@@ -3228,6 +3232,7 @@ class Sfac extends Controller {
 		$do->set('montasa'  ,$montasa  );
 		$do->set('monredu'  ,$monredu  );
 		$do->set('monadic'  ,$monadic  );
+		$do->set('fecha'    ,date('Y-m-d'));
 
 		$fecha  = $do->get('fecha');
 		//Validacion del limite de credito del cliente
@@ -3439,7 +3444,7 @@ class Sfac extends Controller {
 	}
 
 	function _pre_delete($do){
-				$do = new DataObject('sfac');
+		$do = new DataObject('sfac');
 		$do->rel_one_to_many('sitems', 'sitems', array('id'=>'id_sfac'));
 		$do->rel_one_to_many('sfpa'  , 'sfpa'  , array('numero','transac'));
 
@@ -3464,6 +3469,30 @@ class Sfac extends Controller {
 				if($abono==0){
 					//Anula la factura
 					$this->_anular($numero,$tipo_doc);
+
+					//Descuento de inventario
+					$almacen=$do->get('almacen');
+					$dbalma = $this->db->escape($almacen);
+					$cana=$do->count_rel('sitems');
+					for($i=0;$i<$cana;$i++){
+						$itcana    = $do->get_rel('sitems','cana',$i);
+						$itcodigoa = $do->get_rel('sitems','codigoa',$i);
+						$dbcodigoa = $this->db->escape($itcodigoa);
+
+						$factor=($tipo_doc=='F')? -1:1;
+						$sql="INSERT IGNORE INTO itsinv (alma,codigo,existen) VALUES ($dbalma,$dbcodigoa,0)";
+						$ban=$this->db->simple_query($sql);
+						if($ban==false){ memowrite($sql,'sfac'); $error++;}
+
+						$sql="UPDATE itsinv SET existen=existen+$factor*$itcana WHERE codigo=$dbcodigoa AND alma=$dbalma";
+						$ban=$this->db->simple_query($sql);
+						if($ban==false){ memowrite($sql,'sfac'); $error++;}
+
+						$sql="UPDATE sinv   SET existen=existen+$factor*$itcana WHERE codigo=$dbcodigoa";
+						$ban=$this->db->simple_query($sql);
+						if($ban==false){ memowrite($sql,'sfac'); $error++;}
+
+					}
 				}else{
 					$do->error_message_ar['pre_del']='No se puede anular la factura por tener abonos.';
 					return false;
