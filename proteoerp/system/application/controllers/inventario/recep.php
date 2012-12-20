@@ -1,4 +1,5 @@
 <?php
+/*
 class Recep extends Controller {
 	var $mModulo='RECEP';
 	var $titp='Modulo RECEP';
@@ -13,11 +14,11 @@ class Recep extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('recep','id') ) {
-			$this->db->simple_query('ALTER TABLE recep DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE recep ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE recep ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
+		//if ( !$this->datasis->iscampo('recep','id') ) {
+		//	$this->db->simple_query('ALTER TABLE recep DROP PRIMARY KEY');
+		//	$this->db->simple_query('ALTER TABLE recep ADD UNIQUE INDEX numero (numero)');
+		//	$this->db->simple_query('ALTER TABLE recep ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		//};
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -193,7 +194,6 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 20 }',
 		));
 
-
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('290');
@@ -228,7 +228,7 @@ jQuery("#a1").click( function(){
 
 	/**
 	* Busca la data en el Servidor por json
-	*/
+	* /
 	function getdata()
 	{
 		$grid       = $this->jqdatagrid;
@@ -243,7 +243,7 @@ jQuery("#a1").click( function(){
 
 	/**
 	* Guarda la Informacion
-	*/
+	* /
 	function setData()
 	{
 		$this->load->library('jqdatagrid');
@@ -252,7 +252,6 @@ jQuery("#a1").click( function(){
 		$data   = $_POST;
 		$mcodp  = "??????";
 		$check  = 0;
-
 		unset($data['oper']);
 		unset($data['id']);
 		if($oper == 'add'){
@@ -267,7 +266,6 @@ jQuery("#a1").click( function(){
 					echo "Ya existe un registro con ese $mcodp";
 			} else
 				echo "Fallo Agregado!!!";
-
 		} elseif($oper == 'edit') {
 			$nuevo  = $data[$mcodp];
 			$anterior = $this->datasis->dameval("SELECT $mcodp FROM recep WHERE id=$id");
@@ -286,7 +284,6 @@ jQuery("#a1").click( function(){
 				logusu('RECEP',"Grupo de Cliente  ".$nuevo." MODIFICADO");
 				echo "$mcodp Modificado";
 			}
-
 		} elseif($oper == 'del') {
 		$meco = $this->datasis->dameval("SELECT $mcodp FROM recep WHERE id=$id");
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM recep WHERE id='$id' ");
@@ -299,10 +296,8 @@ jQuery("#a1").click( function(){
 			}
 		};
 	}
+*/
 
-
-
-/*
 class Recep extends Controller {
 	var $titp   = 'Registro de Seriales';
 	var $tits   = 'Registro de Seriales';
@@ -552,17 +547,17 @@ class Recep extends Controller {
 		$conten['jtipos_ref']= json_encode($tipo_ref);
 		$conten['form']      =& $edit;
 
-		$data['content'] = $this->load->view('recep', $conten,true);
-		$data['title']   = heading($this->tits.' Nro. '.$edit->recep->value);
-		$data['head']    = $this->rapyd->get_head(); //style('vino/jquery-ui.css');
-		$data['head']   .= script('jquery.js');
-		$data['head']   .= script('jquery-ui.js');
-		$data['head']   .= script('plugins/jquery.numeric.pack.js');
-		$data['head']   .= script('plugins/jquery.floatnumber.js');
-		//$data['head']   .= script('plugins/jquery.meiomask.js');
-		$data['head']   .= phpscript('nformat.js');
-		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-		$this->load->view('view_ventanas', $data);
+		$data['content'] = $this->load->view('recep', $conten,false);
+//		$data['title']   = heading($this->tits.' Nro. '.$edit->recep->value);
+//		$data['head']    = $this->rapyd->get_head(); //style('vino/jquery-ui.css');
+//		$data['head']   .= script('jquery.js');
+//		$data['head']   .= script('jquery-ui.js');
+//		$data['head']   .= script('plugins/jquery.numeric.pack.js');
+//		$data['head']   .= script('plugins/jquery.floatnumber.js');
+//		$data['head']   .= script('plugins/jquery.meiomask.js');
+//		$data['head']   .= phpscript('nformat.js');
+//		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
+//		$this->load->view('view_ventanas', $data, true );
 	}
 
 	//*****************************

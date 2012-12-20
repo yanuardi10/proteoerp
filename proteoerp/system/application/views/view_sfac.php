@@ -89,7 +89,6 @@ function del_sitems(id){
 		<td>
 			<table width="100%"><tr><td>
 				<fieldset style='border: 1px solid #9AC8DA;background: #FFFDE9;'>
-				<legend class="subtitulotabla" style='color: #114411;'>Documento</legend>
 				<table style="margin: 0; ">
 					<tr>
 						<td class="littletableheader"><?php echo $form->fecha->label  ?>&nbsp;</td>
@@ -108,7 +107,6 @@ function del_sitems(id){
 				</td><td>
 				<?php $scliid = $this->datasis->dameval("SELECT id FROM scli WHERE cliente='".$form->cliente->value."'");?>
 				<fieldset style='border: 1px solid #9AC8DA;background: #FFFDE9;'>
-				<legend class="subtitulotabla" style='color: #114411;'>Cliente [
 				<a href="#" onclick="window.open('<?php echo base_url()?>ventas/scli/dataedit/show/<?php echo $scliid ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 				
 					

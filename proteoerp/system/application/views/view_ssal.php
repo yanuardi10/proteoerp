@@ -19,7 +19,6 @@ $campos=$form->js_escape($scampos);
 
 
 
-
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 //echo $form_scripts;
@@ -54,17 +53,20 @@ function del_itssal(id){
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<th colspan='5' class="littletableheader">N&uacute;mero <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
-			</tr>
-			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->almacen->label;  ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->almacen->output,$form->caububides->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->tipo->label;  ?>&nbsp;</td>
+				<td>
+					<table width="100%" cellpadding="0" cellspacing="0"><tr>
+						<td class="littletablerow">   <?php echo $form->tipo->output; ?>&nbsp;</td>
+						<td class="littletableheader"><?php echo $form->almacen->label;  ?>&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->almacen->output,$form->caububides->output; ?>&nbsp;</td>
+					</tr></table>
+				</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->tipo->label;  ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->tipo->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->depto->label;  ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->depto->output; ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->descrip->label; ?>&nbsp;</td>
 				<td class="littletablerow"   ><?php echo $form->descrip->output;   ?>&nbsp;</td>
 			</tr>
