@@ -1,6 +1,6 @@
 <?php
 class Recep extends Controller {
-	var $titp   = 'Registro de Seriales';
+	var $titp   = 'Notas de despacho';
 	var $tits   = 'Registro de Seriales';
 	var $url    = 'inventario/recep/';
 
@@ -179,6 +179,7 @@ class Recep extends Controller {
 		$edit->fecha = new  dateonlyField('Fecha','fecha');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule= 'required|chfecha';
+		$edit->fecha->when=array('show');
 		$edit->fecha->size= 10;
 
 		$edit->observa = new textAreaField('Observaci&oacute;n', 'observa');
@@ -407,6 +408,7 @@ class Recep extends Controller {
 
 		$nrecep= $this->datasis->fprox_numero('nrecep');
 		$do->set('recep',$nrecep);
+		$do->set('fecha',date('Y-m-d'));
 
 		$alma = $this->secu->getalmacen();
 		$rel  = 'seri';
@@ -719,16 +721,16 @@ class Recep extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		if (!$this->db->table_exists('view_clipro')) {
-			$user=$this->db->username;
-			$host=$this->db->hostname;
-
-			$mSQL = "CREATE ALGORITHM = UNDEFINED DEFINER= `$user`@`$host` VIEW view_clipro AS
-			SELECT 'Proveedor' tipo, b.proveed codigo, b.nombre, b.rif, concat_ws(' ', b.direc1, b.direc2, b.direc3) direc FROM `sprv` b
-			UNION ALL
-			SELECT 'Cliente' Cliente, a.cliente, a.nombre, a.rifci, concat_ws(' ',a.dire11, a.dire12, a.dire21, a.dire22) direc FROM `scli` a";
-			$this->db->simple_query($mSQL);
-		}
+		//if (!$this->db->table_exists('view_clipro')) {
+		//	$user=$this->db->username;
+		//	$host=$this->db->hostname;
+        //
+		//	$mSQL = "CREATE ALGORITHM = UNDEFINED DEFINER= `$user`@`$host` VIEW view_clipro AS
+		//	SELECT 'Proveedor' tipo, b.proveed codigo, b.nombre, b.rif, concat_ws(' ', b.direc1, b.direc2, b.direc3) direc FROM `sprv` b
+		//	UNION ALL
+		//	SELECT 'Cliente' Cliente, a.cliente, a.nombre, a.rifci, concat_ws(' ',a.dire11, a.dire12, a.dire21, a.dire22) direc FROM `scli` a";
+		//	$this->db->simple_query($mSQL);
+		//}
 
 		$fields = $this->db->list_fields('seri');
 		if(!in_array('cant',$fields)){

@@ -40,6 +40,25 @@ function ttras(v,obj){
 	return val;
 }
 
+function in_array(needle, haystack, argStrict){
+	var key  = '',
+	strict = !! argStrict;
+	if (strict) {
+		for (key in haystack) {
+			if (haystack[key] === needle) {
+				return true;
+			}
+		}
+	} else {
+		for (key in haystack) {
+			if (haystack[key] == needle) {
+			return true;
+			}
+		}
+	}
+	return false;
+}
+
 function leer(){
 	campo=apuntador.substr(0,9);
 	i=apuntador.substr(10,100);

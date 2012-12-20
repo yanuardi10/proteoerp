@@ -117,6 +117,7 @@ class Sfac extends Controller {
 		$adic = array(
 			array('id'=>'fcobroser', 'title'=>'Cobro de servicio'),
 			array('id'=>'fimpser'  , 'title'=>'Imprimir Factura' ),
+			array('id'=>'fborra'   , 'title'=>'Anula Factura' ),
 			array('id'=>'scliexp'  , 'title'=>'Ficha de Cliente' )
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
@@ -1264,7 +1265,7 @@ class Sfac extends Controller {
 
 		$grid->setEdit(false);
 		$grid->setAdd(   $this->datasis->sidapuede('SFAC','INCLUIR%' ));
-		$grid->setDelete($this->datasis->sidapuede('SFAC','BORR_REG%'));
+		$grid->setDelete($this->datasis->sidapuede('SFAC','3'));
 		$grid->setSearch($this->datasis->sidapuede('SFAC','BUSQUEDA%'));
 
 		$grid->setRowNum(30);
@@ -3440,28 +3441,12 @@ class Sfac extends Controller {
 		return false;
 	}
 
-	function _anular($numero,$tipo_doc){
-		$mSQL="DELETE FROM sfpa WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero";
-		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'sfac'); }
-
-		$mSQL="UPDATE sfac SET tipo_doc='X' WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero";
-		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'sfac'); }
-
-		$mSQL="UPDATE sitems SET tipoa='X' WHERE tipoa=$dbtipo_doc AND numa=$dbnumero";
-		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'sfac'); }
-
-		//Descuenta de inventario
-	}
 
 	function _pre_delete($do){
-		$do = new DataObject('sfac');
-		$do->rel_one_to_many('sitems', 'sitems', array('id'=>'id_sfac'));
-		$do->rel_one_to_many('sfpa'  , 'sfpa'  , array('numero','transac'));
-
-		$do->load($id);
+		//$do = new DataObject('sfac');
+		//$do->rel_one_to_many('sitems', 'sitems', array('id'=>'id_sfac'));
+		//$do->rel_one_to_many('sfpa'  , 'sfpa'  , array('numero','transac'));
+		//$do->load($id);
 
 		$tipo_doc = $do->get('tipo_doc');
 		$numero   = $do->get('numero');
@@ -3475,49 +3460,56 @@ class Sfac extends Controller {
 		$dbfecha    = $this->db->escape($fecha);
 		$hoy        = date('Y-m-d');
 
-		if($tipo_doc=='F'){
-			if($refere=='C' && $inicial==0){
-				$mSQL ="SELECT abono FROM smov WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero AND fecha=$dbfecha";
-				$abono=$this->datasis->dameval($mSQL);
-				if($abono==0){
-					//Anula la factura
-					$this->_anular($numero,$tipo_doc);
+		if($tipo_doc=='X'){
+			$do->error_message_ar['pre_del']='La factura ya esta anulada.';
+			return false;
+		}
 
-					//Descuento de inventario
-					$almacen=$do->get('almacen');
-					$dbalma = $this->db->escape($almacen);
-					$cana=$do->count_rel('sitems');
-					for($i=0;$i<$cana;$i++){
-						$itcana    = $do->get_rel('sitems','cana',$i);
-						$itcodigoa = $do->get_rel('sitems','codigoa',$i);
-						$dbcodigoa = $this->db->escape($itcodigoa);
-
-						$factor=($tipo_doc=='F')? -1:1;
-						$sql="INSERT IGNORE INTO itsinv (alma,codigo,existen) VALUES ($dbalma,$dbcodigoa,0)";
-						$ban=$this->db->simple_query($sql);
-						if($ban==false){ memowrite($sql,'sfac'); $error++;}
-
-						$sql="UPDATE itsinv SET existen=existen+$factor*$itcana WHERE codigo=$dbcodigoa AND alma=$dbalma";
-						$ban=$this->db->simple_query($sql);
-						if($ban==false){ memowrite($sql,'sfac'); $error++;}
-
-						$sql="UPDATE sinv   SET existen=existen+$factor*$itcana WHERE codigo=$dbcodigoa";
-						$ban=$this->db->simple_query($sql);
-						if($ban==false){ memowrite($sql,'sfac'); $error++;}
-
-					}
-				}else{
-					$do->error_message_ar['pre_del']='No se puede anular la factura por tener abonos.';
-					return false;
-				}
-			}elseif($fecha == $hoy){
-				//Anula la factura
-				$this->_anular($numero,$tipo_doc);
-			}else{
-				$do->error_message_ar['pre_del']='No se puede anular una factura pagada que no sea de hoy.';
+		if($fecha != $hoy){
+			$mSQL ="SELECT abonos FROM smov WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero AND fecha=$dbfecha";
+			$abono=$this->datasis->dameval($mSQL);
+			if($referen!='C' && $inicial!=0 && $abono>0){
+				$do->error_message_ar['pre_del']='No se puede anular la factura por tener abonos.';
 				return false;
 			}
 		}
+
+		//Descuento del inventario
+		$factor=($tipo_doc=='F')? -1:1;
+		$almacen=$do->get('almacen');
+		$dbalma = $this->db->escape($almacen);
+		$cana=$do->count_rel('sitems');
+		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('sitems','cana',$i);
+			$itcodigoa = $do->get_rel('sitems','codigoa',$i);
+			$dbcodigoa = $this->db->escape($itcodigoa);
+
+			$sql="INSERT IGNORE INTO itsinv (alma,codigo,existen) VALUES ($dbalma,$dbcodigoa,0)";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'sfac'); $error++;}
+
+			$sql="UPDATE itsinv SET existen=existen+($factor)*$itcana WHERE codigo=$dbcodigoa AND alma=$dbalma";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'sfac'); $error++;}
+
+			$sql="UPDATE sinv   SET existen=existen+($factor)*$itcana WHERE codigo=$dbcodigoa";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'sfac'); $error++;}
+		}
+
+		$mSQL="DELETE FROM sfpa WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero";
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'sfac'); }
+
+		$mSQL="UPDATE sfac SET tipo_doc='X' WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero";
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'sfac'); }
+
+		$mSQL="UPDATE sitems SET tipoa='X' WHERE tipoa=$dbtipo_doc AND numa=$dbnumero";
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'sfac'); }
+
+		logusu('sfac',"Anulo factura ${tipo_doc}${numero}");
 		$do->error_message_ar['pre_del']='Factura '.$numero.' anulada';
 		return false;
 	}
