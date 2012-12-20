@@ -2963,10 +2963,10 @@ class Sfac extends Controller {
 
 		$edit = new DataEdit('Imprimir factura', 'sfac');
 		$id=$edit->get_from_dataobjetct('id');
-		$urlid=$edit->pk_URI();
+		//$urlid=$edit->pk_URI();
 		$sfacforma=$this->datasis->traevalor('FORMATOSFAC','Especifica el metodo a ejecutar para descarga de formato de factura en Proteo Ej. descargartxt...');
 		if(empty($sfacforma)) $sfacforma='descargar';
-		$url=site_url('formatos/'.$sfacforma.'/FACTURA'.$urlid);
+		$url=site_url('formatos/'.$sfacforma.'/FACTURA/'.$uid);
 		if(isset($this->back_url))
 			$edit->back_url = site_url($this->back_url);
 		else
@@ -2985,13 +2985,20 @@ class Sfac extends Controller {
 		//$edit->pre_process('update' ,'_pre_print_update');
 		$edit->pre_process('delete' ,'_pre_print_delete');
 
-		$edit->container = new containerField('impresion','La descarga se realizara en 5 segundos, en caso de no hacerlo haga click '.anchor('formatos/descargar/FACTURA'.$urlid,'aqui'));
+		$edit->container = new containerField('impresion','La descarga se realizara en 5 segundos, en caso de no hacerlo haga click '.anchor('formatos/descargar/FACTURA/'.$uid,'aqui'));
 
 		$edit->nfiscal = new inputField('N&uacute;mero f&iacute;scal','nfiscal');
 		$edit->nfiscal->rule='max_length[12]|required';
 		$edit->nfiscal->size =14;
 		$edit->nfiscal->maxlength =12;
 		$edit->nfiscal->autocomplete=false;
+
+		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
+		if($fiscal=='S'){
+			$num= $this->datasis->dameval("SELECT MAX(nfiscal) FROM sfac");
+			$nn = $num+1;
+			$edit->nfiscal->insertValue=str_pad($nn,8,'0',STR_PAD_LEFT);
+		}
 
 		$edit->tipo_doc = new inputField('Factura','tipo_doc');
 		$edit->tipo_doc->rule='max_length[1]';
@@ -3042,11 +3049,15 @@ class Sfac extends Controller {
 		$edit->buttons('save', 'undo','back');
 		$edit->build();
 
-		$script= '<script type="text/javascript" >
-		$(function() {
-			setTimeout(\'window.location="'.$url.'"\',5000);
-		});
-		</script>';
+		if($st=='modify'){
+			$script= '<script type="text/javascript" >
+			$(function() {
+				setTimeout(\'window.location="'.$url.'"\',5000);
+			});
+			</script>';
+		}else{
+			$script='';
+		}
 
 		$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();
