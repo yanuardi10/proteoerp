@@ -287,8 +287,10 @@ class Sfac extends Controller {
 				close: function() {
 					$("#fimpser").html("");
 				}
-			});
+			});';
 
+		//Agregar Factura
+		$bodyscript .= '
 			$("#fedita").dialog({
 				autoOpen: false, height: 500, width: 800, modal: true,
 				buttons: {

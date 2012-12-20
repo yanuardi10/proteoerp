@@ -1453,8 +1453,10 @@ class Datasis {
 	//
 	function creaintramenu( $data = array() ) {
 		$CI =& get_instance();
-		if ( !empty($opcion) ) 
-			$this->db->insert('intramenu', $data);
+		if ( !empty($data) ){
+			if ( $this->dameval('SELECT COUNT(*) FROM intramenu WHERE modulo='.$CI->db->escape($data['modulo'])) == 0 ) 
+				$CI->db->insert('intramenu', $data);
+		}
 	}
 
 

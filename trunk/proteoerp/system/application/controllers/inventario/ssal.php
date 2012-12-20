@@ -18,9 +18,8 @@ class Ssal extends Controller {
 			$this->db->simple_query('ALTER TABLE ssal ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE ssal ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
+		$this->datasis->creaintramenu(array('modulo'=>'326','titulo'=>'Ajustes de Inventario','mensaje'=>'Ajustes de Inventario','panel'=>'TRANSACCIONES','ejecutar'=>'inventario/ssal','target'=>'popu','visible'=>'S','pertenece'=>'3','ancho'=>800,'alto'=>600));
 		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
-//modulo,titulo,mensaje,panel,ejecutar,target,imagen,visible,pertenece,orden,ancho,alto,
-
 		redirect($this->url.'jqdatag');
 	}
 
@@ -51,7 +50,7 @@ class Ssal extends Controller {
 
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar Conversion")
+		array("id"=>"fedita",  "title"=>"Agregar Ajuste de Inventairo")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -79,6 +78,16 @@ class Ssal extends Controller {
 	//***************************
 	function bodyscript( $grid0 ){
 		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#boton1").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('formatos/ver/SSAL').'/\'+id+"/id"').';
+			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
+		});';
+
 
 		$bodyscript .= '
 		function ssaladd() {
@@ -306,7 +315,7 @@ class Ssal extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
+/*
 		$grid->addField('depto');
 		$grid->label('Depto');
 		$grid->params(array(
@@ -317,6 +326,18 @@ class Ssal extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:3, maxlength: 3 }',
 		));
+*/
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
 
 
 		$grid->showpager(true);
@@ -326,14 +347,24 @@ class Ssal extends Controller {
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
+		$grid->setOnSelectRow('
+			function(id){
+				if (id){
+					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
+					jQuery(gridId2).trigger("reloadGrid");
+				}
+			}'
+		);
+
+
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
 
 		#show/hide navigations buttons
 		$grid->setAdd(    $this->datasis->sidapuede('SSAL','INCLUIR%' ));
-		$grid->setEdit(   $this->datasis->sidapuede('SSAL','MODIFICA%'));
-		$grid->setDelete( $this->datasis->sidapuede('SSAL','BORR_REG%'));
+		$grid->setEdit( false );    //  $this->datasis->sidapuede('SSAL','MODIFICA%'));
+		$grid->setDelete( false );  //  $this->datasis->sidapuede('SSAL','BORR_REG%'));
 		$grid->setSearch( $this->datasis->sidapuede('SSAL','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
@@ -363,7 +394,7 @@ class Ssal extends Controller {
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('ssal');
 
-		$response   = $grid->getData('ssal', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('ssal', array(array()), array(), false, $mWHERE, 'id', 'desc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
@@ -377,7 +408,7 @@ class Ssal extends Controller {
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = "numero";
 		$check  = 0;
 
 		unset($data['oper']);
@@ -386,8 +417,8 @@ class Ssal extends Controller {
 			if(false == empty($data)){
 				$check = $this->datasis->dameval("SELECT count(*) FROM ssal WHERE $mcodp=".$this->db->escape($data[$mcodp]));
 				if ( $check == 0 ){
-					$this->db->insert('ssal', $data);
-					echo "Registro Agregado";
+					//$this->db->insert('ssal', $data);
+					//echo "Registro Agregado";
 
 					logusu('SSAL',"Registro ????? INCLUIDO");
 				} else
@@ -396,34 +427,23 @@ class Ssal extends Controller {
 				echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
-			$nuevo  = $data[$mcodp];
-			$anterior = $this->datasis->dameval("SELECT $mcodp FROM ssal WHERE id=$id");
-			if ( $nuevo <> $anterior ){
-				//si no son iguales borra el que existe y cambia
-				$this->db->query("DELETE FROM ssal WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE ssal SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-				$this->db->where("id", $id);
-				$this->db->update("ssal", $data);
-				logusu('SSAL',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-				echo "Grupo Cambiado/Fusionado en clientes";
-			} else {
-				unset($data[$mcodp]);
-				$this->db->where("id", $id);
-				$this->db->update('ssal', $data);
-				logusu('SSAL',"Grupo de Cliente  ".$nuevo." MODIFICADO");
-				echo "$mcodp Modificado";
-			}
+			$numero = $this->datasis->dameval("SELECT $mcodp FROM ssal WHERE id=$id");
+			unset($data['numero']);
+			$this->db->where("id", $id);
+			$this->db->update('ssal', $data);
+			logusu('SSAL',"Ajustes de Inventario  ".$numero." MODIFICADO");
+			echo "Ajuste $numero Modificado";
 
 		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM ssal WHERE id=$id");
+			//$meco = $this->datasis->dameval("SELECT $mcodp FROM ssal WHERE id=$id");
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM ssal WHERE id='$id' ");
-			if ($check > 0){
-				echo " El registro no puede ser eliminado; tiene movimiento ";
-			} else {
-				$this->db->simple_query("DELETE FROM ssal WHERE id=$id ");
-				logusu('SSAL',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
-			}
+			//if ($check > 0){
+			//	echo " El registro no puede ser eliminado; tiene movimiento ";
+			//} else {
+				//$this->db->simple_query("DELETE FROM ssal WHERE id=$id ");
+				//logusu('SSAL',"Registro ????? ELIMINADO");
+				echo "los Ajustes no se Eliminan; debe hacer un reverso";
+			//}
 		};
 	}
 
@@ -467,7 +487,7 @@ class Ssal extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 200,
+			'width'         => 250,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:40, maxlength: 40 }',
@@ -613,11 +633,11 @@ class Ssal extends Controller {
 		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(    $this->datasis->sidapuede('ITSSAL','INCLUIR%' ));
-		$grid->setEdit(   $this->datasis->sidapuede('ITSSAL','MODIFICA%'));
-		$grid->setDelete( $this->datasis->sidapuede('ITSSAL','BORR_REG%'));
-		$grid->setSearch( $this->datasis->sidapuede('ITSSAL','BUSQUEDA%'));
-		$grid->setRowNum(30);
+		$grid->setAdd( false);      //   $this->datasis->sidapuede('ITSSAL','INCLUIR%' ));
+		$grid->setEdit( false );    //   $this->datasis->sidapuede('ITSSAL','MODIFICA%'));
+		$grid->setDelete( false );  //   $this->datasis->sidapuede('ITSSAL','BORR_REG%'));
+		$grid->setSearch( false );  //$this->datasis->sidapuede('ITSSAL','BUSQUEDA%'));
+		$grid->setRowNum(90);
 		$grid->setShrinkToFit('false');
 
 		//$grid->setBarOptions("\t\taddfunc: itssaladd,\n\t\teditfunc: itssaledit");
@@ -638,8 +658,22 @@ class Ssal extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait()
+	function getdatait($id)
 	{
+
+		if ($id === 0 ){
+			$id = $this->datasis->dameval("SELECT MAX(id) FROM ssal");
+		}
+		if( empty($id) ) return '';
+		$numero   = $this->datasis->dameval("SELECT numero FROM ssal WHERE id=$id");
+
+		$grid    = $this->jqdatagrid;
+		$mSQL    = "SELECT * FROM itssal WHERE numero='$numero' ORDER BY descrip ";
+		$response   = $grid->getDataSimple($mSQL);
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+
+/*
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -647,7 +681,8 @@ class Ssal extends Controller {
 
 		$response   = $grid->getData('itssal', array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
-		echo $rs;
+		echo $rs;\
+*/
 	}
 
 	/**
@@ -856,10 +891,20 @@ class ssal extends validaciones {
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
+		$edit->numero->size = 10;
+		$edit->numero->mode='autohide';
+		$edit->numero->maxlength=8;
+		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
+		$edit->numero->when=array('show','modify');
+
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
+		$edit->fecha->readonly = true;
+		$edit->fecha->calendar = false;
+
 		$edit->fecha->size = 10;
 
 		$edit->tipo = new  dropdownField ('Tipo', 'tipo');
@@ -868,34 +913,38 @@ class ssal extends validaciones {
 		$edit->tipo->style='width:80px;';
 		$edit->tipo->size = 5;
 
-		$edit->numero = new inputField('N&uacute;mero', 'numero');
-		$edit->numero->size = 10;
-		$edit->numero->mode='autohide';
-		$edit->numero->maxlength=8;
-		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
-		$edit->numero->when=array('show','modify');
+		$edit->almacen = new dropdownField('Almacen','almacen');
+		$edit->almacen->option('','Seleccionar');
+		$edit->almacen->options('SELECT ubica, CONCAT(ubica, " ", ubides) descrip FROM caub WHERE invfis="N" ORDER BY ubica');
+		$edit->almacen->rule ='required';
+		$edit->almacen->style='width:200px;';
+		
+		$edit->depto = new dropdownField('Depto.','depto');
+		$edit->depto->option('','Seleccionar');
+		$edit->depto->options('SELECT depto, CONCAT(depto, " ", descrip) descrip FROM dpto WHERE tipo="G" ORDER BY depto');
+		$edit->depto->rule ='required';
+		$edit->depto->style='width:180px;';
 
-		$edit->almacen = new inputField('Almacen','almacen');
-		$edit->almacen->size = 6;
-		$edit->almacen->maxlength=5;
-		$edit->almacen->append($boton);
+		$edit->cargo = new dropdownField('Cargo','cargo');
+		$edit->cargo->option('','Seleccionar');
+		$edit->cargo->options('SELECT codigo, CONCAT(codigo, " ", nombre) descrip FROM usol ORDER BY codigo');
+		$edit->cargo->rule ='required';
+		$edit->cargo->style='width:180px;';
 		
 		$edit->descrip = new inputField('Descripci&oacute;n','descrip');
-		$edit->descrip->size = 45;
+		$edit->descrip->size = 40;
 		$edit->descrip->maxlength=50;
 		
 		$edit->motivo = new inputField('Motivo','motivo');
-		$edit->motivo->size = 45;
+		$edit->motivo->size = 40;
 		$edit->motivo->maxlength=50;
 
-		$edit->cargo = new inputField('Cargo','cargo');
-		$edit->cargo->size = 10;
-		$edit->cargo->maxlength=10;
 		//Para saber que precio se le va a dar al cliente
 		$edit->caububides = new hiddenField('', 'caububides');
 		$edit->caububides->db_name     = 'caububides';
 		$edit->caububides->pointer     = true;
 		$edit->caububides->insertValue = 1;
+
 
 		//**************************
 		//  Campos para el detalle
@@ -963,8 +1012,6 @@ class ssal extends validaciones {
 		$do->set('hora'   ,$hora);
 		$do->set('numero' ,$numero);
 		$do->set('transac',$transac);
-		//print_r($do->get_all()); return false;
-
 		return true;
 	}
 
@@ -972,9 +1019,104 @@ class ssal extends validaciones {
 		return true;
 	}
 
-	function _post_insert($do){
-		$codigo=$do->get('numero');
-		logusu('ssal',"Entradas y Salidas $codigo CREADO");
+	function _post_insert($do) {
+		$numero = $do->get('numero');
+		$alma   = $do->get('alma');
+		$tipo   = $do->get('tipo');
+		
+		// Actualiza Inventario
+		$mc = $this->db->query('SELECT codigo, cantidad FROM itssal WHERE numero='.$this->db->escape($numero));
+		if ( $mc->num_rows() > 0) {
+			foreach ($query->result() as $row){
+				if ( $tipo == 'S' ) 
+					$this->datasis->sinvcarga( $row->codigo, $mALMA, $row->cantidad);
+				else
+					$this->datasis->sinvcarga( $row->codigo, $mALMA, $row->cantidad);
+			}
+		}
+		$monto = $this->datasis->dameval('SELECT sum(costo) WHERE numero='.$this->db->escape($numero));
+
+		//Segun el Caso hace GASTO o OTIN
+		if ( $tipo == 'S' ) {  // GASTO
+			$data['fecha']    = $do->get('fecha');
+			$data['numero']   = $numero;
+			$data['proveed']  = 'AJUSI';
+			$data['nombre']   = 'AJUSTES DE INVENTARIO';
+			$data['vence']    = $do->get('fecha');
+			$data['totpre']   = $monto;
+			$data['totiva']   =  0;
+			$data['totbruto'] = $monto;
+			$data['reten']    = 0;
+			$data['totneto']  = $monto;
+			$data['codb1']    = '  ';
+			$data['tipo1']    = '';
+			$data['cheque1']  = '';
+			$data['monto1']   = 0;
+			$data['credito']  = $monto;
+			$data['anticipo'] = 0;
+			$data['orden']    = "";
+			$data['tipo_doc'] = "AJ";
+			$data['transac']  = $do->get('transac');
+			$data['estampa']  = $do->get('estampa');
+			$data['hora']     = $do->get('hora');
+			$data['usuario']  = $do->get('usuario');
+			$this->db->insert('gser', $data);
+			
+			$mSQL := "INSERT INTO gitser ( fecha, numero, proveed, codigo, descrip, precio, iva, importe, departa, sucursal, transac, usuario, estampa, hora ) 
+					  SELECT c.fecha fecha, c.numero, 'AJUSI' proveed, 
+						b.gasto, a.descrip, sum(a.costo) precio, 0 iva, sum(a.costo) importe, 
+						d.depto departa, d.sucursal, a.transac, a.usuario, a.estampa, a.hora 
+						FROM itssal a JOIN icon b ON a.concepto=b.codigo 
+						JOIN ssal c ON a.numero=c.numero LEFT JOIN usol d ON c.cargo=d.codigo 
+						WHERE a.numero='".$numero."' GROUP BY a.concepto ";
+			$this->db->query($mSQL);
+			
+		} else {  //
+			$mNUMERO = $this->datasis->prox_sql("notiot")
+			$mNUMERO = "O".substr($mNUMERO,1,7);
+			$data['tipo_doc']  = 'OT';
+			$data['numero']    = $mNUMERO;
+			$data['fecha']     = $do->get('fecha');
+			$data['orden']     =  '';
+			$data['cod_cli']   = "AJUSI";
+			$data['rifci']     = "";
+			$data['nombre']    = "AJUSTES DE INVENTARIO";
+			$data['direc']     = "";
+			$data['dire1']     = "";
+			$data['totals']    = $monto;
+			$data['iva']       = 0;
+			$data['totalg']    = $monto;
+			$data['vence']     = $do->get('fecha');
+			$data['observa1']  = $do->get('descrip');
+			$data['observa2']  = $do->get('motivo');
+			$data['transac']   = $do->get('transac');
+			$data['estampa']   = $do->get('estampa');
+			$data['hora']      = $do->get('hora');
+			$data['usuario']   = $do->get('usuario');
+   
+			$this->db->insert('otin', $data);
+
+		mC := DAMECUR("SELECT b.ingreso, sum(a.costo) costo FROM itssal a JOIN icon b ON a.concepto=b.codigo WHERE a.numero='"+XNUMERO+"' GROUP BY a.concepto")
+		DO WHILE !mC:EoF()
+			aLISTA := {}
+			AADD(aLISTA, {"TIPO_DOC", 'OT' })
+			AADD(aLISTA, {"NUMERO",   mNUMERO })
+			AADD(aLISTA, {"CODIGO",   mC:FieldGet('INGRESO')  })
+			AADD(aLISTA, {"DESCRIP",  "AJUSTES DE INVENTARIO " })
+			AADD(aLISTA, {"PRECIO",   mC:FieldGet('COSTO')  })
+			AADD(aLISTA, {"IMPUESTO", 0 })
+			AADD(aLISTA, {"IMPORTE",  mC:FieldGet('COSTO') })
+			mSQL   := "INSERT INTO itotin SET "
+			aVALORES := {}
+			LLENASQL(@mSQL, @aVALORES, aLISTA, mTRANSAC)
+			EJECUTASQL(mSQL,aVALORES)
+			mC:Skip()
+		ENDDO
+	ENDIF
+
+
+
+		logusu('ssal',"Entradas y Salidas $numero CREADO");
 	}
 
 	function _post_update($do){

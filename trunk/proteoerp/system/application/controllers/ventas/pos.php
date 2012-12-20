@@ -10,6 +10,8 @@ class Pos extends Controller {
 	function index(){
 		$this->rapyd->load('dataobject','datadetails');
 
+		$this->datasis->creaintramenu(array('modulo'=>'148','titulo'=>'Punto de Ventas','mensaje'=>'Punto de Ventas','panel'=>'TRANSACCIONES','ejecutar'=>'ventas/pos','target'=>'popu','visible'=>'S','pertenece'=>'1','ancho'=>800,'alto'=>600));
+
 		$mSCLId=array(
 		'tabla'   =>'scli',
 		'columnas'=>array(
@@ -39,7 +41,8 @@ class Pos extends Controller {
 		$conten=array();
 		$conten['sfpa']  = $sfpa;
 		$conten['tban']  = $tban;
-		$data['content'] = $this->load->view('view_pos', $conten,true);
+		$data['content'] = $this->load->view('view_pos', $conten,false);
+/*
 		$data['title']   = '';
 		$data['head']    = style('redmond/jquery-ui-1.8.1.custom.css');
 		$data['head']   .= style('ui.jqgrid.css');
@@ -59,6 +62,7 @@ class Pos extends Controller {
 		$data['head']   .= phpscript('nformat.js');
 
 		$this->load->view('view_ventanas_sola', $data);
+*/
 	}
 
 	// Busca Productos para autocomplete
@@ -153,6 +157,7 @@ class Pos extends Controller {
 		$data = array('nombre' => $nombre,
 					  'fiscal' => $nombre,
 					  'rifci'  => $rifci);
+
 		$str = $this->db->insert_string('scli', $data);
 	}
 	function crearfactura(){

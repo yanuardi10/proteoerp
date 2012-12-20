@@ -635,7 +635,6 @@ function sfpatipo(id){
 		<table width='100%'>
 		<tr><td style="width:50%">
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
-			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->numero->value; ?></legend>
 			<table style="margin: 0;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->tipo_doc->label;  ?></td>
@@ -657,7 +656,6 @@ function sfpatipo(id){
 			</fieldset>
 		</td><td style="width:50%">
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
-			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
 			<table style="margin: 0;width:100%">
 			<tr>
 				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*
@@ -678,7 +676,7 @@ function sfpatipo(id){
 		</td>
 	</tr><tr>
 		<td>
-		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:190px'>
 		<table width='100%' border='0'>
 			<tr id='__INPL__'>
 				<td class="littletableheaderdet"><b>C&oacute;digo</b></td>
@@ -783,19 +781,12 @@ function sfpatipo(id){
 		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 		<table width='100%'>
 			<tr>
-				<td class="littletableheader" width='100'></td>
-				<td class="littletablerow"    width='350'></td>
-				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
-				<td class="littletablerow" align='right'><b id='totals_val'><?php echo nformat($form->totals->value); ?></b><?php echo $form->totals->output; ?></td>
-			<tr></tr>
-				<td class="littletableheader">&nbsp;</td>
-				<td class="littletablerow"   ></td>
-				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
-				<td class="littletablerow" align='right'><b id='ivat_val'><?php echo nformat($form->ivat->value); ?></b><?php echo $form->ivat->output; ?></td>
-			<tr></tr>
-				<td>&nbsp;</td><td>&nbsp;</td>
-				<td class="littletableheader">           <?php echo $form->totalg->label;  ?></td>
-				<td class="littletablerow" align='right' style='font-size:18px;font-weight: bold'><b id='totalg_val'><?php echo nformat($form->totalg->value); ?></b><?php echo $form->totalg->output; ?></td>
+				<td class="littletableheader" align='right'><?php echo $form->totals->label;  ?></td>
+				<td class="littletablerow"    align='right'><b id='totals_val'><?php echo nformat($form->totals->value); ?></b><?php echo $form->totals->output; ?></td>
+				<td class="littletableheader" align='right'><?php echo $form->ivat->label;    ?></td>
+				<td class="littletablerow"    align='right'><b id='ivat_val'><?php echo nformat($form->ivat->value); ?></b><?php echo $form->ivat->output; ?></td>
+				<td class="littletableheader" align='right'><?php echo $form->totalg->label;  ?></td>
+				<td class="littletablerow"    align='right' style='font-size:18px;font-weight: bold'><b id='totalg_val'><?php echo nformat($form->totalg->value); ?></b><?php echo $form->totalg->output; ?></td>
 			</tr>
 		</table>
 		</fieldset>
