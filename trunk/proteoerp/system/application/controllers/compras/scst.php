@@ -114,16 +114,16 @@ class Scst extends Controller {
 			if( gr != null )
 				jQuery("#newapi'.$grid0.'").jqGrid(\'editGridRow\',gr,
 				{
-				closeAfterEdit:true,
-				mtype: "POST",
-				height:200,
-				width: 350,
-				closeOnEscape: true,
-				top: 50,
-				left:20,
-				recreateForm:true,
-				afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
-				reloadAfterSubmit:false
+					closeAfterEdit:true,
+					mtype: "POST",
+					height:200,
+					width: 350,
+					closeOnEscape: true,
+					top: 50,
+					left:20,
+					recreateForm:true,
+					afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
+					reloadAfterSubmit:false
 				});
 			else
 				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
@@ -549,12 +549,12 @@ class Scst extends Controller {
 		$grid->label('Vence');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 80,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
+			'formoptions'   => '{ label:"Vencimiento" }'
 		));
 
 
