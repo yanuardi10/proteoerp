@@ -1,8 +1,8 @@
 <?php 
 class Ssal extends Controller {
 	var $mModulo = 'SSAL';
-	var $titp    = 'Modulo SSAL';
-	var $tits    = 'Modulo SSAL';
+	var $titp    = 'Ajustes de Inventario';
+	var $tits    = 'Ajustes de Inventario';
 	var $url     = 'inventario/ssal/';
 
 	function Ssal(){
@@ -48,12 +48,10 @@ class Ssal extends Controller {
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
-
 		$adic = array(
 		array("id"=>"fedita",  "title"=>"Agregar Ajuste de Inventairo")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
-
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -658,7 +656,7 @@ class Ssal extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait($id)
+	function getdatait($id = 0)
 	{
 
 		if ($id === 0 ){
