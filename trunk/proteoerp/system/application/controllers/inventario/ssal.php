@@ -1027,14 +1027,14 @@ class ssal extends validaciones {
 		// Actualiza Inventario
 		$mc = $this->db->query('SELECT codigo, cantidad FROM itssal WHERE numero='.$this->db->escape($numero));
 		if ( $mc->num_rows() > 0) {
-			foreach ($query->result() as $row){
+			foreach ($mc->result() as $row){
 				if ( $tipo == 'S' ) 
-					$this->datasis->sinvcarga( $row->codigo, $mALMA, $row->cantidad);
+					$this->datasis->sinvcarga( $row->codigo, $alma, -$row->cantidad);
 				else
-					$this->datasis->sinvcarga( $row->codigo, $mALMA, $row->cantidad);
+					$this->datasis->sinvcarga( $row->codigo, $alma, $row->cantidad);
 			}
 		}
-		$monto = $this->datasis->dameval('SELECT sum(costo) WHERE numero='.$this->db->escape($numero));
+		$monto = $this->datasis->dameval('SELECT sum(costo) FROM itssal WHERE numero='.$this->db->escape($numero));
 
 		//Segun el Caso hace GASTO o OTIN
 		if ( $tipo == 'S' ) {  // GASTO
@@ -1062,7 +1062,7 @@ class ssal extends validaciones {
 			$data['usuario']  = $do->get('usuario');
 			$this->db->insert('gser', $data);
 			
-			$mSQL := "INSERT INTO gitser ( fecha, numero, proveed, codigo, descrip, precio, iva, importe, departa, sucursal, transac, usuario, estampa, hora ) 
+			$mSQL = "INSERT INTO gitser ( fecha, numero, proveed, codigo, descrip, precio, iva, importe, departa, sucursal, transac, usuario, estampa, hora ) 
 					  SELECT c.fecha fecha, c.numero, 'AJUSI' proveed, 
 						b.gasto, a.descrip, sum(a.costo) precio, 0 iva, sum(a.costo) importe, 
 						d.depto departa, d.sucursal, a.transac, a.usuario, a.estampa, a.hora 
@@ -1072,7 +1072,7 @@ class ssal extends validaciones {
 			$this->db->query($mSQL);
 			
 		} else {  //
-			$mNUMERO = $this->datasis->prox_sql("notiot")
+			$mNUMERO = $this->datasis->prox_sql("notiot");
 			$mNUMERO = "O".substr($mNUMERO,1,7);
 			$data['tipo_doc']  = 'OT';
 			$data['numero']    = $mNUMERO;
@@ -1093,28 +1093,14 @@ class ssal extends validaciones {
 			$data['estampa']   = $do->get('estampa');
 			$data['hora']      = $do->get('hora');
 			$data['usuario']   = $do->get('usuario');
-   
+
 			$this->db->insert('otin', $data);
+			$mSQL="	INSERT INTO itotin (tipo_doc, numero, codigo, descrip, precio, impuesto, importe, usuario, estampa, hora, transac ) 
+					SELECT 'OT' tipo_doc, '".$mNUMERO."' numero,   b.ingreso codigo, 'AJUSTES DE INVENTARIO' descrip, sum(a.costo) precio, 0 impuesto, sum(a.costo) importe, a.usuario, a.estampa, a.hora, a.transac 
+					FROM itssal a JOIN icon b ON a.concepto=b.codigo WHERE a.numero='".$numero."' GROUP BY a.concepto";
 
-		mC := DAMECUR("SELECT b.ingreso, sum(a.costo) costo FROM itssal a JOIN icon b ON a.concepto=b.codigo WHERE a.numero='"+XNUMERO+"' GROUP BY a.concepto")
-		DO WHILE !mC:EoF()
-			aLISTA := {}
-			AADD(aLISTA, {"TIPO_DOC", 'OT' })
-			AADD(aLISTA, {"NUMERO",   mNUMERO })
-			AADD(aLISTA, {"CODIGO",   mC:FieldGet('INGRESO')  })
-			AADD(aLISTA, {"DESCRIP",  "AJUSTES DE INVENTARIO " })
-			AADD(aLISTA, {"PRECIO",   mC:FieldGet('COSTO')  })
-			AADD(aLISTA, {"IMPUESTO", 0 })
-			AADD(aLISTA, {"IMPORTE",  mC:FieldGet('COSTO') })
-			mSQL   := "INSERT INTO itotin SET "
-			aVALORES := {}
-			LLENASQL(@mSQL, @aVALORES, aLISTA, mTRANSAC)
-			EJECUTASQL(mSQL,aVALORES)
-			mC:Skip()
-		ENDDO
-	ENDIF
-
-
+			$this->db->query($mSQL);
+		}
 
 		logusu('ssal',"Entradas y Salidas $numero CREADO");
 	}
