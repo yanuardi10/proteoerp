@@ -3000,7 +3000,7 @@ class Sfac extends Controller {
 		if($fiscal=='S'){
 			$num= $this->datasis->dameval("SELECT MAX(nfiscal) FROM sfac");
 			$nn = $num+1;
-			$edit->nfiscal->insertValue=str_pad($nn,8,'0',STR_PAD_LEFT);
+			$edit->nfiscal->updateValue=str_pad($nn,8,'0',STR_PAD_LEFT);
 		}
 
 		$edit->tipo_doc = new inputField('Factura','tipo_doc');
