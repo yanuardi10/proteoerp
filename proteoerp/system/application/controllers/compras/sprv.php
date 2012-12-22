@@ -42,6 +42,7 @@ class Sprv extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
+		$grid->wbotonadd(array("id"=>"pagweb",   "img"=>"images/html_icon.gif",  "alt" => 'Formato PDF', "label"=>"Pagina Web"));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
@@ -90,7 +91,7 @@ class Sprv extends Controller {
 	//Funciones de los Botones
 	//***************************
 	function bodyscript( $grid0 ){
-		$bodyscript = '		<script type="text/javascript">';
+		$bodyscript = '		<script type="text/javascript">'."\n";
 
 		$bodyscript .= '
 		jQuery("#edocta").click( function(){
@@ -101,6 +102,21 @@ class Sprv extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
 		});
 		';
+
+		// Pagina Web
+		$bodyscript .= '
+		jQuery("#pagweb").click( function(){
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret  = $("#newapi'.$grid0.'").getRowData(id);
+				if ( ret.url.length > 10 )
+					window.open(ret.url);
+			} else {
+				$.prompt("<h1>Por favor Seleccione un Proveedor</h1>");
+			}
+		});
+		';
+
 
 		$bodyscript .= '
 		function sprvadd() {

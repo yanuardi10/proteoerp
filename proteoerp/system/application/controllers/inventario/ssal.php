@@ -350,10 +350,15 @@ class Ssal extends Controller {
 				if (id){
 					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
 					jQuery(gridId2).trigger("reloadGrid");
+					$.ajax({
+						url: "'.base_url().$this->url.'tabla/"+id,
+						success: function(msg){
+							$("#ladicional").html(msg);
+						}
+					});
 				}
 			}'
 		);
-
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
@@ -444,6 +449,56 @@ class Ssal extends Controller {
 			//}
 		};
 	}
+
+
+
+	function tabla( $id = 0 ) {
+		$transac = $this->datasis->dameval("SELECT transac FROM ssal WHERE id='$id'");
+		$salida = '';
+
+		// Revisa formas de pago sfpa
+		$mSQL = "SELECT * from gser WHERE transac='$transac' ";
+		$query = $this->db->query($mSQL);
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Gasto</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tipo</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['totneto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "</table>";
+		}
+
+		// Cuentas por Cobrar
+		$mSQL = "SELECT * FROM otin WHERE transac='$transac' ";
+		$query = $this->db->query($mSQL);
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Otros Ingresos</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			$i = 1;
+			foreach ($query->result_array() as $row)
+			{
+					$salida .= "<tr>";
+					$salida .= "<td>".$row['tipo_doc']."</td>";
+					$salida .= "<td>".$row['numero'].  "</td>";
+					$salida .= "<td align='right'>".nformat($row['totalg']).   "</td>";
+					$salida .= "</tr>";
+			}
+			$salida .= "</table>";
+		}
+		$query->free_result();
+
+		echo $salida;
+	}
+
+
 
 
 	//***************************
