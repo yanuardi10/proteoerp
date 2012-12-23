@@ -106,7 +106,7 @@ class Scaj extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 700, modal: true,
+			autoOpen: false, height: 450, width: 700, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -549,16 +549,16 @@ class Scaj extends Controller {
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
-		$edit->codigo = new inputField('C&oacute;digo', 'cajero');
-		$edit->codigo->rule = 'trim|strtoupper|required|callback_chexiste';
-		$edit->codigo->mode = 'autohide';
-		$edit->codigo->maxlength=5;
-		$edit->codigo->size = 8;
+		$edit->cajero = new inputField('Codigo', 'cajero');
+		$edit->cajero->rule = 'trim|strtoupper|required|callback_chexiste';
+		$edit->cajero->mode = 'autohide';
+		$edit->cajero->maxlength=5;
+		$edit->cajero->size = 6;
 		
 		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->maxlength=30;
 		$edit->nombre->rule="trim|strtoupper|required";
-		$edit->nombre->size =40;
+		$edit->nombre->size =30;
 
 		$edit->clave = new inputField('Clave', 'clave');
 		$edit->clave->maxlength=6;
@@ -576,13 +576,20 @@ class Scaj extends Controller {
 		$edit->almacen->rule='required';
 		$edit->almacen->style="width:150px";
 
-		$edit->caja = new inputField("Caja", "caja");
+		$edit->caja = new dropdownField("Caja", "caja");
+		$edit->caja->option('','Seleccionar');
+		$edit->caja->options("SELECT codbanc, concat(codbanc,' ',banco) banco FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
+		$edit->caja->rule='required';
+		$edit->caja->style="width:250px";
+
+/*
 		$edit->caja->size=4;
 		$edit->caja->maxlength=2;
 		$edit->caja->rule='trim|callback_ccaja';
+*/
 
 		$edit->directo = new inputField('Directorio','directo');
-		$edit->directo->size=70;
+		$edit->directo->size=55;
 		$edit->directo->rule='trim';
 		$edit->directo->maxlength=60;
 
@@ -612,42 +619,42 @@ class Scaj extends Controller {
 		$edit->horaf->append('hh:mm:ss');
 		$edit->horaf->group="Hora feliz";
 
-		$edit->fechaa = new dateonlyfield("Fecha apertura", "fechaa");
+		$edit->fechaa = new dateonlyfield("Fecha", "fechaa");
 		$edit->fechaa->maxlength=12;
-		$edit->fechaa->size=15;
+		$edit->fechaa->size=12;
 		$edit->fechaa->rule='chfecha';
 		$edit->fechaa->group="Apertura";
 
-		$edit->horaa  = new inputField("Hora apertura", "horaa");
+		$edit->horaa  = new inputField("Hora", "horaa");
 		$edit->horaa->maxlength=12;
-		$edit->horaa->size=15;
+		$edit->horaa->size=12;
 		$edit->horaa->rule='trim|callback_chhora';
 		$edit->horaa->append('hh:mm:ss');
 		$edit->horaa->group="Apertura";
 
-		$edit->apertura =new inputField("Monto apertura", "apertura");
+		$edit->apertura =new inputField("Monto", "apertura");
 		$edit->apertura->maxlength=12;
-		$edit->apertura->size=14;
+		$edit->apertura->size=12;
 		$edit->apertura->group="Apertura";
 		$edit->apertura->css_class='inputnum';
 		$edit->apertura->rule='numeric';
 
-		$edit->fechac = new dateonlyfield('Fecha cierre', 'fechac');
+		$edit->fechac = new dateonlyfield('Fecha', 'fechac');
 		$edit->fechac->maxlength=12;
-		$edit->fechac->size=14;
+		$edit->fechac->size=12;
 		$edit->fechac->rule='chfecha';
 		$edit->fechac->group='Apertura';
 
-		$edit->horac  = new inputField('Hora cierre', 'horac');
+		$edit->horac  = new inputField('Hora', 'horac');
 		$edit->horac->maxlength=8;
-		$edit->horac->size=10;
+		$edit->horac->size=12;
 		$edit->horac->rule='trim|callback_chhora';
 		$edit->horac->append('hh:mm:ss');
 		$edit->horac->group="Apertura";
 
-		$edit->cierre   =new inputField("Monto Cierre", "cierre");
+		$edit->cierre   =new inputField("Monto", "cierre");
 		$edit->cierre->maxlength=12;
-		$edit->cierre->size=15;
+		$edit->cierre->size=12;
 		$edit->cierre->group='Apertura';
 		$edit->cierre->css_class='inputnum';
 		$edit->cierre->rule='trim|numeric';
@@ -655,10 +662,13 @@ class Scaj extends Controller {
 		$edit->buttons('modify','save','undo','delete','back');
 		$edit->build();
 
-		$data['content'] = $edit->output;
+		$conten["form"]  =&  $edit;
+		$data['content'] = $this->load->view('view_scaj', $conten );
+
+		//$data['content'] = $edit->output;
 		//$data['title']   = "<h1>Cajeros</h1>";
 		//$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas_sola', $data);
+		//$this->load->view( 'view_scaj', $data);
 	}
 
 	function _pre_del($do) {

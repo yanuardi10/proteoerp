@@ -34,9 +34,6 @@ class Sfac extends Controller {
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
-		#Set url
-		$grid->setUrlput(site_url($this->url.'setdata/'));
-
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
@@ -57,8 +54,6 @@ class Sfac extends Controller {
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
-
-		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$param['WestPanel']    = $WestPanel;
 		$param['script']       = script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
@@ -1244,7 +1239,6 @@ class Sfac extends Controller {
 		$grid->setOnSelectRow('
 			function(id){
 				if (id){
-					var ret = $("#titulos").getRowData(id);
 					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
 					jQuery(gridId2).trigger("reloadGrid");
 					$.ajax({
@@ -1796,13 +1790,8 @@ class Sfac extends Controller {
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('190');
-		//$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(false);
 		$grid->setToolbar('false', '"top"');
-
-		//$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		//$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		//$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
 		$grid->setAdd(false);
@@ -1843,7 +1832,7 @@ class Sfac extends Controller {
 	}
 
 	//Guarda la Informacion
-	function setDatait(){
+	function setdatait(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');

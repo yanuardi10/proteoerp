@@ -56,11 +56,12 @@ class Scli extends validaciones {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"edocta",  "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
-		$grid->wbotonadd(array("id"=>"editacr", "img"=>"images/star.png",      "alt" => 'Credito',     "label"=>"Cambiar credito"));
+		$grid->wbotonadd(array("id"=>"editacr", "img"=>"images/star.png",      "alt" => 'Credito',     "label"=>"Limite de Credito"));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fedita",   "title"=>"Agregar/Editar Cliente"),
+		array("id"=>"feditcr",  "title"=>"Cambia Limite de Credito")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -312,9 +313,14 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		jQuery("#editacr").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
-				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				'.$this->datasis->jwinopen(site_url('ventas/scli/creditoedit/modify').'/\'+id',600,480).';
-			} else { $.prompt("<h1>Por favor Seleccione un Cliente</h1>");}
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('ventas/scli/creditoedit/modify').'/"+id, function(data){
+					$("#fedita").html("");
+					$("#feditcr").html(data);
+					$("#feditcr").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
 		});
 		';
 
@@ -322,6 +328,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		function scliadd() {
 			$.post("'.site_url('ventas/scli/dataedit/create').'",
 			function(data){
+				$("#feditcr").html("");
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
 			})
@@ -334,6 +341,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
 				$.post("'.site_url('ventas/scli/dataedit/modify').'/"+id, function(data){
+					$("#feditcr").html("");
 					$("#fedita").html(data);
 					$("#fedita").dialog( "open" );
 				});
@@ -371,7 +379,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 							apprise("Registro Guardado");
 							$( "#fedita" ).dialog( "close" );
 							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/SCLI').'/\'+res.id+\'/id\'').';
 							return true;
 						} else {
 							$("#fedita").html(r);
@@ -384,6 +391,37 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			},
 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
+
+		$bodyscript .= '
+		$("#feditcr").dialog({
+			autoOpen: false, height: 400, width: 650, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				//allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							apprise("Cambio Guardado");
+							$( "#feditcr" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							return true;
+						} else {
+							$("#feditcr").html(r);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); }
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+
+
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
@@ -2519,7 +2557,7 @@ function chrif(rif){
 	function creditoedit(){
 		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit('L&iacute;mite de cr&eacute;dito', 'scli');
+		$edit = new DataEdit('', 'scli');
 		$edit->back_url = site_url('ajax/reccierraventana');
 		$edit->back_save   = true;
 		$edit->back_cancel = true;
@@ -2551,53 +2589,57 @@ function chrif(rif){
 		$edit->credito->rule = 'required|enum[S,N]';
 		$edit->credito->option('S','Activo');
 		$edit->credito->option('N','Inactivo');
-		$edit->credito->title = 'Si el cliente puede o no optar por cr&eacute;dito en la empresa';
+		$edit->credito->title = 'Activar o Desactivar credito del Cliente';
 		$edit->credito->style = 'width: 145px;';
 
 		$edit->formap = new inputField('D&iacute;as de cr&eacute;dito','formap');
 		$edit->formap->rule      = 'max_length[6]|numeric|positive|required';
-		$edit->formap->title     = 'Plazo m&aacute;ximo de endeudamiento';
+		$edit->formap->title     = 'Dias de Credito';
 		$edit->formap->autocomplete  = false;
 		$edit->formap->css_class = 'inputonlynum';
 		$edit->formap->size      = 15;
 		$edit->formap->maxlength = 6;
-		$edit->formap->append('Al ser cero automaticamente se anulara el cr&eacute;dito');
+		$edit->formap->append('Al ser cero se anulara el cr&eacute;dito');
 
 		$edit->limite = new inputField('L&iacute;mite de cr&eacute;dito','limite');
 		$edit->limite->rule='max_length[20]|integer|positive|required';
 		$edit->limite->css_class='inputonlynum';
-		$edit->limite->title = 'Monto al cual se puede endeudar el cliente';
+		$edit->limite->title = 'Monto de Credito';
 		$edit->limite->size  = 15;
 		$edit->limite->autocomplete  = false;
 		$edit->limite->maxlength =20;
-		$edit->limite->append('Al ser cero automaticamente se anulara el cr&eacute;dito');
+		$edit->limite->append('Al ser cero se anulara el cr&eacute;dito');
 
-		$edit->tolera = new inputField('% Tolerancia/M&aacute;ximo','tolera');
+		$edit->tolera = new inputField('Tolerancia %','tolera');
 		$edit->tolera->rule='max_length[9]|numeric|porcent|callback_chtolera|required';
 		$edit->tolera->css_class='inputnum';
-		$edit->tolera->title = 'Tolerancia porcentual de endeudamiento';
+		$edit->tolera->title = '% de tolerancia por encima del monto limite';
 		$edit->tolera->autocomplete  = false;
 		$edit->tolera->size =5;
 		$edit->tolera->maxlength =9;
 
-		$edit->maxtole = new inputField('Maxtole','maxtole');
+		$edit->maxtole = new inputField('Max Tolerancia','maxtole');
 		$edit->maxtole->rule='max_length[9]|numeric|porcent|required';
 		$edit->maxtole->css_class='inputnum';
 		$edit->maxtole->autocomplete  = false;
-		$edit->maxtole->title = 'Punto m&aacute;ximo de tolerancia';
+		$edit->maxtole->title = '% Maximo de tolerancia';
 		$edit->maxtole->size =5;
-		$edit->maxtole->in='tolera';
+		//$edit->maxtole->in='tolera';
 		$edit->maxtole->maxlength =9;
 
 		$edit->motivo = new textareaField('Motivo', 'motivo');
-		$edit->motivo->title = 'Motivo o raz&oacute;n del cambio en la pol&iacute;tica de cr&eacute;dito';
+		$edit->motivo->title = 'Motivo del cambio en la pol&iacute;tica de cr&eacute;dito';
 		$edit->motivo->cols = 50;
 		$edit->motivo->rows = 4;
 		$edit->motivo->rule = 'required';
 
-		$plim=$this->secu->puede('1310'); //Limite de Credito
-		$paxt=$this->secu->puede('1313'); //Asigna Extra credito
-		$pext=$this->secu->puede('1314'); //Extra credito
+		//$plim=$this->secu->puede('1310'); //Limite de Credito
+		//$paxt=$this->secu->puede('1313'); //Asigna Extra credito
+		//$pext=$this->secu->puede('1314'); //Extra credito
+
+		$plim = $this->datasis->sidapuede('SCLIOTR', 'SCLILIMITE()');   //
+		$pext = $this->datasis->sidapuede('SCLIOTR', 'SCLITOLERA()');   //Extra credito
+		$paxt = $this->datasis->sidapuede('SCLIOTR', 'SCLIMAXTOLE()');  //Asigna Extra credito
 
 		if(!$plim){
 			$edit->credito->mode = 'autohide';
@@ -2609,9 +2651,9 @@ function chrif(rif){
 		if(!$paxt) $edit->maxtole->mode = 'autohide';
 
 		if($plim || $paxt || $pext){
-			$edit->buttons('modify', 'save');
+			//$edit->buttons('modify', 'save');
 		}
-		$edit->buttons( 'undo','back');
+		//$edit->buttons( 'undo','back');
 		$edit->build();
 
 		$script= '<script type="text/javascript" >
@@ -2622,11 +2664,8 @@ function chrif(rif){
 		</script>';
 
 		$data['content'] = $edit->output;
-		$data['head']    = $this->rapyd->get_head();
-		$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
-		$data['script'] .= $script;
-		$data['title']   = heading('Cr&eacute;dito a cliente');
-		$this->load->view('view_ventanas', $data);
+		$data['script']  = $script;
+		$this->load->view('jqgrid/ventanajq', $data);
 	}
 
 	function claveedit(){

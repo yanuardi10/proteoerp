@@ -344,63 +344,62 @@ function del_itspre(id){
 	totalizar();
 }
 </script>
-<?php } ?>
-<table align='center' width="95%">
+<?php 
+} 
+if ($form->_status=='show') { 
+?>
+<table align='center' width="100%">
 	<tr>
-<?php if ($form->_status=='show') { ?>
 		<td>
 		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/PRESUP/<?php echo $form->numero->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
 		</td>
-<?php } ?>
 		<td align=right><?php echo $container_tr?></td>
 	</tr>
 </table>
-<table align='center' width="95%">
+<?php } ?>
+
+<table align='center' width="100%">
 	<tr>
 		<td>
-		<table width='100%'><tr><td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
-			<table width="100%" style="margin: 0; width: 100%;">
+		<table width='100%'>
 			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-			</tr>
+				<td>
+				<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
+				<table width="100%" style="margin: 0; width: 100%;">
+					<tr>
+						<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
+					</tr><tr>
+						<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
+					</tr><tr>
+						<td class="littletableheader"><?=$form->peso->label  ?>&nbsp;</td>
+						<td class="littletablerow" align="left"><?=$form->peso->output ?>&nbsp;</td>
+					</tr>
+				</table>
+				</fieldset>
+				</td><td>
+				<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
+				<table width="100%" style="margin: 0; width: 100%;">
+					<tr>
+						<td class="littletableheader"><?php echo $form->cliente->label;  ?>&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
+					</tr><tr>
+						<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
+						<td class="littletablerow" colspan='2'><?php echo $form->rifci->output;   ?>&nbsp;</td>
+					</tr><tr>
+						<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
+						<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
+					</tr>
+				</table>
+				</fieldset>
+				</td>
 			<tr>
-				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?=$form->peso->label  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?=$form->peso->output ?>&nbsp;</td>
-			</tr>
-			</table>
-			</fieldset>
-		</td><td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
-			<table width="100%" style="margin: 0; width: 100%;">
-			<tr>
-				<td class="littletableheader"><?php echo $form->cliente->label;  ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
-				<td class="littletablerow" colspan='2'><?php echo $form->rifci->output;   ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
-				<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
-			</tr>
-			</table>
-			</fieldset>
-		</td><tr></table>
-		<br>
+		</table>
 		</td>
-	</tr>
-	<tr>
+	</tr><tr>
 		<td>
 		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%' border='0'>
@@ -467,8 +466,6 @@ function del_itspre(id){
 			</tr>
 		</table>
 		</div>
-		<?php echo $container_bl ?>
-		<?php echo $container_br ?>
 		</td>
 	</tr>
 	<tr>
@@ -476,18 +473,19 @@ function del_itspre(id){
 		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 		<table width='100%'>
 			<tr>
-				<td class="littletableheader" width='100'><?php echo $form->condi1->label;    ?></td>
-				<td class="littletablerow"    width='350'><?php echo $form->condi1->output;   ?></td>
+				<td colspan='2'><?php echo $container_bl ?></td>
+
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
 				<td class="littletablerow" align='right'><b id='totals_val'><?php echo nformat($form->totals->value); ?></b><?php echo $form->totals->output; ?></td>
 
 			<tr></tr>	
-				<td class="littletableheader">&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->condi2->output;   ?></td>
+				<td class="littletableheader" width='100'><?php echo $form->condi1->label;    ?></td>
+				<td class="littletablerow"    width='350'><?php echo $form->condi1->output;   ?></td>
 				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
 				<td class="littletablerow" align='right'><b id='ivat_val'><?php echo nformat($form->ivat->value); ?></b><?php echo $form->ivat->output; ?></td>
 			<tr></tr>
-				<td>&nbsp;</td><td>&nbsp;</td>
+				<td class="littletableheader">&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->condi2->output;   ?></td>
 				<td class="littletableheader">           <?php echo $form->totalg->label;  ?></td>
 				<td class="littletablerow" align='right' style='font-size:18px;font-weight: bold'><b id='totalg_val'><?php echo nformat($form->totalg->value); ?></b><?php echo $form->totalg->output; ?></td>
 			</tr>

@@ -1,3 +1,8 @@
+<?php
+if (isset($content)) {
+if (!empty($content)) {
+ 
+?>
 <div id='contenido'>
 	<table width="100%" border="0" align="center">
 		<tr>
@@ -14,3 +19,4 @@ if (isset($content)) {
 	</table>
 </div>
 <?php if (isset($extras)) echo $extras; ?>
+<?php }} ?>

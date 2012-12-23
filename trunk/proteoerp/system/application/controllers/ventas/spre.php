@@ -1,4 +1,868 @@
-<?php require_once(BASEPATH.'application/controllers/validaciones.php');
+<?php 
+class Spre extends Controller {
+	var $mModulo = 'SPRE';
+	var $titp    = 'Presupuestos';
+	var $tits    = 'Presupuestos';
+	var $url     = 'ventas/spre/';
+
+	function Spre(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		$this->datasis->modulo_nombre( 'SPRE', $ventana=0 );
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('spre','id') ) {
+			$this->db->simple_query('ALTER TABLE spre DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE spre ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE spre ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		$this->datasis->modintramenu( 900, 650, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
+		// Configura los Paneles
+		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
+		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
+		if($fiscal=='S'){
+			$grid->wbotonadd(array("id"=>"bcierrex","img"=>"assets/default/images/print.png", "alt" => 'Imprimir Cierre X',"label"=>"Cierre X"));
+			$grid->wbotonadd(array("id"=>"bcierrez","img"=>"assets/default/images/print.png", "alt" => 'Imprimir Cierre Z',"label"=>"Cierre Z"));
+		}
+
+		$WestPanel = $grid->deploywestp();
+
+		//Panel Central
+		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
+		$adic = array(
+			array("id"=>"fedita" , "title"=>"Agregar/Editar Registro"),
+			array('id'=>'scliexp', 'title'=>'Ficha de Cliente' )
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
+		$param['WestPanel']    = $WestPanel;
+		$param['script']       = script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+		//$param['EastPanel']  = $EastPanel;
+		$param['readyLayout']  = $readyLayout;
+		$param['SouthPanel']   = $SouthPanel;
+		$param['listados']     = $this->datasis->listados('SPRE', 'JQ');
+		$param['otros']        = $this->datasis->otros('SPRE', 'JQ');
+		$param['centerpanel']  = $centerpanel;
+		//$param['funciones']    = $funciones;
+		$param['temas']        = array('proteo','darkness','anexos1');
+		$param['bodyscript']   = $bodyscript;
+		$param['tabs']         = false;
+		$param['encabeza']     = $this->titp;
+		$param['tamano']       = $this->datasis->getintramenu( substr($this->url,0,-1) );
+		$this->load->view('jqgrid/crud2',$param);
+
+	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		function spreadd() {
+			$.post("'.site_url('ventas/spre/dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function spreedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('ventas/spre/dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+			';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 550, width: 800, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							apprise("Registro Guardado");
+							$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							'.$this->datasis->jwinopen(site_url('formatos/ver/SPRE').'/\'+res.id+\'/id\'').';
+							return true;
+						} else { 
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); }
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+		$bodyscript .= '});'."\n";
+
+		$bodyscript .= "\n</script>\n";
+		$bodyscript .= "";
+		return $bodyscript;
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 70,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:8, maxlength: 8 }',
+		));
+
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('vd');
+		$grid->label('Vende');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('cod_cli');
+		$grid->label('Cliente');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
+		));
+
+
+		$grid->addField('totals');
+		$grid->label('Base');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('iva');
+		$grid->label('IVA');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('totalg');
+		$grid->label('Total');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+/*
+		$grid->addField('direc');
+		$grid->label('Direccion 1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
+		));
+
+
+		$grid->addField('dire1');
+		$grid->label('Direccion 2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
+		));
+*/
+
+		$grid->addField('rifci');
+		$grid->label('Rif/CI');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 90,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:13, maxlength: 13 }',
+		));
+
+
+		$grid->addField('inicial');
+		$grid->label('Inicial');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('condi1');
+		$grid->label('Condiciones 1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:25, maxlength: 25 }',
+		));
+
+
+		$grid->addField('condi2');
+		$grid->label('Condiciones 2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:25, maxlength: 25 }',
+		));
+
+
+		$grid->addField('peso');
+		$grid->label('Peso');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('usuario');
+		$grid->label('Usuario');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
+		));
+
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('200');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setOnSelectRow('
+			function(id){
+				if (id){
+					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
+					jQuery(gridId2).trigger("reloadGrid");
+					$.ajax({
+						url: "'.base_url().$this->url.'tabla/"+id,
+						success: function(msg){
+							$("#ladicional").html(msg);
+						}
+					});
+				}
+			}'
+		);
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(    $this->datasis->sidapuede('SPRE','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('SPRE','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('SPRE','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('SPRE','BUSQUEDA%'));
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("\t\taddfunc: spreadd,\n\t\teditfunc: spreedit");
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('spre');
+
+		$response   = $grid->getData('spre', array(array()), array(), false, $mWHERE, 'id', 'desc' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "numero";
+		$check  = 0;
+/*
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM spre WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('spre', $data);
+					echo "Registro Agregado";
+
+					logusu('SPRE',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM spre WHERE id=$id");
+			if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				$this->db->query("DELETE FROM spre WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE spre SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->where("id", $id);
+				$this->db->update("spre", $data);
+				logusu('SPRE',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				echo "Grupo Cambiado/Fusionado en clientes";
+			} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('spre', $data);
+				logusu('SPRE',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			}
+
+		} elseif($oper == 'del') {
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM spre WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM spre WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM spre WHERE id=$id ");
+				logusu('SPRE',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+*/
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgridit( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+/*
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+			'hidden'        => "'false'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:8, maxlength: 8 }',
+		));
+*/
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 110,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+
+		$grid->addField('desca');
+		$grid->label('Descripcion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
+		));
+
+
+		$grid->addField('cana');
+		$grid->label('Cantidad');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('preca');
+		$grid->label('Precio');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('importe');
+		$grid->label('Importe');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('vendedor');
+		$grid->label('Vende');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('iva');
+		$grid->label('Iva');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('pond');
+		$grid->label('Pond');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('precio4');
+		$grid->label('Precio4');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('ultimo');
+		$grid->label('Ultimo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('totaorg');
+		$grid->label('Totaorg');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('precio1');
+		$grid->label('Precio1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('mostrado');
+		$grid->label('Mostrado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+/*
+		$grid->addField('detalle');
+		$grid->label('Detalle');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'textarea'",
+			'editoptions'   => "'{rows:2, cols:60}'",
+		));
+*/
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->addField('combo');
+		$grid->label('Combo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+
+		$grid->addField('descuento');
+		$grid->label('Descuento');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
+		));
+
+/*
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+*/
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('190');
+		$grid->setfilterToolbar(false);
+		$grid->setToolbar('false', '"top"');
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(false);
+		$grid->setDelete(false);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdatait/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdatait/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdatait( $id = 0 )
+	{
+		if ($id === 0 ){
+			$id = $this->datasis->dameval("SELECT MAX(id) FROM spre");
+		}
+		if(empty($id)) return '';
+		$numero   = $this->datasis->dameval("SELECT numero FROM spre WHERE id=$id");
+
+		$grid    = $this->jqdatagrid;
+		$mSQL    = "SELECT * FROM itspre WHERE numero='$numero' ";
+		$response   = $grid->getDataSimple($mSQL);
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setdatait()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "??????";
+		$check  = 0;
+
+
+	}
+
+
+
+
+/*
 class spre extends validaciones {
 
 	function spre(){
@@ -311,7 +1175,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			echo $ret;
 		}
 	}
-
+*/
 
 	//**********************************************************************************************************
 	//
@@ -549,25 +1413,26 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->condi2->maxlength=25;
 		$edit->condi2->autocomplete=false;
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'add_rel','add');
+		//$edit->buttons('modify', 'save', 'undo', 'delete', 'add_rel','add');
+		$edit->buttons('delete', 'add_rel','add');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_spre', $conten,true);
-		$data['title']   = heading('Presupuesto No.'.$edit->numero->value);
+		$data['content'] = $this->load->view('view_spre', $conten);  //,true);
+		//$data['title']   = heading('Presupuesto No.'.$edit->numero->value);
 
 		//$data['style']  = style('vino/jquery-ui.css');
-		$data['style']  = style('redmond/jquery-ui-1.8.1.custom.css');
+		//$data['style']  = style('redmond/jquery-ui-1.8.1.custom.css');
 
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-		$data['script'] .= phpscript('nformat.js');
+		//$data['script']  = script('jquery.js');
+		//$data['script'] .= script('jquery-ui.js');
+		//$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		//$data['script'] .= script('plugins/jquery.floatnumber.js');
+		//$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+		//$data['script'] .= phpscript('nformat.js');
 
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
+		//$data['head']    = $this->rapyd->get_head();
+		//$this->load->view('view_ventanas', $data);
 	}
 
 	// Busca Clientes para autocomplete
@@ -760,17 +1625,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		if ($tipo_doc  == 'X'){
 			echo 'Ya fue Borrada';
 			return;
-			/*
-			if XREFEREN = 'C'
-				IF SINO("Recuperar Anulacion?",2) = 1
-					mSQL := "UPDATE sfac SET tipo_doc='F' WHERE tipo_doc='"+XTIPO_DOC+"' AND numero='"+XNUMERO+"'"
-					EJECUTASQL(mSQL)
-					mSQL := "UPDATE sitems SET tipoa='F' WHERE tipoa='"+XTIPO_DOC+"' AND numa='"+XNUMERO+"'"
-					EJECUTASQL(mSQL)
-					XTIPO_DOC='F'
-					CMNJ('FACTURA RECUPERADA')
-				ENDIF
-			ENDIF*/
 		}
 
 
@@ -796,7 +1650,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$mPEDIDO = ("pedido");
 	}
 
-
+/*
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
@@ -828,7 +1682,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
-
+*/
 	function tabla() {
 		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
 		$cliente = $this->datasis->dameval("SELECT cod_cli FROM spre WHERE id='$id'");
@@ -857,31 +1711,10 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$salida .= "</table>";
 		}
 		$query->free_result();
-
-
-/*
-		// Revisa formas de pago sfpa
-		$mSQL = "SELECT codbanc, numero, monto FROM bmov WHERE transac='$transac' ";
-		$query = $this->db->query($mSQL);
-		if ( $query->num_rows() > 0 ){
-			$salida .= "<br><table width='100%' border=1>";
-			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Caja o Banco</td></tr>";
-			$salida .= "<tr bgcolor='#e7e3e7'><td>Bco</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
-				$salida .= "<tr>";
-				$salida .= "<td>".$row['codbanc']."</td>";
-				$salida .= "<td>".$row['numero'].  "</td>";
-				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
-				$salida .= "</tr>";
-			}
-			$salida .= "</table>";
-		}
-*/
 		echo $salida;
 	}
 
-
+/*
 	function griditspre(){
 		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
 		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM spre")  ;
@@ -1519,6 +2352,7 @@ otros
 ";
 
 	}
-
+*/
 
 }
+?>
