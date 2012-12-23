@@ -13,6 +13,7 @@ class Utributa extends Controller {
 	}
 
 	function index(){
+		$this->datasis->creaintramenu( $opcion = array('modulo'=>'52A','titulo'=>'Unidad Tributaria','mensaje'=>'Unidad Tributaria','panel'=>'OBLIGACIONES','ejecutar'=>'finanzas/utributa','target'=>'popu','visible'=>'S','pertenece'=>'5','ancho'=>530,'alto'=>400) );   // Crea opcion en el menu
 		$this->datasis->modintramenu( 530, 400, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}

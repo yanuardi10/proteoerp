@@ -865,9 +865,9 @@ jQuery("#a1").click( function(){
 		$data['content'] = $this->load->view('view_banc', $conten,true);
 
 		//$data['content'] = $edit->output;
-		$data['title']   = '<h1>Bancos y cajas</h1>';
-		$data['head']    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
+		//$data['title']   = '<h1>Bancos y cajas</h1>';
+		//$data['head']    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		//$this->load->view('view_ventanas', $data);
 	}
 
 	function _post_insert($do){
