@@ -46,12 +46,16 @@ $factura  = ($tipo_doc=='D')? $row->factura :'';
 $dbtipo_doc = $this->db->escape($tipo_doc);
 $dbnumero   = $this->db->escape($numero);
 
-if($tipo_doc == "F")
-	$documento = "FACTURA";
-elseif ($tipo_doc == "D")
-	$documento = "NOTA DE CREDITO";
-else
+if($numero[0]=='_')
 	$documento = "PRE-FACTURA";
+elseif($tipo_doc == "F")
+	$documento = "FACTURA";
+elseif($tipo_doc == "D")
+	$documento = "NOTA DE CREDITO";
+elseif($tipo_doc == "X")
+	$documento = "FACTURA ANULADA";
+else
+	$documento = "DOCUMENTO";
 
 $lineas = 0;
 $uline  = array();

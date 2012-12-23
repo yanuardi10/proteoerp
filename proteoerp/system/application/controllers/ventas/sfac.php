@@ -35,8 +35,8 @@ class Sfac extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
+		$grid->wbotonadd(array("id"=>"boton1"   ,"img"=>"assets/default/images/print.png","alt" => 'Reimprimir'    ,"label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png"              ,"alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
 		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
 		if($fiscal=='S'){
 			$grid->wbotonadd(array("id"=>"bcierrex","img"=>"assets/default/images/print.png", "alt" => 'Imprimir Cierre X',"label"=>"Cierre X"));
@@ -145,8 +145,9 @@ class Sfac extends Controller {
 		jQuery("#boton1").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
+				//alert(Math.ceil((screen.availHeight))+\'x\'+Math.ceil((screen.availWidth)));
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('ventas/sfac/dataprint/modify').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+				window.open(\''.site_url('ventas/sfac/dataprint/modify').'/\'+id, \'_blank\', \'width=400,height=420,scrollbars=yes,status=yes,resizable=yes\');
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
 
@@ -261,7 +262,6 @@ class Sfac extends Controller {
 									if (json.status == "A"){
 										$("#fimpser").dialog( "close" );
 										jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
-										apprise("Registro Guardado");
 										return true;
 									} else {
 										apprise(json.mensaje);
@@ -306,8 +306,7 @@ class Sfac extends Controller {
 									if ( json.status == "A" ) {
 										$( "#fedita" ).dialog( "close" );
 										jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
-										apprise("Registro Guardado");
-										'.$this->datasis->jwinopen(site_url($this->url.'dataprint/modify').'/\'+json.pk.id').';
+										window.open(\''.site_url('ventas/sfac/dataprint/modify').'/\'+json.pk.id, \'_blank\', \'width=400,height=420,scrollbars=yes,status=yes,resizable=yes\');
 										return true;
 									} else {
 										apprise(json.mensaje);
@@ -2955,7 +2954,7 @@ class Sfac extends Controller {
 
 		$edit = new DataEdit('Imprimir factura', 'sfac');
 		$id=$edit->get_from_dataobjetct('id');
-		//$urlid=$edit->pk_URI();
+
 		$sfacforma=$this->datasis->traevalor('FORMATOSFAC','Especifica el metodo a ejecutar para descarga de formato de factura en Proteo Ej. descargartxt...');
 		if(empty($sfacforma)) $sfacforma='descargar';
 		$url=site_url('formatos/'.$sfacforma.'/FACTURA/'.$uid);
@@ -2963,7 +2962,6 @@ class Sfac extends Controller {
 			$edit->back_url = site_url($this->back_url);
 		else
 			$edit->back_url = site_url('ajax/reccierraventana');
-			//$edit->back_url = site_url($this->url.'dataedit/show/'.$uid);
 
 		$edit->back_save   = true;
 		$edit->back_delete = true;
@@ -2972,12 +2970,11 @@ class Sfac extends Controller {
 		$edit->back_cancel_delete = true;
 		//$edit->on_save_redirect   = false;
 
-		//$edit->post_process('update','_post_print_update');
-		$edit->pre_process('insert' ,'_pre_print_insert');
-		//$edit->pre_process('update' ,'_pre_print_update');
-		$edit->pre_process('delete' ,'_pre_print_delete');
+		$edit->post_process('update','_post_print_update');
+		$edit->pre_process( 'insert','_pre_print_insert');
+		$edit->pre_process( 'delete','_pre_print_delete');
 
-		$edit->container = new containerField('impresion','La descarga se realizara en 5 segundos, en caso de no hacerlo haga click '.anchor('formatos/descargar/FACTURA/'.$uid,'aqui'));
+		$edit->container = new containerField('impresion','La descarga se realizara en algunos segundos, en caso de no hacerlo haga click '.anchor('formatos/descargar/FACTURA/'.$uid,'aqui'));
 
 		$edit->nfiscal = new inputField('N&uacute;mero f&iacute;scal','nfiscal');
 		$edit->nfiscal->rule='max_length[12]|required';
@@ -2985,58 +2982,61 @@ class Sfac extends Controller {
 		$edit->nfiscal->maxlength =12;
 		$edit->nfiscal->autocomplete=false;
 
-		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
-		if($fiscal=='S'){
-			$num= $this->datasis->dameval("SELECT MAX(nfiscal) FROM sfac");
-			$nn = $num+1;
-			$edit->nfiscal->updateValue=str_pad($nn,8,'0',STR_PAD_LEFT);
+		$numfis=$edit->get_from_dataobjetct('nfiscal');
+		if(empty($numfis)){
+			$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
+			if($fiscal=='S'){
+				$dbcajero=$this->db->escape($edit->get_from_dataobjetct('cajero'));
+				$num= $this->datasis->dameval("SELECT MAX(nfiscal) FROM sfac WHERE cajero=$dbcajero");
+				$nn = $num+1;
+				$edit->nfiscal->updateValue=str_pad($nn,8,'0',STR_PAD_LEFT);
+
+				$edit->maqfiscal = new inputField('Serial m&aacute;quina f&iacute;scal','maqfiscal');
+				$edit->maqfiscal->rule='max_length[15]|strtoupper';
+				$edit->maqfiscal->size =16;
+				$edit->maqfiscal->maxlength =1;
+				$edit->maqfiscal->autocomplete=false;
+
+				$tipo=$edit->get_from_dataobjetct('tipo_doc');
+				if($tipo=='D'){
+					$edit->dmaqfiscal = new inputField('Serial m&aacute;quina f&iacute;scal de la factura de or&iacute;gen','dmaqfiscal');
+					$edit->dmaqfiscal->rule='max_length[15]|strtoupper';
+					$edit->dmaqfiscal->size =16;
+					$edit->dmaqfiscal->maxlength =1;
+					$edit->dmaqfiscal->autocomplete=false;
+
+					$dmaqfiscal=$edit->get_from_dataobjetct('dmaqfiscal');
+					if(empty($dmaqfiscal)){
+						$dbnumero=$this->db->escape($edit->get_from_dataobjetct('factura'));
+						$mfiscal=$this->datasis->dameval("SELECT maqfiscal FROM sfac WHERE numero=$dbnumero AND tipo_doc='F'");
+						$edit->dmaqfiscal->updateValue=$mfiscal;
+					}
+				}
+			}
 		}
 
 		$edit->tipo_doc = new inputField('Factura','tipo_doc');
-		$edit->tipo_doc->rule='max_length[1]';
-		$edit->tipo_doc->size =3;
 		$edit->tipo_doc->mode='autohide';
-		$edit->tipo_doc->maxlength =1;
 
 		$edit->numero = new inputField('N&uacute;mero','numero');
-		$edit->numero->rule='max_length[8]';
 		$edit->numero->mode='autohide';
-		$edit->numero->size =10;
 		$edit->numero->in='tipo_doc';
-		$edit->numero->maxlength =8;
 
 		$edit->fecha = new dateField('Fecha','fecha');
-		$edit->fecha->rule = 'chfecha';
 		$edit->fecha->mode = 'autohide';
-		$edit->fecha->size = 10;
-		$edit->fecha->maxlength =8;
 
 		$edit->cod_cli = new inputField('Cliente','cod_cli');
-		$edit->cod_cli->rule='max_length[5]';
-		$edit->cod_cli->size =7;
 		$edit->cod_cli->mode='autohide';
-		$edit->cod_cli->maxlength =5;
 
 		$edit->nombre = new inputField('Nombre','nombre');
-		$edit->nombre->rule='max_length[40]';
-		$edit->nombre->size =42;
 		$edit->nombre->mode='autohide';
 		$edit->nombre->in='cod_cli';
-		$edit->nombre->maxlength =40;
 
 		$edit->rifci = new inputField('Rif/Ci','rifci');
-		$edit->rifci->rule='max_length[13]';
-		$edit->rifci->size =15;
 		$edit->rifci->mode='autohide';
-		$edit->rifci->maxlength =13;
 
-		$edit->totalg = new inputField('Monto','totalg');
-		$edit->totalg->rule='max_length[12]|numeric';
-		$edit->totalg->css_class='inputnum';
-		$edit->totalg->size =14;
-		$edit->totalg->showformat='decimal';
-		$edit->totalg->mode='autohide';
-		$edit->totalg->maxlength =12;
+		$total   = $edit->get_from_dataobjetct('totalg');
+		$edit->totalg = new freeField('<b>Monto a pagar</b>','monto','<b id="vh_monto" style="font-size:2em">'.nformat($total).'</b>');
 
 		$edit->buttons('save', 'undo','back');
 		$edit->build();
@@ -3044,7 +3044,7 @@ class Sfac extends Controller {
 		if($st=='modify'){
 			$script= '<script type="text/javascript" >
 			$(function() {
-				setTimeout(\'window.location="'.$url.'"\',5000);
+				setTimeout(\'window.location="'.$url.'"\',100);
 			});
 			</script>';
 		}else{
@@ -3766,6 +3766,14 @@ class Sfac extends Controller {
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Anulo ${tipo_doc}${numero} $this->tits $primary ");
+	}
+
+	function _post_print_update($do){
+		$numero   = $do->get('numero');
+		$tipo_doc = $do->get('tipo_doc');
+		$nfiscal  = $do->get('nfiscal');
+
+		logusu($do->table,"Imprimio ${tipo_doc}${numero} factura $nfiscal");
 	}
 
 	function creafrompfac($numero,$status=null){
