@@ -77,7 +77,7 @@ $(document).ready(function() {
 	$( "#ffactura" ).datepicker({ dateFormat: "dd/mm/yy" });
 	$( "#vence" ).datepicker({    dateFormat: "dd/mm/yy" });
 
-	
+
 	codb1=$('#codb1').val();
 	desactivacampo(codb1);
 	autocod(0);
@@ -91,20 +91,30 @@ $(document).ready(function() {
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
+						if(data.length==0){
+							$('#nombre').val('');
+							$('#nombre_val').text('');
+							$('#proveed').val('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
 						add(sugiere);
 					},
 			})
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$('#proveed').attr("readonly", "readonly");
+
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
 			$('#proveed').val(ui.item.proveed);
+
+			setTimeout(function(){ $('#proveed').removeAttr("readonly"); }, 1500);
 		}
 	});
 });
@@ -294,7 +304,7 @@ function importerete(nind){
 		var base1   = Number(eval('rete._'+codigo+'[1]'));
 		var tari1   = Number(eval('rete._'+codigo+'[2]'));
 		var pama1   = Number(eval('rete._'+codigo+'[3]'));
-		
+
 		var tt=codigo.substring(0,1);
 		if(tt=='1')
 			monto=(importe*base1*tari1)/10000;
@@ -365,21 +375,29 @@ function autocod(id){
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
+
+						if(data.length==0){
+							$('#codigo_'+id).val('');
+							$('#descrip_'+id).val('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
 						add(sugiere);
 					},
 			})
 		},
 		minLength: 1,
 		select: function( event, ui ) {
-			//id='0';
+			$('#codigo_'+id).attr("readonly", "readonly");
+
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#descrip_'+id).val(ui.item.descrip);
 			$('#precio_'+id).focus();
+			setTimeout(function() {  $('#codigo_'+id).removeAttr("readonly"); }, 1500);
 		}
 	});
 }
@@ -397,10 +415,10 @@ function toggle() {
 		ele.style.display = "block";
 		text.innerHTML = "Ocultar Complementos";
 	}
-} 
+}
 </script>
 <?php } ?>
-	
+
 <table align='center' width="99%">
 <?php if (!$solo){?>
 	<tr>
@@ -490,7 +508,7 @@ function toggle() {
 				<td class="littletablerow" align="right"><?php echo $form->$obj5->output  ?></td>
 				<td class="littletablerow"><?php echo $form->$obj7->output  ?></td>
 				<td class="littletablerow"><?php echo $form->$obj8->output  ?></td>
-				
+
 				<?php if($form->_status!='show') {?>
 					<td class="littletablerow" align="center"><a href='#' onclick='del_gitser(<?php echo $i; ?>);return false;'><?php echo img("images/delete.jpg"); ?></a></td>
 				<?php } ?>
@@ -510,7 +528,7 @@ function toggle() {
 				<?php } // caja chica  ?>
 			<?php } // SHOW ?>
 			<?php } ?>
-			
+
 			<tr id='__UTPL__'>
 				<td colspan='9' class="littletablerow">&nbsp;</td>
 			</tr>
@@ -535,7 +553,7 @@ function toggle() {
 			<td align='right'><?php echo $form->totbruto->output ?>&nbsp;</td>
 		</table>
 		</td>
-		
+
 	</tr>
 
 	<?php if ($form->max_rel_count['gereten']>0); ?>
@@ -668,7 +686,7 @@ function toggle() {
 					<?php
 						$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->_dataobject->get('usuario'))."'";
 						$us_nombre = $this->datasis->dameval($mSQL);
-					
+
 					?>
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('usuario'); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $us_nombre ?>&nbsp;</td>
@@ -683,12 +701,12 @@ function toggle() {
 
 	<tr>
 		<td align='center'>
-			<a id="mostrasocio" href="javascript:toggle();">Mostrar Complementos</a> 
+			<a id="mostrasocio" href="javascript:toggle();">Mostrar Complementos</a>
 			<div id='asociados' style='display: none'>
 				<?php
 					$mSQL = "SELECT periodo, nrocomp, emision, impuesto, reiva, round(reiva*100/impuesto,0) porcent FROM riva WHERE transac=? LIMIT 1";
 					$query = $this->db->query($mSQL, array(TRIM($form->_dataobject->get('transac'))) );
-					if ( $query->num_rows() > 0 ) { 
+					if ( $query->num_rows() > 0 ) {
 						$row = $query->row();
 				?>
 			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>

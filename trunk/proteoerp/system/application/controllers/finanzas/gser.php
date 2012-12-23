@@ -156,7 +156,7 @@ class gser extends Controller {
 		';
 
 		$bodyscript .= '
-			$( "#fgasto" ).dialog({
+			$("#fgasto").dialog({
 				autoOpen: false, height: 590, width: 950, modal: true,
 				buttons: {
 					"Guardar": function() {
@@ -169,25 +169,33 @@ class gser extends Controller {
 								url: murl,
 								data: $("#df1").serialize(),
 								success: function(r,s,x){
-									var res = $.parseJSON(r);
-									if ( res.status == "A"){
-										apprise(res.mensaje);
-										$( "#fcompra" ).dialog( "close" );
-										grid.trigger("reloadGrid");
-										'.$this->datasis->jwinopen(site_url('formatos/ver/GSER').'/\'+res.id+\'/id\'').';
-										return true;
-									} else if ( res.status == "C"){
-										apprise("<div style=\"font-size:16px;font-weight:bold;background:green;color:white\">Mensaje:</div> <h1>"+res.mensaje);
-									} else {
-										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									try{
+										var json = JSON.parse(r);
+										if (json.status == "A"){
+											$("#fgasto").dialog( "close" );
+											grid.trigger("reloadGrid");
+											'.$this->datasis->jwinopen(site_url('formatos/ver/GSER').'/\'+json.pk.id+\'/id\'').';
+											return true;
+										}else{
+											apprise(json.mensaje);
+										}
+									}catch(e){
+										$("#fgasto").html(r);
 									}
+
 								}
 							});
 						}
 					},
-					Cancelar: function() { $( this ).dialog( "close" ); }
+					Cancelar: function() {
+						$(this).dialog( "close" );
+						$("#fgasto").html("");
+					}
 				},
-				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+				close: function() {
+					allFields.val("").removeClass( "ui-state-error" );
+					$("#fgasto").html("");
+				}
 			});
 		});';
 
@@ -3517,59 +3525,71 @@ function gserfiscal(mid){
 		//	$edit->button_status('btn_crete','Calcular retenciones',$accion,'TR','show');
 		//}
 
-		$edit->buttons('save', 'undo', 'delete', 'back','add_rel','add');
+		$edit->buttons('add_rel','add');
 
-		if($this->genesal){
-			$edit->build();
-			$conten['form']  =&  $edit;
-			$conten['solo']  = $this->solo;
-			if (  $this->solo ){
+		$edit->on_save_redirect=false;
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+
+			echo json_encode($rt);
+		}else{
+			if($this->genesal){
+				$conten['form']  =& $edit;
+				$conten['solo']  = $this->solo;
 				$data['content'] = $this->load->view('view_gser', $conten);
-			} else {
-				$smenu['link']   = barra_menu('518');
-				$data['content'] =  $this->load->view('view_gser', $conten,true);
-				$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
-				$data['title']   =  heading('Registro de Gastos o Nota de Debito');
-				$data['head']    =  script('jquery.js').script('jquery-ui.js');
-				$data['head']   .=  script('plugins/jquery.numeric.pack.js');
-				$data['head']   .=  script('plugins/jquery.meiomask.js');
-				$data['head']   .=  style('redmond/jquery-ui-1.8.1.custom.css');
-				$data['head']   .=  $this->rapyd->get_head();
-				$data['head']   .=  phpscript('nformat.js');
-				$data['head']   .=  script('plugins/jquery.floatnumber.js');
-				$data['head']   .=  script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-				$this->load->view('view_ventanas', $data);
-
+			}else{
+				$rt=array(
+					'status' =>'B',
+					'mensaje'=> utf8_encode(html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string))),
+					'pk'     =>''
+				);
+				echo json_encode($rt);
 			}
-		} else {
-			$edit->on_save_redirect=false;
-			$edit->build();
-			if($edit->on_success()){
-				//$this->claves=$edit->_dataobject->pk;
-				//$this->claves['control']=$edit->_dataobject->get('control');
-				$rt= 'Gasto Guardado';
-			}elseif($edit->on_error()){
-				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
-			}
-
-/*
-			$smenu['link']   = barra_menu('518');
-			//$conten['form']  =& $edit;
-			//$data['content'] =  $this->load->view('view_gser', $conten,true);
-			$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
-			$data['title']   =  heading('Registro de Gastos o Nota de D&eacute;bito');
-			$data['head']    =  script('jquery.js').script('jquery-ui.js');
-			$data['head']   .=  script('plugins/jquery.numeric.pack.js');
-			$data['head']   .=  script('plugins/jquery.meiomask.js');
-			$data['head']   .=  style('redmond/jquery-ui-1.8.1.custom.css');
-			$data['head']   .=  $this->rapyd->get_head();
-			$data['head']   .=  phpscript('nformat.js');
-			$data['head']   .=  script('plugins/jquery.floatnumber.js');
-			$data['head']   .=  script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-			$this->load->view('view_ventanas', $data);
-*/
-			return $rt;
 		}
+
+
+		//if($this->genesal){
+		//	$edit->build();
+		//	$conten['form']  =&  $edit;
+		//	$conten['solo']  = $this->solo;
+		//	if (  $this->solo ){
+		//		$data['content'] = $this->load->view('view_gser', $conten);
+		//	} else {
+		//		$smenu['link']   = barra_menu('518');
+		//		$data['content'] =  $this->load->view('view_gser', $conten,true);
+		//		$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
+		//		$data['title']   =  heading('Registro de Gastos o Nota de Debito');
+		//		$data['head']    =  script('jquery.js').script('jquery-ui.js');
+		//		$data['head']   .=  script('plugins/jquery.numeric.pack.js');
+		//		$data['head']   .=  script('plugins/jquery.meiomask.js');
+		//		$data['head']   .=  style('redmond/jquery-ui-1.8.1.custom.css');
+		//		$data['head']   .=  $this->rapyd->get_head();
+		//		$data['head']   .=  phpscript('nformat.js');
+		//		$data['head']   .=  script('plugins/jquery.floatnumber.js');
+		//		$data['head']   .=  script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+		//		$this->load->view('view_ventanas', $data);
+        //
+		//	}
+		//} else {
+		//	$edit->on_save_redirect=false;
+		//	$edit->build();
+		//	if($edit->on_success()){
+		//		//$this->claves=$edit->_dataobject->pk;
+		//		//$this->claves['control']=$edit->_dataobject->get('control');
+		//		$rt= 'Gasto Guardado';
+		//
+		//
+		//	}elseif($edit->on_error()){
+		//		$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+		//	}
+		//	return $rt;
+		//}
 	}
 
 	//Calcula las retenciones para enviarlas por ajax
