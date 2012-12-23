@@ -1034,6 +1034,14 @@ class ssal extends validaciones {
 		$edit->costo->rule      = 'required|positive';
 		$edit->costo->readonly  = true;
 
+		// busca concepto en icon, si tipo=E en icon=I si es tipo=S icon=E
+		$edit->concepto = new inputField('Concepto <#o#>', 'concepto_<#i#>');
+		$edit->concepto->db_name   = 'concepto';
+		$edit->concepto->rel_id    = 'itssal';
+		$edit->concepto->size      = 10;
+		$edit->concepto->rule      = 'required';
+		$edit->concepto->readonly  = true;
+
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
