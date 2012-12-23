@@ -320,6 +320,50 @@ class Ajax extends Controller {
 		echo $data;
 	}
 
+	//Busca icon
+	function buscaicon(){
+		$comodin= $this->datasis->traevalor('COMODIN');
+		$mid    = $this->input->post('q');
+		if(strlen($comodin)==1 && $comodin!='%' && $mid!==false){
+			$mid=str_replace($comodin,'%',$mid);
+		}
+		$qdb    = $this->db->escape($mid.'%');
+		$qba    = $this->db->escape($mid);
+		$tipo   = $this->input->post('tipo');
+
+		$data = '[]';
+		if($mid !== false && $tipo!==false){
+			if($tipo=='E'){
+				$tipo='I';
+			}elseif($tipo=='S'){
+				$tipo='E';
+			}else{
+				echo $data;
+				return;
+			}
+
+			$dbtipo = $this->db->escape($tipo);
+			$retArray = $retorno = array();
+
+			$mSQL="SELECT TRIM(a.codigo) AS codigo, a.concepto
+				FROM icon AS a
+				WHERE (a.codigo LIKE $qdb OR a.concepto LIKE  $qdb) AND tipo=$dbtipo
+				ORDER BY a.concepto LIMIT ".$this->autolimit;
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']    = utf8_encode('('.$row['codigo'].') '.trim($row['concepto']));
+					$retArray['value']    = $row['codigo'];
+					$retArray['concepto'] = utf8_encode(trim($row['concepto']));
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+	        }
+		}
+		echo $data;
+	}
+
 	//Busca sinv solo articulos para compras con codigos alternos
 	function buscascstart(){
 		$comodin= $this->datasis->traevalor('COMODIN');

@@ -1,4 +1,4 @@
-<?php 
+<?php
 class Ssal extends Controller {
 	var $mModulo = 'SSAL';
 	var $titp    = 'Ajustes de Inventario';
@@ -142,7 +142,7 @@ class Ssal extends Controller {
 							grid.trigger("reloadGrid");
 							'.$this->datasis->jwinopen(site_url('formatos/ver/SSAL').'/\'+res.id+\'/id\'').';
 							return true;
-						} else { 
+						} else {
 							$("#fedita").html(r);
 						}
 					}
@@ -914,18 +914,6 @@ class ssal extends validaciones {
 		);
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
-		$mCAUB=array(
-		'tabla'   =>'caub',
-		'columnas'=>array(
-				'ubica' =>'C&oacute;digo',
-				'ubides'=>'Nombre', 
-				),
-		'filtro'  =>array('ubica'=>'C&oacute;digo','ubides'=>'ubides'),
-		'retornar'=>array('ubica'=>'almacen','ubides'=>'caububides'),
-		'titulo'  =>'Buscar Almacem',
-		);
-		$boton =$this->datasis->modbus($mCAUB);
-
 		$do = new DataObject('ssal');
 		$do->rel_one_to_many('itssal', 'itssal', 'numero');
 		$do->pointer('caub' ,'caub.ubica=ssal.almacen','ubides AS caububides','left');
@@ -934,9 +922,6 @@ class ssal extends validaciones {
 		$edit = new DataDetails('Entradas y Salidas', $do);
 		//$edit->back_url = $this->back_dataedit;
 		//$edit->set_rel_title('itssal','Producto <#o#>');
-
-		//$edit->script($script,'create');
-		//$edit->script($script,'modify');
 
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
@@ -971,7 +956,7 @@ class ssal extends validaciones {
 		$edit->almacen->options('SELECT ubica, CONCAT(ubica, " ", ubides) descrip FROM caub WHERE invfis="N" ORDER BY ubica');
 		$edit->almacen->rule ='required';
 		$edit->almacen->style='width:200px;';
-		
+
 		$edit->depto = new dropdownField('Depto.','depto');
 		$edit->depto->option('','Seleccionar');
 		$edit->depto->options('SELECT depto, CONCAT(depto, " ", descrip) descrip FROM dpto WHERE tipo="G" ORDER BY depto');
@@ -983,11 +968,11 @@ class ssal extends validaciones {
 		$edit->cargo->options('SELECT codigo, CONCAT(codigo, " ", nombre) descrip FROM usol ORDER BY codigo');
 		$edit->cargo->rule ='required';
 		$edit->cargo->style='width:180px;';
-		
+
 		$edit->descrip = new inputField('Descripci&oacute;n','descrip');
 		$edit->descrip->size = 40;
 		$edit->descrip->maxlength=50;
-		
+
 		$edit->motivo = new inputField('Motivo','motivo');
 		$edit->motivo->size = 40;
 		$edit->motivo->maxlength=50;
@@ -1005,7 +990,6 @@ class ssal extends validaciones {
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->size     = 12;
 		$edit->codigo->db_name  = 'codigo';
-		$edit->codigo->readonly = true;
 		$edit->codigo->rel_id   = 'itssal';
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->append($btn);
@@ -1039,19 +1023,38 @@ class ssal extends validaciones {
 		$edit->concepto->db_name   = 'concepto';
 		$edit->concepto->rel_id    = 'itssal';
 		$edit->concepto->size      = 10;
-		$edit->concepto->rule      = 'required';
-		$edit->concepto->readonly  = true;
+		$edit->concepto->rule      = 'required|callback_chconcepto';
 
-		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->usuario = new autoUpdateField('usuario',$this->secu->usuario(),$this->secu->usuario());
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_ssal', $conten,false);
-		//$data['title']   = heading('Entradas y Salidas');
-		//$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
-		//$this->load->view('view_ventanas', $data);
+
+	}
+
+	function chconcepto($val){
+		$tipo    = $this->input->post('tipo');
+		if($tipo=='E'){
+			$tipo='I';
+		}elseif($tipo=='S'){
+			$tipo='E';
+		}else{
+			$this->validation->set_message('chconcepto', 'Debe elegir un tipo para seleccionar un concepto');
+			return false;
+		}
+
+		$dbtipo  = $this->db->escape($tipo);
+		$dbcodigo= $this->db->escape($val);
+
+		$cana= $this->datasis->dameval("SELECT COUNT(*) FROM icon WHERE tipo=$dbtipo AND codigo=$dbcodigo");
+		if($cana >0){
+			return true;
+		}
+		$this->validation->set_message('chconcepto', 'El campo %s possee un concepto que no corresponde al tipo del ajuste');
+		return false;
 	}
 
 	function _pre_insert($do){
@@ -1084,12 +1087,12 @@ class ssal extends validaciones {
 		$numero = $do->get('numero');
 		$alma   = $do->get('alma');
 		$tipo   = $do->get('tipo');
-		
+
 		// Actualiza Inventario
 		$mc = $this->db->query('SELECT codigo, cantidad FROM itssal WHERE numero='.$this->db->escape($numero));
 		if ( $mc->num_rows() > 0) {
 			foreach ($mc->result() as $row){
-				if ( $tipo == 'S' ) 
+				if ( $tipo == 'S' )
 					$this->datasis->sinvcarga( $row->codigo, $alma, -$row->cantidad);
 				else
 					$this->datasis->sinvcarga( $row->codigo, $alma, $row->cantidad);
@@ -1122,16 +1125,16 @@ class ssal extends validaciones {
 			$data['hora']     = $do->get('hora');
 			$data['usuario']  = $do->get('usuario');
 			$this->db->insert('gser', $data);
-			
-			$mSQL = "INSERT INTO gitser ( fecha, numero, proveed, codigo, descrip, precio, iva, importe, departa, sucursal, transac, usuario, estampa, hora ) 
-					  SELECT c.fecha fecha, c.numero, 'AJUSI' proveed, 
-						b.gasto, a.descrip, sum(a.costo) precio, 0 iva, sum(a.costo) importe, 
-						d.depto departa, d.sucursal, a.transac, a.usuario, a.estampa, a.hora 
-						FROM itssal a JOIN icon b ON a.concepto=b.codigo 
-						JOIN ssal c ON a.numero=c.numero LEFT JOIN usol d ON c.cargo=d.codigo 
+
+			$mSQL = "INSERT INTO gitser ( fecha, numero, proveed, codigo, descrip, precio, iva, importe, departa, sucursal, transac, usuario, estampa, hora )
+					  SELECT c.fecha fecha, c.numero, 'AJUSI' proveed,
+						b.gasto, a.descrip, sum(a.costo) precio, 0 iva, sum(a.costo) importe,
+						d.depto departa, d.sucursal, a.transac, a.usuario, a.estampa, a.hora
+						FROM itssal a JOIN icon b ON a.concepto=b.codigo
+						JOIN ssal c ON a.numero=c.numero LEFT JOIN usol d ON c.cargo=d.codigo
 						WHERE a.numero='".$numero."' GROUP BY a.concepto ";
 			$this->db->query($mSQL);
-			
+
 		} else {  //
 			$mNUMERO = $this->datasis->prox_sql("notiot");
 			$mNUMERO = "O".substr($mNUMERO,1,7);
@@ -1156,8 +1159,8 @@ class ssal extends validaciones {
 			$data['usuario']   = $do->get('usuario');
 
 			$this->db->insert('otin', $data);
-			$mSQL="	INSERT INTO itotin (tipo_doc, numero, codigo, descrip, precio, impuesto, importe, usuario, estampa, hora, transac ) 
-					SELECT 'OT' tipo_doc, '".$mNUMERO."' numero,   b.ingreso codigo, 'AJUSTES DE INVENTARIO' descrip, sum(a.costo) precio, 0 impuesto, sum(a.costo) importe, a.usuario, a.estampa, a.hora, a.transac 
+			$mSQL="	INSERT INTO itotin (tipo_doc, numero, codigo, descrip, precio, impuesto, importe, usuario, estampa, hora, transac )
+					SELECT 'OT' tipo_doc, '".$mNUMERO."' numero,   b.ingreso codigo, 'AJUSTES DE INVENTARIO' descrip, sum(a.costo) precio, 0 impuesto, sum(a.costo) importe, a.usuario, a.estampa, a.hora, a.transac
 					FROM itssal a JOIN icon b ON a.concepto=b.codigo WHERE a.numero='".$numero."' GROUP BY a.concepto";
 
 			$this->db->query($mSQL);
