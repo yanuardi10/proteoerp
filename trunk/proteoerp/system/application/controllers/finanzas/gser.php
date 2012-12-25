@@ -2235,7 +2235,43 @@ function gserfiscal(mid){
 
 			total=roundNumber(montasa+tasa+monredu+reducida+monadic+sobretasa+exento,2);
 			$('#importe').val(total);
-		}";
+		}
+
+		$('#codigo').autocomplete({
+			source: function( req, add){
+				$.ajax({
+					url:  '".site_url('ajax/automgas')."',
+					type: 'POST',
+					dataType: 'json',
+					data: 'q='+encodeURIComponent(req.term),
+					success:
+						function(data){
+							var sugiere = [];
+
+							if(data.length==0){
+								$('#codigo').val('');
+								$('#descrip').val('');
+							}else{
+								$.each(data,
+									function(i, val){
+										sugiere.push( val );
+									}
+								);
+							}
+							add(sugiere);
+						},
+				})
+			},
+			minLength: 1,
+			select: function( event, ui ) {
+				$('#codigo').attr('readonly', 'readonly');
+
+				$('#codigo').val(ui.item.codigo);
+				$('#descrip').val(ui.item.descrip);
+				setTimeout(function() {  $('#codigo').removeAttr('readonly'); }, 1500);
+			}
+		});
+		";
 
 		$edit = new DataEdit('Gastos de caja chica', 'gserchi');
 		$edit->back_url = site_url('finanzas/gser/gserchi');
@@ -2293,14 +2329,17 @@ function gserfiscal(mid){
 		$edit->descrip->size =50;
 		$edit->descrip->maxlength =50;
 
+
+		$alicuota=$this->datasis->ivaplica(date('Y-m-d'));
+
 		$arr=array(
 			'exento'   =>'Monto <b>Exento</b>|Base exenta',
-			'montasa'  =>'Montos con Alicuota <b>general</b>|Base imponible',
-			'tasa'     =>'Montos con Alicuota <b>general</b>|Monto del IVA',
-			'monredu'  =>'Montos con Alicuota <b>reducida</b>|Base imponible',
-			'reducida' =>'Montos con Alicuota <b>reducida</b>|Monto del IVA',
-			'monadic'  =>'Montos con Alicuota <b>adicional</b>|Base imponible',
-			'sobretasa'=>'Montos con Alicuota <b>adicional</b>|Monto del IVA',
+			'montasa'  =>'Montos con Alicuota <b>general</b> '.  $ivas['tasa'].'%|Base imponible',
+			'tasa'     =>'Montos con Alicuota <b>general</b> '.  $ivas['tasa'].'%|Monto del IVA',
+			'monredu'  =>'Montos con Alicuota <b>reducida</b> '. $ivas['redutasa'].'%|Base imponible',
+			'reducida' =>'Montos con Alicuota <b>reducida</b> '. $ivas['redutasa'].'%|Monto del IVA',
+			'monadic'  =>'Montos con Alicuota <b>adicional</b> '.$ivas['sobretasa'].'%|Base imponible',
+			'sobretasa'=>'Montos con Alicuota <b>adicional</b> '.$ivas['sobretasa'].'%|Monto del IVA',
 			'importe'  =>'Importe total');
 
 		foreach($arr AS $obj=>$label){
@@ -2483,7 +2522,8 @@ function gserfiscal(mid){
 				'rif'     =>'RIF'),
 			'filtro'  =>array('proveed'=>'Codigo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'codprv','nombre'=>'nombre'),
-			'titulo'  =>'Buscar Proveedor'
+			'titulo'  =>'Buscar Proveedor',
+			'script'  =>array('post_modbus()')
 		);
 		$bsprv=$this->datasis->modbus($modbus);
 
@@ -2491,7 +2531,49 @@ function gserfiscal(mid){
 
 		$(document).ready(function() {
 			desactivacampo("");
+			$("#codprv").autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url:  "'.site_url('ajax/buscasprv').'",
+						type: "POST",
+						dataType: "json",
+						data: "q="+req.term,
+						success:
+							function(data){
+								var sugiere = [];
+								if(data.length==0){
+									$("#nombre").val("");
+									$("#nombre_val").text("");
+									$("#codprv").val("");
+								}else{
+									$.each(data,
+										function(i, val){
+											sugiere.push( val );
+										}
+									);
+								}
+								add(sugiere);
+							},
+					})
+				},
+				minLength: 2,
+				select: function( event, ui ) {
+					$("#codprv").attr("readonly", "readonly");
+
+					$("#nombre").val(ui.item.nombre);
+					$("#nombre_val").text(ui.item.nombre);
+					$("#codprv").val(ui.item.proveed);
+
+					setTimeout(function(){ $("#codprv").removeAttr("readonly"); }, 1500);
+				}
+			});
+
 		});
+
+		function post_modbus(){
+			nombre=$("#nombre").val();
+			$("#nombre_val").text(nombre);
+		}
 
 		function desactivacampo(codb1){
 			if(codb1.length>0 && codb1!="'.$this->mcred.'"){
@@ -2516,13 +2598,14 @@ function gserfiscal(mid){
 		$form->codprv = new inputField('Proveedor', 'codprv');
 		$form->codprv->rule='required';
 		$form->codprv->insertValue=$codprv;
-		$form->codprv->size=5;
+		$form->codprv->size=8;
 		$form->codprv->append($bsprv);
 
 		$form->nombre = new inputField('Nombre', 'nombre');
 		$form->nombre->rule='required';
 		$form->nombre->insertValue=$nombre;
 		$form->nombre->in = 'codprv';
+		$form->nombre->type='inputhidden';
 
 		$form->cargo = new dropdownField('Con cargo a','cargo');
 		$form->cargo->option($this->mcred,'Credito');
@@ -2584,6 +2667,8 @@ function gserfiscal(mid){
 		$data['content'] = $form->output.$grid->output;
 		$data['title']   = heading('Reposicion de caja chica '.$codbanc);
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
+		$data['head']   .= script('jquery-ui.js');
+		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
 		$data['head']   .= phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
