@@ -2076,7 +2076,11 @@ function gserfiscal(mid){
 		$this->rapyd->uri->keep_persistence();
 
 		$filter = new DataFilter('Filtro de gastos de cajas chicas','gserchi');
-		$select=array('numfac','fechafac','proveedor','tasa + sobretasa + reducida AS totiva','exento + montasa + monadic + monredu AS totneto');
+		$select=array('numfac','fechafac','proveedor',
+		'tasa + sobretasa + reducida AS totiva',
+		'exento + montasa + monadic + monredu AS totneto',
+		'exento + montasa + monadic + monredu + tasa + sobretasa + reducida AS total',
+		'ngasto');
 		$filter->db->select($select);
 
 		$filter->codbanc = new dropdownField('Codigo de la caja','codbanc');
@@ -2114,11 +2118,15 @@ function gserfiscal(mid){
 
 		$uri  = anchor('finanzas/gser/datagserchi/show/<#id#>','<#numfac#>');
 
-		function checker($id,$conci){
-			if($conci=='S'){
-				return form_checkbox('nn'.$id,$id,true);
+		function checker($id,$conci,$ngasto){
+			if(empty($ngasto)){
+				if($conci=='S'){
+					return form_checkbox('nn'.$id,$id,true);
+				}else{
+					return form_checkbox('nn'.$id,$id,false);
+				}
 			}else{
-				return form_checkbox('nn'.$id,$id,false);
+				return $ngasto;
 			}
 		}
 
@@ -2132,7 +2140,7 @@ function gserfiscal(mid){
 		$grid->column_orderby('Proveedor','proveedor','proveedor');
 		$grid->column_orderby('IVA'   ,'totiva'    ,'totiva'  ,'align=\'right\'');
 		$grid->column_orderby('Monto' ,'totneto'   ,'totneto' ,'align=\'right\'');
-		$grid->column_orderby('Aceptado','<checker><#id#>|<#aceptado#></checker>','aceptado','align=\'center\'');
+		$grid->column_orderby('Aceptado','<checker><#id#>|<#aceptado#>|<#ngasto#></checker>','aceptado','align=\'center\'');
 
 		$grid->add('finanzas/gser/datagserchi/create','Agregar nueva factura');
 		$grid->build();
@@ -2164,7 +2172,7 @@ function gserfiscal(mid){
 		$dbid = $this->db->escape($id);
 		$rt='0';
 		if($id!==false){
-			$mSQL="UPDATE gserchi SET aceptado=IF(aceptado='S','N','S') WHERE id=$dbid";
+			$mSQL="UPDATE gserchi SET aceptado=IF(aceptado='S','N','S') WHERE id=$dbid AND ngasto IS NULL";
 			$ban=$this->db->simple_query($mSQL);
 			if($ban==false){
 				$rt='0';
