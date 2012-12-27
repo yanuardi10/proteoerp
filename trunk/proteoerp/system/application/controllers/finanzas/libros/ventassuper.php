@@ -2542,9 +2542,10 @@ class ventassuper{
 						FROM itfmay AS a
 						JOIN fmay AS b ON a.numero=b.numero AND a.fecha=b.fecha
 						LEFT JOIN scli AS c ON b.cod_cli=c.cliente
-						WHERE b.nfiscal>$dbffdesde AND b.nfiscal<=$dbffhasta
+						WHERE b.nfiscal>$ffdesde AND b.nfiscal<=$ffhasta
 						AND  b.tipo IN ('E','C') AND c.tiva='C'
 						GROUP BY a.fecha,a.numero";
+					echo $mSQL_1."\n\n";
 					$flag=$this->db->simple_query($mSQL_1);
 					if($flag==false){
 						memowrite('1'.$mSQL_1,'genesfacfiscalpdv');
