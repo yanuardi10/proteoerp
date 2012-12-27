@@ -2545,7 +2545,7 @@ class ventassuper{
 						WHERE b.nfiscal>$ffdesde AND b.nfiscal<=$ffhasta
 						AND  b.tipo IN ('E','C') AND c.tiva='C'
 						GROUP BY a.fecha,a.numero";
-					echo $mSQL_1."\n\n";
+
 					$flag=$this->db->simple_query($mSQL_1);
 					if($flag==false){
 						memowrite('1'.$mSQL_1,'genesfacfiscalpdv');
