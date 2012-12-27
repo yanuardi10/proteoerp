@@ -976,7 +976,7 @@ class Scst extends Controller {
 							$itrow['hora']    = $hora;
 
 							unset($itrow['id']);
-							if(isset($itrow['pnanual'])) unset($itrow['pnanual']);
+							if(isset($itrow['pmanual'])) unset($itrow['pmanual']);
 							$mSQL[]=$this->db->insert_string('itscst', $itrow);
 						}
 
