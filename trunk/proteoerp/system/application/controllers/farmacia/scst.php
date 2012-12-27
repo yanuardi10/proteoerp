@@ -370,6 +370,7 @@ class Scst extends Controller {
 			$edit->$obj->size = 10;
 		}
 
+		$edit->pmanual = new autoUpdateField('pmanual','S','S');
 		$edit->buttons('modify','save');
 		$edit->build();
 		//$this->rapyd->jquery[]='$(window).unload(function() { window.opener.location.reload(); });';
@@ -457,6 +458,7 @@ class Scst extends Controller {
 		if(!empty($control)){
 			$dbcontrol=$this->db->escape($control);
 			$dbfarmax = $this->load->database('farmax', TRUE);
+			$dbfarmax->simple_query("ALTER IGNORE TABLE `itscst` ADD COLUMN `pmanual` CHAR(1) NOT NULL DEFAULT 'N' COMMENT 'Si cambio o no el precio manual'");
 
 			if($esstd=='S'){
 				$query = $dbfarmax->query('SELECT proveed FROM scst WHERE control='.$dbcontrol);
@@ -513,7 +515,7 @@ class Scst extends Controller {
 				LEFT JOIN `sinv`       AS b ON `a`.`codigo`=`b`.`codigo`
 				LEFT JOIN `farmaxasig` AS c ON `a`.`codigo`=`c`.`barras` AND c.proveed=$dbproveed
 				LEFT JOIN `sinv`       AS d ON `d`.`codigo`=`c`.`abarras`
-				WHERE `a`.`control` = $dbcontrol";
+				WHERE `a`.`control` = $dbcontrol AND `a`.`pmanual`='N'";
 
 				$query = $this->db->query($mSQL);
 				if ($query->num_rows() > 0){
@@ -974,6 +976,7 @@ class Scst extends Controller {
 							$itrow['hora']    = $hora;
 
 							unset($itrow['id']);
+							if(isset($itrow['pnanual'])) unset($itrow['pnanual']);
 							$mSQL[]=$this->db->insert_string('itscst', $itrow);
 						}
 
