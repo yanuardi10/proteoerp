@@ -2431,6 +2431,7 @@ class ventassuper{
 		$mivar = $tasas['reducida'];
 		$mivaa = $tasas['adicional'];
 
+		$this->db->simple_query("UPDATE sfacfis SET total=baseg+ivag+baser+ivar+basea+ivaa+exento");
 		$this->db->simple_query("UPDATE fiscalz SET caja='MAYO' WHERE caja='0001'");
 		$this->db->simple_query("UPDATE fiscalz SET hora=CONCAT_WS(':',MINUTE(hora),SECOND(hora),'00') WHERE caja='MAYO' AND HOUR(hora)=0");
 
@@ -2439,6 +2440,7 @@ class ventassuper{
 			a.serial,
 			a.numero,
 			a.fecha,
+			b.fecha    AS fecdesde,
 			a.factura  AS factura,
 			b.factura  AS fcdesde,
 			a.fecha1   AS fecha1,
@@ -2504,53 +2506,105 @@ class ventassuper{
 
 				//Para ventas al mayor
 				if(preg_match('/^MAY.*$/',$row->caja)){
-					$mSQL_1 = $emSQL."SELECT
-						NULL AS id,
-						'V' AS libro,
-						IF(b.tipo='D','NC','FC') AS tipo,
-						'FP' AS fuente,
-						'00' AS sucursal,
-						b.fecha,
-						nfiscal AS numa,
-						nfiscal AS final,
-						'$row->caja' AS caja,
-						b.nfiscal,
-						'  ' AS nhfiscal,
-						'' AS referen,
-						'  ' AS planilla,
-						b.cod_cli AS clipro,
-						b.nombre AS nombre,
-						'CO' AS contribu,
-						c.rifci,
-						'01' AS registro,
-						'S' AS nacional,
-						IF(b.tipo='D',-1,1)*SUM(IF(a.iva=0     ,1,0)*a.importe)           AS exento,
-						IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivag,1,0)*a.importe)           AS general,
-						IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivag,1,0)*a.importe*a.iva/100) AS geneimpu,
-						IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivaa,1,0)*a.importe)           AS adicional,
-						IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivaa,1,0)*a.importe*a.iva/100) AS adicimpu,
-						IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivar,1,0)*a.importe)           AS reducida,
-						IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivar,1,0)*a.importe*a.iva/100) AS reduimpu,
-						IF(b.tipo='D',-1,1)*b.stotal AS stotal,
-						IF(b.tipo='D',-1,1)*b.impuesto AS impuesto,
-						IF(b.tipo='D',-1,1)*b.gtotal AS gtotal,
-						0 AS reiva,
-						".$mes."01 AS fechal,
-						0 AS fafecta ,
-						b.hora,
-						$dbcierrez AS cierrez
-						FROM itfmay AS a
-						JOIN fmay AS b ON a.numero=b.numero AND a.fecha=b.fecha
-						LEFT JOIN scli AS c ON b.cod_cli=c.cliente
-						WHERE b.nfiscal>$ffdesde AND b.nfiscal<=$ffhasta
-						AND  b.tipo IN ('E','C') AND c.tiva='C'
-						GROUP BY a.fecha,a.numero";
+					if($ffhasta>$ffdesde){
+						$mSQL_1 = $emSQL."SELECT
+							NULL AS id,
+							'V' AS libro,
+							IF(b.tipo='D','NC','FC') AS tipo,
+							'FP' AS fuente,
+							'00' AS sucursal,
+							b.fecha,
+							MID(b.nfiscal,-8) AS numa,
+							MID(b.nfiscal,-8) AS final,
+							'$row->caja' AS caja,
+							'' AS ndfiscal,
+							'' AS nhfiscal,
+							$dbserial AS referen,
+							'' AS planilla,
+							b.cod_cli AS clipro,
+							b.nombre AS nombre,
+							'CO' AS contribu,
+							c.rifci,
+							'01' AS registro,
+							'S' AS nacional,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=0     ,1,0)*a.importe)           AS exento,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivag,1,0)*a.importe)           AS general,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivag,1,0)*a.importe*a.iva/100) AS geneimpu,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivaa,1,0)*a.importe)           AS adicional,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivaa,1,0)*a.importe*a.iva/100) AS adicimpu,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivar,1,0)*a.importe)           AS reducida,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivar,1,0)*a.importe*a.iva/100) AS reduimpu,
+							IF(b.tipo='D',-1,1)*SUM(a.importe) AS stotal,
+							IF(b.tipo='D',-1,1)*SUM(a.importe*a.iva/100) AS impuesto,
+							IF(b.tipo='D',-1,1)*SUM(a.importe*(1+(iva/100))) AS gtotal,
+							0 AS reiva,
+							".$mes."01 AS fechal,
+							0 AS fafecta ,
+							b.hora,
+							$dbcierrez AS cierrez
+							FROM itfmay AS a
+							JOIN fmay AS b ON a.numero=b.numero AND a.fecha=b.fecha
+							LEFT JOIN scli AS c ON b.cod_cli=c.cliente
+							WHERE b.nfiscal>$ffdesde AND b.nfiscal<=$ffhasta
+							AND b.fecha BETWEEN '$row->fecha1' AND '$row->fecha'
+							AND  b.tipo IN ('E','C') AND c.tiva='C'
+							GROUP BY a.fecha,a.numero";
 
-					$flag=$this->db->simple_query($mSQL_1);
-					if($flag==false){
-						memowrite('1'.$mSQL_1,'genesfacfiscalpdv');
+						$flag=$this->db->simple_query($mSQL_1);
+						if($flag==false){
+							memowrite('1'.$mSQL_1,'genesfacfiscalpdv');
+						}
 					}
 
+					if($nchasta>$ncdesde){
+						$mSQL_1 = $emSQL."SELECT
+							NULL AS id,
+							'V' AS libro,
+							IF(b.tipo='D','NC','FC') AS tipo,
+							'FP' AS fuente,
+							'00' AS sucursal,
+							b.fecha,
+							MID(b.nfiscal,-8) AS numa,
+							MID(b.nfiscal,-8) AS final,
+							'$row->caja' AS caja,
+							'' AS ndfiscal,
+							'' AS nhfiscal,
+							$dbserial AS referen,
+							'' AS planilla,
+							b.cod_cli AS clipro,
+							b.nombre AS nombre,
+							'CO' AS contribu,
+							c.rifci,
+							'01' AS registro,
+							'S' AS nacional,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=0     ,1,0)*a.importe)           AS exento,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivag,1,0)*a.importe)           AS general,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivag,1,0)*a.importe*a.iva/100) AS geneimpu,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivaa,1,0)*a.importe)           AS adicional,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivaa,1,0)*a.importe*a.iva/100) AS adicimpu,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivar,1,0)*a.importe)           AS reducida,
+							IF(b.tipo='D',-1,1)*SUM(IF(a.iva=$mivar,1,0)*a.importe*a.iva/100) AS reduimpu,
+							IF(b.tipo='D',-1,1)*b.stotal AS stotal,
+							IF(b.tipo='D',-1,1)*b.impuesto AS impuesto,
+							IF(b.tipo='D',-1,1)*b.gtotal AS gtotal,
+							0 AS reiva,
+							".$mes."01 AS fechal,
+							0 AS fafecta ,
+							b.hora,
+							$dbcierrez AS cierrez
+							FROM itfmay AS a
+							JOIN fmay AS b ON a.numero=b.numero AND a.fecha=b.fecha
+							LEFT JOIN scli AS c ON b.cod_cli=c.cliente
+							WHERE b.nfiscal>$ncdesde AND b.nfiscal<=$nchasta
+							AND b.fecha BETWEEN '$row->fecha1' AND '$row->fecha'
+							AND  b.tipo='D' AND c.tiva='C'
+							GROUP BY a.fecha,a.numero";
+
+						$flag=$this->db->simple_query($mSQL_1);
+						if($flag==false){
+							memowrite('1'.$mSQL_1,'genesfacfiscalpdv');
+						}
+					}
 				}else{ //para las ventas al detal
 
 					if($ffhasta>$ffdesde){
@@ -2677,8 +2731,9 @@ class ventassuper{
 					$data['geneimpu']  = $row->iva   -$rrow->ivag;
 					$data['reduimpu']  = $row->iva1  -$rrow->ivar;
 					$data['adicimpu']  = $row->iva2  -$rrow->ivaa;
-					$data['numhasta']  = str_pad($row->factura+1,8,'0',STR_PAD_LEFT);
-					$data['numero']    = $ffdesde;
+					$data['numhasta']  = $ffhasta;
+					$data['numero']    = str_pad($ffdesde+1,8,'0',STR_PAD_LEFT);
+					$data['hora']      = '23:59:59';
 
 					$data['contribu'] = 'NO';
 					$data['stotal']   =$data['exento']+$data['general']+$data['reducida']+$data['adicional'];
@@ -2691,7 +2746,6 @@ class ventassuper{
 						if(!$flag){memowrite('4'.$mmSQL,'genesfacfiscalpdv'); return 0; };
 					}
 				}
-
 
 				$mSQL_2="SELECT tipo,
 					SUM(exento)    AS exento,
@@ -2718,8 +2772,9 @@ class ventassuper{
 					$data['geneimpu']  = (-1)*($row->nciva   +$rrow->ivag);
 					$data['reduimpu']  = (-1)*($row->nciva1  +$rrow->ivar);
 					$data['adicimpu']  = (-1)*($row->nciva2  +$rrow->ivaa);
-					$data['numhasta']  = str_pad($row->ncnumero+1,8,'0',STR_PAD_LEFT);
-					$data['numero']    = $ncdesde;
+					$data['numhasta']  = $nchasta;
+					$data['numero']    = str_pad($ncdesde+1,8,'0',STR_PAD_LEFT);
+					$data['hora']      = '23:59:59';
 
 					$data['contribu'] = 'NO';
 					$data['stotal']   =$data['exento']+$data['general']+$data['reducida']+$data['adicional'];
@@ -2744,7 +2799,8 @@ class ventassuper{
 					$data['reduimpu']  = (-1)*($row->nciva1  );
 					$data['adicimpu']  = (-1)*($row->nciva2  );
 					$data['numhasta']  = $row->ncnumero;
-					$data['numero']    = $ncdesde;
+					$data['numero']    = str_pad($ncdesde+1,8,'0',STR_PAD_LEFT);
+					$data['hora']      = '23:59:59';
 
 					$data['contribu'] = 'NO';
 					$data['stotal']   =$data['exento']+$data['general']+$data['reducida']+$data['adicional'];
@@ -2767,7 +2823,8 @@ class ventassuper{
 					$data['reduimpu']  = $row->iva1  ;
 					$data['adicimpu']  = $row->iva2  ;
 					$data['numhasta']  = $row->factura;
-					$data['numero']    = $ffdesde;
+					$data['numero']    = str_pad($ffdesde+1,8,'0',STR_PAD_LEFT);
+					$data['hora']      = '23:59:59';
 
 					$data['contribu'] = 'NO';
 					$data['stotal']   =$data['exento']+$data['general']+$data['reducida']+$data['adicional'];
