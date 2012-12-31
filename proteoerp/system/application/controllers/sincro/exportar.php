@@ -51,16 +51,17 @@ class Exportar extends Controller {
 		$form->qtrae = new dropdownField('Que exportar?', 'qtrae');
 		$form->qtrae->rule ='required';
 		$form->qtrae->option('','Selecionar');
-		$form->qtrae->option('scli'     ,'Clientes');
-		$form->qtrae->option('sprv'     ,'Proveedores');
-		$form->qtrae->option('sinv'     ,'Inventario');
-		$form->qtrae->option('sinvprec' ,'Inventario solo precios');
-		$form->qtrae->option('maes'     ,'Inventario Supermercado');
-		$form->qtrae->option('smov'     ,'Movimientos de clientes');
+		$form->qtrae->option('scli'         ,'Clientes');
+		$form->qtrae->option('sprv'         ,'Proveedores');
+		$form->qtrae->option('sinv'         ,'Inventario');
+		$form->qtrae->option('sinvprec'     ,'Inventario solo precios');
+		$form->qtrae->option('maes'         ,'Inventario Supermercado');
+		$form->qtrae->option('smov'         ,'Movimientos de clientes');
 		$form->qtrae->option('transacciones','Facturas y transferencias');
 		$form->qtrae->option('supertransa'  ,'Ventas Supermercado');
 		$form->qtrae->option('rcaj'         ,'Cierres de cajas');
 		$form->qtrae->option('fiscalz'      ,'Cierres Z');
+		$form->qtrae->option('sfacfis'      ,'Auditoria Fiscal');
 
 		$form->fecha = new dateonlyField('Fecha','fecha');
 		$form->fecha->insertValue = date('Y-m-d');
@@ -97,24 +98,24 @@ class Exportar extends Controller {
 //  Interfaces uri
 //***********************
 	function uri($clave,$metodo,$fecha=null){
-		$obj='_'.$metodo; 
+		$obj='_'.$metodo;
 		if(!method_exists($this,$obj)) show_404('page');
 		if($clave!=sha1($this->config->item('encryption_key'))) return false;
-		
+
 		/*$usr=$this->db->escape($usr);
 		$pws=$this->db->escape($pws);
 		$cursor=$this->db->query("SELECT us_nombre FROM usuario WHERE us_codigo=$usr AND SHA(us_clave)=$pws");
 		if($cursor->num_rows()==0) return false;
 		$existe = $this->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario=$usr AND modulo='$id'");
 		if ($existe==0 ) return  false;*/
-		
+
 		if (empty($fecha)){
 			$dias=3;
 			$fecha=date('Ymd',mktime(0,0,0,date('n'),date('j')-$dias,date('Y')));
 		}elseif(!$this->__chekfecha($fecha)){
 			return false;
 		}
-		
+
 		$opcionales=array();
 		for($i=7;$i<12;$i++){
 			$opt=$this->uri->segment($i);
@@ -246,7 +247,7 @@ class Exportar extends Controller {
 			}
 			mysql_free_result($query);
 		}
-		
+
 		$ttables=array('grup','line','dpto');
 		foreach($ttables AS $ttable){
 			$mSQL="SELECT * FROM $ttable";
@@ -487,6 +488,21 @@ class Exportar extends Controller {
 				'ignore' =>true);
 
 		$nombre='fiscalz_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
+
+	function _sfacfis($fecha,$opt=null){
+		set_time_limit(600);
+		$this->load->library('sqlinex');
+		//$this->sqlinex->ignore   =TRUE;
+
+		$data[]=array('table' => 'sfacfis',
+				'where'  => "fecha >= $fecha",
+				'limpiar'=>false,
+				'ignore' =>true);
+
+		$nombre='sfacfis_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}

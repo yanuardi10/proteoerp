@@ -56,6 +56,7 @@ class Importar extends Controller {
 		$form->qtrae->option('transa'     ,'Facturas y transferencias');
 		$form->qtrae->option('rcaj'       ,'Cierres de caja');
 		$form->qtrae->option('fiscalz'    ,'Cierres Z');
+		$form->qtrae->option('sfacfis'    ,'Auditoria Fiscal');
 		$form->qtrae->option('supertransa','Transacciones de Supermercado');
 
 		$form->fecha = new dateonlyField('Fecha','fecha');
@@ -96,7 +97,7 @@ class Importar extends Controller {
 		$sucu=$this->db->escape($this->sucu);
 
 		$form = new DataForm("sincro/importar/uitrae/$metodo/process");
-		
+
 		$form->sucu = new dropdownField("Sucursal", "sucu");
 		$form->sucu->rule ='required';
 		$form->sucu->option("","Selecionar");
@@ -113,7 +114,7 @@ class Importar extends Controller {
 		if ($form->on_success()){
 			$fecha=$form->fecha->newValue;
 			$sucu =$form->sucu->newValue;
-			
+
 			$rt=$this->$obj($sucu,$fecha);
 			if(strlen($rt)>0){
 				$form->error_string=$rt;
@@ -472,6 +473,12 @@ class Importar extends Controller {
 	function _fiscalz($sucu,$fecha=null){
 		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/fiscalz/'.$fecha,'fiscalz');
+		return $rt;
+	}
+
+	function _sfacfis($sucu,$fecha=null){
+		set_time_limit($this->timeout);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sfacfis/'.$fecha,'sfacfis');
 		return $rt;
 	}
 
