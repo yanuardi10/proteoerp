@@ -140,8 +140,10 @@ class Sfac extends Controller {
 	//Funciones de los Botones
 	//
 	function bodyscript( $grid0, $grid1 ){
-		$bodyscript = '
-		<script type="text/javascript">
+		$bodyscript = '<script type="text/javascript">
+		';
+
+		$bodyscript .= '
 		jQuery("#boton1").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{

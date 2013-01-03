@@ -987,11 +987,11 @@ class Sprv extends validaciones {
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
-		$lproveed='<a href="javascript:ultimo();" title="Consultar ultimo codigo ingresado" onclick="">Consultar &uacute;ltimo c&oacute;digo ingresado</a>';
+		$lproveed='<a href="javascript:ultimo();" title="Ultimo codigo ingresado" onclick="">Ultimo</a>';
 		$edit->proveed  = new inputField('C&oacute;digo', 'proveed');
 		$edit->proveed->rule = 'trim|required|callback_chexiste';
 		$edit->proveed->mode = 'autohide';
-		$edit->proveed->size = 13;
+		$edit->proveed->size = 6;
 		$edit->proveed->maxlength =5;
 		$edit->proveed->append($lproveed);
 		//$edit->proveed->group = 'Datos del Proveedor';

@@ -503,10 +503,16 @@ class Snte extends Controller {
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(false);
-		$grid->setEdit(true);
-		$grid->setDelete(false);
-		$grid->setSearch(true);
+		$grid->setAdd(    $this->datasis->sidapuede('SNTE','1' ));
+		$grid->setEdit(   false ); // $this->datasis->sidapuede('SNTE','2' ) );
+		$grid->setDelete( $this->datasis->sidapuede('SNTE','5'));
+		$grid->setSearch( $this->datasis->sidapuede('SNTE','6'));
+
+		//$grid->setAdd(false);
+		//$grid->setEdit(true);
+		//$grid->setDelete(false);
+		//$grid->setSearch(true);
+		
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 

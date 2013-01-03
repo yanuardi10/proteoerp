@@ -43,9 +43,11 @@ class Scst extends Controller {
 		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"assets/default/images/print.png",    "alt" => 'Formato PDF',         "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"reteprin", "img"=>"assets/default/images/print.png",    "alt" => 'Formato PDF',         "label"=>"Reimprimir Retención"));
 		$grid->wbotonadd(array("id"=>"cprecios", "img"=>"images/precio.png",   "alt" => 'Precios',             "label"=>"Cambiar Precios"));
-		$grid->wbotonadd(array("id"=>"serie",    "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
+		//$grid->wbotonadd(array("id"=>"serie",    "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
 		$grid->wbotonadd(array("id"=>"reversar", "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
-		$grid->wbotonadd(array("id"=>"vehiculo", "img"=>"images/arrow_up.png", "alt" => 'Seriales Vehiculares', "label"=>"Seriales Vehiculares"));
+
+		$grid->wbotonadd(array("id"=>"vehiculo", "img"=>"images/carro.png", "alt" => 'Seriales Vehiculares', "label"=>"Seriales Vehiculares"));
+
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
@@ -1105,7 +1107,7 @@ class Scst extends Controller {
 
 
 
-		$grid->setOndblClickRow("");
+//		$grid->setOndblClickRow("");
 
 		$grid->setFormOptionsE('
 				       closeAfterEdit:true,

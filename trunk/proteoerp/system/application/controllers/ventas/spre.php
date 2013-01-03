@@ -81,7 +81,7 @@ class Spre extends Controller {
 	//***************************
 	//Funciones de los Botones
 	//***************************
-	function bodyscript( $grid0 ){
+	function bodyscript( $grid0, $grid1 ){
 		$bodyscript = '		<script type="text/javascript">';
 
 		$bodyscript .= '

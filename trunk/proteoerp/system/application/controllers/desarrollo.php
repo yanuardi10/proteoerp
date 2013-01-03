@@ -644,30 +644,8 @@ class Desarrollo extends Controller{
 			$tab7 = $this->mtab(7);
 			$tab8 = $this->mtab(8);
 
-			$str .= 'class '.ucfirst($db).' extends Controller {'."\n";
-			$str .= $tab1.'var $mModulo = \''.strtoupper($db).'\';'."\n";
-			$str .= $tab1.'var $titp    = \'Modulo '.strtoupper($db).'\';'."\n";
-			$str .= $tab1.'var $tits    = \'Modulo '.strtoupper($db).'\';'."\n";
-			$str .= $tab1.'var $url     = \''.$contro.'/'.$db.'/\';'."\n\n";
+			$str .= $this->jqgridclase($db, $contro);
 
-			$str .= $tab1.'function '.ucfirst($db).'(){'."\n";
-			$str .= $tab2.'parent::Controller();'."\n";
-			$str .= $tab2.'$this->load->library(\'rapyd\');'."\n";
-			$str .= $tab2.'$this->load->library(\'jqdatagrid\');'."\n";
-			$str .= $tab2.'$this->datasis->modulo_nombre( \''.strtoupper($db).'\', $ventana=0 );'."\n";
-			$str .= $tab1.'}'."\n\n";
-
-			$str .= $tab1.'function index(){'."\n";
-			$str .= $tab2.'/*if ( !$this->datasis->iscampo(\''.$db.'\',\'id\') ) {'."\n";
-			$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' DROP PRIMARY KEY\');'."\n";
-			$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD UNIQUE INDEX numero (numero)\');'."\n";
-			$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)\');'."\n";
-			$str .= $tab2.'};*/'."\n";
-			$str .= $tab2.'$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );'."\n";
-			$str .= $tab2.'redirect($this->url.\'jqdatag\');'."\n";
-
-			$str .= $tab1.'}'."\n\n";
-			
 			$str .= $tab1.'//***************************'."\n";
 			$str .= $tab1.'//Layout en la Ventana'."\n";
 			$str .= $tab1.'//'."\n";
@@ -678,9 +656,6 @@ class Desarrollo extends Controller{
 
 			$str .= $tab2."//Funciones que ejecutan los botones\n";
 			$str .= $tab2.'$bodyscript = $this->bodyscript( $param[\'grids\'][0][\'gridname\']);'."\n\n";
-
-			$str .= $tab2.'#Set url'."\n";
-			$str .= $tab2.'$grid->setUrlput(site_url($this->url.\'setdata/\'));'."\n\n";
 
 			$str .= $tab2.'//Botones Panel Izq'."\n";
 			$str .= $tab2.'//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));'."\n";
@@ -1003,16 +978,541 @@ class Desarrollo extends Controller{
 			$str  .= $this->genepre($db, false);
 			$str  .= $this->genepost($db, false);
 
+			$str .= '}'."\n";
+
+			$columna .= $str."\n";
+		
+			echo $columna."</pre>";
+
+		}
+	}
+
+
+	//******************************************************************
+	//
+	//  Genera Crud Maestro Detalle para jqGrid
+	//
+	//******************************************************************
+	function jqgridmd(){
+		$db = $this->uri->segment(3);
+		if($db===false){
+			exit('Debe especificar en la uri la tabla Maestro "/maestro/detalle/directorio"');
+		}
+
+		$dbit = $this->uri->segment(4);
+		if($db===false){
+			exit('Debe especificar en la uri la tabla Detalle "/maestro/detalle/directorio"');
+		}
+		
+		$contro =$this->uri->segment(5);
+		if($contro===false){
+			$contro = 'CONTROLADOR';
+		}
+		
+		$query = $this->db->query("DESCRIBE $db");
+		$i = 0;
+		if ($query->num_rows() > 0){
+			$fields  = '';
+			$columna = '<pre>';
+			$param   = '';
+			$campos  = '';
+			$str = '';
+			$tab1 = $this->mtab(1);
+			$tab2 = $this->mtab(2);
+			$tab3 = $this->mtab(3);
+			$tab4 = $this->mtab(4);
+			$tab5 = $this->mtab(5);
+			$tab6 = $this->mtab(6);
+			$tab7 = $this->mtab(7);
+			$tab8 = $this->mtab(8);
+
+			$str .= $this->jqgridclase($db, $contro);
+
+		
+			$str .= $tab1.'//***************************'."\n";
+			$str .= $tab1.'//Layout en la Ventana'."\n";
+			$str .= $tab1.'//'."\n";
+			$str .= $tab1.'//***************************'."\n";
+			$str .= $tab1.'function jqdatag(){'."\n\n";
+
+			$str .= $tab2.'$grid = $this->defgrid();'."\n";
+			$str .= $tab2.'$grid->setHeight(\'185\');'."\n";
+			$str .= $tab2.'$param[\'grids\'][] = $grid->deploy();'."\n\n";
+
+			$str .= $tab2.'$grid1   = $this->defgridit();'."\n";
+			$str .= $tab2.'$grid1->setHeight(\'190\');'."\n";
+			$str .= $tab2.'$param[\'grids\'][] = $grid1->deploy();'."\n\n";
+
+			$str .= $tab2.'// Configura los Paneles'."\n";
+			$str .= $tab2.'$readyLayout = $grid->readyLayout2( 212, 220, $param[\'grids\'][0][\'gridname\'],$param[\'grids\'][1][\'gridname\']);'."\n\n";
+
+			$str .= $tab2.'//Funciones que ejecutan los botones'."\n";
+			$str .= $tab2.'$bodyscript = $this->bodyscript( $param[\'grids\'][0][\'gridname\'], $param[\'grids\'][1][\'gridname\'] );'."\n\n";
+
+			$str .= $tab2.'//Botones Panel Izq'."\n";
+			$str .= $tab2.'$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => \'Reimprimir\', "label"=>"Reimprimir Documento"));'."\n";
+			$str .= $tab2.'$WestPanel = $grid->deploywestp();'."\n\n";
+
+			$str .= $tab2.'//Panel Central'."\n";
+			$str .= $tab2.'$centerpanel = $grid->centerpanel( $id = "radicional", $param[\'grids\'][0][\'gridname\'], $param[\'grids\'][1][\'gridname\'] );'."\n\n";
+
+			$str .= $tab2.'$adic = array('."\n";
+			$str .= $tab2.'array("id"=>"fedita" , "title"=>"Agregar/Editar Pedido"),'."\n";
+			$str .= $tab2.');'."\n\n";
+			$str .= $tab2.'$SouthPanel = $grid->SouthPanel($this->datasis->traevalor(\'TITULO1\'), $adic);'."\n\n";
+
+			$str .= $tab2.'$param[\'WestPanel\']    = $WestPanel;'."\n";
+			$str .= $tab2.'$param[\'script\']       = script(\'plugins/jquery.ui.autocomplete.autoSelectOne.js\');'."\n";
+			$str .= $tab2.'$param[\'readyLayout\']  = $readyLayout;'."\n";
+			$str .= $tab2.'$param[\'SouthPanel\']   = $SouthPanel;'."\n";
+			$str .= $tab2.'$param[\'listados\']     = $this->datasis->listados(\''.strtoupper($db).'\', \'JQ\');'."\n";
+			$str .= $tab2.'$param[\'otros\']        = $this->datasis->otros(\''.strtoupper($db).'\', \'JQ\');'."\n";
+			$str .= $tab2.'$param[\'centerpanel\']  = $centerpanel;'."\n";
+			$str .= $tab2.'$param[\'temas\']        = array(\'proteo\',\'darkness\',\'anexos1\');'."\n";
+			$str .= $tab2.'$param[\'bodyscript\']   = $bodyscript;'."\n";
+			$str .= $tab2.'$param[\'tabs\']         = false;'."\n";
+			$str .= $tab2.'$param[\'encabeza\']     = $this->titp;'."\n";
+			$str .= $tab2.'$param[\'tamano\']       = $this->datasis->getintramenu( substr($this->url,0,-1) );'."\n";
+
+			$str .= $tab2.'$this->load->view(\'jqgrid/crud2\',$param);'."\n\n";
+			$str .= $tab1.'}'."\n\n";
+
+
+
+			//**************************************
+			//  Funcion de Java del Body
+			//
+			//
+			$str .= $tab1.'//***************************'."\n";
+			$str .= $tab1.'//Funciones de los Botones'."\n";
+			$str .= $tab1.'//***************************'."\n";
+			$str .= $tab1.'function bodyscript( $grid0, $grid1 ){'."\n";
+			$str .= $tab2.'$bodyscript = \'';
+			$str .= $tab2.'&lt;script type="text/javascript"&gt;\';'."\n\n";
+
+			$str .= $tab2.'$bodyscript .= \''."\n";
+			$str .= $tab2.'function '.strtolower($db).'add() {'."\n";
+			$str .= $tab3.'$.post("\'.site_url(\''.$contro.'/'.$db.'/dataedit/create\').\'",'."\n";
+			$str .= $tab3.'function(data){'."\n";
+			$str .= $tab4.'$("#fedita").html(data);'."\n";
+			$str .= $tab4.'$("#fedita").dialog( "open" );'."\n";
+			$str .= $tab3.'})'."\n";
+			$str .= $tab2.'};\';'."\n\n";
+
+
+			$str .= $tab2.'$bodyscript .= \''."\n";
+			$str .= $tab2.'function '.strtolower($db).'edit() {'."\n";
+			$str .= $tab3.'var id     = jQuery("#newapi\'.$grid0.\'").jqGrid(\\\'getGridParam\\\',\\\'selrow\\\');'."\n";
+			$str .= $tab3.'if (id)	{'."\n";
+			$str .= $tab4.'var ret    = $("#newapi\'.$grid0.\'").getRowData(id);'."\n";
+			$str .= $tab4.'mId = id;'."\n";
+			$str .= $tab4.'$.post("\'.site_url(\''.$contro.'/'.$db.'/dataedit/modify\').\'/"+id, function(data){'."\n";
+			$str .= $tab5.'$("#fedita").html(data);'."\n";
+			$str .= $tab5.'$("#fedita").dialog( "open" );'."\n";
+			$str .= $tab4.'});'."\n";
+			$str .= $tab3.'} else { $.prompt("&lt;h1&gt;Por favor Seleccione un Registro&lt;/h1&gt;");}'."\n";
+			$str .= $tab2.'};\';'."\n\n";
+
+			$str .= $tab2.'//Wraper de javascript'."\n";
+			$str .= $tab2.'$bodyscript .= \''."\n";
+			$str .= $tab2.'$(function() {'."\n";
+			$str .= $tab3.'$("#dialog:ui-dialog").dialog( "destroy" );'."\n";
+			$str .= $tab3.'var mId = 0;'."\n";
+			$str .= $tab3.'var montotal = 0;'."\n";
+			$str .= $tab3.'var ffecha = $("#ffecha");'."\n";
+			$str .= $tab3.'var grid = jQuery("#newapi\'.$grid0.\'");'."\n";
+			$str .= $tab3.'var s;'."\n";
+			$str .= $tab3.'var allFields = $( [] ).add( ffecha );'."\n";
+			$str .= $tab3.'var tips = $( ".validateTips" );'."\n";
+			$str .= $tab3.'s = grid.getGridParam(\\\'selarrrow\\\');'."\n";
+			$str .= $tab3.'\';'."\n\n";
+
+			$str .= $tab2.'$bodyscript .= \''."\n";
+			$str .= $tab2.'$("#fedita").dialog({'."\n";
+			$str .= $tab3.'autoOpen: false, height: 500, width: 700, modal: true,'."\n";
+			$str .= $tab3.'buttons: {'."\n";
+			$str .= $tab3.'"Guardar": function() {'."\n";
+			$str .= $tab4.'var bValid = true;'."\n";
+			$str .= $tab4.'var murl = $("#df1").attr("action");'."\n";
+			$str .= $tab4.'allFields.removeClass( "ui-state-error" );'."\n";
+
+			$str .= $tab4.'$.ajax({'."\n";
+			$str .= $tab5.'type: "POST", dataType: "html", async: false,'."\n";
+			$str .= $tab5.'url: murl,'."\n";
+			$str .= $tab5.'data: $("#df1").serialize(),'."\n";
+			$str .= $tab5.'success: function(r,s,x){'."\n";
+
+			$str .= $tab6.'if ( r.length == 0 ) {'."\n";
+
+			$str .= $tab7.'apprise("Registro Guardado");'."\n";
+			$str .= $tab7.'$( "#fedita" ).dialog( "close" );'."\n";
+			$str .= $tab7.'grid.trigger("reloadGrid");'."\n";
+			$str .= $tab7.'\'.$this->datasis->jwinopen(site_url(\'formatos/ver/'.strtoupper($db).'\').\'/\\\'+res.id+\\\'/id\\\'\').\';'."\n";
+			$str .= $tab7.'return true;'."\n";
+			$str .= $tab6.'} else { '."\n";
+			$str .= $tab7.'$("#fedita").html(r);'."\n";
+
+			$str .= $tab6.'}'."\n";
+			$str .= $tab5.'}'."\n";
+
+			$str .= $tab3.'})},'."\n";
+			$str .= $tab3.'"Cancelar": function() { $( this ).dialog( "close" ); }'."\n";
+			$str .= $tab3.'},'."\n";
+			$str .= $tab3.'close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}'."\n";
+
+			$str .= $tab2.'});\';'."\n";
+
+			$str .= $tab2.'$bodyscript .= \'});\'."\n";'."\n\n";
+
+			$str .= $tab2.'$bodyscript .= "\n&lt;/script&gt;\n";'."\n";
+			$str .= $tab2.'$bodyscript .= "";'."\n";
+			$str .= $tab2.'return $bodyscript;'."\n";
+			$str .= $tab1."}\n\n";
+
+			$str .= $tab1.'//***************************'."\n";
+			$str .= $tab1.'//Definicion del Grid y la Forma'."\n";
+			$str .= $tab1.'//***************************'."\n";
+			$str .= $tab1.'function defgrid( $deployed = false ){'."\n";
+			$str .= $tab2.'$i      = 1;'."\n";
+			$str .= $tab2.'$editar = "false";'."\n\n";
+			$str .= $tab2.'$grid  = new $this->jqdatagrid;'."\n\n";
+			$columna .= $str;
+			$str = '';
+
+			$columna .= $this->jqgridcol($db);
+
+			$str  = $tab2.'$grid->showpager(true);'."\n";
+			$str .= $tab2.'$grid->setWidth(\'\');'."\n";
+			$str .= $tab2.'$grid->setHeight(\'290\');'."\n";
+			$str .= $tab2.'$grid->setTitle($this->titp);'."\n";
+			$str .= $tab2.'$grid->setfilterToolbar(true);'."\n";
+			$str .= $tab2.'$grid->setToolbar(\'false\', \'"top"\');'."\n\n";
+
+			$str .= $tab2.'$grid->setOnSelectRow(\''."\n";
+			$str .= $tab3.'function(id){'."\n";
+			$str .= $tab4.'if (id){'."\n";
+			$str .= $tab5.'jQuery(gridId2).jqGrid("setGridParam",{url:"\'.site_url($this->url.\'getdatait/\').\'/"+id+"/", page:1});'."\n";
+			$str .= $tab5.'jQuery(gridId2).trigger("reloadGrid");'."\n";
+			$str .= $tab4.'}'."\n";
+			$str .= $tab3.'}\''."\n";
+			$str .= $tab2.');'."\n";
+		
+			$str .= $tab2.'$grid->setFormOptionsE(\'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} \');'."\n";
+			$str .= $tab2.'$grid->setFormOptionsA(\'closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} \');'."\n";
+
+			$str .= $tab2.'$grid->setAfterSubmit("$(\'#respuesta\').html(\'&lt;span style='."\\'font-weight:bold; color:red;\\'&gt;'+a.responseText+'&lt;/span&gt;'); return [true, a ];".'");'."\n\n";
+
+			$str .= $tab2.'#show/hide navigations buttons'."\n";
+			$str .= $tab2.'$grid->setAdd(    $this->datasis->sidapuede(\''.strtoupper($db).'\',\'INCLUIR%\' ));'."\n";
+			$str .= $tab2.'$grid->setEdit(   $this->datasis->sidapuede(\''.strtoupper($db).'\',\'MODIFICA%\'));'."\n";
+			$str .= $tab2.'$grid->setDelete( $this->datasis->sidapuede(\''.strtoupper($db).'\',\'BORR_REG%\'));'."\n";
+			$str .= $tab2.'$grid->setSearch( $this->datasis->sidapuede(\''.strtoupper($db).'\',\'BUSQUEDA%\'));'."\n";
+			$str .= $tab2.'$grid->setRowNum(30);'."\n";
+            
+			$str .= $tab2.'$grid->setShrinkToFit(\'false\');'."\n\n";
+
+			$str .= $tab2.'$grid->setBarOptions("\t\taddfunc: '.strtolower($db).'add,\n\t\teditfunc: '.strtolower($db).'edit");'."\n\n";
+
+			$str .= $tab2.'#Set url'."\n";
+			$str .= $tab2.'$grid->setUrlput(site_url($this->url.\'setdata/\'));'."\n\n";
+
+			$str .= $tab2.'#GET url'."\n";
+			$str .= $tab2.'$grid->setUrlget(site_url($this->url.\'getdata/\'));'."\n\n";
+
+			$str .= $tab2.'if ($deployed) {'."\n";
+			$str .= $tab2.'	return $grid->deploy();'."\n";
+			$str .= $tab2.'} else {'."\n";
+			$str .= $tab2.'	return $grid;'."\n";
+			$str .= $tab2.'}'."\n";
+			$str .= $tab1.'}'."\n\n";
+
+			$str .= $tab1.'/**'."\n";
+			$str .= $tab1.'* Busca la data en el Servidor por json'."\n";
+			$str .= $tab1.'*/'."\n";
+			$str .= $tab1.'function getdata()'."\n";
+			$str .= $tab1.'{'."\n";
+
+			$str .= $tab2.'$grid       = $this->jqdatagrid;'."\n\n";
+
+			$str .= $tab2.'// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO'."\n";
+			$str .= $tab2.'$mWHERE = $grid->geneTopWhere(\''.$db.'\');'."\n\n";
+
+			$str .= $tab2.'$response   = $grid->getData(\''.$db.'\', array(array()), array(), false, $mWHERE, \'id\',\'desc\' );'."\n";
+			$str .= $tab2.'$rs = $grid->jsonresult( $response);'."\n";
+			$str .= $tab2.'echo $rs;'."\n";
+
+			$str .= $tab1.'}'."\n\n";
+
+			$str .= $tab1.'/**'."\n";
+			$str .= $tab1.'* Guarda la Informacion'."\n";
+			$str .= $tab1.'*/'."\n";
+			$str .= $tab1.'function setData()'."\n";
+			$str .= $tab1.'{'."\n";
+			$str .= $tab2.'$this->load->library(\'jqdatagrid\');'."\n";
+			$str .= $tab2.'$oper   = $this->input->post(\'oper\');'."\n";
+			$str .= $tab2.'$id     = $this->input->post(\'id\');'."\n";
+			$str .= $tab2.'$data   = $_POST;'."\n";
+			$str .= $tab2.'$mcodp  = "??????";'."\n";
+			$str .= $tab2.'$check  = 0;'."\n\n";
+
+			$str .= $tab2.'unset($data[\'oper\']);'."\n";
+			$str .= $tab2.'unset($data[\'id\']);'."\n";
+
+			$str .= $tab2.'if($oper == \'add\'){'."\n";
+			$str .= $tab3.'if(false == empty($data)){'."\n";
+			$str .= $tab4.'$check = $this->datasis->dameval("SELECT count(*) FROM '.$db.' WHERE $mcodp=".$this->db->escape($data[$mcodp]));'."\n";
+			$str .= $tab4.'if ( $check == 0 ){'."\n";
+			$str .= $tab5.'$this->db->insert(\''.$db.'\', $data);'."\n";
+			$str .= $tab5.'echo "Registro Agregado";'."\n\n";
+			$str .= $tab5.'logusu(\''.strtoupper($db).'\',"Registro ????? INCLUIDO");'."\n";
+			$str .= $tab4.'} else'."\n";
+			$str .= $tab5.'echo "Ya existe un registro con ese $mcodp";'."\n";
+
+			$str .= $tab3.'} else'."\n";
+			//$str .= $tab2.'echo \'\';'."\n";
+			$str .= $tab4.'echo "Fallo Agregado!!!";'."\n\n";
+
+			$str .= $tab2.'} elseif($oper == \'edit\') {'."\n";
+			$str .= $tab3.'$nuevo  = $data[$mcodp];'."\n";
+			$str .= $tab3.'$anterior = $this->datasis->dameval("SELECT $mcodp FROM '.$db.' WHERE id=$id");'."\n";
+			$str .= $tab3.'if ( $nuevo <> $anterior ){'."\n";
+			$str .= $tab4.'//si no son iguales borra el que existe y cambia'."\n";
+			$str .= $tab4.'$this->db->query("DELETE FROM '.$db.' WHERE $mcodp=?", array($mcodp));'."\n";
+			$str .= $tab4.'$this->db->query("UPDATE '.$db.' SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));'."\n";
+			$str .= $tab4.'$this->db->where("id", $id);'."\n";
+			$str .= $tab4.'$this->db->update("'.$db.'", $data);'."\n";	
+			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");'."\n";
+			$str .= $tab4.'echo "Grupo Cambiado/Fusionado en clientes";'."\n";
+
+			$str .= $tab3.'} else {'."\n";
+			$str .= $tab4.'unset($data[$mcodp]);'."\n";
+			$str .= $tab4.'$this->db->where("id", $id);'."\n";
+			$str .= $tab4.'$this->db->update(\''.$db.'\', $data);'."\n";
+			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"Grupo de Cliente  ".$nuevo." MODIFICADO");'."\n";
+			$str .= $tab4.'echo "$mcodp Modificado";'."\n";
+			$str .= $tab3.'}'."\n\n";
+		
+			$str .= $tab2.'} elseif($oper == \'del\') {'."\n";
+			$str .= $tab3.'$meco = $this->datasis->dameval("SELECT $mcodp FROM '.$db.' WHERE id=$id");'."\n";
+
+			$str .= $tab3.'//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM '.$db.' WHERE id=\'$id\' ");'."\n";
+			$str .= $tab3.'if ($check > 0){'."\n";
+			$str .= $tab4.'echo " El registro no puede ser eliminado; tiene movimiento ";'."\n";
+			$str .= $tab3.'} else {'."\n";
+			$str .= $tab4.'$this->db->simple_query("DELETE FROM '.$db.' WHERE id=$id ");'."\n";
+			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"Registro ????? ELIMINADO");'."\n";
+			$str .= $tab4.'echo "Registro Eliminado";'."\n";
+			$str .= $tab3.'}'."\n";
+			$str .= $tab2.'};'."\n";
+			$str .= $tab1.'}'."\n\n";
+
+
+			$str .= $tab1.'//***************************'."\n";
+			$str .= $tab1.'//Definicion del Grid y la Forma'."\n";
+			$str .= $tab1.'//***************************'."\n";
+			$str .= $tab1.'function defgridit( $deployed = false ){'."\n";
+			$str .= $tab2.'$i      = 1;'."\n";
+			$str .= $tab2.'$editar = "false";'."\n\n";
+			$str .= $tab2.'$grid  = new $this->jqdatagrid;'."\n\n";
+			$columna .= $str;
+			$str = '';
+
+			$columna .= $this->jqgridcol($dbit);
+
+			$str  = $tab2.'$grid->showpager(true);'."\n";
+			$str  = $tab2.'$grid->setWidth("");'."\n";
+			$str  = $tab2.'$grid->setHeight(\'190\');'."\n";
+			$str  = $tab2.'$grid->setfilterToolbar(false);'."\n";
+			$str  = $tab2.'$grid->setToolbar(\'false\', \'"top"\');'."\n";
+
+			$str  = $tab2.'#show/hide navigations buttons'."\n";
+			$str  = $tab2.'$grid->setAdd(false);'."\n";
+			$str  = $tab2.'$grid->setEdit(false);'."\n";
+			$str  = $tab2.'$grid->setDelete(false);'."\n";
+			$str  = $tab2.'$grid->setSearch(true);'."\n";
+			$str  = $tab2.'$grid->setRowNum(30);'."\n";
+			$str  = $tab2.'$grid->setShrinkToFit(\'false\');'."\n";
+
+
+			$str .= $tab2.'#Set url'."\n";
+			$str .= $tab2.'$grid->setUrlput(site_url($this->url.\'setdatait/\'));'."\n\n";
+
+			$str .= $tab2.'#GET url'."\n";
+			$str .= $tab2.'$grid->setUrlget(site_url($this->url.\'getdatait/\'));'."\n\n";
+
+			$str .= $tab2.'if ($deployed) {'."\n";
+			$str .= $tab2.'	return $grid->deploy();'."\n";
+			$str .= $tab2.'} else {'."\n";
+			$str .= $tab2.'	return $grid;'."\n";
+			$str .= $tab2.'}'."\n";
+			$str .= $tab1.'}'."\n\n";
+
+			$str .= $tab1.'/**'."\n";
+			$str .= $tab1.'* Busca la data en el Servidor por json'."\n";
+			$str .= $tab1.'*/'."\n";
+			$str .= $tab1.'function getdatait( $id = 0 )'."\n";
+			$str .= $tab1.'{'."\n";
+
+			$str .= $tab2.'if ($id === 0 ){'."\n";
+			$str .= $tab3.'$id = $this->datasis->dameval("SELECT MAX(id) FROM '.$db.'");'."\n";
+			$str .= $tab2.'}'."\n";
+			$str .= $tab2.'if(empty($id)) return "";'."\n";
+			$str .= $tab2.'$numero   = $this->datasis->dameval("SELECT numero FROM '.$db.' WHERE id=$id");'."\n";
+
+			$str .= $tab2.'$grid    = $this->jqdatagrid;'."\n";
+			$str .= $tab2.'$mSQL    = "SELECT * FROM '.$dbit.' WHERE numero=\'$numero\' ";'."\n";
+			$str .= $tab2.'$response   = $grid->getDataSimple($mSQL);'."\n";
+			$str .= $tab2.'$rs = $grid->jsonresult( $response);'."\n";
+			$str .= $tab2.'echo $rs;'."\n";
+
+			$str .= $tab1.'}'."\n\n";
+
+			$str .= $tab1.'/**'."\n";
+			$str .= $tab1.'* Guarda la Informacion'."\n";
+			$str .= $tab1.'*/'."\n";
+			$str .= $tab1.'function setDatait()'."\n";
+			$str .= $tab1.'{'."\n";
+			$str .= $tab1.'}'."\n\n";
+
+
+			$str .= $tab1.'//***********************************'."\n";
+			$str .= $tab1.'// DataEdit  '."\n";
+			$str .= $tab1.'//***********************************'."\n";
+		
+			$str .= $this->genecrudjq($db, false);
+
+			$str .= $this->genepre( $db, false);
+			$str .= $this->genepost($db, false);
 
 			$str .= '}'."\n";
 
-			
 			$columna .= $str."\n";
-			
+		
 			echo $columna."</pre>";
 
 		}
 		
+	}
+
+
+	//********************************
+	// Genera la clase
+	//********************************
+	function jqgridclase($db, $contro){
+		$tab1 = $this->mtab(1);
+		$tab2 = $this->mtab(2);
+		$tab3 = $this->mtab(3);
+
+		$str  = '';
+		$str .= 'class '.ucfirst($db).' extends Controller {'."\n";
+		$str .= $tab1.'var $mModulo = \''.strtoupper($db).'\';'."\n";
+		$str .= $tab1.'var $titp    = \'Modulo '.strtoupper($db).'\';'."\n";
+		$str .= $tab1.'var $tits    = \'Modulo '.strtoupper($db).'\';'."\n";
+		$str .= $tab1.'var $url     = \''.$contro.'/'.$db.'/\';'."\n\n";
+
+		$str .= $tab1.'function '.ucfirst($db).'(){'."\n";
+		$str .= $tab2.'parent::Controller();'."\n";
+		$str .= $tab2.'$this->load->library(\'rapyd\');'."\n";
+		$str .= $tab2.'$this->load->library(\'jqdatagrid\');'."\n";
+		$str .= $tab2.'$this->datasis->modulo_nombre( \''.strtoupper($db).'\', $ventana=0 );'."\n";
+		$str .= $tab1.'}'."\n\n";
+
+		$str .= $tab1.'function index(){'."\n";
+		$str .= $tab2.'/*if ( !$this->datasis->iscampo(\''.$db.'\',\'id\') ) {'."\n";
+		$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' DROP PRIMARY KEY\');'."\n";
+		$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD UNIQUE INDEX numero (numero)\');'."\n";
+		$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)\');'."\n";
+		$str .= $tab2.'};*/'."\n";
+		$str .= $tab2.'$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );'."\n";
+		$str .= $tab2.'redirect($this->url.\'jqdatag\');'."\n";
+		$str .= $tab1.'}'."\n\n";
+
+		return $str;
+	
+	}
+
+
+	//************************************
+	//
+	//Genera las Columnas
+	//
+	function jqgridcol($db){
+		$tab1 = $this->mtab(1);
+		$tab2 = $this->mtab(2);
+		$tab3 = $this->mtab(3);
+		$tab4 = $this->mtab(4);
+		$tab5 = $this->mtab(5);
+		$tab6 = $this->mtab(6);
+		$tab7 = $this->mtab(7);
+		$tab8 = $this->mtab(8);
+
+		$query = $this->db->query("DESCRIBE $db");
+		$columna = '';
+		$str     = '';
+		foreach ($query->result() as $row){
+			if ( $row->Field == 'id') {
+				$str   = $tab2.'$grid->addField(\'id\');'."\n";
+				$str  .= $tab2.'$grid->label(\'Id\');'."\n";
+				$str  .= $tab2.'$grid->params(array('."\n";
+				$str  .= $tab3.'\'align\'         => "\'center\'",'."\n";
+				$str  .= $tab3.'\'frozen\'        => \'true\','."\n";
+				$str  .= $tab3.'\'width\'         => 40,'."\n";
+				$str  .= $tab3.'\'editable\'      => \'false\','."\n";
+				$str  .= $tab3.'\'search\'        => \'false\''."\n";
+			} else {
+				$str  = $tab2.'$grid->addField(\''.$row->Field.'\');'."\n";
+				$str .= $tab2.'$grid->label(\''.ucfirst($row->Field).'\');'."\n";
+
+				$str .= $tab2.'$grid->params(array('."\n";
+				$str .= $tab3.'\'search\'        => \'true\','."\n";
+				$str .= $tab3.'\'editable\'      => $editar,'."\n";
+
+				if ( $row->Type == 'date' or $row->Type == 'timestamp' ) {
+					$str .= $tab3.'\'width\'         => 80,'."\n";
+					$str .= $tab3.'\'align\'         => "\'center\'",'."\n";
+					$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
+					$str .= $tab3.'\'editrules\'     => \'{ required:true,date:true}\','."\n";
+					$str .= $tab3.'\'formoptions\'   => \'{ label:"Fecha" }\''."\n";
+
+				} elseif ( substr($row->Type,0,7) == 'decimal' or substr($row->Type,0,3) == 'int'  ) {
+					$str .= $tab3.'\'align\'         => "\'right\'",'."\n";
+					$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
+					$str .= $tab3.'\'width\'         => 100,'."\n";
+					$str .= $tab3.'\'editrules\'     => \'{ required:true }\','."\n";
+					$str .= $tab3.'\'editoptions\'   => \'{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }\','."\n";
+					$str .= $tab3.'\'formatter\'     => "\'number\'",'."\n";
+					if (substr($row->Type,0,3) == 'int'){
+						$str .= $tab3.'\'formatoptions\' => \'{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }\''."\n";
+					} else {
+						$str .= $tab3.'\'formatoptions\' => \'{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }\''."\n";
+					}
+
+				} elseif ( substr($row->Type,0,7) == 'varchar' or substr($row->Type,0,4) == 'char'  ) {
+					$long = str_replace(array('varchar(','char(',')'),"", $row->Type)*10;
+					$maxlong = $long/10;
+					if ( $long > 200 ) $long = 200;
+					if ( $long < 40 ) $long = 40;
+					
+					$str .= $tab3.'\'width\'         => '.$long.','."\n";
+					$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
+					$str .= $tab3.'\'editrules\'     => \'{ required:true}\','."\n";
+					$str .= $tab3.'\'editoptions\'   => \'{ size:'.$maxlong.', maxlength: '.$maxlong.' }\','."\n";
+
+				} elseif ( $row->Type == 'text' ) {
+					$long = 250;
+					$str .= $tab3.'\'width\'         => '.$long.','."\n";
+					$str .= $tab3.'\'edittype\'      => "\'textarea\'",'."\n";
+					$str .= $tab3.'\'editoptions\'   => "\'{rows:2, cols:60}\'",'."\n";
+
+				} else {
+					$str .= $tab3.'\'width\'         => 140,'."\n";
+					$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
+				}
+			}
+			$str .= $tab2.'));'."\n\n";
+			$columna .= $str."\n";
+		}
+		return $columna;
 	}
 
 

@@ -125,7 +125,7 @@ class Ssal extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 750, modal: true,
+			autoOpen: false, height: 500, width: 840, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -1098,7 +1098,7 @@ class ssal extends validaciones {
 					$this->datasis->sinvcarga( $row->codigo, $alma, $row->cantidad);
 			}
 		}
-		$monto = $this->datasis->dameval('SELECT sum(costo) FROM itssal WHERE numero='.$this->db->escape($numero));
+		$monto = $this->datasis->dameval('SELECT sum(costo*cantidad) FROM itssal WHERE numero='.$this->db->escape($numero));
 
 		//Segun el Caso hace GASTO o OTIN
 		if ( $tipo == 'S' ) {  // GASTO
@@ -1128,7 +1128,7 @@ class ssal extends validaciones {
 
 			$mSQL = "INSERT INTO gitser ( fecha, numero, proveed, codigo, descrip, precio, iva, importe, departa, sucursal, transac, usuario, estampa, hora )
 					  SELECT c.fecha fecha, c.numero, 'AJUSI' proveed,
-						b.gasto, a.descrip, sum(a.costo) precio, 0 iva, sum(a.costo) importe,
+						b.gasto, a.descrip, sum(a.costo*a.cantidad) precio, 0 iva, sum(a.costo*a.cantidad) importe,
 						d.depto departa, d.sucursal, a.transac, a.usuario, a.estampa, a.hora
 						FROM itssal a JOIN icon b ON a.concepto=b.codigo
 						JOIN ssal c ON a.numero=c.numero LEFT JOIN usol d ON c.cargo=d.codigo
