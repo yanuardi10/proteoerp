@@ -49,10 +49,29 @@ class gser extends Controller {
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
+		$WpAdic = "
+		<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n
+		<tr><td><div class=\"tema1\">
+			<table cellpadding='0' cellspacing='0' style='width:100%;'>
+				<tr>
+					<td style='vertical-align:center;border:1px solid #AFAFAF;'><div class='botones'>".img(array('src' =>"assets/default/images/print.png",  'height' => 18, 'alt' => 'Imprimir',    'title' => 'Imprimir', 'border'=>'0'))."</div></td>
+					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:70px;text-align:left;vertical-align:top;' href='#' id='imprimir'>Egreso</a></div></td>
+					<td style='vertical-align:top;'><div class='botones'><a style='width:80px;text-align:left;vertical-align:top;' href='#' id='reteprint'>Retencion</a></div></td>
+				</tr>
+			</table>
+			</div>
+		</td></tr>\n
+		";
+
+		$grid->setWpAdicional($WpAdic);
+
+
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprimir" , "img"=>"assets/default/images/print.png", "alt" => "Imprimir Documento",  "label"=>"Imprimir Documento" ));
-		$grid->wbotonadd(array("id"=>"reteprint", "img"=>"assets/default/images/print.png", "alt" => "Imprimir Retención",  "label"=>"Imprimir Retención" ));
+		//$grid->wbotonadd(array("id"=>"imprimir" , "img"=>"assets/default/images/print.png", "alt" => "Imprimir Documento",  "label"=>"Imprimir Documento" ));
+		//$grid->wbotonadd(array("id"=>"reteprint", "img"=>"assets/default/images/print.png", "alt" => "Imprimir Retención",  "label"=>"Imprimir Retención" ));
 		$WestPanel = $grid->deploywestp();
+
+
 
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
