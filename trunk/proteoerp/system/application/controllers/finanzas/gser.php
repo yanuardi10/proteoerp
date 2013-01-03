@@ -2068,20 +2068,6 @@ function gserfiscal(mid){
 		//$data['content'].= anchor('finanzas/gser/cierregserchi'  ,'Cerrar Caja Chica').br();
 		$data['content'].= '</div>'.br();
 
-		$data['content'].= '<div class="box" style="width:240px;background-color: #F9F7F9;">'.br();
-		$data['content'].= '<a href="'.base_url().'finanzas/gser/dataedit/create">';
-		$data['content'].= '<img border="0" src="'.base_url().'images/gastos.jpg'.'" height="70px"></a>'.br();
-		$data['content'].= '<p>Agregar factura y Notas de Debito individuales de gastos, donde permite hacer las retenciones de impuestos que correspondan</p>'.br();
-		//$data['content'].= anchor('finanzas/gser/dataedit/create'  ,'Agregar un gasto').br();
-		$data['content'].= '</div>'.br();
-
-		$data['content'].= '<div class="box" style="width:240px;background-color: #F9F7F9;">'.br();
-		$data['content'].= '<a href="'.base_url().'finanzas/gser/index" >';
-		$data['content'].= '<p><img border="0" src="'.base_url().'images/regresar.jpg'.'" height="40px"></a>'.br();
-		$data['content'].= 'Regresar al modulo de gastos';
-		$data['content'].= '</p>'.br();
-		$data['content'].= '</div>'.br();
-
 		$data['content'].= '</div><center>';
 
 		$data['title']   = heading('Agregar Gastos');
@@ -2262,6 +2248,7 @@ function gserfiscal(mid){
 
 			total=roundNumber(montasa+tasa+monredu+reducida+monadic+sobretasa+exento,2);
 			$('#importe').val(total);
+			$('#importe_val').text(nformat(total));
 		}
 
 		$('#codigo').autocomplete({
@@ -2298,6 +2285,9 @@ function gserfiscal(mid){
 				setTimeout(function() {  $('#codigo').removeAttr('readonly'); }, 1500);
 			}
 		});
+
+		$('#importe_val').css('font-size','2em');
+		$('#importe_val').css('font-weight','bold');
 		";
 
 		$edit = new DataEdit('Gastos de caja chica', 'gserchi');
@@ -2356,7 +2346,6 @@ function gserfiscal(mid){
 		$edit->descrip->size =50;
 		$edit->descrip->maxlength =50;
 
-
 		$alicuota=$this->datasis->ivaplica(date('Y-m-d'));
 
 		$arr=array(
@@ -2394,6 +2383,8 @@ function gserfiscal(mid){
 		$edit->reducida->rule ='condi_required|max_length[17]|callback_chreducida';
 		$edit->sobretasa->rule='condi_required|max_length[17]|callback_chsobretasa';
 		$edit->importe->rule  ='max_length[17]|numeric|positive';
+		$edit->importe->type  ='inputhidden';
+		$edit->importe->label ='<b style="font-size:2em">Total</b>';
 
 		$edit->sucursal = new dropdownField('Sucursal','sucursal');
 		$edit->sucursal->options('SELECT codigo,sucursal FROM sucu ORDER BY sucursal');
@@ -2437,8 +2428,6 @@ function gserfiscal(mid){
 		$data['head']    = $this->rapyd->get_head();
 		$data['head']   .= phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
-
-
 	}
 
 	function _pre_gserchi($do){
