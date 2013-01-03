@@ -41,6 +41,7 @@ class Scli extends validaciones {
 			)
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
 		}
 
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
