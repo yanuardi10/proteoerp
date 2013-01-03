@@ -43,7 +43,7 @@ class b2b extends validaciones {
 				'screeny'   => "'+((screen.availHeight/2)-150)+'"
 			);
 
-		$filter = new DataFilter('Filtro de b2b');
+		$filter = new DataFilter('Filtro de B2B');
 		$filter->db->select(array('a.id','a.proveed','a.usuario','a.depo AS depo','a.tipo','a.url','a.grupo','b.nombre','c.ubides'));
 		$filter->db->from('b2b_config AS a');
 		$filter->db->join('sprv AS b','b.proveed=a.proveed','left');
@@ -918,7 +918,7 @@ class b2b extends validaciones {
 							$invent['precio1']  = ($config['margen1']==0)? $arr[$in]['precio1'] : round(($arr[$in]['preca']*100/(100-$config['margen1'])),2);
 							$invent['precio2']  = ($config['margen2']==0)? $arr[$in]['precio2'] : round(($arr[$in]['preca']*100/(100-$config['margen2'])),2);
 							$invent['precio3']  = ($config['margen3']==0)? $arr[$in]['precio3'] : round(($arr[$in]['preca']*100/(100-$config['margen3'])),2);
-							$invent['precio4']  = ($config['margen4']==0)? $arr[$in]['precio4'] : round(($arr[$in]['preca']*100/(100-$config['margen4'])),2);
+							$invent['precio4']  = ($config['margen4']==0)? $arr[$in]['precio4']*0.99 : round(($arr[$in]['preca']*100/(100-$config['margen4'])),2);
 							$invent['iva']      = $arr[$in]['iva'];
 							$invent['redecen']  = 'N';
 							$invent['activo']   = 'S';

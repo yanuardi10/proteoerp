@@ -782,9 +782,7 @@ class Rcaj extends validaciones {
 				//Fin del movimiento en smov
 
 				//Actualiza el saldo en la caja
-				$mSQL="CALL sp_actusal('$caja','$sfecha',$rrecibido)";
-				$ban=$this->db->simple_query($mSQL);
-				if($ban==false) memowrite($mSQL,'rcaj');
+				$this->datasis->actusal($caja, $sfecha, $rrecibido);
 
 				//Crea la diferencia en caja si la hay
 				$dif=$rrecibido-$sistema;
@@ -864,9 +862,7 @@ class Rcaj extends validaciones {
 						if($ban==false) memowrite($mSQL,'rcaj');
 					}
 
-					$mSQL="CALL sp_actusal('DF','$sfecha',$dif)";
-					$ban=$this->db->simple_query($mSQL);
-					if($ban==false) memowrite($mSQL,'rcaj');
+					$this->datasis->actusal('DF', $sfecha, $dif);
 				}
 
 				//Crea los movimientos bmov a consecuencia de los pagos con depositos
@@ -970,9 +966,7 @@ class Rcaj extends validaciones {
 					$caja = $rrow->codbanc;
 					$monto= ($rrow->tipo_op=='NC') ? $rrow->monto : (-1)*$rrow->monto;
 
-					$mSQL="CALL sp_actusal('$caja','$sfecha',$monto)";
-					$ban =$this->db->simple_query($mSQL);
-					if($ban==false) memowrite($mSQL,'rcaj');
+					$this->datasis->actusal($caja, $sfecha, $monto);
 					$er +=$ban;
 				}
 				$mSQL='DELETE FROM bmov WHERE transac='.$dbtransac;

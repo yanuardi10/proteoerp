@@ -30,9 +30,19 @@ class Scli extends validaciones {
 		if (!in_array('upago',   $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
 		if (!in_array('tarifa',  $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(15) NULL ');
 
-		if ( !$this->datasis->iscampo('scli','tarifa') ) {
-			$this->db->query('ALTER TABLE scli ADD COLUMN tarifa CHAR(15) NULL ');
-		};
+		if(!$this->db->table_exists('tarifa')){
+			$mSQL="CREATE TABLE `tarifa` (
+				`tipo` VARCHAR(1) NULL DEFAULT NULL,
+				`actividad` VARCHAR(150) NULL DEFAULT NULL,
+				`minimo` DECIMAL(10,3) NULL DEFAULT NULL,
+				`maximo` DECIMAL(10,3) NULL DEFAULT NULL,
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+		}
+
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
 	}
@@ -3697,6 +3707,4 @@ var cplaStore = new Ext.data.Store({
 		if(!in_array('tolera'  ,$campos)) $this->db->simple_query("ALTER TABLE `scli` ADD COLUMN `tolera` DECIMAL(9,2) NULL DEFAULT '0' AFTER `credito`");
 		if(!in_array('maxtole' ,$campos)) $this->db->simple_query("ALTER TABLE `scli` ADD COLUMN `maxtole` DECIMAL(9,2) NULL DEFAULT '0' AFTER `tolera`");
 	}
-
 }
-?>
