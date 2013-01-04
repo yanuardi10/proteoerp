@@ -1441,7 +1441,7 @@ class Datasis {
 	//
 	//       Inserta Intramenu
 	//
-	// 'modulo'=>'148','titulo'=>'Punto de Ventas','mensaje'=>'Punto de Ventas','panel'=>'TRANSACCIONES','ejecutar'=>'ventas/pos','target'=>'popu','visible'=>'S','pertenece'=>'1','ancho'=>800,'alto'=>600
+	// creaintramenu( $data = array('modulo'=>'148','titulo'=>'Punto de Ventas','mensaje'=>'Punto de Ventas','panel'=>'TRANSACCIONES','ejecutar'=>'ventas/pos','target'=>'popu','visible'=>'S','pertenece'=>'1','ancho'=>800,'alto'=>600)
 	function creaintramenu( $data = array() ) {
 		$CI =& get_instance();
 		if ( !empty($data) ){
