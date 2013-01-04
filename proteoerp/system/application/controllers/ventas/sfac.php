@@ -767,6 +767,20 @@ class Sfac extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
 
+		$grid->addField('comiadi');
+		$grid->label('Bono');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
 
 		$grid->addField('comision');
 		$grid->label('Comision');
@@ -1161,18 +1175,7 @@ class Sfac extends Controller {
 */
 
 		$grid->addField('observa');
-		$grid->label('Observa');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => 'true',
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:false}',
-			'editoptions'   => '{ size:30, maxlength: 50 }',
-		));
-
-		$grid->addField('observ1');
-		$grid->label('Observ1');
+		$grid->label('Observacion 1');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $xmes,
@@ -1180,6 +1183,19 @@ class Sfac extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ size:30, maxlength: 50 }',
+			'formoptions'   => '{ label:"Observacion 1" }'
+		));
+
+		$grid->addField('observ1');
+		$grid->label('Observacion 2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $xmes,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:30, maxlength: 50 }',
+			'formoptions'   => '{ label:"Observacion 2" }'
 		));
 
 		$grid->addField('id');
