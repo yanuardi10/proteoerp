@@ -11,6 +11,7 @@ class Gserchi extends Controller {
 		$this->load->library('jqdatagrid');
 		$this->datasis->modulo_nombre( 'GSERCHI', $ventana=0 );
 		$this->mcred = '_CR';
+		$this->idgser= 0;
 	}
 
 	function index(){
@@ -304,10 +305,11 @@ class Gserchi extends Controller {
 				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
 
 				$data = array('ngasto' => $numero);
-				$where = "ngasto IS NULL AND  codbanc=$dbcodbanc";
+				$where = "ngasto IS NULL AND  codbanc=$dbcodbanc AND aceptado='S'";
 				$mSQL = $this->db->update_string('gserchi', $data, $where);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
+				$this->idgser=$idgser;
 			}
 		return ($error==0)? true : false;
 	}
@@ -334,8 +336,9 @@ class Gserchi extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array('id'=>'fedita',  'title'=>'Agregar/Editar Registro'),
-		array('id'=>'frepon',  'title'=>'Reposici&oacute;n de caja chica')
+		array('id'=>'fedita',  'title'=>'Agregar/Editar factura de caja chica'),
+		array('id'=>'frepon',  'title'=>'Reposici&oacute;n de caja chica'),
+		array('id'=>'fborra',  'title'=>'Borar factura de caja chica')
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -407,15 +410,53 @@ class Gserchi extends Controller {
 		});';
 
 		$bodyscript .= '
+		function gserchidel() {
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var act  = jQuery("#newapi'.$grid0.'").jqGrid (\'getCell\', id, \'aceptado\');
+				if(act!="S"){
+					if(confirm(" Seguro desea eliminar el registro?")){
+						var ret    = $("#newapi'.$grid0.'").getRowData(id);
+						mId = id;
+						$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(r){
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									apprise("Registro Eliminado");
+									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#fborra").html(r);
+								$("#fborra").dialog("open");
+							}
+						});
+					}
+				}else{
+					$.prompt("<h1>No se puede modificar un registro que fue aceptado</h1>");
+				}
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
+		};';
+
+		$bodyscript .= '
 		function gserchiedit() {
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
-				var ret    = $("#newapi'.$grid0.'").getRowData(id);
-				mId = id;
-				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
-					$("#fedita").html(data);
-					$("#fedita").dialog( "open" );
-				});
+				var act  = jQuery("#newapi'.$grid0.'").jqGrid (\'getCell\', id, \'aceptado\');
+				var ret  = $("#newapi'.$grid0.'").getRowData(id);
+				if(act!="S"){
+					mId = id;
+					$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
+						$("#fedita").html(data);
+						$("#fedita").dialog( "open" );
+					});
+				}else{
+					$.prompt("<h1>No se puede modificar un registro que fue aceptado</h1>");
+				}
 			} else {
 				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
 			}
@@ -494,6 +535,7 @@ class Gserchi extends Controller {
 									apprise("Pago procesado");
 									$( "#frepon" ).dialog( "close" );
 									grid.trigger("reloadGrid");
+									'.$this->datasis->jwinopen(site_url('formatos/ver/GSER').'/\'+json.pk.id+\'/id\'').';
 									return true;
 								} else {
 									apprise(json.mensaje);
@@ -515,6 +557,17 @@ class Gserchi extends Controller {
 			}
 		});';
 
+		$bodyscript .= '
+		$("#fborra").dialog({
+			autoOpen: false, height: 300, width: 300, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+					grid.trigger("reloadGrid");
+				}
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
 
 		$bodyscript .= '});'."\n";
 
@@ -541,6 +594,17 @@ class Gserchi extends Controller {
 		$bodyscript .= "\n</script>\n";
 
 		return $bodyscript;
+	}
+
+	function ajaxsprv(){
+		$rif=$this->input->post('rif');
+		if($rif!==false){
+			$dbrif=$this->db->escape($rif);
+			$nombre=$this->datasis->dameval("SELECT nombre FROM provoca WHERE rif=$dbrif");
+			if(empty($nombre))
+				$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif=$dbrif");
+			echo $nombre;
+		}
 	}
 
 	//***************************
@@ -659,6 +723,19 @@ class Gserchi extends Controller {
 			'editoptions'   => '{ size:50, maxlength: 50 }',
 		));
 
+		$grid->addField('importe');
+		$grid->label('Importe');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
 
 		//$grid->addField('moneda');
 		//$grid->label('Moneda');
@@ -670,7 +747,6 @@ class Gserchi extends Controller {
 		//	'editrules'     => '{ required:true}',
 		//	'editoptions'   => '{ size:2, maxlength: 2 }',
 		//));
-
 
 		$grid->addField('montasa');
 		$grid->label('Base G.');
@@ -686,7 +762,6 @@ class Gserchi extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('tasa');
 		$grid->label('Impuesto G.');
 		$grid->params(array(
@@ -700,7 +775,6 @@ class Gserchi extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('monredu');
 		$grid->label('Base R.');
@@ -716,7 +790,6 @@ class Gserchi extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('reducida');
 		$grid->label('Impuesto R.');
 		$grid->params(array(
@@ -730,7 +803,6 @@ class Gserchi extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('monadic');
 		$grid->label('Base A.');
@@ -746,7 +818,6 @@ class Gserchi extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('sobretasa');
 		$grid->label('Impuesto A.');
 		$grid->params(array(
@@ -760,7 +831,6 @@ class Gserchi extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('exento');
 		$grid->label('Exento');
@@ -776,22 +846,6 @@ class Gserchi extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
-		$grid->addField('importe');
-		$grid->label('Importe');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
 		$grid->addField('sucursal');
 		$grid->label('Sucursal');
 		$grid->params(array(
@@ -802,7 +856,6 @@ class Gserchi extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:2, maxlength: 2 }',
 		));
-
 
 		$grid->addField('departa');
 		$grid->label('Departa');
@@ -815,7 +868,6 @@ class Gserchi extends Controller {
 			'editoptions'   => '{ size:2, maxlength: 2 }',
 		));
 
-
 		//$grid->addField('ngasto');
 		//$grid->label('Ngasto');
 		//$grid->params(array(
@@ -827,7 +879,6 @@ class Gserchi extends Controller {
 		//	'editoptions'   => '{ size:8, maxlength: 8 }',
 		//));
 
-
 		$grid->addField('usuario');
 		$grid->label('Usuario');
 		$grid->params(array(
@@ -838,7 +889,6 @@ class Gserchi extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:12, maxlength: 12 }',
 		));
-
 
 		$grid->addField('estampa');
 		$grid->label('Estampa');
@@ -852,7 +902,6 @@ class Gserchi extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->addField('hora');
 		$grid->label('Hora');
 		$grid->params(array(
@@ -863,7 +912,6 @@ class Gserchi extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:8, maxlength: 8 }',
 		));
-
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -912,7 +960,8 @@ class Gserchi extends Controller {
 			}
 		');
 
-		$grid->setBarOptions("\t\taddfunc: gserchiadd,\n\t\teditfunc: gserchiedit");
+		$grid->setBarOptions("addfunc: gserchiadd, editfunc: gserchiedit,delfunc: gserchidel");
+		$grid->setOndblClickRow("");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -1052,6 +1101,7 @@ class Gserchi extends Controller {
 				}
 			});
 
+			desactivacampo($("#cargo").val());
 		});
 
 		function post_modbus(){
@@ -1075,8 +1125,10 @@ class Gserchi extends Controller {
 			}
 		}';
 
+		$pcchi=$this->datasis->damerow("SELECT proveed, nombre FROM sprv WHERE nombre LIKE '%CAJA%CHICA%' LIMIT 1");
+
 		$form = new DataForm($this->url.'gserchipros/'.$codbanc.'/process');
-		$form->title("Numero de facturas aceptadas $r[cana], monto total <b>".nformat($r['monto']).'</b>');
+		$form->title("N&uacute;mero de facturas aceptadas $r[cana], monto total <b>".nformat($r['monto']).'</b> para la caja '.$codbanc);
 		$form->script($script);
 
 		$form->codprv = new inputField('Proveedor', 'codprv');
@@ -1084,32 +1136,37 @@ class Gserchi extends Controller {
 		$form->codprv->insertValue=$codprv;
 		$form->codprv->size=8;
 		$form->codprv->append($bsprv);
+		$form->codprv->insertValue=(empty($pcchi))? '' : $pcchi['proveed'];
 
 		$form->nombre = new inputField('Nombre', 'nombre');
 		$form->nombre->rule='required';
 		$form->nombre->insertValue=$nombre;
 		$form->nombre->in = 'codprv';
 		$form->nombre->type='inputhidden';
+		$form->nombre->insertValue=(empty($pcchi))? '' : $pcchi['nombre'];
 
-		$form->cargo = new dropdownField('Con cargo a','cargo');
+		$dbcodban=$this->db->escape($codbanc);
+		$form->cargo = new dropdownField('Cargo a','cargo');
 		$form->cargo->option('','Seleccionar');
 		//$form->cargo->option($this->mcred,'Credito');
-		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' ORDER BY codbanc");
+		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND codbanc<>$dbcodban ORDER BY codbanc");
 		$form->cargo->onchange='desactivacampo(this.value)';
 		$form->cargo->rule='max_length[5]|required';
 
-		$form->cheque = new inputField('Numero de cheque', 'cheque');
+		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
 		$form->cheque->rule='condi_required|callback_chobligaban';
 		$form->cheque->append('Aplica  solo si el cargo es a un banco');
+		$form->cheque->group='Datos bancarios';
 
 		$form->benefi = new inputField('Beneficiario', 'benefi');
 		$form->benefi->insertValue=$nombre;
-		$form->benefi->rule='condi_required|callback_chobligaban';
+		$form->benefi->rule='condi_required|callback_chobligaban|strtoupper';
 		$form->benefi->append('Aplica  solo si el cargo es a un banco');
+		$form->benefi->group='Datos bancarios';
 
 		$form->build_form();
 
-		$grid = new DataGrid('Lista de Gastos','gserchi');
+		$grid = new DataGrid('Lista de facturas a pagar','gserchi');
 		$select=array('exento + montasa + monadic + monredu + tasa + sobretasa + reducida AS totneto',
 					  'tasa + sobretasa + reducida AS totiva','proveedor','fechafac','numfac','codbanc' );
 		$grid->db->select($select);
@@ -1142,7 +1199,7 @@ class Gserchi extends Controller {
 				$rt=array(
 					'status' => 'A',
 					'mensaje'=> 'Registro guardado',
-					'pk'     => ''
+					'pk'     => array('id'=>$this->idgser)
 				);
 				echo json_encode($rt);
 			}else{
@@ -1166,8 +1223,8 @@ class Gserchi extends Controller {
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$mWHERE = $grid->geneTopWhere('gserchi');
-
+		$mWHERE  = $grid->geneTopWhere('gserchi');
+		$mWHERE[]= array('','ngasto IS NULL','');
 		$response   = $grid->getData('gserchi', array(array()), array(), false, $mWHERE, 'codbanc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
@@ -1184,51 +1241,70 @@ class Gserchi extends Controller {
 		$mcodp  = "??????";
 		$check  = 0;
 
-		unset($data['oper']);
-		unset($data['id']);
-		if($oper == 'add'){
-			if(false == empty($data)){
-				$check = $this->datasis->dameval("SELECT count(*) FROM gserchi WHERE $mcodp=".$this->db->escape($data[$mcodp]));
-				if ( $check == 0 ){
-					$this->db->insert('gserchi', $data);
-					echo "Registro Agregado";
+		//unset($data['oper']);
+		//unset($data['id']);
+		//if($oper == 'add'){
+		//	if(false == empty($data)){
+		//		$check = $this->datasis->dameval("SELECT count(*) FROM gserchi WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+		//		if ( $check == 0 ){
+		//			$this->db->insert('gserchi', $data);
+		//			echo "Registro Agregado";
+        //
+		//			logusu('gserchi',"Registro ????? INCLUIDO");
+		//		} else
+		//			echo "Ya existe un registro con ese $mcodp";
+		//	} else
+		//		echo "Fallo Agregado!!!";
+        //
+		//} elseif($oper == 'edit') {
+		//	$nuevo  = $data[$mcodp];
+		//	$anterior = $this->datasis->dameval("SELECT $mcodp FROM gserchi WHERE id=$id");
+		//	if ( $nuevo <> $anterior ){
+		//		//si no son iguales borra el que existe y cambia
+		//		$this->db->query("DELETE FROM gserchi WHERE $mcodp=?", array($mcodp));
+		//		$this->db->query("UPDATE gserchi SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+		//		$this->db->where("id", $id);
+		//		$this->db->update("gserchi", $data);
+		//		logusu('gserchi',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+		//		echo "Grupo Cambiado/Fusionado en clientes";
+		//	} else {
+		//		unset($data[$mcodp]);
+		//		$this->db->where("id", $id);
+		//		$this->db->update('gserchi', $data);
+		//		logusu('gserchi',"Caja chica  ".$nuevo." MODIFICADO");
+		//		echo "$mcodp Modificado";
+		//	}
+        //
+		//} elseif($oper == 'del') {
+		//	$meco = $this->datasis->dameval("SELECT $mcodp FROM gserchi WHERE id=$id");
+		//	//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gserchi WHERE id='$id' ");
+		//	if ($check > 0){
+		//		echo " El registro no puede ser eliminado; tiene movimiento ";
+		//	} else {
+		//		$this->db->simple_query("DELETE FROM gserchi WHERE id=$id ");
+		//		logusu('GSERCHI',"Registro ????? ELIMINADO");
+		//		echo "Registro Eliminado";
+		//	}
+		//};
+	}
 
-					logusu('GSERCHI',"Registro ????? INCLUIDO");
-				} else
-					echo "Ya existe un registro con ese $mcodp";
-			} else
-				echo "Fallo Agregado!!!";
-
-		} elseif($oper == 'edit') {
-			$nuevo  = $data[$mcodp];
-			$anterior = $this->datasis->dameval("SELECT $mcodp FROM gserchi WHERE id=$id");
-			if ( $nuevo <> $anterior ){
-				//si no son iguales borra el que existe y cambia
-				$this->db->query("DELETE FROM gserchi WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE gserchi SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-				$this->db->where("id", $id);
-				$this->db->update("gserchi", $data);
-				logusu('GSERCHI',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-				echo "Grupo Cambiado/Fusionado en clientes";
-			} else {
-				unset($data[$mcodp]);
-				$this->db->where("id", $id);
-				$this->db->update('gserchi', $data);
-				logusu('GSERCHI',"Grupo de Cliente  ".$nuevo." MODIFICADO");
-				echo "$mcodp Modificado";
+	function gserchiajax(){
+		$id   = $this->input->post('id');
+		$dbid = $this->db->escape($id);
+		$rt='0';
+		if($id!==false){
+			$mSQL="UPDATE gserchi SET aceptado=IF(aceptado='S','N','S') WHERE id=$dbid AND ngasto IS NULL";
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){
+				$rt='0';
+			}else{
+				$sta    = $this->datasis->dameval("SELECT aceptado FROM gserchi WHERE id=$dbid");
+				$estado = ($sta=='S')?'ACEPTADO':'RECHAZADO';
+				logusu('GSERCHI',"Factura cchi $id $estado");
+				$rt='1';
 			}
-
-		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM gserchi WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gserchi WHERE id='$id' ");
-			if ($check > 0){
-				echo " El registro no puede ser eliminado; tiene movimiento ";
-			} else {
-				$this->db->simple_query("DELETE FROM gserchi WHERE id=$id ");
-				logusu('GSERCHI',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
-			}
-		};
+		}
+		echo $rt;
 	}
 
 	function dataedit(){
@@ -1248,7 +1324,7 @@ class Gserchi extends Controller {
 		$sobretasa = $ivas['sobretasa']/100;
 
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
-		$url=site_url('finanzas/gser/ajaxsprv');
+		$url=site_url($this->url.'ajaxsprv');
 		$script="
 		function consulrif(){
 			vrif=$('#rif').val();
@@ -1360,8 +1436,13 @@ class Gserchi extends Controller {
 		$edit->on_save_redirect=false;
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
-		$edit->pre_process('insert' ,'_pre_gserchi');
-		$edit->pre_process('update' ,'_pre_gserchi');
+
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
+		$edit->pre_process('insert' ,'_pre_insert');
+		$edit->pre_process('update' ,'_pre_update');
+		$edit->pre_process('delete' ,'_pre_delete');
 
 		$edit->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
 		$edit->codbanc->option('','Seleccionar');
@@ -1482,7 +1563,7 @@ class Gserchi extends Controller {
 
 	}
 
-	function _pre_gserchi($do){
+	function _pre_insert($do){
 		$rif   =$do->get('rif');
 		$dbrif = $this->db->escape($rif);
 		$nombre=$do->get('proveedor');
@@ -1511,22 +1592,56 @@ class Gserchi extends Controller {
 		}
 	}
 
-	function _pre_delete($do){
+	function chobligaban($val){
+		$ban=$this->input->post('cargo');
+		if($ban==$this->mcred) return true;
+		$tipo=common::_traetipo($ban);
+		if($tipo!='CAJ'){
+			if(empty($val)){
+				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el cargo es a un banco');
+				return false;
+			}
+		}
 		return true;
+	}
+
+	function _pre_update($do){
+		$aceptado = $do->get('aceptado');
+		if($aceptado!='S'){
+			return true;
+		}else{
+			$do->error_message_ar['pre_upd'] = 'No se puede modificar un gasto aceptado';
+			return false;
+		}
+		$rt=$this->_pre_insert($do);
+		return $rt;
+	}
+
+	function _pre_delete($do){
+		$aceptado = $do->get('aceptado');
+		if($aceptado=='S'){
+			$do->error_message_ar['pre_del'] = 'No se puede eliminar un gasto aprobado';
+			return false;
+		}else{
+			return true;
+		}
 	}
 
 	function _post_insert($do){
 		$primary =implode(',',$do->pk);
-		logusu($do->table,"Creo $this->tits $primary ");
+		$numero  = $do->get('numero');
+		logusu($do->table,"Creo factura caja chica numero $numero id $primary ");
 	}
 
 	function _post_update($do){
 		$primary =implode(',',$do->pk);
-		logusu($do->table,"Modifico $this->tits $primary ");
+		$numero  = $do->get('numero');
+		logusu($do->table,"Modifico factura caja chica numero $numero $primary ");
 	}
 
 	function _post_delete($do){
-		$primary =implode(',',$do->pk);
-		logusu($do->table,"Elimino $this->tits $primary ");
+		$primary = implode(',',$do->pk);
+		$numero  = $do->get('numfac');
+		logusu($do->table,"Elimino factura caja chica numero $numero $primary ");
 	}
 }
