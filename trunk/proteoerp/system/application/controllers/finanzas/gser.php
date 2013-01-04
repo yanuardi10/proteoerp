@@ -2181,7 +2181,6 @@ function gserfiscal(mid){
 			$ban=$this->db->simple_query($mSQL);
 			if($ban==false){
 				$rt='0';
-				memowrite($mSQL,'gser');
 			}else{
 				$rt='1';
 			}
