@@ -738,7 +738,18 @@ class rivcdetal extends Controller {
 		//$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add');
 		$edit->build();
 
-		echo $edit->output;
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+
+			echo json_encode($rt);
+		}else{
+			echo $edit->output;
+		}
+
 		//$data['content'] = $edit->output;
 		/*$data['head']    = $this->rapyd->get_head();
 		$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
