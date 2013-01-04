@@ -862,7 +862,7 @@ class b2b extends validaciones {
 						$ddata['precio1']  = ($config['margen1']==0)? $arr[$in]['precio1'] : round(($arr[$in]['preca']*100/(100-$config['margen1'])),2);
 						$ddata['precio2']  = ($config['margen2']==0)? $arr[$in]['precio2'] : round(($arr[$in]['preca']*100/(100-$config['margen2'])),2);
 						$ddata['precio3']  = ($config['margen3']==0)? $arr[$in]['precio3'] : round(($arr[$in]['preca']*100/(100-$config['margen3'])),2);
-						$ddata['precio4']  = ($config['margen4']==0)? $arr[$in]['precio4'] : round(($arr[$in]['preca']*100/(100-$config['margen4'])),2);
+						$ddata['precio4']  = ($config['margen4']==0)? $arr[$in]['precio4']*0.99 : round(($arr[$in]['preca']*100/(100-$config['margen4'])),2);
 						$ddata['montoiva'] = $arr[$in]['tota']*($arr[$in]['iva']/100);
 						$ddata['iva']      = $arr[$in]['iva'];
 						$ddata['barras']   = $barras;
@@ -895,7 +895,7 @@ class b2b extends validaciones {
 							$base1 = ($arr[$in]['precio1']*100)/(100+$arr[$in]['iva']);
 							$base2 = ($arr[$in]['precio2']*100)/(100+$arr[$in]['iva']);
 							$base3 = ($arr[$in]['precio3']*100)/(100+$arr[$in]['iva']);
-							$base4 = ($arr[$in]['precio4']*100)/(100+$arr[$in]['iva']);
+							$base4 = ($arr[$in]['precio4']*99)/(100+$arr[$in]['iva']);
 							$invent['codigo']   = $ddata['codigo'];
 							$invent['barras']   = $barras;
 							$invent['grupo']    = $config['grupo'];

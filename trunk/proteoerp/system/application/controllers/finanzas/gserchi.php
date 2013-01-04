@@ -1,0 +1,1532 @@
+<?php include('common.php');
+class Gserchi extends Controller {
+	var $mModulo = 'GSERCHI';
+	var $titp    = 'Caja chica';
+	var $tits    = 'Caja chica';
+	var $url     = 'finanzas/gserchi/';
+
+	function Gserchi(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		$this->datasis->modulo_nombre( 'GSERCHI', $ventana=0 );
+		$this->mcred = '_CR';
+	}
+
+	function index(){
+		/*if ( !$this->datasis->iscampo('gserchi','id') ) {
+			$this->db->simple_query('ALTER TABLE gserchi DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE gserchi ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE gserchi ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};*/
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	function _gserchipros($codbanc,$cargo,$codprv,$benefi,$numeroch=null){
+			$dbcodprv = $this->db->escape($codprv);
+			$nombre   = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbcodprv);
+			$fecha    = date('Y-m-d');
+			$numeroch = str_pad($numeroch, 12, '0', STR_PAD_LEFT);
+			$sp_fecha = str_replace('-','',$fecha);
+			$dbcodbanc= $this->db->escape($codbanc);
+			$error    = 0;
+			$cr       = $this->mcred; //Marca para el credito
+
+			$databan  = common::_traebandata($codbanc);
+			$datacar  = common::_traebandata($cargo);
+			if(!is_null($datacar)){
+				$tipo  = $datacar['tbanco'];
+				$moneda= $datacar['moneda'];
+			}
+
+			$mSQL='SELECT codbanc,fechafac,numfac,nfiscal,rif,proveedor,codigo,descrip,
+			  moneda,montasa,tasa,monredu,reducida,monadic,sobretasa,exento,importe,sucursal,departa,usuario,estampa,hora
+			FROM gserchi WHERE ngasto IS NULL AND aceptado="S" AND codbanc='.$dbcodbanc;
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				$transac  = $this->datasis->fprox_numero('ntransa');
+				$numero   = $this->datasis->fprox_numero('ngser');
+				$cheque   = ($tipo=='CAJ')? $this->datasis->banprox($codbanc): $numeroch ;
+
+
+				$montasa=$monredu=$monadic=$tasa=$reducida=$sobretasa=$exento=$totpre=$totiva=0;
+				foreach ($query->result() as $row){
+
+					$data = array();
+					$data['fecha']      = $fecha;
+					$data['numero']     = $numero;
+					$data['proveed']    = $codprv;
+					$data['codigo']     = $row->codigo;
+					$data['descrip']    = $row->descrip;
+					$data['precio']     = $row->montasa+$row->monredu+$row->monadic+$row->exento;
+					$data['iva']        = $row->tasa+$row->reducida+$row->sobretasa;
+					$data['importe']    = $data['precio']+$data['iva'];
+					$data['unidades']   = 1;
+					$data['fraccion']   = 0;
+					$data['almacen']    = '';
+					$data['sucursal']   = $row->sucursal;
+					$data['departa']    = $row->departa ;
+					$data['transac']    = $transac;
+					$data['usuario']    = $this->session->userdata('usuario');
+					$data['estampa']    = date('Y-m-d');
+					$data['hora']       = date('H:i:s');
+					$data['huerfano']   = '';
+					$data['rif']        = $row->rif      ;
+					$data['proveedor']  = $row->proveedor;
+					$data['numfac']     = $row->numfac   ;
+					$data['fechafac']   = $row->fechafac ;
+					$data['nfiscal']    = $row->nfiscal  ;
+					$data['feprox']     = '';
+					$data['dacum']      = '';
+					$data['residual']   = '';
+					$data['vidau']      = '';
+					$data['montasa']    = $row->montasa  ;
+					$data['monredu']    = $row->monredu  ;
+					$data['monadic']    = $row->monadic  ;
+					$data['tasa']       = $row->tasa     ;
+					$data['reducida']   = $row->reducida ;
+					$data['sobretasa']  = $row->sobretasa;
+					$data['exento']     = $row->exento   ;
+					$data['reteica']    = 0;
+					//$data['idgser']     = '';
+
+					$sql=$this->db->insert_string('gitser', $data);
+					$ban=$this->db->simple_query($sql);
+					if($ban==false){ memowrite($sql,'gser'); $error++;}
+
+					$montasa  +=$row->montasa  ;
+					$monredu  +=$row->monredu  ;
+					$monadic  +=$row->monadic  ;
+					$tasa     +=$row->tasa     ;
+					$reducida +=$row->reducida ;
+					$sobretasa+=$row->sobretasa;
+					$exento   +=$row->exento   ;
+				}
+				$totpre = $montasa+$monredu+$monadic+$exento;
+				$totiva = $tasa+$reducida+$sobretasa;
+				$totneto= $totpre+$totiva;
+
+				if($cargo==$cr){ //si el cargo va a credito
+					$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
+					$tipo1   = '';
+					$credito = $totneto;
+					$causado = $this->datasis->fprox_numero('ncausado');
+
+					$data=array();
+					$data['cod_prv']    = $codprv;
+					$data['nombre']     = $nombre;
+					$data['tipo_doc']   = 'FC';
+					$data['numero']     = $numero ;
+					$data['fecha']      = $fecha ;
+					$data['monto']      = $totneto;
+					$data['impuesto']   = $totiva ;
+					$data['abonos']     = 0;
+					$data['vence']      = $fecha;
+					//$data['tipo_ref']   = '';
+					//$data['num_ref']    = '';
+					$data['observa1']   = 'REPOSICION DE CAJA CHICA '.$codbanc;
+
+					//$data['observa2']   = '';
+					//$data['banco']      = '';
+					//$data['tipo_op']    = '';
+					//$data['comprob']    = '';
+					//$data['numche']     = '';
+					//$data['codigo']     = '';
+					//$data['descrip']    = '';
+					//$data['ppago']      = '';
+					//$data['nppago']     = '';
+					//$data['reten']      = '';
+					//$data['nreten']     = '';
+					//$data['mora']       = '';
+					//$data['posdata']    = '';
+					//$data['benefi']     = '';
+					//$data['control']    = '';
+					$data['transac']    = $transac;
+					$data['estampa']    = date('Y-m-d');
+					$data['hora']       = date('H:i:s');
+					$data['usuario']    = $this->session->userdata('usuario');
+					//$data['cambio']     ='';
+					//$data['pmora']      ='';
+					$data['reteiva']    = 0;
+					//$data['nfiscal']    ='';
+					$data['montasa']    = $montasa;
+					$data['monredu']    = $monredu;
+					$data['monadic']    = $monadic;
+					$data['tasa']       = $tasa;
+					$data['reducida']   = $reducida;
+					$data['sobretasa']  = $sobretasa;
+					$data['exento']     = $exento;
+					//$data['fecdoc']     = '';
+					//$data['afecta']     = '';
+					//$data['fecapl']     = '';
+					//$data['serie']      = '';
+					//$data['depto']      = '';
+					//$data['negreso']    = '';
+					//$data['ndebito']    = '';
+					$data['causado']    = $causado;
+
+					$sql=$this->db->insert_string('sprm', $data);
+					$ban=$this->db->simple_query($sql);
+					if($ban==false){ memowrite($sql,'gser'); $error++;}
+					$cargo   = '';
+					$cheque  = '';
+					$negreso = '';
+				}else{
+					$ttipo  = $datacar['tbanco'];
+					$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
+					$negreso= $this->datasis->fprox_numero('negreso');
+					$credito= 0;
+					$causado='';
+
+					$data=array();
+					$data['codbanc']    = $cargo;
+					$data['moneda']     = $moneda;
+					$data['numcuent']   = $datacar['numcuent'];
+					$data['banco']      = $datacar['banco'];
+					$data['saldo']      = $datacar['saldo'];
+					$data['tipo_op']    = ($ttipo=='CAJ') ? 'ND': 'CH';
+					$data['numero']     = $cheque;
+					$data['fecha']      = $fecha;
+					$data['clipro']     = 'P';
+					$data['codcp']      = $codprv;
+					$data['nombre']     = $nombre;
+					$data['monto']      = $totneto;
+					$data['concepto']   = 'REPOSICION DE CAJA CHICA '.$codbanc;
+					//$data['concep2']    = '';
+					//$data['concep3']    = '';
+					//$data['documen']    = '';
+					//$data['comprob']    = '';
+					//$data['status']     = '';
+					//$data['cuenta']     = '';
+					//$data['enlace']     = '';
+					//$data['bruto']      = '';
+					//$data['comision']   = '';
+					//$data['impuesto']   = '';
+					//$data['registro']   = '';
+					//$data['concilia']   = '';
+					$data['benefi']     = $benefi;
+					$data['posdata']    = '';
+					$data['abanco']     = '';
+					$data['liable']     = ($ttipo=='CAJ') ? 'S': 'N';;
+					$data['transac']    = $transac;
+					$data['usuario']    = $this->session->userdata('usuario');
+					$data['estampa']    = date('Y-m-d');
+					$data['hora']       = date('H:i:s');
+					$data['anulado']    = 'N';
+					$data['susti']      = '';
+					$data['negreso']    = $negreso;
+					//$data['ndebito']    = '';
+					//$data['ncausado']   = '';
+					//$data['ncredito']   = '';
+
+					$sql=$this->db->insert_string('bmov', $data);
+					$ban=$this->db->simple_query($sql);
+					if($ban==false){ memowrite($sql,'gser'); $error++;}
+
+					$this->datasis->actusal($cargo, $sp_fecha, (-1)*$totneto);
+				}
+
+				$data = array();
+				$data['fecha']      = $fecha;
+				$data['numero']     = $numero;
+				$data['proveed']    = $codprv;
+				$data['nombre']     = $nombre;
+				$data['vence']      = $fecha;
+				$data['totpre']     = $totpre;
+				$data['totiva']     = $totiva;
+				$data['totbruto']   = $totneto;
+				$data['reten']      = 0;
+				$data['totneto']    = $totneto;//totneto=totbruto-reten
+				$data['codb1']      = $cargo;
+				$data['tipo1']      = $tipo1;
+				$data['cheque1']    = $cheque;
+				//$data['comprob1']   = '';
+				//$data['monto1']     = '';
+				//$data['codb2']      = '';
+				//$data['tipo2']      = '';
+				//$data['cheque2']    = '';
+				//$data['comprob2']   = '';
+				//$data['monto2']     = '';
+				//$data['codb3']      = '';
+				//$data['tipo3']      = '';
+				//$data['cheque3']    = '';
+				//$data['comprob3']   = '';
+				//$data['monto3']     = '';
+				$data['credito']    = $credito;
+				$data['tipo_doc']   = 'FC';
+				$data['orden']      = '';
+				$data['anticipo']   = 0;
+				$data['benefi']     = $benefi;
+				$data['mdolar']     = '';
+				$data['usuario']    = $this->session->userdata('usuario');
+				$data['estampa']    = date('Y-m-d');
+				$data['hora']       = date('H:i:s');
+				$data['transac']    = $transac;
+				$data['preten']     = '';
+				$data['creten']     = '';
+				$data['breten']     = '';
+				$data['huerfano']   = '';
+				$data['reteiva']    = 0;
+				$data['nfiscal']    = '';
+				$data['afecta']     = '';
+				$data['fafecta']    = '';
+				$data['ffactura']   = '';
+				$data['cajachi']    = 'S';
+				$data['montasa']    = $montasa;
+				$data['monredu']    = $monredu;
+				$data['monadic']    = $monadic;
+				$data['tasa']       = $tasa;
+				$data['reducida']   = $reducida;
+				$data['sobretasa']  = $sobretasa;
+				$data['exento']     = $exento;
+				$data['compra']     = '';
+				$data['serie']      = '';
+				$data['reteica']    = 0;
+				$data['retesimple'] = 0;
+				$data['negreso']    = $negreso;
+				$data['ncausado']   = $causado;
+				$data['tipo_or']    = '';
+
+				$sql=$this->db->insert_string('gser', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'gser'); $error++;}
+				$idgser=$this->db->insert_id();
+
+				$data = array('idgser' => $idgser);
+				$dbfecha  = $this->db->escape($fecha);
+				$dbnumero = $this->db->escape($numero);
+				$dbcodprv = $this->db->escape($codprv);
+				$where = "fecha=$dbfecha AND proveed=$dbcodprv AND  numero=$dbnumero";
+				$mSQL = $this->db->update_string('gitser', $data, $where);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
+
+				$data = array('ngasto' => $numero);
+				$where = "ngasto IS NULL AND  codbanc=$dbcodbanc";
+				$mSQL = $this->db->update_string('gserchi', $data, $where);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
+			}
+		return ($error==0)? true : false;
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));
+		$grid->wbotonadd(array('id'=>'baprov','img'=>'images/arrow_up.png', 'alt' => 'Aprobar o rechazar para el pago' ,'label'=>'Aprobar/Rechazar' ));
+		$grid->wbotonadd(array('id'=>'brepon','img'=>'images/star.png'    , 'alt' => 'Reposici&oacute;n de caja Chica' ,'label'=>'Reponer Caja Chica' ));
+		$WestPanel = $grid->deploywestp();
+
+		$adic = array(
+		array('id'=>'fedita',  'title'=>'Agregar/Editar Registro'),
+		array('id'=>'frepon',  'title'=>'Reposici&oacute;n de caja chica')
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
+		$param['WestPanel']   = $WestPanel;
+		//$param['EastPanel'] = $EastPanel;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('GSERCHI', 'JQ');
+		$param['otros']       = $this->datasis->otros('GSERCHI', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$param['tamano']      = $this->datasis->getintramenu( substr($this->url,0,-1) );
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		function gserchiadd() {
+			$.post("'.site_url($this->url.'dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		jQuery("#baprov").click( function(){
+			var grid = jQuery("#newapi'.$grid0.'");
+			var rowcells=new Array();
+			var s = grid.getGridParam(\'selarrrow\');
+			$("#ladicional").html("");
+			if(s.length){
+				for(var i=0;i<s.length;i++){
+					var entirerow = grid.jqGrid(\'getRowData\',s[i]);
+
+					$.post("'.site_url('finanzas/gser/gserchiajax').'",{ id: entirerow["id"]},
+						function(data){
+							if(data=="1"){
+								grid.trigger("reloadGrid");
+								return true;
+							}else{
+								alert("Hubo un error, comuniquese con soporte tecnico: "+data);
+								return false;
+							}
+						}
+					);
+				}
+			}
+		});';
+
+		$bodyscript .= '
+		jQuery("#brepon").click( function(){
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				caja = jQuery("#newapi'.$grid0.'").jqGrid (\'getCell\', id, \'codbanc\');
+				$.post("'.site_url($this->url.'gserchipros').'/'.'"+caja, function(data){
+					$("#frepon").html(data);
+				});
+				$( "#frepon").dialog( "open" );
+			} else {
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
+		});';
+
+		$bodyscript .= '
+		function gserchiedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
+		};';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+			';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Guardar": function(){
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									apprise("Registro Guardado");
+									$( "#fedita" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#fedita").html(r);
+							}
+						}
+					})
+				},
+				"Cancelar": function() {
+					$(this).dialog("close");
+					$("#fedita").html("");
+				}
+			},
+			close: function() {
+				allFields.val( "" ).removeClass( "ui-state-error" );
+				$("#fedita").html("");
+			}
+		});';
+
+		$bodyscript .= '
+		$("#frepon").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Guardar": function(){
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									apprise("Pago procesado");
+									$( "#frepon" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#frepon").html(r);
+							}
+						}
+					})
+				},
+				"Cancelar": function() {
+					$(this).dialog("close");
+					$("#frepon").html("");
+				}
+			},
+			close: function() {
+				allFields.val( "" ).removeClass( "ui-state-error" );
+				$("#frepon").html("");
+			}
+		});';
+
+
+		$bodyscript .= '});'."\n";
+
+		$bodyscript .= '
+		function sumamonto(){
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var total = 0;
+			var rowcells=new Array();
+			s = grid.getGridParam(\'selarrrow\');
+			$("#ladicional").html("");
+			if(s.length){
+				for(var i=0;i<s.length;i++){
+					var entirerow = grid.jqGrid(\'getRowData\',s[i]);
+					total += Number(entirerow["importe"]);
+				}
+				total = Math.round(total*100)/100;
+				$("#ladicional").html("<span style=\"font-size:20px;text-align:center;\" >Bs. "+nformat(total,2)+"</span>");
+				$("#montoform").html("Monto: "+nformat(total,2));
+				montotal = total;
+			}
+		};';
+
+		$bodyscript .= "\n</script>\n";
+
+		return $bodyscript;
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('aceptado');
+		$grid->label('Aprobado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:1, maxlength: 1 }',
+		));
+
+		$grid->addField('codbanc');
+		$grid->label('Caja');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('fechafac');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('numfac');
+		$grid->label('Numero');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:8, maxlength: 8 }',
+		));
+
+
+		$grid->addField('nfiscal');
+		$grid->label('N.Fiscal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
+		));
+
+
+		$grid->addField('rif');
+		$grid->label('Rif');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 130,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:13, maxlength: 13 }',
+		));
+
+
+		$grid->addField('proveedor');
+		$grid->label('Proveedor');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
+		));
+
+
+		$grid->addField('codigo');
+		$grid->label('C&oacute;digo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:6, maxlength: 6 }',
+		));
+
+
+		$grid->addField('descrip');
+		$grid->label('Descripci&oacute;n');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:50, maxlength: 50 }',
+		));
+
+
+		//$grid->addField('moneda');
+		//$grid->label('Moneda');
+		//$grid->params(array(
+		//	'search'        => 'true',
+		//	'editable'      => $editar,
+		//	'width'         => 40,
+		//	'edittype'      => "'text'",
+		//	'editrules'     => '{ required:true}',
+		//	'editoptions'   => '{ size:2, maxlength: 2 }',
+		//));
+
+
+		$grid->addField('montasa');
+		$grid->label('Base G.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tasa');
+		$grid->label('Impuesto G.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('monredu');
+		$grid->label('Base R.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('reducida');
+		$grid->label('Impuesto R.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('monadic');
+		$grid->label('Base A.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('sobretasa');
+		$grid->label('Impuesto A.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('exento');
+		$grid->label('Exento');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('importe');
+		$grid->label('Importe');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('sucursal');
+		$grid->label('Sucursal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:2, maxlength: 2 }',
+		));
+
+
+		$grid->addField('departa');
+		$grid->label('Departa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:2, maxlength: 2 }',
+		));
+
+
+		//$grid->addField('ngasto');
+		//$grid->label('Ngasto');
+		//$grid->params(array(
+		//	'search'        => 'true',
+		//	'editable'      => $editar,
+		//	'width'         => 80,
+		//	'edittype'      => "'text'",
+		//	'editrules'     => '{ required:true}',
+		//	'editoptions'   => '{ size:8, maxlength: 8 }',
+		//));
+
+
+		$grid->addField('usuario');
+		$grid->label('Usuario');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
+		));
+
+
+		$grid->addField('estampa');
+		$grid->label('Estampa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('hora');
+		$grid->label('Hora');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:8, maxlength: 8 }',
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		//$grid->setGrouping('ngasto');
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+		//$grid->setGrouping('codbanc');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(    $this->datasis->sidapuede('GSERCHI','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('GSERCHI','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('GSERCHI','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('GSERCHI','BUSQUEDA%'));
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+		$grid->setMultiSelect(true);
+		//$grid->setonSelectRow('sumamonto');
+		$grid->setOnSelectRow('
+			sumamonto,
+			afterInsertRow:
+			function( rid, aData, rowe){
+				if(aData.aceptado=="S"){
+					$(this).jqGrid( "setCell", rid, "aceptado","", {color:"#FFFFFF", background:"#166D05" });
+				}else if(aData.aceptado=="N"){
+					$(this).jqGrid( "setCell", rid, "aceptado","", {color:"#FFFFFF", background:"#FF2C14" });
+				}else{
+					$(this).jqGrid( "setCell", rid, "aceptado","", {color:"#FFFFFF", background:"#FFE205" });
+				}
+			}
+		');
+
+		$grid->setBarOptions("\t\taddfunc: gserchiadd,\n\t\teditfunc: gserchiedit");
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	function cierregserchi(){
+		$this->rapyd->load('datafilter','datagrid');
+		$this->rapyd->uri->keep_persistence();
+
+		$uri  = anchor('finanzas/gser/gserchipros/<#codbanc#>','<#codbanc#>');
+
+		$grid = new DataGrid('');
+		$select=array('MAX(fechafac) AS fdesde',
+					  'MIN(fechafac) AS fhasta',
+					  'SUM(tasa+sobretasa+reducida) AS totiva',
+					  'SUM(montasa+monadic+monredu+tasa+sobretasa+reducida+exento) AS total',
+					  'TRIM(codbanc) AS codbanc',
+					  'COUNT(*) AS cana');
+		$grid->db->select($select);
+		$grid->db->from('gserchi');
+		$grid->db->where('ngasto IS NULL');
+		$grid->db->where('aceptado','S');
+		$grid->db->groupby('codbanc');
+
+		$grid->order_by('codbanc','desc');
+		$grid->per_page = 15;
+		$grid->column_orderby('Caja',$uri,'codbanc');
+		$grid->column('N.facturas','cana','align=\'center\'');
+		$grid->column_orderby('Fecha inicial','<dbdate_to_human><#fdesde#></dbdate_to_human>','fdesde','align=\'center\'');
+		$grid->column_orderby('Fecha final'  ,'<dbdate_to_human><#fhasta#></dbdate_to_human>','fdesde','align=\'center\'');
+		$grid->column_orderby('IVA'   ,'<nformat><#totiva#></nformat>'  ,'totiva' ,'align=\'right\'');
+		$grid->column_orderby('Monto' ,'<nformat><#total#></nformat>' ,'total','align=\'right\'');
+
+		$action = "javascript:window.location='".site_url('finanzas/gser/agregar')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+		//echo $grid->db->last_query();
+
+		echo $grid->output;
+	}
+
+
+	//Convierte los gastos en caja chica
+	function gserchipros($codbanc=null){
+		if(empty($codbanc)) show_error('Faltan parametros');
+		$dbcodbanc=$this->db->escape($codbanc);
+		$mSQL='SELECT COUNT(*) AS cana, SUM(exento+montasa+monadic+monredu+tasa+sobretasa+reducida) AS monto FROM gserchi WHERE ngasto IS NULL AND aceptado="S" AND codbanc='.$dbcodbanc;
+		$r   =$this->datasis->damerow($mSQL);
+		if($r['cana']==0){
+			echo heading('Caja sin gastos');
+			return false;
+		}
+
+		$mSQL="SELECT a.codprv, b.nombre FROM banc AS a JOIN sprv AS b ON a.codprv=b.proveed WHERE a.codbanc=$dbcodbanc";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row    = $query->row();
+			$nombre = $row->nombre;
+			$codprv = $row->codprv;
+		}else{
+			$nombre =$codprv = '';
+		}
+
+		$sql='SELECT TRIM(a.codbanc) AS codbanc,tbanco FROM banc AS a';
+		$query = $this->db->query($sql);
+		$comis=array();
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$ind='_'.$row->codbanc;
+				$comis[$ind]['tbanco']  =$row->tbanco;
+			}
+		}
+		$json_comis=json_encode($comis);
+
+		$this->rapyd->load('dataform','datagrid');
+
+		$modbus=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+				'proveed' =>'Codigo Proveedor',
+				'nombre'  =>'Nombre',
+				'rif'     =>'RIF'),
+			'filtro'  =>array('proveed'=>'Codigo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'codprv','nombre'=>'nombre'),
+			'titulo'  =>'Buscar Proveedor',
+			'script'  =>array('post_modbus()')
+		);
+		$bsprv=$this->datasis->modbus($modbus);
+
+		$script='var comis = '.$json_comis.';
+
+		$(document).ready(function() {
+			desactivacampo("");
+			$("#codprv").autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url:  "'.site_url('ajax/buscasprv').'",
+						type: "POST",
+						dataType: "json",
+						data: "q="+req.term,
+						success:
+							function(data){
+								var sugiere = [];
+								if(data.length==0){
+									$("#nombre").val("");
+									$("#nombre_val").text("");
+									$("#codprv").val("");
+								}else{
+									$.each(data,
+										function(i, val){
+											sugiere.push( val );
+										}
+									);
+								}
+								add(sugiere);
+							},
+					})
+				},
+				minLength: 2,
+				select: function( event, ui ) {
+					$("#codprv").attr("readonly", "readonly");
+
+					$("#nombre").val(ui.item.nombre);
+					$("#nombre_val").text(ui.item.nombre);
+					$("#codprv").val(ui.item.proveed);
+
+					setTimeout(function(){ $("#codprv").removeAttr("readonly"); }, 1500);
+				}
+			});
+
+		});
+
+		function post_modbus(){
+			nombre=$("#nombre").val();
+			$("#nombre_val").text(nombre);
+		}
+
+		function desactivacampo(codb1){
+			if(codb1.length>0 && codb1!="'.$this->mcred.'"){
+				eval("tbanco=comis._"+codb1+".tbanco;"  );
+				if(tbanco=="CAJ"){
+					$("#cheque").attr("disabled","disabled");
+					$("#benefi").attr("disabled","disabled");
+				}else{
+					$("#cheque").removeAttr("disabled");
+					$("#benefi").removeAttr("disabled");
+				}
+			}else{
+				$("#cheque").attr("disabled","disabled");
+				$("#benefi").attr("disabled","disabled");
+			}
+		}';
+
+		$form = new DataForm($this->url.'gserchipros/'.$codbanc.'/process');
+		$form->title("Numero de facturas aceptadas $r[cana], monto total <b>".nformat($r['monto']).'</b>');
+		$form->script($script);
+
+		$form->codprv = new inputField('Proveedor', 'codprv');
+		$form->codprv->rule='required';
+		$form->codprv->insertValue=$codprv;
+		$form->codprv->size=8;
+		$form->codprv->append($bsprv);
+
+		$form->nombre = new inputField('Nombre', 'nombre');
+		$form->nombre->rule='required';
+		$form->nombre->insertValue=$nombre;
+		$form->nombre->in = 'codprv';
+		$form->nombre->type='inputhidden';
+
+		$form->cargo = new dropdownField('Con cargo a','cargo');
+		$form->cargo->option('','Seleccionar');
+		//$form->cargo->option($this->mcred,'Credito');
+		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' ORDER BY codbanc");
+		$form->cargo->onchange='desactivacampo(this.value)';
+		$form->cargo->rule='max_length[5]|required';
+
+		$form->cheque = new inputField('Numero de cheque', 'cheque');
+		$form->cheque->rule='condi_required|callback_chobligaban';
+		$form->cheque->append('Aplica  solo si el cargo es a un banco');
+
+		$form->benefi = new inputField('Beneficiario', 'benefi');
+		$form->benefi->insertValue=$nombre;
+		$form->benefi->rule='condi_required|callback_chobligaban';
+		$form->benefi->append('Aplica  solo si el cargo es a un banco');
+
+		$form->build_form();
+
+		$grid = new DataGrid('Lista de Gastos','gserchi');
+		$select=array('exento + montasa + monadic + monredu + tasa + sobretasa + reducida AS totneto',
+					  'tasa + sobretasa + reducida AS totiva','proveedor','fechafac','numfac','codbanc' );
+		$grid->db->select($select);
+		$grid->db->where('aceptado','S');
+		$grid->db->where('ngasto IS NULL');
+		$grid->db->where('codbanc',$codbanc);
+
+		$grid->order_by('numfac','desc');
+		$grid->per_page = 15;
+		$grid->column('Caja','codbanc');
+		$grid->column('Numero','numfac');
+		$grid->column('Fecha' ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','align=\'center\'');
+		$grid->column('Proveedor','proveedor');
+		$grid->column('IVA'   ,'totiva'    ,'align=\'right\'');
+		$grid->column('Monto' ,'totneto'   ,'align=\'right\'');
+
+		//$grid->add('finanzas/gser/datagserchi/create','Agregar nueva factura');
+		$grid->build();
+
+		if($form->on_success()){
+			$codprv  = $form->codprv->newValue;
+			$cargo   = $form->cargo->newValue;
+			$nombre  = $form->nombre->newValue;
+			$benefi  = $form->benefi->newValue;
+			$cheque  = $form->cheque->newValue;
+
+			$rt=$this->_gserchipros($codbanc,$cargo,$codprv,$benefi,$cheque);
+
+			if($rt){
+				$rt=array(
+					'status' => 'A',
+					'mensaje'=> 'Registro guardado',
+					'pk'     => ''
+				);
+				echo json_encode($rt);
+			}else{
+				$rt=array(
+					'status' => 'B',
+					'mensaje'=> 'No se pudo guardar',
+					'pk'     => ''
+				);
+				echo json_encode($rt);
+			}
+		}else{
+			echo $form->output.$grid->output;
+		}
+
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata(){
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('gserchi');
+
+		$response   = $grid->getData('gserchi', array(array()), array(), false, $mWHERE, 'codbanc' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData(){
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "??????";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM gserchi WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('gserchi', $data);
+					echo "Registro Agregado";
+
+					logusu('GSERCHI',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM gserchi WHERE id=$id");
+			if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				$this->db->query("DELETE FROM gserchi WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE gserchi SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->where("id", $id);
+				$this->db->update("gserchi", $data);
+				logusu('GSERCHI',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				echo "Grupo Cambiado/Fusionado en clientes";
+			} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('gserchi', $data);
+				logusu('GSERCHI',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			}
+
+		} elseif($oper == 'del') {
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM gserchi WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gserchi WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM gserchi WHERE id=$id ");
+				logusu('GSERCHI',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+	function dataedit(){
+		$this->rapyd->load('dataedit');
+		$mgas=array(
+			'tabla'   => 'mgas',
+			'columnas'=> array('codigo' =>'Codigo','descrip'=>'Descripcion','tipo'=>'Tipo'),
+			'filtro'  => array('descrip'=>'Descripcion'),
+			'retornar'=> array('codigo' =>'codigo','descrip'=>'descrip'),
+			'titulo'  => 'Buscar enlace administrativo');
+		$bcodigo=$this->datasis->modbus($mgas);
+
+		$ivas=$this->datasis->ivaplica();
+
+		$tasa      = $ivas['tasa']/100;
+		$redutasa  = $ivas['redutasa']/100;
+		$sobretasa = $ivas['sobretasa']/100;
+
+		$consulrif=$this->datasis->traevalor('CONSULRIF');
+		$url=site_url('finanzas/gser/ajaxsprv');
+		$script="
+		function consulrif(){
+			vrif=$('#rif').val();
+			if(vrif.length==0){
+				alert('Debe introducir primero un RIF');
+			}else{
+				vrif=vrif.toUpperCase();
+				$('#rif').val(vrif);
+				window.open('$consulrif'+'?p_rif='+vrif,'CONSULRIF','height=350,width=410');
+			}
+		}
+
+		function poneiva(tipo){
+			if(tipo==1){
+				ptasa = $redutasa;
+				campo = 'reducida';
+				monto = 'monredu';
+			} else if (tipo==3){
+				ptasa = $sobretasa;
+				campo = 'sobretasa';
+				monto = 'monadic'
+			} else {
+				ptasa = $tasa;
+				campo = 'tasa';
+				monto = 'montasa';
+			}
+			if($('#'+monto).val().length>0)  base=parseFloat($('#'+monto).val());   else  base  =0;
+			$('#'+campo).val(roundNumber(base*ptasa,2));
+			totaliza();
+		}
+
+		function totaliza(){
+			if($('#montasa').val().length>0)   montasa  =parseFloat($('#montasa').val());   else  montasa  =0;
+			if($('#tasa').val().length>0)      tasa     =parseFloat($('#tasa').val());      else  tasa     =0;
+			if($('#monredu').val().length>0)   monredu  =parseFloat($('#monredu').val());   else  monredu  =0;
+			if($('#reducida').val().length>0)  reducida =parseFloat($('#reducida').val());  else  reducida =0;
+			if($('#monadic').val().length>0)   monadic  =parseFloat($('#monadic').val());   else  monadic  =0;
+			if($('#sobretasa').val().length>0) sobretasa=parseFloat($('#sobretasa').val()); else  sobretasa=0;
+			if($('#exento').val().length>0)    exento   =parseFloat($('#exento').val());    else  exento   =0;
+
+			total=roundNumber(montasa+tasa+monredu+reducida+monadic+sobretasa+exento,2);
+			$('#importe').val(total);
+			$('#importe_val').text(nformat(total));
+		}
+
+		$(function(){
+			$('#codigo').autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url:  '".site_url('ajax/automgas')."',
+						type: 'POST',
+						dataType: 'json',
+						data: 'q='+encodeURIComponent(req.term),
+						success:
+							function(data){
+								var sugiere = [];
+
+								if(data.length==0){
+									$('#codigo').val('');
+									$('#descrip').val('');
+								}else{
+									$.each(data,
+										function(i, val){
+											sugiere.push( val );
+										}
+									);
+								}
+								add(sugiere);
+							},
+					})
+				},
+				minLength: 1,
+				select: function( event, ui ) {
+					$('#codigo').attr('readonly', 'readonly');
+
+					$('#codigo').val(ui.item.codigo);
+					$('#descrip').val(ui.item.descrip);
+					setTimeout(function() {  $('#codigo').removeAttr('readonly'); }, 1500);
+				}
+			});
+
+			$('#fechafac').datepicker({ dateFormat: 'dd/mm/yy' });
+			$('#importe_val').css('font-size','2em');
+			$('#importe_val').css('font-weight','bold');
+
+			$('.inputnum').numeric('.');
+			$('#exento'   ).bind('keyup',function() { totaliza(); });
+			$('#montasa'  ).bind('keyup',function() { poneiva(2); });
+			$('#tasa'     ).bind('keyup',function() { totaliza(); });
+			$('#monredu'  ).bind('keyup',function() { poneiva(1); });
+			$('#reducida' ).bind('keyup',function() { totaliza(); });
+			$('#monadic'  ).bind('keyup',function() { poneiva(3); });
+			$('#sobretasa').bind('keyup',function() { totaliza(); });
+			$(\"input[name='traesprv']\").click(function() {
+				rif=$('#rif').val();
+				if(rif.length > 0){
+					$.post('$url', { rif: rif },function(data){
+						$('#proveedor').val(data);
+					});
+				}else{
+					alert('Debe introducir un rif');
+				}
+			});
+		});
+		";
+
+		$edit = new DataEdit('', 'gserchi');
+		$edit->back_url = site_url('finanzas/gser/gserchi');
+		$edit->on_save_redirect=false;
+		$edit->script($script,'create');
+		$edit->script($script,'modify');
+		$edit->pre_process('insert' ,'_pre_gserchi');
+		$edit->pre_process('update' ,'_pre_gserchi');
+
+		$edit->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$edit->codbanc->option('','Seleccionar');
+		$edit->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
+		$edit->codbanc->rule='max_length[5]|required';
+
+		$edit->fechafac = new dateField('Fecha de la factura','fechafac');
+		$edit->fechafac->rule='max_length[10]|required';
+		$edit->fechafac->size =12;
+		$edit->fechafac->insertValue=date('Y-m-d');
+		$edit->fechafac->maxlength =10;
+		$edit->fechafac->calendar=false;
+
+		$edit->numfac = new inputField('N&uacute;mero de la factura','numfac');
+		$edit->numfac->rule='max_length[8]|required';
+		$edit->numfac->size =10;
+		$edit->numfac->maxlength =8;
+		$edit->numfac->autocomplete =false;
+
+		$edit->nfiscal = new inputField('Control fiscal','nfiscal');
+		$edit->nfiscal->rule='max_length[12]|required';
+		$edit->nfiscal->size =14;
+		$edit->nfiscal->maxlength =12;
+		$edit->nfiscal->autocomplete =false;
+
+		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
+		$edit->rif = new inputField('RIF','rif');
+		$edit->rif->rule='max_length[13]|required';
+		$edit->rif->size =13;
+		$edit->rif->maxlength =13;
+		$edit->rif->group='Datos del proveedor';
+		$edit->rif->append(HTML::button('traesprv', 'Consultar Proveedor', '', 'button', 'button'));
+		$edit->rif->append($lriffis);
+
+		$edit->proveedor = new inputField('Nombre del proveedor','proveedor');
+		$edit->proveedor->rule='max_length[40]|strtoupper';
+		$edit->proveedor->size =40;
+		$edit->proveedor->group='Datos del proveedor';
+		$edit->proveedor->maxlength =40;
+
+		$edit->codigo = new inputField('C&oacute;digo del gasto','codigo');
+		$edit->codigo->rule ='max_length[6]|required';
+		$edit->codigo->size =6;
+		$edit->codigo->maxlength =8;
+		$edit->codigo->append($bcodigo);
+
+		$edit->descrip = new inputField('Descripci&oacute;n','descrip');
+		$edit->descrip->rule='max_length[50]|strtoupper';
+		$edit->descrip->size =50;
+		$edit->descrip->maxlength =50;
+
+		$alicuota=$this->datasis->ivaplica(date('Y-m-d'));
+
+		$arr=array(
+			'exento'   =>'Monto <b>Exento</b>|Base exenta',
+			'montasa'  =>'Montos con Alicuota <b>general</b> '.  $ivas['tasa'].'%|Base imponible',
+			'tasa'     =>'Montos con Alicuota <b>general</b> '.  $ivas['tasa'].'%|Monto del IVA',
+			'monredu'  =>'Montos con Alicuota <b>reducida</b> '. $ivas['redutasa'].'%|Base imponible',
+			'reducida' =>'Montos con Alicuota <b>reducida</b> '. $ivas['redutasa'].'%|Monto del IVA',
+			'monadic'  =>'Montos con Alicuota <b>adicional</b> '.$ivas['sobretasa'].'%|Base imponible',
+			'sobretasa'=>'Montos con Alicuota <b>adicional</b> '.$ivas['sobretasa'].'%|Monto del IVA',
+			'importe'  =>'Importe total');
+
+		foreach($arr AS $obj=>$label){
+			$pos = strrpos($label, '|');
+			if($pos!==false){
+				$piv=explode('|',$label);
+				$label=$piv[1];
+				$grupo=$piv[0];
+			}else{
+				$grupo='';
+			}
+
+			$edit->$obj = new inputField($label,$obj);
+			$edit->$obj->rule='max_length[17]|numeric';
+			$edit->$obj->css_class='inputnum';
+			$edit->$obj->insertValue =0;
+			$edit->$obj->size =17;
+			$edit->$obj->maxlength =17;
+			$edit->$obj->group=$grupo;
+			$edit->$obj->autocomplete=false;
+		}
+		$edit->$obj->readonly=true;
+
+		$edit->tasa->rule     ='condi_required|max_length[17]|callback_chtasa';
+		$edit->reducida->rule ='condi_required|max_length[17]|callback_chreducida';
+		$edit->sobretasa->rule='condi_required|max_length[17]|callback_chsobretasa';
+		$edit->importe->rule  ='max_length[17]|numeric|positive';
+		$edit->importe->type  ='inputhidden';
+		$edit->importe->label ='<b style="font-size:2em">Total</b>';
+
+		$edit->sucursal = new dropdownField('Sucursal','sucursal');
+		$edit->sucursal->options('SELECT codigo,sucursal FROM sucu ORDER BY sucursal');
+		$edit->sucursal->rule='max_length[2]|required';
+
+		$edit->departa = new dropdownField('Departamento','departa');
+		$edit->departa->options("SELECT codigo, CONCAT_WS('-',codigo,departam) AS label FROM dept ORDER BY codigo");
+		$edit->departa->rule='max_length[2]';
+
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->estampa = new autoUpdateField('estampa' ,date('YmD'), date('Ymd'));
+		$edit->hora    = new autoUpdateField('hora',date('H:m:s'), date('H:m:s'));
+
+		//$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+
+			echo json_encode($rt);
+		}else{
+			echo $edit->output;
+		}
+
+	}
+
+	function _pre_gserchi($do){
+		$rif   =$do->get('rif');
+		$dbrif = $this->db->escape($rif);
+		$nombre=$do->get('proveedor');
+		$fecha =date('Y-m-d');
+		$csprv =$this->datasis->dameval('SELECT COUNT(*) FROM sprv WHERE rif='.$dbrif);
+		if($csprv==0){
+			$mSQL ='INSERT IGNORE INTO provoca (rif,nombre,fecha) VALUES ('.$dbrif.','.$this->db->escape($nombre).','.$this->db->escape($fecha).')';
+			$this->db->simple_query($mSQL);
+		}
+
+		$total  = 0;
+		$total += $do->get('exento')   ;
+		$total += $do->get('montasa')  ;
+		$total += $do->get('tasa')     ;
+		$total += $do->get('monredu')  ;
+		$total += $do->get('reducida') ;
+		$total += $do->get('monadic')  ;
+		$total += $do->get('sobretasa');
+
+		if($total>0){
+			$do->set('importe',$total);
+			return true;
+		}else{
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['pre_upd'] = 'No se puede guardar un gasto con monto cero';
+			return false;
+		}
+	}
+
+	function _pre_delete($do){
+		return true;
+	}
+
+	function _post_insert($do){
+		$primary =implode(',',$do->pk);
+		logusu($do->table,"Creo $this->tits $primary ");
+	}
+
+	function _post_update($do){
+		$primary =implode(',',$do->pk);
+		logusu($do->table,"Modifico $this->tits $primary ");
+	}
+
+	function _post_delete($do){
+		$primary =implode(',',$do->pk);
+		logusu($do->table,"Elimino $this->tits $primary ");
+	}
+}
