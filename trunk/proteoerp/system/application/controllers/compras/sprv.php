@@ -172,7 +172,7 @@ class Sprv extends Controller {
 							$( "#fedita" ).dialog( "close" );
 							grid.trigger("reloadGrid");
 							return true;
-						} else { 
+						} else {
 							$("#fedita").html(r);
 						}
 					}
@@ -916,7 +916,65 @@ class Sprv extends validaciones {
 				$(".inputnum").numeric(".");
 				$("#banco1").change(function () { acuenta(); }).change();
 				$("#banco2").change(function () { acuenta(); }).change();
+
+				$("#rif").focusout(function(){
+					rif=$(this).val().toUpperCase();
+					$(this).val(rif);
+					if(!chrif(rif)){
+						apprise("<b>Al parecer el RIF colocado no es correcto, por favor verifique con el SENIAT.</b>");
+					}else{
+						$.ajax({
+							type: "POST",
+							url: "'.site_url('ajax/traerif').'",
+							dataType: "json",
+							data: {rifci: rif},
+							success: function(data){
+								if(data.error==0){
+									if($("#nombre").val()==""){
+										$("#nombre").val(data.nombre);
+									}
+									if($("#nomfis").val()==""){
+										$("#nomfis").val(data.nombre);
+									}
+								}
+							}
+						});
+					}
+				});
 			});
+
+			function chrif(rif){
+				rif.toUpperCase();
+				var patt=/[EJPGV][0-9]{9} */g;
+				if(patt.test(rif)){
+					var factor= new Array(4,3,2,7,6,5,4,3,2);
+					var v=0;
+					if(rif[0]=="V"){
+						v=1;
+					}else if(rif[0]=="E"){
+						v=2;
+					}else if(rif[0]=="J"){
+						v=3;
+					}else if(rif[0]=="P"){
+						v=4;
+					}else if(rif[0]=="G"){
+						v=5;
+					}
+					acum=v*factor[0];
+					for(i=1;i<9;i++){
+						acum=acum+parseInt(rif[i])*factor[i];
+					}
+					acum=11-acum%11;
+					if(acum>=10 || acum<=0){
+						acum=0;
+					}
+					return (acum==parseInt(rif[9]));
+				}else{
+					return true;
+				}
+			}
+
+
 			function grupo(){
 				t=$("#grupo").val();
 				a=$("#grupo :selected").text();
@@ -964,7 +1022,7 @@ class Sprv extends validaciones {
 					}
 				});
 			}
-			
+
 			function iraurl(){
 				vurl=$("#url").val();
 				if(vurl.length==0){
@@ -974,7 +1032,7 @@ class Sprv extends validaciones {
 					window.open(vurl);
 				}
 			}
-			
+
 			';
 
 		$edit = new DataEdit('Proveedores', 'sprv');

@@ -1274,4 +1274,112 @@ class Ajax extends Controller {
 		echo $data;
 		return true;
 	}
+
+
+	//***************************************
+	//  CONSULTA LA CEDULA O RIF EN INTERNET
+	//***************************************
+	function traerif(){
+		$rifci = $this->input->post('rifci');
+		$t=array(
+			'error' =>1,
+			'msj'   =>'Cedula o rif no valido',
+			'nombre'=>''
+		);
+
+		if($rifci == false) echo json_encode($t);
+
+		if(preg_match("/(^[VEJG][0-9]{9}[[:blank:]]*$)/", $rifci)>0){
+			$t=$this->_crif($rifci);
+		}elseif(preg_match("/(^[VE][0-9]+[[:blank:]]*$)/", $rifci)>0){
+			$t=$this->_cced($rifci);
+		}
+		echo json_encode($t);
+	}
+
+	function _crif($rif){
+		$rt=array(
+			'error' =>0,
+			'msj'   =>'',
+			'nombre'=>''
+		);
+
+		$postdata = http_build_query(array('p_rif' => strtoupper($rif)));
+		$opts = array('http' =>array(
+				'method'  => 'POST',
+				'timeout' => 7,
+				'header'  => 'Content-type: application/x-www-form-urlencoded',
+				'content' => $postdata
+			)
+		);
+		$url=trim($this->datasis->traevalor('CONSULRIF'));
+		$context = stream_context_create($opts);
+		$result = @file($url, false, $context);
+		if($result===false){
+			$rt['error']=1;
+			$rt['msj']  ='Recurso no disponible';
+		}else{
+			foreach($result as $line){
+				if(stripos($line,$rif)!==false){
+					$linea=str_replace('&nbsp;','',$line);
+					$linea=html_entity_decode(strip_tags($linea));
+					break;
+				}
+			}
+			$linea = preg_replace('/\(.*\)/', '', $linea);
+			$nombre= trim(str_ireplace($rif,'',$linea));
+			if(stripos($nombre,'No existe')===false){
+				$rt['nombre'] =utf8_encode($nombre);
+			}else{
+				$rt['error']=1;
+				$rt['msj']  ='Contribuyente no encontrado';
+			}
+		}
+		return $rt;
+	}
+
+	function _cced($ced){
+		$rt=array(
+			'error' =>0,
+			'msj'   =>'',
+			'nombre'=>''
+		);
+
+		$postdata = http_build_query(array(
+			'nacionalidad' => strtoupper($ced[0]),
+			'cedula'       => substr($ced,1)
+			)
+		);
+		$opts = array('http' =>array(
+				'method'  => 'GET',
+				'timeout' => 7,
+				'header'  => 'Content-type: application/x-www-form-urlencoded',
+			)
+		);
+		$context = stream_context_create($opts);
+		$result = @file('http://www.cne.gob.ve/web/registro_electoral/ce.php?'.$postdata, false, $context);
+		if($result===false){
+			$rt['error']=1;
+			$rt['msj']  ='Recurso no disponible';
+		}else{
+			$act=false;
+			foreach($result as $line){
+				if($act){
+					$linea=html_entity_decode(strip_tags($line));
+					break;
+				}elseif(stripos($line,'Nombre')!==false){
+					$act=true;
+				}
+			}
+			if(isset($linea)){
+				$linea = preg_replace('/\(.*\)/', '', $linea);
+				$rt['nombre'] = utf8_encode(trim($linea));
+			}else{
+				$rt['error']=1;
+				$rt['msj']  ='Cedula no encontrada';
+			}
+		}
+		return $rt;
+	}
+
 }

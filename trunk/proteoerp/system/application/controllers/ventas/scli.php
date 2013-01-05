@@ -269,7 +269,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
 
-
 		// Busca la cedula en el CNE
 		$postready = '
 		function consulcne(campo){
@@ -283,7 +282,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 				window.open("http://www.cne.gov.ve/web/registro_electoral/ce.php?nacionalidad="+vrif.substr(0,1)+"&cedula="+vrif.substr(1),"CONSULCNE","height=400,width=510");
 			}
 		};';
-
 
 		// Buscar en el SENIAT
 		$postready .= '
@@ -299,9 +297,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		};';
 
 		return $postready;
-
 	}
-
 
 	//***************************
 	//Funciones de los Botones
@@ -1933,12 +1929,31 @@ $(function() {
 
 	$("#maintabcontainer").tabs();
 
-	$("#rifci").focusout(function() {
-		rif=$(this).val();
+	$("#rifci").focusout(function(){
+		rif=$(this).val().toUpperCase();
+		$(this).val(rif);
 		if(!chrif(rif)){
-			alert("Al parecer el Rif colocado no es correcto, por favor verifique con el SENIAT.");
+			apprise("<b>Al parecer el RIF colocado no es correcto, por favor verifique con el SENIAT.</b>");
+		}else{
+			$.ajax({
+				type: "POST",
+				url: "'.site_url('ajax/traerif').'",
+				dataType: "json",
+				data: {rifci: rif},
+				success: function(data){
+					if(data.error==0){
+						if($("#nombre").val()==""){
+							$("#nombre").val(data.nombre);
+						}
+						if($("#nomfis").val()==""){
+							$("#nomfis").val(data.nombre);
+						}
+					}
+				}
+			});
 		}
 	});
+
 });
 
 function formato(row) {
@@ -1960,7 +1975,7 @@ function anomfis(){
 
 function chrif(rif){
 	rif.toUpperCase();
-	var patt=/[EJPGV][0-9]{9} * /g;
+	var patt=/[EJPGV][0-9]{9} */g;
 	if(patt.test(rif)){
 		var factor= new Array(4,3,2,7,6,5,4,3,2);
 		var v=0;
