@@ -14,6 +14,8 @@ class Lrece extends Controller {
 
 	function index(){
 		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
+		$this->datasis->creaintramenu( $data = array('modulo'=>'220','titulo'=>'Recepcion de Leche','mensaje'=>'Recepcion de Leche','panel'=>'LECHE','ejecutar'=>'leche/lrece','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
+
 		redirect($this->url.'jqdatag');
 	}
 

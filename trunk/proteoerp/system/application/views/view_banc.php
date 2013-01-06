@@ -9,53 +9,39 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table border=0 width="100%">
 	<tr>
 		<td>
-			<a href='<?php echo base_url()."finanzas/banc/consulta/".$form->codbanc->output; ?>'>
-			<?php
-				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'25');
-				echo img($propiedad);
-			?>
-			</a>
-		</td>
-		<td align='center' valign='middle'>
-			<?php  if ($form->activo->value=='N') echo "<div style='font-size:14px;font-weight:bold;color: #B40404'>***DESACTIVADO***</div>"; ?>&nbsp;
-		</td>
-		<td align='right'><?php echo $container_tr; ?></td>
-	</tr>
-	<tr>
-		<td colspan='2'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Banco</legend>
+			<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
 			<table border=0 width="100%">
 			<tr>
-				<td width="100" class="littletableheaderc"><?=$form->codbanc->label  ?></td>
-				<td class="littletablerow" ><?=$form->codbanc->output ?></td>
+				<td width="90"    class="littletableheaderc"><?php echo $form->codbanc->label; ?></td>
+				<td width="80"    class="littletablerow"    ><?php echo $form->codbanc->output;?></td>
+				<td align='right' class="littletableheaderc"><?php echo $form->activo->label; ?></td>
+				<td align='left'  class="littletablerow"    ><?php echo $form->activo->output;?></td>
 			</tr>	
 			<tr>
-				<td class="littletableheaderc"><?=$form->tbanco->label    ?></td>
-				<td  class="littletablerow"><?=$form->tbanco->output?></td>
+				<td class="littletableheaderc"><?php echo $form->tbanco->label; ?></td>
+				<td colspan='3' class="littletablerow"    ><?php echo $form->tbanco->output;?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?=$form->sucur->label  ?></td>
-				<td class="littletablerow"><?=$form->sucur->output ?></td>
+				<td class="littletableheaderc"           ><?php echo $form->banco->label; ?></td>
+				<td colspan='3' class="littletablerow"   ><?php echo $form->banco->output;?></td>
 			</tr>
 			</table>
 			</fieldset>
 		</td>
 		<td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend>&nbsp;</legend>
+			<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
 			<table border=0 width="100%">
 			<tr>
-				<td width='100' class="littletableheaderc"><?=$form->activo->label ?></td>
-				<td  class="littletablerow"><?=$form->activo->output?></td>
+				<td class="littletableheaderc"><?php echo $form->sucur->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->sucur->output;?></td>
 			</tr>	
 			<tr>
-				<td class="littletableheaderc"><?=$form->banco->label ?></td>
-				<td  class="littletablerow"><?=$form->banco->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->depto->label; ?> </td>
+				<td class="littletablerow"    ><?php echo $form->depto->output;?> </td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?=$form->numcuent->label  ?></td>
-				<td class="littletablerow"><?=$form->numcuent->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->numcuent->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->numcuent->output;?></td>
 			</tr>
 			</table>
 			</fieldset>
@@ -65,24 +51,23 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table  width="100%" border='0'>
 	<tr>
 		<td valign='top'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #E0ECF8;'>
-			<legend class="titulofieldset" style='color: #114411;'>Direccion</legend>
+			<fieldset style='border: 1px outset #9AC8DA;background: #E0ECF8;'>
 			<table width= "100%" >
 				<tr>
-					<td width='60px' class="littletableheaderc"><?=$form->nombre->label ?></td>
-					<td class="littletablerow"><?=$form->nombre->output ?>&nbsp;</td>
+					<td width='60px' class="littletableheaderc"><?php echo $form->nombre->label; ?></td>
+					<td              class="littletablerow"    ><?php echo $form->nombre->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?=$form->telefono->label ?></td>
-					<td class="littletablerow"><?=$form->telefono->output ?>&nbsp;</td>
+					<td class="littletableheaderc"><?php echo $form->telefono->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->telefono->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?=$form->dire1->label   ?></td>
-					<td class="littletablerow" style='font-size:11;'><?=$form->dire1->output  ?>&nbsp;</td>
+					<td class="littletableheaderc"><?php echo $form->dire1->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->dire1->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?=$form->dire2->label ?></td>
-					<td class="littletablerow" style='font-size:11;'><?=$form->dire2->output ?>&nbsp;</td>
+					<td class="littletableheaderc"><?php echo $form->dire2->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->dire2->output;?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -90,24 +75,23 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 	
 	
 		<td  valign="top">	
-			<fieldset style='border: 2px outset #9AC8DA;background: #E0ECF8;'>
-			<legend class="titulofieldset" style='color: #114411;'>Cuenta</legend>
+			<fieldset style='border: 1px outset #9AC8DA;background: #E0ECF8;'>
 			<table style="height: 100%;width: 100%">
 				<tr>
-					<td  width="95" class="littletableheaderc"><?=$form->moneda->label  ?></td>
-					<td class="littletablerow"><?=$form->moneda->output ?></td>
+					<td  width="95" class="littletableheaderc"><?php echo $form->moneda->label; ?></td>
+					<td             class="littletablerow"    ><?php echo $form->moneda->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"> <?=$form->tipocta->label ?> </td>
-					<td class="littletablerow"> <?=$form->tipocta->output ?> </td>
+					<td class="littletableheaderc"><?php echo $form->tipocta->label; ?> </td>
+					<td class="littletablerow"    ><?php echo $form->tipocta->output;?> </td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?=$form->proxch->label  ?></td>
-					<td class="littletablerow"><?=$form->proxch->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->proxch->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->proxch->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?=$form->dbporcen->label  ?></td>
-					<td class="littletablerow"><?=$form->dbporcen->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->dbporcen->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->dbporcen->output;?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -117,31 +101,35 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table  width="100%" border='0'>
 	<tr>
 		<td>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Enlaces</legend>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<table width= '100%' >
 				<tr>
-					<td width='120px' class="littletableheaderc"><?=$form->codprv->label  ?></td>
-					<td class="littletablerow"><?=$form->codprv->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->codprv->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->codprv->output;?>
+				<?php
+					if ( !empty( $form->codprv->value ) ) {
+						$mSQL = "SELECT nombre FROM sprv WHERE proveed=".$this->db->escape(trim($form->codprv->value))."";
+						echo $this->datasis->dameval($mSQL);
+					}
+				?>
+					
+					</td>
+				</tr>
+
+				<tr>
+					<td class="littletableheaderc"><?php echo $form->gastocom->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->gastocom->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"> <?=$form->depto->label ?> </td>
-					<td class="littletablerow"> <?=$form->depto->output ?> </td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->gastocom->label  ?></td>
-					<td class="littletablerow"><?=$form->gastocom->output ?></td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->gastoidb->label  ?></td>
-					<td class="littletablerow"><?=$form->gastoidb->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->gastoidb->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->gastoidb->output;?></td>
 				</tr>				
 				<tr>
-				<td class="littletableheaderc"><?=$form->cuenta->label ?></td>
-				<td  class="littletablerow" colspan='2'><?=$form->cuenta->output." "; ?>
+				<td class="littletableheaderc"><?php echo $form->cuenta->label ?></td>
+				<td  class="littletablerow"   ><?php echo $form->cuenta->output;?>
 				<?php
-					if ( $form->_status == 'show' ) {
-						$mSQL = "SELECT descrip FROM cpla WHERE codigo='".trim($form->cuenta->output)."'";
+					if ( !empty( $form->cuenta->value ) ) {
+						$mSQL = "SELECT descrip FROM cpla WHERE codigo='".trim($form->cuenta->value)."'";
 						echo $this->datasis->dameval($mSQL);
 					}
 				?>
