@@ -592,17 +592,6 @@ class Gserchi extends Controller {
 		return $bodyscript;
 	}
 
-	function ajaxsprv(){
-		$rif=$this->input->post('rif');
-		if($rif!==false){
-			$dbrif=$this->db->escape($rif);
-			$nombre=$this->datasis->dameval("SELECT nombre FROM provoca WHERE rif=$dbrif");
-			if(empty($nombre))
-				$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif=$dbrif");
-			echo $nombre;
-		}
-	}
-
 	//***************************
 	//Definicion del Grid y la Forma
 	//***************************
@@ -1321,7 +1310,7 @@ class Gserchi extends Controller {
 		$sobretasa = $ivas['sobretasa']/100;
 
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
-		$url=site_url($this->url.'ajaxsprv');
+		$url=site_url('ajax/ajaxsprv');
 		$script="
 		function consulrif(){
 			vrif=$('#rif').val();
@@ -1415,8 +1404,10 @@ class Gserchi extends Controller {
 			$('#reducida' ).bind('keyup',function() { totaliza(); });
 			$('#monadic'  ).bind('keyup',function() { poneiva(3); });
 			$('#sobretasa').bind('keyup',function() { totaliza(); });
-			$(\"input[name='traesprv']\").click(function() {
-				rif=$('#rif').val();
+
+			$('#rif').focusout(function(){
+				rif=$('#rif').val().toUpperCase();
+				$('#rif').val(rif);
 				if(rif.length > 0){
 					$.post('$url', { rif: rif },function(data){
 						$('#proveedor').val(data);
@@ -1472,7 +1463,7 @@ class Gserchi extends Controller {
 		$edit->rif->size =13;
 		$edit->rif->maxlength =13;
 		$edit->rif->group='Datos del proveedor';
-		$edit->rif->append(HTML::button('traesprv', 'SENIAT', '', 'button', 'button'));
+		//$edit->rif->append(HTML::button('traesprv', 'SENIAT', '', 'button', 'button'));
 		//$edit->rif->append($lriffis);
 
 		$edit->proveedor = new inputField('Nombre','proveedor');

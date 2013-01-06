@@ -1275,6 +1275,26 @@ class Ajax extends Controller {
 		return true;
 	}
 
+	function ajaxsprv(){
+		$rif=$this->input->post('rif');
+		if($rif!==false){
+			$dbrif=$this->db->escape($rif);
+			$nombre=$this->datasis->dameval("SELECT nombre FROM provoca WHERE rif=$dbrif");
+			if(empty($nombre)){
+				$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif=$dbrif");
+			}
+			if(empty($nombre)){
+				if(preg_match("/(^[VEJG][0-9]{9}[[:blank:]]*$)/", $rif)>0){
+					$t=$this->_crif($rif);
+					$nombre=$t['nombre'];
+				}elseif(preg_match("/(^[VE][0-9]+[[:blank:]]*$)/", $rif)>0){
+					$t=$this->_cced($rif);
+					$nombre=$t['nombre'];
+				}
+			}
+			echo $nombre;
+		}
+	}
 
 	//***************************************
 	//  CONSULTA LA CEDULA O RIF EN INTERNET
