@@ -569,6 +569,7 @@ class Sprv extends Controller {
 				$.ajax({
 					url: "'.site_url($this->url).'/resumen/"+id,
 					success: function(msg){
+						msg += "<img src=\''.site_url($this->url.'vcard').'/'.'"+id+"\' alt=\'vCard\' height=\'200\' width=\'200\'> ";
 						$("#ladicional").html(msg);
 					}
 				});
@@ -1300,6 +1301,37 @@ class Sprv extends Controller {
 			$this->db->simple_query("DELETE FROM sprv WHERE proveed='$proveed'");
 			logusu('sprv',"PROVEEDOR $proveed ELIMINADO");
 			echo "{ success: true, message: 'Proveedor Eliminado'}";
+		}
+	}
+
+	function vcard($id_sprv){
+		$dbid=$this->db->escape($id_sprv);
+		$sprv=$this->datasis->damerow("SELECT contacto,nombre,telefono,direc1 AS dire11 FROM sprv WHERE id=$dbid");
+
+		if(!empty($sprv)){
+			$this->load->library('Qr');
+			$contacto=trim($sprv['contacto']);
+			$nombre  =trim($sprv['nombre']);
+			$telf1   =trim($sprv['telefono']);
+			$telf2   ='';
+			$direc   =trim($sprv['dire11']);
+			if(!empty($contacto)){
+				$empresa=$nombre;
+				$nombre =$contacto;
+			}else{
+				$empresa='';
+			}
+			$text = "BEGIN:VCARD\n";
+			$text.= "VERSION:2.1\n";
+			$text.= "N:$nombre\n";
+			$text.= "FN:$nombre\n";
+			if(!empty($empresa)) $text.= "ORG:$empresa\n";
+			//$text.= "TITLE:$cargo\n";
+			if(!empty($telf1)) $text.= "TEL;WORK;VOICE:$telf1\n";
+			//if(!empty($telf2)) $text.= "TEL;WORK;VOICE:$telf2\n";
+			$text.= "ADR;WORK:$direc\n";
+			$text.= "END:VCARD";
+			$this->qr->imgcode($text);
 		}
 	}
 
