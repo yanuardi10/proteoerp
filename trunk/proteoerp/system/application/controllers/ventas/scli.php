@@ -2454,7 +2454,7 @@ function chrif(rif){
 
 	function vcard($id_scli){
 		$dbid=$this->db->escape($id_scli);
-		$scli=$this->datasis->damerow("SELECT * FROM scli WHERE id=$dbid");
+		$scli=$this->datasis->damerow("SELECT contacto,nombre,telefono,telefon2,dire11 FROM scli WHERE id=$dbid");
 		if(!empty($scli)){
 			$this->load->library('Qr');
 			$contacto=trim($scli['contacto']);
@@ -2871,7 +2871,6 @@ function chrif(rif){
 		}
 	}
 
-
 	function consulta(){
 		$this->load->helper('openflash');
 		$this->rapyd->load("datagrid");
@@ -2916,10 +2915,7 @@ function chrif(rif){
 				<a href='javascript:javascript:history.go(-1)'>(".$mCodigo.") ".$nombre."</a>
 			</div>";
 		$this->load->view('view_ventanas', $data);
-
 	}
-
-
 
 /*
 	function grid(){
