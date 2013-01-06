@@ -1384,6 +1384,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 				$.ajax({
 					url: "'.base_url().$this->url.'resumen/"+id,
 					success: function(msg){
+						msg += "<img src=\''.site_url($this->url.'vcard').'/'.'"+id+"\' alt=\'vCard\' height=\'200\' width=\'200\'> ";
 						$("#ladicional").html(msg);
 					}
 				});
@@ -1669,135 +1670,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		echo $salida;
 	}
-
-
-/*
-class Scli extends validaciones {
-	var $genesal=true;
-
-	function scli(){
-		parent::Controller();
-		$this->load->library('rapyd');
-		$this->load->library('pi18n');
-		$this->datasis->modulo_id(131,1);
-	}
-
-	function index(){
-		if($this->pi18n->pais=='COLOMBIA'){
-			redirect('ventas/sclicol/filteredgrid');
-		}else{
-			$script = $this->scliextjs();
-		}
-	}
-
-	function filteredgrid(){
-		$this->pi18n->cargar('scli','filteredgrid');
-		$this->rapyd->load('datafilter','datagrid');
-		$this->rapyd->uri->keep_persistence();
-
-		$filter = new DataFilter('Filtro de Clientes', 'scli');
-
-		$filter->cliente = new inputField('C&oacute;digo', 'cliente');
-		$filter->cliente->size=6;
-		$filter->cliente->group = "CLIENTE";
-
-		$filter->nombre= new inputField('Nombre','nombre');
-		$filter->nombre->size=30;
-		$filter->nombre->group = "CLIENTE";
-
-		$filter->grupo = new dropdownField('Grupo', 'grupo');
-		$filter->grupo->option('','Todos');
-		$filter->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
-		$filter->grupo->style = 'width:140px';
-		$filter->grupo->group = "CLIENTE";
-
-		$filter->rifci= new inputField('Rif/CI','rifci');
-		$filter->rifci->size=15;
-		$filter->rifci->group = "VALORES";
-
-		$filter->cuenta= new inputField('Cuenta Contable','cuenta');
-		$filter->cuenta->like_side='after';
-		$filter->cuenta->size=15;
-		$filter->cuenta->group = "VALORES";
-
-		$filter->buttons('reset','search');
-		$filter->build('dataformfiltro');
-
-		$uri = anchor('ventas/scli/dataedit/show/<#id#>','<#cliente#>');
-
-		$grid = new DataGrid('Lista de Clientes');
-		$grid->order_by('nombre','asc');
-		$grid->per_page=50;
-
-		$cclave=anchor('ventas/scli/claveedit/modify/<#id#>',img(array('src'=>'images/candado.jpg','border'=>'0','alt'=>'Clave','height'=>'12','title'=>'Clave')));
-
-		$uri_2  = anchor('ventas/scli/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12','title'=>'Editar')));
-		$uri_2 .= anchor('ventas/scli/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar')));
-		$uri_2 .= $cclave;
-		$uri_2 .= img(array('src'=>'images/<siinulo><#tipo#>|N|S</siinulo>.gif','border'=>'0','alt'=>'Estado','title'=>'Estado'));
-
-		$grid->column('Acci&oacute;n',$uri_2);
-		$grid->column_orderby('Cliente',$uri,'cliente');
-		$grid->column_orderby('Nombre','nombre','nombre');
-		$grid->column_orderby($this->pi18n->msj('rifci','Rif/CI'),'rifci','rifci');
-		$grid->column_orderby($this->pi18n->msj('tiva','Tipo') ,'tiva','tiva','align=\'center\'');
-		$grid->column_orderby('Telefono','telefono','telefono');
-		$grid->column_orderby('Contacto','contacto','contacto');
-		$grid->column_orderby('Nombre Fiscal','nomfis','nomfis');
-		$grid->column_orderby('Grupo','grupo','grupo','align=\'center\'');
-		$grid->column_orderby('Credito','limite','limite','align=\'right\'');
-		$grid->column_orderby('Cuenta','cuenta','cuenta');
-
-		$grid->add('ventas/scli/dataedit/create','Agregar');
-		$grid->build('datagridST');
-
-
-//************ SUPER TABLE *************
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { // The parent container
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; // Required to set
-    height: 320px; // Required to set
-    overflow: hidden; // Required to set
-}
-</style>
-';
-//****************************************
-
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-
-		$data['extras']  = $extras;
-
-		$data['content'] = $grid->output;
-		$data['content'].= $this->pi18n->fallas();
-		$data['filtro']  = $filter->output;
-		$data['title']   = heading('Modulo de Clientes');
-		$data['script']  = script('jquery.js');
-		$data["script"] .= script('superTables.js');
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
-
-*/
 
 	// **************************************
 	//     DATAEDIT
@@ -2578,6 +2450,36 @@ function chrif(rif){
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['title']   = heading('Gesti&oacute;n de l&iacute;mites de cr&eacute;dito');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function vcard($id_scli){
+		$dbid=$this->db->escape($id_scli);
+		$scli=$this->datasis->damerow("SELECT * FROM scli WHERE id=$dbid");
+		if(!empty($scli)){
+			$this->load->library('Qr');
+			$contacto=trim($scli['contacto']);
+			$nombre  =trim($scli['nombre']);
+			$telf1   =trim($scli['telefono']);
+			$telf2   =trim($scli['telefon2']);
+			$direc   =trim($scli['dire11']);
+			if(!empty($contacto)){
+				$empresa=$nombre;
+				$nombre =$contacto;
+			}else{
+				$empresa='';
+			}
+			$text = "BEGIN:VCARD\n";
+			$text.= "VERSION:2.1\n";
+			$text.= "N:$nombre\n";
+			$text.= "FN:$nombre\n";
+			if(!empty($empresa)) $text.= "ORG:$empresa\n";
+			//$text.= "TITLE:$cargo\n";
+			if(!empty($telf1)) $text.= "TEL;WORK;VOICE:$telf1\n";
+			if(!empty($telf2)) $text.= "TEL;WORK;VOICE:$telf2\n";
+			$text.= "ADR;WORK:$direc\n";
+			$text.= "END:VCARD";
+			$this->qr->imgcode($text);
+		}
 	}
 
 	function creditoedit(){
