@@ -15,12 +15,8 @@ class Gserchi extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('gserchi','id') ) {
-			$this->db->simple_query('ALTER TABLE gserchi DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE gserchi ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE gserchi ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		$this->datasis->creaintramenu( $data = array('modulo'=>'52B','titulo'=>'Caja Chica','mensaje'=>'Caja Chica','panel'=>'GASTOS','ejecutar'=>'finanzas/gserchi','target'=>'popu','visible'=>'S','pertenece'=>'5','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
 	}
 
@@ -1146,23 +1142,24 @@ class Gserchi extends Controller {
 		$form->nombre->insertValue=(empty($pcchi))? '' : $pcchi['nombre'];
 
 		$dbcodban=$this->db->escape($codbanc);
-		$form->cargo = new dropdownField('Cargo a','cargo');
+		$form->cargo = new dropdownField('Reponer desde','cargo');
 		$form->cargo->option('','Seleccionar');
 		//$form->cargo->option($this->mcred,'Credito');
-		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND codbanc<>$dbcodban ORDER BY codbanc");
+		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tipocta<>'Q' AND codbanc<>$dbcodban ORDER BY codbanc");
 		$form->cargo->onchange='desactivacampo(this.value)';
 		$form->cargo->rule='max_length[5]|required';
 
-		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
+		$form->cheque = new inputField('Cheque Numero', 'cheque');
 		$form->cheque->rule='condi_required|callback_chobligaban';
-		$form->cheque->append('Aplica  solo si el cargo es a un banco');
-		$form->cheque->group='Datos bancarios';
+		//$form->cheque->append('Aplica si es un banco');
+		$form->cheque->group='Aplica si repone desde un Banco';
+		$form->cheque->size=12;
 
 		$form->benefi = new inputField('Beneficiario', 'benefi');
 		$form->benefi->insertValue=$nombre;
 		$form->benefi->rule='condi_required|callback_chobligaban|strtoupper';
-		$form->benefi->append('Aplica  solo si el cargo es a un banco');
-		$form->benefi->group='Datos bancarios';
+		//$form->benefi->append('Aplica si es un banco');
+		$form->benefi->group=$form->cheque->group;
 
 		$form->build_form();
 
@@ -1444,19 +1441,20 @@ class Gserchi extends Controller {
 		$edit->pre_process('update' ,'_pre_update');
 		$edit->pre_process('delete' ,'_pre_delete');
 
-		$edit->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$edit->codbanc = new dropdownField('Caja','codbanc');
 		$edit->codbanc->option('','Seleccionar');
-		$edit->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
-		$edit->codbanc->rule='max_length[5]|required';
+		$edit->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' AND codbanc!='00' AND tipocta='Q' ORDER BY codbanc");
+		$edit->codbanc->rule='max_length[2]|required';
+		$edit->codbanc->style = "width:180px";
 
-		$edit->fechafac = new dateField('Fecha de la factura','fechafac');
+		$edit->fechafac = new dateField('Fecha','fechafac');
 		$edit->fechafac->rule='max_length[10]|required';
 		$edit->fechafac->size =12;
 		$edit->fechafac->insertValue=date('Y-m-d');
 		$edit->fechafac->maxlength =10;
 		$edit->fechafac->calendar=false;
 
-		$edit->numfac = new inputField('N&uacute;mero de la factura','numfac');
+		$edit->numfac = new inputField('Factura','numfac');
 		$edit->numfac->rule='max_length[8]|required';
 		$edit->numfac->size =10;
 		$edit->numfac->maxlength =8;
@@ -1468,22 +1466,22 @@ class Gserchi extends Controller {
 		$edit->nfiscal->maxlength =12;
 		$edit->nfiscal->autocomplete =false;
 
-		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
+		//$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
 		$edit->rif = new inputField('RIF','rif');
 		$edit->rif->rule='max_length[13]|required';
 		$edit->rif->size =13;
 		$edit->rif->maxlength =13;
 		$edit->rif->group='Datos del proveedor';
-		$edit->rif->append(HTML::button('traesprv', 'Consultar Proveedor', '', 'button', 'button'));
-		$edit->rif->append($lriffis);
+		$edit->rif->append(HTML::button('traesprv', 'SENIAT', '', 'button', 'button'));
+		//$edit->rif->append($lriffis);
 
-		$edit->proveedor = new inputField('Nombre del proveedor','proveedor');
+		$edit->proveedor = new inputField('Nombre','proveedor');
 		$edit->proveedor->rule='max_length[40]|strtoupper';
 		$edit->proveedor->size =40;
 		$edit->proveedor->group='Datos del proveedor';
 		$edit->proveedor->maxlength =40;
 
-		$edit->codigo = new inputField('C&oacute;digo del gasto','codigo');
+		$edit->codigo = new inputField('Gasto','codigo');
 		$edit->codigo->rule ='max_length[6]|required';
 		$edit->codigo->size =6;
 		$edit->codigo->maxlength =8;
@@ -1497,32 +1495,31 @@ class Gserchi extends Controller {
 		$alicuota=$this->datasis->ivaplica(date('Y-m-d'));
 
 		$arr=array(
-			'exento'   =>'Monto <b>Exento</b>|Base exenta',
-			'montasa'  =>'Montos con Alicuota <b>general</b> '.  $ivas['tasa'].'%|Base imponible',
-			'tasa'     =>'Montos con Alicuota <b>general</b> '.  $ivas['tasa'].'%|Monto del IVA',
-			'monredu'  =>'Montos con Alicuota <b>reducida</b> '. $ivas['redutasa'].'%|Base imponible',
-			'reducida' =>'Montos con Alicuota <b>reducida</b> '. $ivas['redutasa'].'%|Monto del IVA',
-			'monadic'  =>'Montos con Alicuota <b>adicional</b> '.$ivas['sobretasa'].'%|Base imponible',
-			'sobretasa'=>'Montos con Alicuota <b>adicional</b> '.$ivas['sobretasa'].'%|Monto del IVA',
+			'exento'   =>'Monto <b>Exento</b>|Monto exento',
+			'montasa'  =>'Base Tasa '.  $ivas['tasa'].'%|Base imponible',
+			'tasa'     =>'IVA '.  $ivas['tasa'].'%|Monto del IVA',
+			'monredu'  =>'Base Tasa '. $ivas['redutasa'].'%|Base imponible',
+			'reducida' =>'IVA '. $ivas['redutasa'].'%|Monto del IVA',
+			'monadic'  =>'Base Tasa '.$ivas['sobretasa'].'%|Base imponible',
+			'sobretasa'=>'IVA '.$ivas['sobretasa'].'%|Monto del IVA',
 			'importe'  =>'Importe total');
 
 		foreach($arr AS $obj=>$label){
 			$pos = strrpos($label, '|');
 			if($pos!==false){
 				$piv=explode('|',$label);
-				$label=$piv[1];
+				$label=$piv[0];
 				$grupo=$piv[0];
 			}else{
 				$grupo='';
 			}
-
 			$edit->$obj = new inputField($label,$obj);
 			$edit->$obj->rule='max_length[17]|numeric';
 			$edit->$obj->css_class='inputnum';
 			$edit->$obj->insertValue =0;
-			$edit->$obj->size =17;
-			$edit->$obj->maxlength =17;
-			$edit->$obj->group=$grupo;
+			$edit->$obj->size =12;
+			$edit->$obj->maxlength =12;
+			//$edit->$obj->group=$grupo;
 			$edit->$obj->autocomplete=false;
 		}
 		$edit->$obj->readonly=true;
@@ -1537,10 +1534,12 @@ class Gserchi extends Controller {
 		$edit->sucursal = new dropdownField('Sucursal','sucursal');
 		$edit->sucursal->options('SELECT codigo,sucursal FROM sucu ORDER BY sucursal');
 		$edit->sucursal->rule='max_length[2]|required';
+		$edit->codbanc->style = "width:180px";
 
 		$edit->departa = new dropdownField('Departamento','departa');
 		$edit->departa->options("SELECT codigo, CONCAT_WS('-',codigo,departam) AS label FROM dept ORDER BY codigo");
 		$edit->departa->rule='max_length[2]';
+		$edit->codbanc->style = "width:180px";
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->estampa = new autoUpdateField('estampa' ,date('YmD'), date('Ymd'));
@@ -1558,7 +1557,13 @@ class Gserchi extends Controller {
 
 			echo json_encode($rt);
 		}else{
-			echo $edit->output;
+			$conten['form']  =&  $edit;
+			$data['content'] = $this->load->view('view_gserchi', $conten);
+
+			//$data['script'] = $script;
+			//$this->load->view('view_gserchi', $data);
+
+			//echo $edit->output;
 		}
 
 	}
@@ -1644,4 +1649,12 @@ class Gserchi extends Controller {
 		$numero  = $do->get('numfac');
 		logusu($do->table,"Elimino factura caja chica numero $numero $primary ");
 	}
+
+	function vista()
+	{
+
+	}
+
+
+
 }

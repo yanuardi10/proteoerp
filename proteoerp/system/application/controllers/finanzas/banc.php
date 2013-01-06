@@ -32,26 +32,17 @@ class Banc extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '
-<script type="text/javascript">
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/BANC/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-</script>
-';
-
-		#Set url
-		$grid->setUrlput(site_url($this->url.'setdata/'));
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
 		$WestPanel = $grid->deploywestp();
 
-		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Banco o Caja")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$funciones = '
 		function factivo(el, val, opts){
@@ -65,6 +56,30 @@ jQuery("#a1").click( function(){
 
 		$param['WestPanel']   = $WestPanel;
 		$param['funciones']   = $funciones;
+		//$param['EastPanel'] = $EastPanel;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('BANC', 'JQ');
+		$param['otros']       = $this->datasis->otros('BANC', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$param['tamano']      = $this->datasis->getintramenu( substr($this->url,0,-1) );
+		$this->load->view('jqgrid/crud2',$param);
+
+
+
+/*
+			<a href='<?php echo base_url()."finanzas/banc/consulta/".$form->codbanc->output; ?>'>
+			<?php
+				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'25');
+				echo img($propiedad);
+			?>
+			</a>
+
+
+		$param['WestPanel']   = $WestPanel;
+		$param['funciones']   = $funciones;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel']  = $SouthPanel;
 		$param['listados']    = $this->datasis->listados('BANC', 'JQ');
@@ -74,7 +89,98 @@ jQuery("#a1").click( function(){
 		$param['tabs']        = false;
 		$param['encabeza']    = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
+		*/ 
 	}
+
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#a1").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'. $grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.base_url().'formatos/ver/BANC/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Banco</h1>");}
+		});
+		';
+
+		$bodyscript .= '
+		function bancadd() {
+			$.post("'.site_url('finanzas/banc/dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function bancedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('finanzas/banc/dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+			';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 450, width: 750, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							apprise("Registro Guardado");
+							$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							'.$this->datasis->jwinopen(site_url('formatos/ver/BANC').'/\'+res.id+\'/id\'').';
+							return true;
+						} else { 
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); }
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+		$bodyscript .= '});'."\n";
+
+		$bodyscript .= "\n</script>\n";
+		$bodyscript .= "";
+		return $bodyscript;
+	}
+
+
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -209,7 +315,7 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 40,
 			'edittype'      => "'select'",
-			'editoptions'   => '{value: {"C":"Corriente","K":"Caja","A":"Ahorro", "P":"Plazo" },  style:"width:120px" }',
+			'editoptions'   => '{value: {"C":"Corriente","K":"Caja","A":"Ahorro", "P":"Plazo", "T":"T. Credito", "Q":"Caja Chica" },  style:"width:120px" }',
 			'editrules'     => '{ required:true}',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label:"Tipo" }'
 		));
@@ -453,7 +559,7 @@ jQuery("#a1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('390');
+		$grid->setHeight('360');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
@@ -469,6 +575,8 @@ jQuery("#a1").click( function(){
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("\t\taddfunc: bancadd,\n\t\teditfunc: bancedit");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -536,125 +644,18 @@ jQuery("#a1").click( function(){
 			echo "Banco o Caja ".$meco." Modificado";
 
 		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM banc WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE id='$id' ");
-			if ($check > 0){
-				//echo " El registro no puede ser eliminado; tiene movimiento ";
-			} else {
-				//$this->db->simple_query("DELETE FROM banc WHERE id=$id ");
-				//logusu('BANC',"Registro ????? ELIMINADO");
-				//echo "Registro Eliminado";
-			}
+			$codbanc = $this->datasis->dameval("SELECT codbanc FROM banc WHERE id=$id");
+			$this->db->query("UPDATE banc SET activo = IF(activo='S','N','S') WHERE id=$id");
 
+			logusu('BANC',"Registro $codbanc DESACTIVADO/ACTIVADO");
+			echo "Registro Desactivado/Avtivado";
 		};
 	}
 
-
-
-/*
-	function banc() {
-		parent::Controller();
-		$this->load->library('rapyd');
-	}
-
-	function index(){
-		if ( !$this->datasis->iscampo('banc','id') ) {
-			$this->db->simple_query('ALTER TABLE banc DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE banc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
-			$this->db->simple_query('ALTER TABLE banc ADD UNIQUE INDEX codbanc (codbanc)');
-		}
-		$this->datasis->modulo_id(512,1);
-		$this->bancextjs();
-	}
-
-	function filteredgrid() {
-		$this->rapyd->load('datafilter','datagrid');
-		$filter = new DataFilter('Filtro de Bancos y cajas', 'banc');
-
-		$filter->codbanc = new inputField('C&oacute;digo', 'codbanc');
-		$filter->codbanc->size=12;
-
-		$filter->banco = new dropdownField('Banco', 'tbanco');
-		$filter->banco->option('','Todos');
-		$filter->banco->options("SELECT TRIM(cod_banc),TRIM(nomb_banc) FROM tban ORDER BY nomb_banc");
-		$filter->banco->style ='width:200px;';
-
-		$filter->numcuenta = new inputField('Nro. de Cuenta', 'numcuent');
-		$filter->numcuenta->size = 20;
-
-		$filter->buttons('reset','search');
-		$filter->build('dataformfiltro');
-
-		$uri = anchor('finanzas/banc/dataedit/show/<#codbanc#>','<#codbanc#>');
-
-		function pinta($activo,$palabra){
-			if($activo=='N'){
-				return "<b style='color:#ff0000;'>$palabra</b>";
-			}
-			return $palabra;
-		}
-		$grid = new DataGrid('Bancos y cajas');
-		$grid->per_page = 20;
-		$grid->use_function('pinta');
-		$grid->column_orderby('C&oacute;digo',$uri,'codbanc');
-		$grid->column_orderby('Tipo','<pinta><#activo#>|<#tbanco#></pinta>','tbanco');
-		$grid->column_orderby('Banco','<pinta><#activo#>|<#banco#></pinta>','banco');
-		$grid->column_orderby('Nro Cuenta','<pinta><#activo#>|<#numcuent#></pinta>','numcuent');
-		$grid->column_orderby('Saldo','<pinta><#activo#>|<nformat><#saldo#></nformat></pinta>','saldo','align=right');
-		$grid->column_orderby('Contable','<pinta><#activo#>|<#cuenta#></pinta>','cuenta');
-		$grid->column('Telefono','telefono');
-		$grid->column('Nombre','nombre');
-		$grid->column('Activo','activo','activo');
-		$grid->add('finanzas/banc/dataedit/create','Agregar');
-		$grid->build('datagridST');
-		//echo $grid->db->last_query();
-
-//************ SUPER TABLE ************* 
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { // The parent container 
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; // Required to set 
-    height: 320px; // Required to set 
-    overflow: hidden; // Required to set 
-}
-</style>	
-';
-//****************************************
-
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-
-		$data['extras']  = $extras;		
-
-		$data['script']  = script('jquery.js');
-		$data["script"] .= script('superTables.js');
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		$data['title']   = '<h1>Bancos y Cajas</h1>';
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
- */
+	//***************************************
+	//
+	//   Dataedit
+	//
 	function dataedit(){
 		$this->rapyd->load('dataedit');
 
@@ -743,51 +744,57 @@ jQuery("#a1").click( function(){
 		$edit->codbanc = new inputField('C&oacute;digo', 'codbanc');
 		$edit->codbanc->rule = 'trim|required|callback_chexiste';
 		$edit->codbanc->mode="autohide";
-		$edit->codbanc->maxlength=2;
-		$edit->codbanc->size =3;
-		$edit->codbanc->append($lultimo);
+		$edit->codbanc->maxlength = 2;
+		$edit->codbanc->size = 3;
+		//$edit->codbanc->append($lultimo);
 
 		$edit->activo = new dropdownField('Activo', 'activo');
 		$edit->activo->style ='width:50px;';
 		$edit->activo->rule='required';
 		$edit->activo->options(array('S'=>'Si','N'=>'No' ));
 
-		$edit->tbanco = new inputField('Caja/Banco', 'tbanco');
+		$edit->tbanco = new dropdownField('Caja/Banco', 'tbanco');
+		$edit->tbanco->option('','Seleccione');
+		$edit->tbanco->options("SELECT cod_banc, concat(cod_banc, ' ',nomb_banc) descrip FROM tban ORDER BY nomb_banc");
+		$edit->tbanco->style = "width:200px";
+
+/*
 		$edit->tbanco->size =12;
 		$edit->tbanco->maxlength =3;
 		$edit->tbanco->rule='trim|required';
 		$edit->tbanco->readonly=true;
 		$edit->tbanco->append($bTBAN);
 		$edit->tbanco->style ='width:80px;';
+*/
 
 		$edit->banco = new inputField('Nombre', 'banco');
-		$edit->banco->size =25;
+		$edit->banco->size =22;
 		$edit->banco->maxlength=30;
 		//$edit->banco->readonly=true;
 
 		$edit->numcuent = new inputField('Nro. de Cuenta', 'numcuent');
 		$edit->numcuent->rule='trim';
-		$edit->numcuent->size = 25;
+		$edit->numcuent->size = 24;
 		$edit->numcuent->maxlength=25;
 		
 		$edit->dire1 = new inputField('Direcci&oacute;n', 'dire1');
 		$edit->dire1->rule='trim';
-		$edit->dire1->size =45;
+		$edit->dire1->size =40;
 		$edit->dire1->maxlength=40;
 
 		$edit->dire2 = new inputField('', 'dire2');
 		$edit->dire2->rule='trim';
-		$edit->dire2->size =45;
+		$edit->dire2->size =40;
 		$edit->dire2->maxlength=40;
 
 		$edit->telefono = new inputField('Tel&eacute;fono', 'telefono');
 		$edit->telefono->rule='trim';
-		$edit->telefono->size =45;
+		$edit->telefono->size =40;
 		$edit->telefono->maxlength=40;
 
-		$edit->nombre = new inputField('Gerente', 'nombre');
+		$edit->nombre = new inputField('Contacto', 'nombre');
 		$edit->nombre->rule='trim';
-		$edit->nombre->size =45;
+		$edit->nombre->size =40;
 		$edit->nombre->maxlength=40;
 
 		$edit->moneda = new dropdownField('Moneda','moneda');
@@ -796,9 +803,9 @@ jQuery("#a1").click( function(){
 
 		$edit->tipocta = new dropdownField('Cuenta Tipo', 'tipocta');
 		$edit->tipocta->style ="width:100px;";
-		$edit->tipocta->options(array("K"=>"Caja","C"=>"Corriente","A" =>"Ahorros","P"=>"Plazo Fijo" ));
+		$edit->tipocta->options(array("K"=>"Caja","C"=>"Corriente","A" =>"Ahorros","P"=>"Plazo Fijo", "T"=>"Tarjeta", "Q"=>"Caja Chica" ));
 
-		$edit->proxch = new inputField('Proximo Doc.', 'proxch');
+		$edit->proxch = new inputField('Proximo CH', 'proxch');
 		$edit->proxch->rule='trim';
 		$edit->proxch->size =12;
 		$edit->proxch->maxlength=12;
@@ -818,26 +825,28 @@ jQuery("#a1").click( function(){
 		$edit->dbporcen->rule = 'callback_chporcent';
 		$edit->dbporcen->onchange='gasto()';
 
-		$lcuent=anchor_popup('/contabilidad/cpla/dataedit/create','Agregar Cuenta Contable',$atts);
-		$edit->cuenta = new inputField('Cuenta. Contable', 'cuenta');
+		//$lcuent=anchor_popup('/contabilidad/cpla/dataedit/create','Agregar Cuenta Contable',$atts);
+		$edit->cuenta = new inputField('Cta. Contable', 'cuenta');
 		$edit->cuenta->rule='trim|callback_chcuentac';
 		$edit->cuenta->size =12;
 		$edit->cuenta->append($bcpla);
-		$edit->cuenta->append($lcuent);
+		//$edit->cuenta->append($lcuent);
 
-		$lsprv=anchor_popup('/compras/sprv/dataedit/create','Agregar Proveedor',$atts);
+		$lsprv=anchor_popup('/compras/sprv/dataedit/create','Agregar',$atts);
+		$lsprv='<a href="javascript:add_proveed();" title="Agregar un proveedor para este banco">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
+
 		$edit->codprv = new inputField('Proveedor', 'codprv');
 		$edit->codprv->rule= 'condi_required|callback_chiscaja|trim';
 		$edit->codprv->append($boton);
 		$edit->codprv->append($lsprv);
-		$edit->codprv->append(' Solo bancos');
-		$edit->codprv->size = 12;
+		//$edit->codprv->append(' Solo bancos');
+		$edit->codprv->size = 6;
 
 		$edit->depto = new dropdownField('Departamento', 'depto');
 		$edit->depto->option('','Seleccionar');
 		$edit->depto->options("SELECT depto, descrip FROM dpto ORDER BY descrip");
 		$edit->depto->rule='required';
-		$edit->depto->style ='width:225px;';
+		$edit->depto->style ='width:210px;';
 
 		$edit->sucur = new dropdownField('Sucursal', 'sucur');
 		$edit->sucur->option('','Ninguna');
@@ -849,20 +858,20 @@ jQuery("#a1").click( function(){
 		$edit->gastoidb->option('','Seleccionar');
 		$edit->gastoidb->rule= 'condi_required|callback_chisidb';
 		$edit->gastoidb->options($mSQL);
-		$edit->gastoidb->style ='width:350px;';
+		$edit->gastoidb->style ='width:300px;';
 
-		$edit->gastocom = new dropdownField('Gasto Comisi&oacute;n', 'gastocom');
+		$edit->gastocom = new dropdownField('Comision', 'gastocom');
 		$edit->gastocom->rule= 'condi_required|callback_chiscaja|trim';
 		$edit->gastocom->option('','Seleccionar');
 		$edit->gastocom->options($mSQL);
-		$edit->gastocom->style ='width:350px;';
-		$edit->gastocom->append('Solo bancos');
+		$edit->gastocom->style ='width:300px;';
+		//$edit->gastocom->append('Solo bancos');
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		//$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_banc', $conten,true);
+		$data['content'] = $this->load->view('view_banc', $conten, false );
 
 		//$data['content'] = $edit->output;
 		//$data['title']   = '<h1>Bancos y cajas</h1>';

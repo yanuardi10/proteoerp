@@ -1,4 +1,5 @@
-<?php require_once(BASEPATH.'application/controllers/validaciones.php');
+<?php 
+//require_once(BASEPATH.'application/controllers/validaciones.php');
 class Sprv extends Controller {
 	var $genesal = true;
 	var $mModulo='SPRV';

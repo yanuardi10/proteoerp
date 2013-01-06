@@ -244,7 +244,7 @@ else:
 	</fieldset>
         </div>
         <div id="tab3" style='background:#EEFFFF'>
-			<fieldset style='border: 2px outset #8AF8F8;background:#EEFFFF;'>
+			<fieldset style='border: 1px outset #8AF8F8;background:#EEFFFF;'>
 			<table width= '100%' >
 			<tr>
 				<td class="littletableheaderc" width='100'><?=$form->tarifa->label  ?></td>

@@ -2561,10 +2561,6 @@ function chrif(rif){
 		$edit->motivo->rows = 4;
 		$edit->motivo->rule = 'required';
 
-		//$plim=$this->secu->puede('1310'); //Limite de Credito
-		//$paxt=$this->secu->puede('1313'); //Asigna Extra credito
-		//$pext=$this->secu->puede('1314'); //Extra credito
-
 		$plim = $this->datasis->sidapuede('SCLIOTR', 'SCLILIMITE()');   //
 		$pext = $this->datasis->sidapuede('SCLIOTR', 'SCLITOLERA()');   //Extra credito
 		$paxt = $this->datasis->sidapuede('SCLIOTR', 'SCLIMAXTOLE()');  //Asigna Extra credito
