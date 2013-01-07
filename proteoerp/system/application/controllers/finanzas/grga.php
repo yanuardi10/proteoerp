@@ -9,7 +9,7 @@ class Grga extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		//$this->datasis->modulo_id('NNN',1);
+		$this->datasis->modulo_nombre( 'GRGA', $ventana=0 );
 	}
 
 	function index(){

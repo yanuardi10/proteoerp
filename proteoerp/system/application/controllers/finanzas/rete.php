@@ -10,7 +10,7 @@ class Rete extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		//$this->datasis->modulo_nombre('RETE');
+		$this->datasis->modulo_nombre( 'RETE', $ventana=0 );
 	}
 
 	function index(){

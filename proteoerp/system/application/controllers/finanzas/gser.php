@@ -14,8 +14,7 @@ class gser extends Controller {
 		$this->load->library('jqdatagrid');
 		$this->mcred = '_CR';
 		$this->load->library('pi18n');
-		//$this->datasis->modulo_id('518',1);
-		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+		$this->datasis->modulo_nombre( 'GSER', $ventana=0 );
 	}
 
 	function index(){

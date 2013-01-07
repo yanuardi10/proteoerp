@@ -1,4 +1,4 @@
-<?php //require_once(BASEPATH.'application/controllers/validaciones.php');
+<?php 
 class Casi extends Controller {
 	var $mModulo='CASI';
 	var $titp='Comprobantes de Contabilidad';
@@ -9,7 +9,7 @@ class Casi extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		//$this->datasis->modulo_id('NNN',1);
+		$this->datasis->modulo_nombre( 'CASI', $ventana=0 );
 	}
 
 	function index(){
