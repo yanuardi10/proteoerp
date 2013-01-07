@@ -10,7 +10,7 @@ class Civa extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		//$this->datasis->modulo_id('NNN',1);
+		$this->datasis->modulo_nombre( 'CIVA', $ventana=0 );
 	}
 
 	function index(){
@@ -19,6 +19,7 @@ class Civa extends Controller {
 			$this->db->simple_query('ALTER TABLE civa ADD UNIQUE INDEX fecha (fecha)');
 			$this->db->simple_query('ALTER TABLE civa ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
+		$this->datasis->modintramenu( 600, 400, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 

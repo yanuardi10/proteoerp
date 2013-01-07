@@ -14,7 +14,7 @@ class Ordc extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+		$this->datasis->modulo_nombre( 'ORDC', $ventana=0 );
 	}
 
 	function index(){

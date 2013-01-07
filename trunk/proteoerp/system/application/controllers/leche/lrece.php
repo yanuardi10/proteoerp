@@ -26,7 +26,7 @@ class Lrece extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$grid->setHeight('185');
+		$grid->setHeight('140');
 		$param['grids'][] = $grid->deploy();
 
 		$grid1   = $this->defgridit();
@@ -977,9 +977,9 @@ class Lrece extends Controller {
 
 		$script= '';
 
-		$data['content'] = $edit->output;
-		$data['script'] = $script;
-		$this->load->view('jqgrid/ventanajq', $data);
+		$conten["form"] =&  $edit;
+		$conten['script'] = $script;
+		$this->load->view('view_lrece', $conten);
 
 	}
 
