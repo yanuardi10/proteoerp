@@ -112,7 +112,7 @@ class Lrece extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 700, modal: true,
+			autoOpen: false, height: 400, width: 700, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -855,7 +855,7 @@ class Lrece extends Controller {
 
 		$edit->numero = new inputField('Numero','numero');
 		$edit->numero->rule='max_length[8]';
-		$edit->numero->size =10;
+		$edit->numero->size =9;
 		$edit->numero->maxlength =8;
 
 		$edit->fecha = new dateField('Fecha','fecha');
@@ -870,30 +870,30 @@ class Lrece extends Controller {
 
 		$edit->chofer = new inputField('Chofer','chofer');
 		$edit->chofer->rule='max_length[5]';
-		$edit->chofer->size =7;
+		$edit->chofer->size =6;
 		$edit->chofer->maxlength =5;
 
 		$edit->nombre = new inputField('Nombre','nombre');
 		$edit->nombre->rule='max_length[45]';
-		$edit->nombre->size =47;
+		$edit->nombre->size =40;
 		$edit->nombre->maxlength =45;
 
 		$edit->lleno = new inputField('Lleno','lleno');
 		$edit->lleno->rule='max_length[16]|numeric';
 		$edit->lleno->css_class='inputnum';
-		$edit->lleno->size =18;
+		$edit->lleno->size =12;
 		$edit->lleno->maxlength =16;
 
 		$edit->vacio = new inputField('Vacio','vacio');
 		$edit->vacio->rule='max_length[16]|numeric';
 		$edit->vacio->css_class='inputnum';
-		$edit->vacio->size =18;
+		$edit->vacio->size =12;
 		$edit->vacio->maxlength =16;
 
 		$edit->neto = new inputField('Neto','neto');
 		$edit->neto->rule='max_length[16]|numeric';
 		$edit->neto->css_class='inputnum';
-		$edit->neto->size =18;
+		$edit->neto->size =12;
 		$edit->neto->maxlength =16;
 
 		$edit->densidad = new inputField('Densidad','densidad');
@@ -905,19 +905,19 @@ class Lrece extends Controller {
 		$edit->litros = new inputField('Litros','litros');
 		$edit->litros->rule='max_length[16]|numeric';
 		$edit->litros->css_class='inputnum';
-		$edit->litros->size =18;
+		$edit->litros->size =12;
 		$edit->litros->maxlength =16;
 
 		$edit->lista = new inputField('Lista','lista');
 		$edit->lista->rule='max_length[16]|numeric';
 		$edit->lista->css_class='inputnum';
-		$edit->lista->size =18;
+		$edit->lista->size =12;
 		$edit->lista->maxlength =16;
 
 		$edit->diferen = new inputField('Diferen','diferen');
 		$edit->diferen->rule='max_length[16]|numeric';
 		$edit->diferen->css_class='inputnum';
-		$edit->diferen->size =18;
+		$edit->diferen->size =12;
 		$edit->diferen->maxlength =16;
 
 		$edit->animal = new inputField('Animal','animal');

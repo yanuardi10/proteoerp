@@ -228,10 +228,10 @@ jQuery("#a1").click( function(){
 		unset($data['id']);
 		if($oper == 'add'){
 			// Busca si esta Repetido
-			if ($this->datasis->dameval("SELECT COUNT(*) FROM botr WHERE codigo=".$this->db->escape($codigo)) > 0){
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM botr WHERE codigo=".$this->db->escape($data['codigo'])) > 0){
 				echo " Codigo Repetido!!!";
 			} else {
-				if(false == empty($data)){
+				if( false == empty($data) ) {
 					$this->db->insert('botr', $data);
 					echo " Registro Agregado";
 				}

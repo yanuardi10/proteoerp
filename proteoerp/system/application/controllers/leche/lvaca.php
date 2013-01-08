@@ -19,6 +19,7 @@ class Lvaca extends Controller {
 			$this->db->simple_query('ALTER TABLE lvaca ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		$this->datasis->creaintramenu( $data = array('modulo'=>'222','titulo'=>'Vaqueras','mensaje'=>'Vaqueras','panel'=>'LECHE','ejecutar'=>'leche/lvaca','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
 	}
 
