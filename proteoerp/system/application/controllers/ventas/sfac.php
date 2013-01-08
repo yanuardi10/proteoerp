@@ -3012,7 +3012,7 @@ class Sfac extends Controller {
 				$edit->maqfiscal = new inputField('Serial m&aacute;quina f&iacute;scal','maqfiscal');
 				$edit->maqfiscal->rule='max_length[15]|strtoupper';
 				$edit->maqfiscal->size =16;
-				$edit->maqfiscal->maxlength =1;
+				$edit->maqfiscal->maxlength =15;
 				$edit->maqfiscal->autocomplete=false;
 
 				$tipo=$edit->get_from_dataobjetct('tipo_doc');
