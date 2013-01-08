@@ -29,6 +29,7 @@ class inicio extends Controller {
 		$filter->db->from('sinvehiculo AS a');
 		$filter->db->join('scst AS c','a.id_scst=c.id');
 		$filter->db->join('sfac AS b','a.id_sfac=b.id','left');
+		$filter->db->orderby('a.id_sfac');
 
 		$filter->modelo = new inputField('Modelo','modelo');
 		$filter->modelo->rule      ='max_length[50]';
