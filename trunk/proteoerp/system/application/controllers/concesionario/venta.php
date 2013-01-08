@@ -66,10 +66,7 @@ class venta extends sfac {
 
 		$jsc='function calcula(){
 			if($("#vh_precio").val().length>0) base=parseFloat($("#vh_precio").val()); else base=0;
-			alert($("#vh_precio").val());
-			alert(base);
 			if($("#vh_tasa").val().length>0  ) tasa=parseFloat($("#vh_tasa").val())  ; else tasa=0;
-
 			$("#vh_monto").text(nformat(base*(1+(tasa/100))+'.$precioplaca.',2));
 			$("#totalg").val(roundNumber(base*(1+(tasa/100))+'.$precioplaca.',2));
 		}

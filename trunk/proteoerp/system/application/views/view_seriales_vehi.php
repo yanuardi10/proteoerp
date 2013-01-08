@@ -101,18 +101,21 @@ $(function(){
 		$it_base        = "base_${i}";
 		$it_iva         = "iva_${i}";
 		$it_id          = "idrel_${i}";
+		$it_id_sfac     = "id_sfac_${i}";
 
 	if($ccodigo != $form->$it_codigo->value){
 		$ccodigo =$form->$it_codigo->value;
 	?>
 	<tr style='background:#7098D0' >
-		<td class="littletablerow" colspan='5'  style="text-align:center;"><b><?php echo  $form->$it_codigo->value.$form->$it_desca->value.$form->$it_desca->output;  ?></b></td>
+		<td class="littletablerow" colspan='5'  style="text-align:center;">
+			<b><?php echo $form->$it_codigo->value.$form->$it_desca->value.$form->$it_desca->output; ?></b>
+		</td>
 	</tr>
 	<?php } ?>
 
 	<tr style="<?php if(!$mod) echo 'background:#E4E4E4'; else  echo ''; ?>">
 		<td class="littletablerow" align="right"><?php echo $form->$it_codigo->output.$form->$it_desca->output.$form->$it_id->output; ?>
-			<label for='<?php echo $it_anio;  ?>'>A&ntilde;o:</label><?php echo $form->$it_anio->output;  ?><br>
+			<label for='<?php echo $it_anio;  ?>'>A&ntilde;o:</label><?php echo $form->$it_anio->output.$form->$it_id_sfac->output; ?><br>
 			<label for='<?php echo $it_color; ?>'>Color:     </label><?php echo $form->$it_color->output; ?><br>
 		</td>
 		<td class="littletablerow" align="right">

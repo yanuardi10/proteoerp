@@ -2635,6 +2635,7 @@ class Scst extends Controller {
 		$do = new DataObject('scst');
 		$do->rel_one_to_many('sinvehiculo', 'sinvehiculo', array('id'=>'id_scst'));
 		$do->pointer('sprv' ,'sprv.proveed=scst.proveed','sprv.nombre AS sprvnombre','left');
+		$do->order_rel_one_to_many('sinvehiculo','codigo_sinv');
 		//$do->rel_pointer('itscst','sinv','itscst.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails('Compras',$do);
@@ -2785,6 +2786,10 @@ class Scst extends Controller {
 		$edit->tipo->rel_id   = 'sinvehiculo';
 		$edit->tipo->db_name  = 'tipo';
 		$edit->tipo->option('UTILITARIO'        ,'Utilitario');
+		$edit->tipo->option('ENDURO'            ,'Enduro');
+		$edit->tipo->option('SCOOTER'           ,'Scooter');
+		$edit->tipo->option('MOTOCICLETA'       ,'Motocicleta');
+		$edit->tipo->option('RACING'            ,'Racing');
 		$edit->tipo->option('CHASIS'            ,'Chasis');
 		$edit->tipo->option('CAVA REFRIGERADA'  ,'Cava Refrigerada');
 		$edit->tipo->option('CAVA TERMINA'      ,'Cava Termina');
@@ -2856,7 +2861,9 @@ class Scst extends Controller {
 			$edit->precioplaca->option($rrow->costo,nformat($rrow->costo));
 		}
 
-
+		$edit->id_sfac = new hiddenField('','id_sfac_<#i#>');
+		$edit->id_sfac->rel_id   = 'sinvehiculo';
+		$edit->id_sfac->db_name  = 'id_sfac';
 
 		$recep  =strtotime($edit->get_from_dataobjetct('recep'));
 		$fecha  =strtotime($edit->get_from_dataobjetct('fecha'));
@@ -3664,6 +3671,15 @@ class Scst extends Controller {
 	function _pre_vehi_delete($do){ return false;}
 
 	function _pre_vehi_update($do){
+		$rel='sinvehiculo';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$id_sfac  = $do->get_rel($rel,'id_sfac', $i);
+			if(empty($id_sfac)){
+				$do->rel_rm_field($rel,'id_sfac',$i);
+			}
+		}
+
 		return true;
 	}
 
