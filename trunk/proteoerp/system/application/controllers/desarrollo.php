@@ -696,7 +696,7 @@ class Desarrollo extends Controller{
 
 			$str .= $tab2.'$bodyscript .= \''."\n";
 			$str .= $tab2.'function '.strtolower($db).'add() {'."\n";
-			$str .= $tab3.'$.post("\'.site_url(\''.$contro.'/'.$db.'/dataedit/create\').\'",'."\n";
+			$str .= $tab3.'$.post("\'.site_url($this->url'.'.\'dataedit/create\').\'",'."\n";
 			$str .= $tab3.'function(data){'."\n";
 			$str .= $tab4.'$("#fedita").html(data);'."\n";
 			$str .= $tab4.'$("#fedita").dialog( "open" );'."\n";
@@ -710,7 +710,7 @@ class Desarrollo extends Controller{
 			$str .= $tab3.'if (id)	{'."\n";
 			$str .= $tab4.'var ret    = $("#newapi\'.$grid0.\'").getRowData(id);'."\n";
 			$str .= $tab4.'mId = id;'."\n";
-			$str .= $tab4.'$.post("\'.site_url(\''.$contro.'/'.$db.'/dataedit/modify\').\'/"+id, function(data){'."\n";
+			$str .= $tab4.'$.post("\'.site_url($this->url'.'.\'dataedit/modify\').\'/"+id, function(data){'."\n";
 			$str .= $tab5.'$("#fedita").html(data);'."\n";
 			$str .= $tab5.'$("#fedita").dialog( "open" );'."\n";
 			$str .= $tab4.'});'."\n";

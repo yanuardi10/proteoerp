@@ -2825,7 +2825,7 @@ class Sfac extends Controller {
 
 		$edit->observa   = new inputField('Observacion', 'observa');
 		$edit->nfiscal   = new inputField('No.Fiscal', 'nfiscal');
-		$edit->observ1   = new inputField('Observacion', 'observ1');
+		$edit->observ1   = new inputField('Observaci&oacute;n', 'observ1');
 		$edit->zona      = new inputField('Zona', 'zona');
 		$edit->ciudad    = new inputField('Ciudad', 'ciudad');
 		$edit->exento    = new inputField('Exento', 'exento');

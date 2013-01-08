@@ -8,7 +8,8 @@ $dbid = $this->db->escape($id);
 $mSQL = "
 SELECT If(a.referen='E','Efectivo',IF( a.referen='C','Cr&eacute;dito',IF(a.referen='M','Mixto','Pendiente'))) AS referen,
 	a.tipo_doc,a.numero,a.cod_cli,a.nombre,a.rifci,CONCAT(trim(c.dire11),' ', c.dire12) AS direccion,a.factura,a.fecha,a.vence,a.vd,
-	a.iva,a.totals,a.totalg, a.exento,a.tasa, a.montasa, a.reducida, a.monredu, a.sobretasa,a.monadic, b.nombre AS nomvend,tipo_doc, a.numero,a.peso,c.telefono 
+	a.iva,a.totals,a.totalg, a.exento,a.tasa, a.montasa, a.reducida, a.monredu, a.sobretasa,a.monadic, b.nombre AS nomvend,tipo_doc, 
+	a.numero,a.peso,c.telefono, a.observa,a.observ1
 FROM sfac a JOIN scli AS c ON a.cod_cli=c.cliente LEFT JOIN vend b ON a.vd=b.vendedor
 WHERE a.id=${dbid}";
 
@@ -25,6 +26,7 @@ $nombre   = trim($row->nombre);
 $stotal   = nformat($row->totals);
 $gtotal   = nformat($row->totalg);
 $exento   = nformat($row->exento);
+$observa  = trim($row->observa).trim($row->observ1);
 
 $tasa      = nformat($row->tasa);
 $montasa   = nformat($row->montasa);
@@ -111,13 +113,13 @@ $encabezado = "
 	<table style='width:100%;font-size: 9pt;' class='header' cellpadding='0' cellspacing='0'>
 		<tr>
 			<td><h1 style='text-align:left; border-bottom:1px solid;font-size:12pt;'>${documento} Nro. ${numero}</h1></td>
-			<td style='width:230px;'><h1 style='text-align:left;border-bottom:1px solid;font-size:12pt;'>Fecha de Emision: ${fecha}</h1></td>
+			<td style='width:230px;'><h1 style='text-align:left;border-bottom:1px solid;font-size:12pt;'>Fecha de Emisi&oacute;n: ${fecha}</h1></td>
 		</tr><tr>
 			<td>RIF, CI o Pasaporte: <b>${rifci}</b></td>
 			<td>Fecha de Vencimiento: <b>${vence}</b></td>
 		</tr><tr>
-			<td>Razon Social: <b>${nombre}</b></td>
-			<td>Codigo de Cliente: <b>${cod_cli}</b></td>
+			<td>Raz&oacute;n Social: <b>${nombre}</b></td>
+			<td>C&oacute;digo de Cliente: <b>${cod_cli}</b></td>
 		</tr><tr>
 			<td>Domicilio Fiscal: <b>${direc}</b></td>";
 if ( empty($factura) )
@@ -218,7 +220,13 @@ foreach ($detalle AS $items){ $i++;
 					if(!$clinea){
 						$ddetall = trim($items->detalle);
 						$descrip = trim($items->desca);
-						if(strlen($ddetall) > 0) $descrip .= "\n".$ddetall;
+						if(strlen($ddetall) > 0 ) {
+							if(strpos($ddetall,$descrip)!==false){
+								$descrip = $ddetall;
+							}else{
+								$descrip .= "\n".$ddetall;
+							}
+						}
 						$descrip = str_replace("\r",'',$descrip);
 						$descrip = str_replace(array("\t"),' ',$descrip);
 						$descrip = wordwrap($descrip,40,"\n");
@@ -256,14 +264,24 @@ foreach ($detalle AS $items){ $i++;
 		}
 	} while ($clinea);
 }
+
 for(1;$lineas<$maxlin;$lineas++){ ?>
 			<tr class="<?php if(!$mod) echo 'even_row'; else  echo 'odd_row'; ?>">
+<?php 
+	if(!empty($observa)){
+		echo "<td colspan='6' style='text-align: center;'>${observa}</td>";
+		$observa='';
+	}else{
+?>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
+<?php
+	}
+?>
 			</tr>
 <?php
 	$mod = ! $mod;
@@ -272,3 +290,4 @@ echo $pie_final;
 ?>
 </body>
 </html>
+

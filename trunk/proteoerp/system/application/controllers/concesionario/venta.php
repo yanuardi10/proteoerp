@@ -46,11 +46,10 @@ class venta extends sfac {
 			$precioplaca = $row->precioplaca;
 			$clase       = $row->clase;
 			$tipo        = $row->tipo;
-			$precio1     = round($row->precio1*100/(100+$iiva),2);
-			$precio2     = round($row->precio2*100/(100+$iiva),2);
-			$precio3     = round($row->precio3*100/(100+$iiva),2);
-			$precio4     = round($row->precio4*100/(100+$iiva),2);
-
+			$precio1     = round($row->precio1*100/(100+$iiva),2).'';
+			$precio2     = round($row->precio2*100/(100+$iiva),2).'';
+			$precio3     = round($row->precio3*100/(100+$iiva),2).'';
+			$precio4     = round($row->precio4*100/(100+$iiva),2).'';
 		}
 
 		$sfpade=$sfpach="<option value=''>Ninguno</option>";
@@ -67,7 +66,10 @@ class venta extends sfac {
 
 		$jsc='function calcula(){
 			if($("#vh_precio").val().length>0) base=parseFloat($("#vh_precio").val()); else base=0;
+			alert($("#vh_precio").val());
+			alert(base);
 			if($("#vh_tasa").val().length>0  ) tasa=parseFloat($("#vh_tasa").val())  ; else tasa=0;
+
 			$("#vh_monto").text(nformat(base*(1+(tasa/100))+'.$precioplaca.',2));
 			$("#totalg").val(roundNumber(base*(1+(tasa/100))+'.$precioplaca.',2));
 		}
@@ -211,6 +213,8 @@ class venta extends sfac {
 		$edit->base->rule  = 'required|numeric';
 		$edit->base->style = 'width:150px';
 		$edit->base->group = 'Datos del financieros';
+
+		//$edit->base->options($arrpp);
 		$edit->base->option($precio1,nformat($precio1));
 		$edit->base->option($precio2,nformat($precio2));
 		$edit->base->option($precio3,nformat($precio3));
