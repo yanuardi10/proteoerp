@@ -3720,15 +3720,6 @@ class Sfac extends Controller {
 					$ban=$this->db->simple_query($sql);
 					if($ban==false){ memowrite($sql,'sfac'); $error++;}
 				}
-
-				//Chequea si es una venta vehicular
-				if($this->db->table_exists('sinvehiculo')){
-					$dbfactura=$this->db->escape($factura);
-					$id=$this->datasis->dameval("SELECT id FROM sfac WHERE numero=$dbfactura AND tipo_doc='F'");
-					if(!empty($id)){
-						$this->db->simple_query("UPDATE sinvehiculo SET id_sfac=NULL WHERE id_sfac=$id");
-					}
-				}
 			}
 		}
 
@@ -3754,6 +3745,16 @@ class Sfac extends Controller {
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'sfac'); $error++;}
 
+		}
+
+		//Chequea si es una venta vehicular
+		if($this->db->table_exists('sinvehiculo') && $tipo_doc=='D'){
+			$factura  =$do->get('factura');
+			$dbfactura=$this->db->escape($factura);
+			$id=$this->datasis->dameval("SELECT id FROM sfac WHERE numero=$dbfactura AND tipo_doc='F'");
+			if(!empty($id)){
+				$this->db->simple_query("UPDATE sinvehiculo SET id_sfac=NULL WHERE id_sfac=$id");
+			}
 		}
 
 		//Si viene de pfac
