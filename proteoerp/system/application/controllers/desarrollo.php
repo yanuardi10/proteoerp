@@ -1,25 +1,25 @@
 <?php
 /***********************************************************************
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
 */
 
 class Desarrollo extends Controller{
@@ -29,7 +29,7 @@ class Desarrollo extends Controller{
 	}
 
 	function index(){
-		
+
 	}
 
 	function camposdb(){
@@ -234,7 +234,7 @@ class Desarrollo extends Controller{
 			$mt1   = "\n";
 			$mt2   = "\n";
 			$mt3   = "\n\t";
-			
+
 			$crud  = '$filter = new DataFilter("Filtro", \''.$tabla.'\');';
 			$crud .= $mt1.'$filter->attributes=array(\'onsubmit\'=>\'is_loaded()\');'."\n";
 
@@ -310,7 +310,7 @@ class Desarrollo extends Controller{
 			$crud.=$mt3.'$sobretabla="";';
 			$crud.=$mt3.'//if(!empty($filter->?????->newValue))  $sobretabla.=\'??????:  \'.$filter->?????->description;';
 			$crud.=$mt3.'//if(!empty($filter->?????->newValue))  $sobretabla.=\'??????:  \'.$filter->?????->description;'."\n";
-               
+
 			$crud.=$mt3.'$pdf = new PDFReporte($mSQL);';
 			$crud.=$mt3.'$pdf->setHeadValores(\'TITULO1\');';
 			$crud.=$mt3.'$pdf->setSubHeadValores(\'TITULO2\',\'TITULO3\');';
@@ -611,7 +611,7 @@ class Desarrollo extends Controller{
 			echo "<br>$campos";
 		}
 	}
-	
+
 	//******************************************************************
 	//
 	//  Genera Crud para jqGrid
@@ -626,7 +626,7 @@ class Desarrollo extends Controller{
 		if($contro===false){
 			$contro = 'CONTROLADOR';
 		}
-		
+
 		$query = $this->db->query("DESCRIBE $db");
 		$i = 0;
 		if ($query->num_rows() > 0){
@@ -747,17 +747,31 @@ class Desarrollo extends Controller{
 			$str .= $tab5.'data: $("#df1").serialize(),'."\n";
 			$str .= $tab5.'success: function(r,s,x){'."\n";
 
-			$str .= $tab6.'if ( r.length == 0 ) {'."\n";
-
-			$str .= $tab7.'apprise("Registro Guardado");'."\n";
-			$str .= $tab7.'$( "#fedita" ).dialog( "close" );'."\n";
-			$str .= $tab7.'grid.trigger("reloadGrid");'."\n";
-			$str .= $tab7.'\'.$this->datasis->jwinopen(site_url(\'formatos/ver/'.strtoupper($db).'\').\'/\\\'+res.id+\\\'/id\\\'\').\';'."\n";
-			$str .= $tab7.'return true;'."\n";
-			$str .= $tab6.'} else { '."\n";
-			$str .= $tab7.'$("#fedita").html(r);'."\n";
-
+			$str .= $tab6.'try{'."\n";
+			$str .= $tab7.'var json = JSON.parse(r);'."\n";
+			$str .= $tab7.'if (json.status == "A"){'."\n";
+			$str .= $tab7.'	apprise("Registro Guardado");'."\n";
+			$str .= $tab7.'	$( "#fedita" ).dialog( "close" );'."\n";
+			$str .= $tab7.'	grid.trigger("reloadGrid");'."\n";
+			$str .= $tab7.'	\'.$this->datasis->jwinopen(site_url(\'formatos/ver/'.strtoupper($db).'\').\'/\\\'+res.id+\\\'/id\\\'\').\';'."\n";
+			$str .= $tab7.'	return true;'."\n";
+			$str .= $tab7.'} else {'."\n";
+			$str .= $tab7.'	apprise(json.mensaje);'."\n";
+			$str .= $tab7.'}'."\n";
+			$str .= $tab6.'}catch(e){'."\n";
+			$str .= $tab6.'	$("#fedita").html(r);'."\n";
 			$str .= $tab6.'}'."\n";
+
+			//$str .= $tab6.'if ( r.length == 0 ) {'."\n";
+			//$str .= $tab7.'apprise("Registro Guardado");'."\n";
+			//$str .= $tab7.'$( "#fedita" ).dialog( "close" );'."\n";
+			//$str .= $tab7.'grid.trigger("reloadGrid");'."\n";
+			//$str .= $tab7.'\'.$this->datasis->jwinopen(site_url(\'formatos/ver/'.strtoupper($db).'\').\'/\\\'+res.id+\\\'/id\\\'\').\';'."\n";
+			//$str .= $tab7.'return true;'."\n";
+			//$str .= $tab6.'} else { '."\n";
+			//$str .= $tab7.'$("#fedita").html(r);'."\n";
+			//$str .= $tab6.'}'."\n";
+
 			$str .= $tab5.'}'."\n";
 			//$str .= $tab4.'}'."\n";
 			$str .= $tab3.'})},'."\n";
@@ -828,7 +842,7 @@ class Desarrollo extends Controller{
 						$maxlong = $long/10;
 						if ( $long > 200 ) $long = 200;
 						if ( $long < 40 ) $long = 40;
-						
+
 						$str .= $tab3.'\'width\'         => '.$long.','."\n";
 						$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
 						$str .= $tab3.'\'editrules\'     => \'{ required:true}\','."\n";
@@ -841,7 +855,7 @@ class Desarrollo extends Controller{
 						$str .= $tab3.'\'editoptions\'   => "\'{rows:2, cols:60}\'",'."\n";
 
 						//$str .= $tab3.'\'formoptions\'   => "\'{rows:"2", cols:"60"}\'",'."\n";
-						
+
 
 					} else {
 						$str .= $tab3.'\'width\'         => 140,'."\n";
@@ -851,14 +865,14 @@ class Desarrollo extends Controller{
 				$str .= $tab2.'));'."\n\n";
 				$columna .= $str."\n";
 			}
-			
+
 			$str  = $tab2.'$grid->showpager(true);'."\n";
 			$str .= $tab2.'$grid->setWidth(\'\');'."\n";
 			$str .= $tab2.'$grid->setHeight(\'290\');'."\n";
 			$str .= $tab2.'$grid->setTitle($this->titp);'."\n";
 			$str .= $tab2.'$grid->setfilterToolbar(true);'."\n";
 			$str .= $tab2.'$grid->setToolbar(\'false\', \'"top"\');'."\n\n";
-		
+
 			$str .= $tab2.'$grid->setFormOptionsE(\'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} \');'."\n";
 			$str .= $tab2.'$grid->setFormOptionsA(\'closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} \');'."\n";
 
@@ -873,7 +887,7 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$grid->setDelete( $this->datasis->sidapuede(\''.strtoupper($db).'\',\'BORR_REG%\'));'."\n";
 			$str .= $tab2.'$grid->setSearch( $this->datasis->sidapuede(\''.strtoupper($db).'\',\'BUSQUEDA%\'));'."\n";
 			$str .= $tab2.'$grid->setRowNum(30);'."\n";
-            
+
 			$str .= $tab2.'$grid->setShrinkToFit(\'false\');'."\n\n";
 
 			$str .= $tab2.'$grid->setBarOptions("\t\taddfunc: '.strtolower($db).'add,\n\t\teditfunc: '.strtolower($db).'edit");'."\n\n";
@@ -947,7 +961,7 @@ class Desarrollo extends Controller{
 			$str .= $tab4.'$this->db->query("DELETE FROM '.$db.' WHERE $mcodp=?", array($mcodp));'."\n";
 			$str .= $tab4.'$this->db->query("UPDATE '.$db.' SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));'."\n";
 			$str .= $tab4.'$this->db->where("id", $id);'."\n";
-			$str .= $tab4.'$this->db->update("'.$db.'", $data);'."\n";	
+			$str .= $tab4.'$this->db->update("'.$db.'", $data);'."\n";
 			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");'."\n";
 			$str .= $tab4.'echo "Grupo Cambiado/Fusionado en clientes";'."\n";
 
@@ -958,7 +972,7 @@ class Desarrollo extends Controller{
 			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"Grupo de Cliente  ".$nuevo." MODIFICADO");'."\n";
 			$str .= $tab4.'echo "$mcodp Modificado";'."\n";
 			$str .= $tab3.'}'."\n\n";
-		
+
 			$str .= $tab2.'} elseif($oper == \'del\') {'."\n";
 			$str .= $tab3.'$meco = $this->datasis->dameval("SELECT $mcodp FROM '.$db.' WHERE id=$id");'."\n";
 
@@ -981,7 +995,7 @@ class Desarrollo extends Controller{
 			$str .= '}'."\n";
 
 			$columna .= $str."\n";
-		
+
 			echo $columna."</pre>";
 
 		}
@@ -1003,12 +1017,12 @@ class Desarrollo extends Controller{
 		if($db===false){
 			exit('Debe especificar en la uri la tabla Detalle "/maestro/detalle/directorio"');
 		}
-		
+
 		$contro =$this->uri->segment(5);
 		if($contro===false){
 			$contro = 'CONTROLADOR';
 		}
-		
+
 		$query = $this->db->query("DESCRIBE $db");
 		$i = 0;
 		if ($query->num_rows() > 0){
@@ -1028,7 +1042,7 @@ class Desarrollo extends Controller{
 
 			$str .= $this->jqgridclase($db, $contro);
 
-		
+
 			$str .= $tab1.'//***************************'."\n";
 			$str .= $tab1.'//Layout en la Ventana'."\n";
 			$str .= $tab1.'//'."\n";
@@ -1196,7 +1210,7 @@ class Desarrollo extends Controller{
 			$str .= $tab4.'}'."\n";
 			$str .= $tab3.'}\''."\n";
 			$str .= $tab2.');'."\n";
-		
+
 			$str .= $tab2.'$grid->setFormOptionsE(\'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} \');'."\n";
 			$str .= $tab2.'$grid->setFormOptionsA(\'closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} \');'."\n";
 
@@ -1208,7 +1222,7 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$grid->setDelete( $this->datasis->sidapuede(\''.strtoupper($db).'\',\'BORR_REG%\'));'."\n";
 			$str .= $tab2.'$grid->setSearch( $this->datasis->sidapuede(\''.strtoupper($db).'\',\'BUSQUEDA%\'));'."\n";
 			$str .= $tab2.'$grid->setRowNum(30);'."\n";
-            
+
 			$str .= $tab2.'$grid->setShrinkToFit(\'false\');'."\n\n";
 
 			$str .= $tab2.'$grid->setBarOptions("\t\taddfunc: '.strtolower($db).'add,\n\t\teditfunc: '.strtolower($db).'edit");'."\n\n";
@@ -1280,7 +1294,7 @@ class Desarrollo extends Controller{
 			$str .= $tab4.'$this->db->query("DELETE FROM '.$db.' WHERE $mcodp=?", array($mcodp));'."\n";
 			$str .= $tab4.'$this->db->query("UPDATE '.$db.' SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));'."\n";
 			$str .= $tab4.'$this->db->where("id", $id);'."\n";
-			$str .= $tab4.'$this->db->update("'.$db.'", $data);'."\n";	
+			$str .= $tab4.'$this->db->update("'.$db.'", $data);'."\n";
 			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");'."\n";
 			$str .= $tab4.'echo "Grupo Cambiado/Fusionado en clientes";'."\n";
 
@@ -1291,7 +1305,7 @@ class Desarrollo extends Controller{
 			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"Grupo de Cliente  ".$nuevo." MODIFICADO");'."\n";
 			$str .= $tab4.'echo "$mcodp Modificado";'."\n";
 			$str .= $tab3.'}'."\n\n";
-		
+
 			$str .= $tab2.'} elseif($oper == \'del\') {'."\n";
 			$str .= $tab3.'$meco = $this->datasis->dameval("SELECT $mcodp FROM '.$db.' WHERE id=$id");'."\n";
 
@@ -1378,7 +1392,7 @@ class Desarrollo extends Controller{
 			$str .= $tab1.'//***********************************'."\n";
 			$str .= $tab1.'// DataEdit  '."\n";
 			$str .= $tab1.'//***********************************'."\n";
-		
+
 			$str .= $this->genecrudjq($db, false);
 
 			$str .= $this->genepre( $db, false);
@@ -1387,11 +1401,11 @@ class Desarrollo extends Controller{
 			$str .= '}'."\n";
 
 			$columna .= $str."\n";
-		
+
 			echo $columna."</pre>";
 
 		}
-		
+
 	}
 
 
@@ -1428,7 +1442,7 @@ class Desarrollo extends Controller{
 		$str .= $tab1.'}'."\n\n";
 
 		return $str;
-	
+
 	}
 
 
@@ -1492,7 +1506,7 @@ class Desarrollo extends Controller{
 					$maxlong = $long/10;
 					if ( $long > 200 ) $long = 200;
 					if ( $long < 40 ) $long = 40;
-					
+
 					$str .= $tab3.'\'width\'         => '.$long.','."\n";
 					$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
 					$str .= $tab3.'\'editrules\'     => \'{ required:true}\','."\n";
@@ -1522,7 +1536,7 @@ class Desarrollo extends Controller{
 		if($tabla===false){
 			exit('Debe especificar en la uri la tabla y el directorio "/tabla/controlador/directorio/id"');
 		}
-		
+
 		$contro =$this->uri->segment(4);
 		if($contro===false){
 			exit('Debe especificar en la uri la tabla y el directorio "/tabla/controlador/directorio/id"');
@@ -1550,6 +1564,7 @@ class Desarrollo extends Controller{
 		$crud ="\n\t".'function dataedit(){'."\n";
 		$crud.="\t\t".'$this->rapyd->load(\'dataedit\');'."\n\n";
 		$crud.="\t\t".'$edit = new DataEdit($this->tits, \''.$tabla.'\');'."\n\n";
+		$crud.="\t\t".'$edit->on_save_redirect=false;'."\n\n";
 		$crud.="\t\t".'$edit->back_url = site_url($this->url.\'filteredgrid\');'."\n\n";
 
 		$crud.="\t\t".'$edit->post_process(\'insert\',\'_post_insert\');'."\n";
@@ -1625,12 +1640,24 @@ class Desarrollo extends Controller{
 		$crud.="\t\t".'});'."\n";
 		$crud.="\t\t".'</script>\';'."\n\n";
 
-		$crud.="\t\t".'$data[\'content\'] = $edit->output;'."\n";
-		//$crud.="\t\t".'$data[\'head\']    = $this->rapyd->get_head();'."\n";
-		//$crud.="\t\t".'$data[\'script\']  = script(\'jquery.js\').script(\'plugins/jquery.numeric.pack.js\').script(\'plugins/jquery.floatnumber.js\');'."\n";
-		$crud.="\t\t".'$data[\'script\'] = $script;'."\n";
-		//$crud.="\t\t".'$data[\'title\']   = heading($this->tits);'."\n";
-		$crud.="\t\t".'$this->load->view(\'jqgrid/ventanajq\', $data);'."\n\n";
+		$crud.="\t\t".'if($edit->on_success()){'."\n";
+		$crud.="\t\t".'	$rt=array('."\n";
+		$crud.="\t\t".'		\'status\' =>\'A\','."\n";
+		$crud.="\t\t".'		\'mensaje\'=>\'Registro guardado\','."\n";
+		$crud.="\t\t".'		\'pk\'     =>$edit->_dataobject->pk'."\n";
+		$crud.="\t\t".'	);'."\n";
+		$crud.="\t\t".'	echo json_encode($rt);'."\n";
+		$crud.="\t\t".'}else{'."\n";
+		$crud.="\t\t".'	echo $edit->output;'."\n";
+		$crud.="\t\t".'}'."\n";
+
+		//$crud.="\t\t".'$data[\'content\'] = $edit->output;'."\n";
+		////$crud.="\t\t".'$data[\'head\']    = $this->rapyd->get_head();'."\n";
+		////$crud.="\t\t".'$data[\'script\']  = script(\'jquery.js\').script(\'plugins/jquery.numeric.pack.js\').script(\'plugins/jquery.floatnumber.js\');'."\n";
+		//$crud.="\t\t".'$data[\'script\'] = $script;'."\n";
+		////$crud.="\t\t".'$data[\'title\']   = heading($this->tits);'."\n";
+		//$crud.="\t\t".'$this->load->view(\'jqgrid/ventanajq\', $data);'."\n\n";
+
 		$crud.="\t".'}'."\n";
 
 		if($s){
@@ -1642,6 +1669,6 @@ class Desarrollo extends Controller{
 			return $crud;
 		}
 	}
-	
+
 }
 ?>
