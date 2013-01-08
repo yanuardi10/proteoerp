@@ -1,22 +1,22 @@
 <?php
-class Lvaca extends Controller {
-	var $mModulo = 'LVACA';
-	var $titp    = 'Vaqueras';
-	var $tits    = 'Vaqueras';
-	var $url     = 'leche/lvaca/';
+class Lruta extends Controller {
+	var $mModulo = 'LRUTA';
+	var $titp    = 'Modulo LRUTA';
+	var $tits    = 'Modulo LRUTA';
+	var $url     = 'leche/lruta/';
 
-	function Lvaca(){
+	function Lruta(){
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		$this->datasis->modulo_nombre( 'LVACA', $ventana=0 );
+		$this->datasis->modulo_nombre( 'LRUTA', $ventana=0 );
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('lvaca','id') ) {
-			$this->db->simple_query('ALTER TABLE lvaca DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE lvaca ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE lvaca ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		/*if ( !$this->datasis->iscampo('lruta','id') ) {
+			$this->db->simple_query('ALTER TABLE lruta DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE lruta ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE lruta ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
@@ -39,16 +39,15 @@ class Lvaca extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-			array("id"=>"fedita",  "title"=>"Agregar/Editar Registro"),
-			array("id"=>"fborra",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$param['WestPanel']   = $WestPanel;
 		//$param['EastPanel'] = $EastPanel;
 		$param['SouthPanel']  = $SouthPanel;
-		$param['listados']    = $this->datasis->listados('LVACA', 'JQ');
-		$param['otros']       = $this->datasis->otros('LVACA', 'JQ');
+		$param['listados']    = $this->datasis->listados('LRUTA', 'JQ');
+		$param['otros']       = $this->datasis->otros('LRUTA', 'JQ');
 		$param['temas']       = array('proteo','darkness','anexos1');
 		$param['bodyscript']  = $bodyscript;
 		$param['tabs']        = false;
@@ -64,7 +63,7 @@ class Lvaca extends Controller {
 		$bodyscript = '		<script type="text/javascript">';
 
 		$bodyscript .= '
-		function lvacaadd() {
+		function lrutaadd() {
 			$.post("'.site_url($this->url.'dataedit/create').'",
 			function(data){
 				$("#fedita").html(data);
@@ -73,35 +72,7 @@ class Lvaca extends Controller {
 		};';
 
 		$bodyscript .= '
-		function lvacadel() {
-			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				if(confirm(" Seguro desea eliminar el registro?")){
-					var ret    = $("#newapi'.$grid0.'").getRowData(id);
-					mId = id;
-					$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(r){
-						try{
-							var json = JSON.parse(r);
-							if (json.status == "A"){
-								apprise("Registro Eliminado");
-								jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
-								return true;
-							} else {
-								apprise(json.mensaje);
-							}
-						}catch(e){
-							$("#fborra").html(r);
-							$("#fborra").dialog("open");
-						}
-					});
-				}
-			}else{
-				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
-			}
-		};';
-
-		$bodyscript .= '
-		function lvacaedit() {
+		function lrutaedit() {
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
@@ -146,7 +117,7 @@ class Lvaca extends Controller {
 								apprise("Registro Guardado");
 								$( "#fedita" ).dialog( "close" );
 								grid.trigger("reloadGrid");
-								//'.$this->datasis->jwinopen(site_url('formatos/ver/LVACA').'/\'+res.id+\'/id\'').';
+								//'.$this->datasis->jwinopen(site_url('formatos/ver/LRUTA').'/\'+res.id+\'/id\'').';
 								return true;
 							} else {
 								apprise(json.mensaje);
@@ -156,30 +127,10 @@ class Lvaca extends Controller {
 						}
 					}
 			})},
-			"Cancelar":
-				function() {
-					$( this ).dialog( "close" );
-					$("#fedita").html("");
-				}
-			},
-			close: function() {
-				allFields.val( "" ).removeClass( "ui-state-error" );
-				$("#fedita").html("");
-			}
-		});';
-
-		$bodyscript .= '
-		$("#fborra").dialog({
-			autoOpen: false, height: 300, width: 300, modal: true,
-			buttons: {
-				"Aceptar": function() {
-					$( this ).dialog( "close" );
-					grid.trigger("reloadGrid");
-				}
+			"Cancelar": function() { $( this ).dialog( "close" ); }
 			},
 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
-
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
@@ -201,10 +152,10 @@ class Lvaca extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 100,
+			'width'         => 40,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'editoptions'   => '{ size:4, maxlength: 4 }',
 		));
 
 
@@ -216,31 +167,7 @@ class Lvaca extends Controller {
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:100, maxlength: 100 }',
-		));
-
-
-		$grid->addField('finca');
-		$grid->label('Finca');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:100, maxlength: 100 }',
-		));
-
-
-		$grid->addField('ruta');
-		$grid->label('Ruta');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:4, maxlength: 4 }',
+			'editoptions'   => '{ size:50, maxlength: 50 }',
 		));
 
 
@@ -249,22 +176,10 @@ class Lvaca extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:4, maxlength: 4 }',
-		));
-
-
-		$grid->addField('ubicacion');
-		$grid->label('Ubicacion');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:200, maxlength: 200 }',
+			'editoptions'   => '{ size:50, maxlength: 50 }',
 		));
 
 
@@ -315,14 +230,14 @@ class Lvaca extends Controller {
 		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(    $this->datasis->sidapuede('LVACA','INCLUIR%' ));
-		$grid->setEdit(   $this->datasis->sidapuede('LVACA','MODIFICA%'));
-		$grid->setDelete( $this->datasis->sidapuede('LVACA','BORR_REG%'));
-		$grid->setSearch( $this->datasis->sidapuede('LVACA','BUSQUEDA%'));
+		$grid->setAdd(    $this->datasis->sidapuede('LRUTA','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('LRUTA','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('LRUTA','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('LRUTA','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("\t\taddfunc: lvacaadd,\n\t\teditfunc: lvacaedit ,delfunc: lvacadel");
+		$grid->setBarOptions("\t\taddfunc: lrutaadd,\n\t\teditfunc: lrutaedit");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -344,9 +259,9 @@ class Lvaca extends Controller {
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$mWHERE = $grid->geneTopWhere('lvaca');
+		$mWHERE = $grid->geneTopWhere('lruta');
 
-		$response   = $grid->getData('lvaca', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('lruta', array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
@@ -366,12 +281,12 @@ class Lvaca extends Controller {
 		unset($data['id']);
 		if($oper == 'add'){
 			if(false == empty($data)){
-				$check = $this->datasis->dameval("SELECT count(*) FROM lvaca WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				$check = $this->datasis->dameval("SELECT count(*) FROM lruta WHERE $mcodp=".$this->db->escape($data[$mcodp]));
 				if ( $check == 0 ){
-					$this->db->insert('lvaca', $data);
+					$this->db->insert('lruta', $data);
 					echo "Registro Agregado";
 
-					logusu('LVACA',"Registro ????? INCLUIDO");
+					logusu('LRUTA',"Registro ????? INCLUIDO");
 				} else
 					echo "Ya existe un registro con ese $mcodp";
 			} else
@@ -379,31 +294,31 @@ class Lvaca extends Controller {
 
 		} elseif($oper == 'edit') {
 			$nuevo  = $data[$mcodp];
-			$anterior = $this->datasis->dameval("SELECT $mcodp FROM lvaca WHERE id=$id");
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM lruta WHERE id=$id");
 			if ( $nuevo <> $anterior ){
 				//si no son iguales borra el que existe y cambia
-				$this->db->query("DELETE FROM lvaca WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE lvaca SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->query("DELETE FROM lruta WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE lruta SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
 				$this->db->where("id", $id);
-				$this->db->update("lvaca", $data);
-				logusu('LVACA',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				$this->db->update("lruta", $data);
+				logusu('LRUTA',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
 				echo "Grupo Cambiado/Fusionado en clientes";
 			} else {
 				unset($data[$mcodp]);
 				$this->db->where("id", $id);
-				$this->db->update('lvaca', $data);
-				logusu('LVACA',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				$this->db->update('lruta', $data);
+				logusu('LRUTA',"Grupo de Cliente  ".$nuevo." MODIFICADO");
 				echo "$mcodp Modificado";
 			}
 
 		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM lvaca WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM lvaca WHERE id='$id' ");
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM lruta WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM lruta WHERE id='$id' ");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM lvaca WHERE id=$id ");
-				logusu('LVACA',"Registro ????? ELIMINADO");
+				$this->db->simple_query("DELETE FROM lruta WHERE id=$id ");
+				logusu('LRUTA',"Registro ????? ELIMINADO");
 				echo "Registro Eliminado";
 			}
 		};
@@ -452,10 +367,11 @@ class Lvaca extends Controller {
 			});
 		});';
 
-		$edit = new DataEdit($this->tits, 'lvaca');
-		$edit->on_save_redirect=false;
+		$edit = new DataEdit($this->tits, 'lruta');
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
+
+		$edit->on_save_redirect=false;
 
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
@@ -467,23 +383,14 @@ class Lvaca extends Controller {
 		$edit->pre_process('delete','_pre_delete');
 
 		$edit->codigo = new inputField('C&oacute;digo','codigo');
-		$edit->codigo->rule='max_length[10]';
-		$edit->codigo->size =12;
-		$edit->codigo->maxlength =10;
+		$edit->codigo->rule='max_length[4]';
+		$edit->codigo->size =6;
+		$edit->codigo->maxlength =4;
 
 		$edit->nombre = new inputField('Nombre','nombre');
-		$edit->nombre->rule='max_length[100]';
-		$edit->nombre->maxlength =100;
-
-		$edit->finca = new inputField('Finca','finca');
-		$edit->finca->rule='max_length[100]';
-		$edit->finca->maxlength =100;
-
-		$edit->ruta = new dropdownField('Ruta', 'ruta');
-		$edit->ruta->rule = 'trim|max_length[4]';
-		$edit->ruta->option('','Seleccionar');
-		$edit->ruta->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM lruta ORDER BY nombre');
-		$edit->ruta->style = 'width:166px';
+		$edit->nombre->rule='max_length[50]';
+		$edit->nombre->size =52;
+		$edit->nombre->maxlength =50;
 
 		$edit->zona = new dropdownField('Zona', 'zona');
 		$edit->zona->rule = 'trim|max_length[4]';
@@ -491,16 +398,12 @@ class Lvaca extends Controller {
 		$edit->zona->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM zona ORDER BY nombre');
 		$edit->zona->style = 'width:166px';
 
-		$edit->ubicacion = new inputField('Ubicaci&oacute;n','ubicacion');
-		$edit->ubicacion->rule='max_length[200]';
-		$edit->ubicacion->maxlength =200;
-
-		$edit->codprv = new inputField('Proveedor','codprv');
+		$edit->codprv = new inputField('Codprv','codprv');
 		$edit->codprv->rule='max_length[5]';
 		$edit->codprv->size =7;
 		$edit->codprv->maxlength =5;
 
-		$edit->proveed = new inputField('Proveed','proveed');
+		$edit->proveed = new inputField('Proveedor','proveed');
 		$edit->proveed->rule='max_length[45]';
 		$edit->proveed->size =47;
 		$edit->proveed->type='inputhidden';
@@ -509,13 +412,14 @@ class Lvaca extends Controller {
 
 		$edit->build();
 
+		$script= '';
+
 		if($edit->on_success()){
 			$rt=array(
 				'status' =>'A',
 				'mensaje'=>'Registro guardado',
 				'pk'     =>$edit->_dataobject->pk
 			);
-
 			echo json_encode($rt);
 		}else{
 			echo $edit->output;
@@ -531,6 +435,16 @@ class Lvaca extends Controller {
 	}
 
 	function _pre_delete($do){
+
+		$codigo=$this->db->escape($do->get('codigo'));
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM lvaca WHERE ruta=$codigo");
+
+		if ($check > 0){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Ruta con Movimiento no puede ser Borrado';
+			return False;
+		}
+		return True;
+	}
 		return true;
 	}
 
