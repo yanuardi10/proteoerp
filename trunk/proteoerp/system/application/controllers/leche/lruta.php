@@ -19,6 +19,7 @@ class Lruta extends Controller {
 			$this->db->simple_query('ALTER TABLE lruta ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		$this->datasis->creaintramenu( $data = array('modulo'=>'221','titulo'=>'Rutas de Acopio','mensaje'=>'Rutas de Acopio','panel'=>'LECHE','ejecutar'=>'leche/lruta','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
 	}
 
@@ -444,8 +445,6 @@ class Lruta extends Controller {
 			return False;
 		}
 		return True;
-	}
-		return true;
 	}
 
 	function _post_insert($do){

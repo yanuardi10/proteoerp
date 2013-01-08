@@ -10,15 +10,14 @@ class Bmov extends Controller {
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
 		$this->datasis->modulo_nombre( 'BMOV', $ventana=0 );
-
 	}
 
 	function index(){
 		if ( !$this->datasis->iscampo('bmov','id') ) {
-		$this->db->simple_query('ALTER TABLE bmov DROP PRIMARY KEY');
-		$this->db->simple_query('ALTER TABLE bmov ADD UNIQUE INDEX idunico (codbanc, tipo_op, numero)');
-		$this->db->simple_query('ALTER TABLE bmov ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-	};
+			$this->db->simple_query('ALTER TABLE bmov DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE bmov ADD UNIQUE INDEX idunico (codbanc, tipo_op, numero)');
+			$this->db->simple_query('ALTER TABLE bmov ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
 		redirect($this->url.'jqdatag');
 	}
 
@@ -31,19 +30,18 @@ class Bmov extends Controller {
 		$grid = $this->defgrid();
 		$param['grid'] = $grid->deploy();
 
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
+		$bodyscript = '<script type="text/javascript">
+	$(function() {
+		$( "input:submit, a, button", ".otros" ).button();
+	});
 
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/formatos/ver/BMOV/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
+	jQuery("#a1").click( function(){
+		var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		if (id)	{
+			var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+			window.open(\'/proteoerp/formatos/ver/BMOV/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+	});
 </script>
 ';
 

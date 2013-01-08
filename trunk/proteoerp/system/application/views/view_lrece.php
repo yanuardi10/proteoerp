@@ -9,38 +9,38 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table border=0 width="100%">
 	<tr>
 		<td colspan='2'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
 			<table border=0 width="100%">
 			<tr>
-				<td class="littletableheaderc"><?=$form->numero->label  ?></td>
-				<td class="littletablerow" ><?=$form->numero->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->numero->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->numero->output;?></td>
 			</tr>	
 			<tr>
-				<td class="littletableheaderc"><?=$form->fecha->label    ?></td>
-				<td class="littletablerow"><?=$form->fecha->output?></td>
+				<td class="littletableheaderc"><?php echo $form->fecha->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->fecha->output;?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?=$form->ruta->label  ?></td>
-				<td class="littletablerow"><?=$form->ruta->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->ruta->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->ruta->output;?></td>
 			</tr>
 			</table>
 			</fieldset>
 		</td>
 		<td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
 			<legend>&nbsp;</legend>
 			<table border=0 width="100%">
 			<tr>
-				<td class="littletableheaderc"><?=$form->chofer->label ?></td>
-				<td class="littletablerow"><?=$form->chofer->output?></td>
+				<td class="littletableheaderc"><?php echo $form->chofer->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->chofer->output;?></td>
 			</tr>	
 			<tr>
-				<td class="littletableheaderc"><?=$form->nombre->label ?></td>
-				<td class="littletablerow"><?=$form->nombre->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->nombre->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->nombre->output;?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?=$form->lleno->label  ?></td>
-				<td class="littletablerow"><?=$form->lleno->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->lleno->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->lleno->output;?></td>
 			</tr>
 			</table>
 			</fieldset>
@@ -49,40 +49,22 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 </table>
 <table  width="100%" border='0'>
 	<tr>
-		<td valign='top' width='50%'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #E0ECF8;'>
-			<legend class="titulofieldset" style='color: #114411;'>Apertura</legend>
-			<table width= "100%" >
-				<tr>
-					<td class="littletableheaderc"><?=$form->fechaa->label ?></td>
-					<td class="littletablerow"><?=$form->fechaa->output ?>&nbsp;</td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->horaa->label ?></td>
-					<td class="littletablerow"><?=$form->horaa->output ?>&nbsp;</td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->apertura->label   ?></td>
-					<td class="littletablerow" style='font-size:11;'><?=$form->apertura->output  ?>&nbsp;</td>
-				</tr>
-			</table>
-			</fieldset>
-		</td>
 		<td  valign="top">	
-			<fieldset style='border: 2px outset #9AC8DA;background: #E0ECF8;'>
-			<legend class="titulofieldset" style='color: #114411;'>Cierre</legend>
+			<fieldset style='border: 1px outset #9AC8DA;background: #E0ECF8;'>
 			<table style="height: 100%;width: 100%">
 				<tr>
-					<td class="littletableheaderc"><?=$form->fechac->label  ?></td>
-					<td class="littletablerow"><?=$form->fechac->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->lleno->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->lleno->output;?></td>
+					<td class="littletableheaderc"><?php echo $form->vacio->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->vacio->output;?></td>
+					<td class="littletableheaderc"><?php echo $form->neto->label; ?> </td>
+					<td class="littletablerow"    ><?php echo $form->neto->output;?> </td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"> <?=$form->horac->label ?> </td>
-					<td class="littletablerow"> <?=$form->horac->output ?> </td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->cierre->label  ?></td>
-					<td class="littletablerow"><?=$form->cierre->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->densidad->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->densidad->output;?></td>
+					<td class="littletableheaderc"><?php echo $form->litros->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->litros->output;?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -92,40 +74,38 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table  width="100%" border='0'>
 	<tr>
 		<td width='50%'>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Mesas Restaurant</legend>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<table width= '100%' >
 				<tr>
-					<td class="littletableheaderc"><?=$form->mesai->label  ?></td>
-					<td class="littletablerow"><?=$form->mesai->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->litros->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->litros->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"> <?=$form->mesaf->label ?> </td>
-					<td class="littletablerow"> <?=$form->mesaf->output ?> </td>
+					<td class="littletableheaderc"><?php echo $form->lista->label; ?> </td>
+					<td class="littletablerow"    ><?php echo $form->lista->output;?> </td>
 				</tr>
 			</table>
 			</fieldset>
 		</td>
 		<td>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Hora Feliz Restaurant</legend>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<table width= '100%' >
 				<tr>
-					<td class="littletableheaderc"><?=$form->horai->label  ?></td>
-					<td class="littletablerow"><?=$form->horai->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->diferen->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->diferen->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?=$form->horaf->label  ?></td>
-					<td class="littletablerow"><?=$form->horaf->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->animal->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->animal->output;?></td>
 				</tr>
 			</table>
 			</fieldset>
 		</td>
 	</tr><tr>
 		<td colspan='2' class="littletableheaderc" align='center'>
-		<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+		<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			Directorio de trabajo: 
-		<span class="littletablerow"> <?php echo $form->directo->output ?></span>
+		<span class="littletablerow"> <?php echo $form->crios->output ?></span>
 		</fieldset>
 		</td>
 	</tr>
