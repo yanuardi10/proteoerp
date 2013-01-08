@@ -788,6 +788,9 @@ function sfpatipo(id){
 				<td class="littletableheader" align='right'><?php echo $form->totalg->label;  ?></td>
 				<td class="littletablerow"    align='right' style='font-size:18px;font-weight: bold'><b id='totalg_val'><?php echo nformat($form->totalg->value); ?></b><?php echo $form->totalg->output; ?></td>
 			</tr>
+			<tr>
+				<td colspan='6'><?php echo  $form->observ1->label.$form->observ1->output; ?></td>
+			</tr>
 		</table>
 		</fieldset>
 		</td>
