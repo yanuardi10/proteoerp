@@ -105,15 +105,22 @@ class Scst extends Controller {
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				'.$this->datasis->jwinopen(site_url($this->url.'printrete').'/\'+id+"/id"').';
-			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				if ( ret.actuali >= ret.fecha ) {
+					'.$this->datasis->jwinopen(site_url($this->url.'printrete').'/\'+id+"/id"').';
+				}else{
+					$.prompt("<h1>Debe actualizar la compra para imprimir la retenci&oacute;n.</h1>");
+				}
+			} else {
+				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
+			}
 		});';
 
 
 		$bodyscript .= '
 		jQuery("#serie").click( function(){
 			var gr = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if( gr != null )
+			if( gr != null ){
 				jQuery("#newapi'.$grid0.'").jqGrid(\'editGridRow\',gr,
 				{
 					closeAfterEdit:true,
@@ -127,23 +134,24 @@ class Scst extends Controller {
 					afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
 					reloadAfterSubmit:false
 				});
-			else
+			}else{
 				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
+			}
 		});';
 
 		$bodyscript .= '
-		function scstadd() {
+		function scstadd(){
 			$.post("'.site_url('compras/scst/solo/create').'",
 			function(data){
 				$("#factuali").html("");
 				$("#fvehi").html("");
 				$("#fcompra").html(data);
 				$("#fcompra").dialog( "open" );
-			})
+			});
 		};';
 
 		$bodyscript .= '
-		jQuery("#vehiculo").click( function(){
+		jQuery("#vehiculo").click(function(){
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var rt= $.ajax({ type: "POST", url: "'.site_url($this->url.'getvehicular').'/"+id, async: false }).responseText;
@@ -159,15 +167,15 @@ class Scst extends Controller {
 				}else{
 					$.prompt("<h1>La compra seleccionada no posee veh&iacute;culos</h1>");
 				}
-			} else {
+			}else{
 				$.prompt("<h1>Por favor Seleccione una compra</h1>");
 			}
 		});';
 
 		$bodyscript .= '
 		function scstedit() {
-			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id){
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				if ( ret.actuali >= ret.fecha ) {
 					$.prompt("<h1>Compra ya Actualizada</h1>Debe reversarla si desea hacer modificaciones");
@@ -180,7 +188,9 @@ class Scst extends Controller {
 						$("#fcompra" ).dialog( "open" );
 					});
 				}
-			} else { $.prompt("<h1>Por favor Seleccione una compra</h1>");}
+			} else {
+				$.prompt("<h1>Por favor Seleccione una compra</h1>");
+			}
 		};';
 
 
@@ -1151,8 +1161,7 @@ class Scst extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid     = $this->jqdatagrid;
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE   = $grid->geneTopWhere('scst');
@@ -1164,8 +1173,7 @@ class Scst extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -1461,12 +1469,12 @@ class Scst extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait()
-	{
+	function getdatait(){
 		$id = $this->uri->segment(4);
 		if ($id == false ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM scst");
 		}
+		if(empty($id)) return '';
 		$control = $this->datasis->dameval("SELECT control FROM scst WHERE id=$id");
 		$grid    = $this->jqdatagrid;
 		$mSQL    = "SELECT * FROM itscst WHERE control='$control' ";
@@ -1478,8 +1486,7 @@ class Scst extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function setdatait()
-	{
+	function setdatait(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -1779,7 +1786,7 @@ class Scst extends Controller {
 
 		$do = new DataObject('scst');
 		$do->rel_one_to_many('itscst', 'itscst', 'control');
-		$do->pointer('sprv' ,'sprv.proveed=scst.proveed','sprv.nombre AS sprvnombre','left');
+		$do->pointer('sprv' ,'sprv.proveed=scst.proveed','sprv.nombre AS sprvnombre,sprv.reteiva AS sprvreteiva','left');
 		$do->rel_pointer('itscst','sinv','itscst.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails('Compras',$do);
@@ -1841,6 +1848,9 @@ class Scst extends Controller {
 		$edit->nombre = new hiddenField('Nombre', 'nombre');
 		$edit->nombre->size = 50;
 		$edit->nombre->maxlength=40;
+
+		$edit->sprvreteiva = new hiddenField('', 'sprvreteiva');
+		$edit->sprvreteiva->pointer=true;
 
 		$edit->cfis = new inputField('Numero fiscal', 'nfiscal');
 		$edit->cfis->size = 15;
@@ -3548,8 +3558,8 @@ class Scst extends Controller {
 		$do->set('cimpuesto', round($iva    ,2));
 
 		//Para la retencion de iva si aplica
-		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
-		$rif     = $this->datasis->traevalor('RIF');
+		$contribu= trim($this->datasis->traevalor('CONTRIBUYENTE'));
+		$rif     = trim($this->datasis->traevalor('RIF'));
 		if($contribu=='ESPECIAL' && strtoupper($rif[0])!='V'){
 			$por_rete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
 			if($por_rete!=100){
