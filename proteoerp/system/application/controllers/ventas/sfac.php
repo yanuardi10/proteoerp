@@ -2992,7 +2992,7 @@ class Sfac extends Controller {
 		$edit->pre_process( 'insert','_pre_print_insert');
 		$edit->pre_process( 'delete','_pre_print_delete');
 
-		$edit->container = new containerField('impresion','La descarga se realizara en algunos segundos, en caso de no hacerlo haga click '.anchor('formatos/descargar/FACTURA/'.$uid,'aqui'));
+		$edit->container = new containerField('impresion','La descarga se realizara en algunos segundos, en caso de no hacerlo haga click '.anchor('formatos/'.$sfacforma.'/FACTURA/'.$uid,'aqui'));
 
 		$edit->nfiscal = new inputField('N&uacute;mero f&iacute;scal','nfiscal');
 		$edit->nfiscal->rule='max_length[12]|required';
@@ -3000,35 +3000,41 @@ class Sfac extends Controller {
 		$edit->nfiscal->maxlength =12;
 		$edit->nfiscal->autocomplete=false;
 
-		$numfis=$edit->get_from_dataobjetct('nfiscal');
-		if(empty($numfis)){
-			$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
-			if($fiscal=='S'){
-				$dbcajero=$this->db->escape($edit->get_from_dataobjetct('cajero'));
-				$num= $this->datasis->dameval("SELECT MAX(nfiscal) FROM sfac WHERE cajero=$dbcajero");
-				$nn = $num+1;
+		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
+		if($fiscal=='S'){
+			$tipo     = $edit->get_from_dataobjetct('tipo_doc');
+			$dbtipo   = $this->db->escape($tipo );
+			$dbcajero = $this->db->escape($edit->get_from_dataobjetct('cajero'));
+
+			$numfis= trim($edit->get_from_dataobjetct('nfiscal'));
+			if(empty($numfis)){
+				$num      = $this->datasis->dameval("SELECT MAX(nfiscal) FROM sfac WHERE cajero=$dbcajero AND tipo_doc=$dbtipo");
+				$nn       = $num+1;
 				$edit->nfiscal->updateValue=str_pad($nn,8,'0',STR_PAD_LEFT);
+			}
 
-				$edit->maqfiscal = new inputField('Serial m&aacute;quina f&iacute;scal','maqfiscal');
-				$edit->maqfiscal->rule='max_length[15]|strtoupper';
-				$edit->maqfiscal->size =16;
-				$edit->maqfiscal->maxlength =15;
-				$edit->maqfiscal->autocomplete=false;
+			$edit->maqfiscal = new inputField('Serial m&aacute;quina f&iacute;scal','maqfiscal');
+			$edit->maqfiscal->rule='max_length[15]|strtoupper';
+			$edit->maqfiscal->size =16;
+			$edit->maqfiscal->maxlength =15;
 
-				$tipo=$edit->get_from_dataobjetct('tipo_doc');
-				if($tipo=='D'){
-					$edit->dmaqfiscal = new inputField('Serial m&aacute;quina f&iacute;scal de la factura de or&iacute;gen','dmaqfiscal');
-					$edit->dmaqfiscal->rule='max_length[15]|strtoupper';
-					$edit->dmaqfiscal->size =16;
-					$edit->dmaqfiscal->maxlength =1;
-					$edit->dmaqfiscal->autocomplete=false;
+			$smaqfiscal=trim($edit->get_from_dataobjetct('maqfiscal'));
+			if(empty($smaqfiscal)){
+				$maqfiscal=$this->datasis->dameval("SELECT maqfiscal FROM sfac WHERE cajero=$dbcajero ORDER BY id DESC LIMIT 1,1");
+				$edit->maqfiscal->updateValue=$maqfiscal;
+			}
 
-					$dmaqfiscal=$edit->get_from_dataobjetct('dmaqfiscal');
-					if(empty($dmaqfiscal)){
-						$dbnumero=$this->db->escape($edit->get_from_dataobjetct('factura'));
-						$mfiscal=$this->datasis->dameval("SELECT maqfiscal FROM sfac WHERE numero=$dbnumero AND tipo_doc='F'");
-						$edit->dmaqfiscal->updateValue=$mfiscal;
-					}
+			if($tipo=='D'){
+				$edit->dmaqfiscal = new inputField('Serial m&aacute;quina f&iacute;scal de la factura de or&iacute;gen','dmaqfiscal');
+				$edit->dmaqfiscal->rule='max_length[15]|strtoupper';
+				$edit->dmaqfiscal->size =16;
+				$edit->dmaqfiscal->maxlength =15;
+
+				$dmaqfiscal=trim($edit->get_from_dataobjetct('dmaqfiscal'));
+				if(empty($dmaqfiscal)){
+					$dbnumero=$this->db->escape($edit->get_from_dataobjetct('factura'));
+					$mfiscal=$this->datasis->dameval("SELECT maqfiscal FROM sfac WHERE numero=$dbnumero AND tipo_doc='F'");
+					$edit->dmaqfiscal->updateValue=$mfiscal;
 				}
 			}
 		}

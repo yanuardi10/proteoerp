@@ -1,4 +1,8 @@
 <?php
+//1- Ruta, lleno (peso),chofer
+//2- llenar vaqueras
+//3- Valores de las analisis
+//4- Peso Vacio
 class Lrece extends Controller {
 	var $mModulo = 'LRECE';
 	var $titp    = 'Recepcion de Leche';
@@ -41,6 +45,10 @@ class Lrece extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
+
+		$grid->wbotonadd(array("id"=>"bvaqueras", "img"=>"images/star.png","alt" => 'Vaqueras', "label"=>"Vaqueras"));
+		$grid->wbotonadd(array("id"=>"banalisis", "img"=>"images/star.png","alt" => 'Analisis', "label"=>"Analisis"));
+		$grid->wbotonadd(array("id"=>"bcierre"  , "img"=>"images/star.png","alt" => 'Cierre'  , "label"=>"Cierre"  ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -76,24 +84,24 @@ class Lrece extends Controller {
 
 		$bodyscript .= '
 		function lreceadd() {
-			$.post("'.site_url('leche/lrece/dataedit/create').'",
+			$.post("'.site_url('leche/lrece/apertura/create').'",
 			function(data){
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
-			})
+			});
 		};';
 
 		$bodyscript .= '
 		function lreceedit() {
-			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret    = $("#newapi'.$grid0.'").getRowData(id);
-				mId = id;
-				$.post("'.site_url('leche/lrece/dataedit/modify').'/"+id, function(data){
-					$("#fedita").html(data);
-					$("#fedita").dialog( "open" );
-				});
-			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+			//var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			//if (id)	{
+			//	var ret    = $("#newapi'.$grid0.'").getRowData(id);
+			//	mId = id;
+			//	$.post("'.site_url('leche/lrece/dataedit/modify').'/"+id, function(data){
+			//		$("#fedita").html(data);
+			//		$("#fedita").dialog( "open" );
+			//	});
+			//} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
 		};';
 
 		//Wraper de javascript
@@ -111,6 +119,59 @@ class Lrece extends Controller {
 			';
 
 		$bodyscript .= '
+		jQuery("#imprime").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('formatos/ver/LRECE').'/\'+id+\'/id\'').';
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		});';
+
+		$bodyscript .= '
+		jQuery("#bvaqueras").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url('leche/lrece/vaqueras/modify').'/"+id,
+				function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		});';
+
+		$bodyscript .= '
+		jQuery("#banalisis").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url('leche/lrece/analisis/create').'",
+				function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		});';
+
+		$bodyscript .= '
+		jQuery("#bcierre").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url('leche/lrece/apertura/create').'",
+				function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		});';
+
+		$bodyscript .= '
 		$("#fedita").dialog({
 			autoOpen: false, height: 400, width: 700, modal: true,
 			buttons: {
@@ -123,13 +184,18 @@ class Lrece extends Controller {
 					url: murl,
 					data: $("#df1").serialize(),
 					success: function(r,s,x){
-						if ( r.length == 0 ) {
-							apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/LRECE').'/\'+res.id+\'/id\'').';
-							return true;
-						} else { 
+						try{
+							var json = JSON.parse(r);
+							if (json.status == "A"){
+								apprise("Registro Guardado");
+								$( "#fedita" ).dialog( "close" );
+								grid.trigger("reloadGrid");
+								//'.$this->datasis->jwinopen(site_url('formatos/ver/LRECE').'/\'+res.id+\'/id\'').';
+								return true;
+							} else {
+								apprise(json.mensaje);
+							}
+						}catch(e){
 							$("#fedita").html(r);
 						}
 					}
@@ -138,6 +204,7 @@ class Lrece extends Controller {
 			},
 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
@@ -523,8 +590,7 @@ class Lrece extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -836,8 +902,235 @@ class Lrece extends Controller {
 	}
 
 	//***********************************
-	// DataEdit  
+	// DataEdit
 	//***********************************
+
+	function apertura(){
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit($this->tits, 'lrece');
+		$edit->on_save_redirect=false;
+		$edit->back_url = site_url($this->url.'filteredgrid');
+
+		//$edit->post_process('insert','_post_insert');
+		//$edit->post_process('update','_post_update');
+		//$edit->post_process('delete','_post_delete');
+		$edit->pre_process('insert' ,'_pre_apertura_insert');
+		$edit->pre_process('update' ,'_pre_apertura_update');
+		$edit->pre_process('delete' ,'_pre_apertura_delete');
+
+		$edit->ruta = new dropdownField('Ruta', 'ruta');
+		$edit->ruta->rule = 'trim|max_length[4]';
+		$edit->ruta->option('','Seleccionar');
+		$edit->ruta->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM lruta ORDER BY nombre');
+		$edit->ruta->style = 'width:166px';
+
+		$edit->nombre = new inputField('Nombre del chofer','nombre');
+		$edit->nombre->rule='max_length[45]';
+		$edit->nombre->size =40;
+		$edit->nombre->maxlength =45;
+
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+			echo json_encode($rt);
+		}else{
+			echo $edit->output;
+		}
+	}
+
+	function analisis(){
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit($this->tits, 'lrece');
+		$edit->on_save_redirect=false;
+		$edit->back_url = site_url($this->url.'filteredgrid');
+
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
+		$edit->pre_process('insert','_pre_insert');
+		$edit->pre_process('update','_pre_update');
+		$edit->pre_process('delete','_pre_delete');
+
+		$edit->numero = new inputField('Numero','numero');
+		$edit->numero->rule='max_length[8]';
+		$edit->numero->size =9;
+		$edit->numero->mode='autohide';
+		$edit->numero->maxlength =8;
+
+		$edit->fecha = new dateField('Fecha','fecha');
+		$edit->fecha->rule='chfecha';
+		$edit->fecha->mode='autohide';
+		$edit->fecha->size =10;
+		$edit->fecha->maxlength =8;
+
+		$edit->ruta = new inputField('Ruta','ruta');
+		$edit->ruta->rule='max_length[4]';
+		$edit->ruta->mode='autohide';
+		$edit->ruta->size =6;
+		$edit->ruta->maxlength =4;
+
+		$edit->nombre = new inputField('Nombre del chofer','nombre');
+		$edit->nombre->rule='max_length[45]';
+		$edit->nombre->mode='autohide';
+		$edit->nombre->size =40;
+		$edit->nombre->maxlength =45;
+
+		$edit->lleno = new inputField('Lleno','lleno');
+		$edit->lleno->rule='max_length[16]|numeric';
+		$edit->lleno->css_class='inputnum';
+		$edit->lleno->size =12;
+		$edit->lleno->mode='autohide';
+		$edit->lleno->maxlength =16;
+
+		$edit->vacio = new inputField('Vacio','vacio');
+		$edit->vacio->rule='max_length[16]|numeric';
+		$edit->vacio->css_class='inputnum';
+		$edit->vacio->size =12;
+		$edit->vacio->maxlength =16;
+
+		$edit->neto = new inputField('Neto','neto');
+		$edit->neto->rule='max_length[16]|numeric';
+		$edit->neto->css_class='inputnum';
+		$edit->neto->size =12;
+		$edit->neto->maxlength =16;
+
+		$edit->densidad = new inputField('Densidad','densidad');
+		$edit->densidad->rule='max_length[10]|numeric';
+		$edit->densidad->css_class='inputnum';
+		$edit->densidad->size =12;
+		$edit->densidad->maxlength =10;
+
+		$edit->litros = new inputField('Litros','litros');
+		$edit->litros->rule='max_length[16]|numeric';
+		$edit->litros->css_class='inputnum';
+		$edit->litros->size =12;
+		$edit->litros->maxlength =16;
+
+		$edit->lista = new inputField('Lista','lista');
+		$edit->lista->rule='max_length[16]|numeric';
+		$edit->lista->css_class='inputnum';
+		$edit->lista->size =12;
+		$edit->lista->maxlength =16;
+
+		$edit->diferen = new inputField('Diferen','diferen');
+		$edit->diferen->rule='max_length[16]|numeric';
+		$edit->diferen->css_class='inputnum';
+		$edit->diferen->size =12;
+		$edit->diferen->maxlength =16;
+
+		$edit->animal = new inputField('Animal','animal');
+		$edit->animal->rule='max_length[1]';
+		$edit->animal->size =3;
+		$edit->animal->maxlength =1;
+
+		$edit->crios = new inputField('Crios','crios');
+		$edit->crios->rule='max_length[10]|numeric';
+		$edit->crios->css_class='inputnum';
+		$edit->crios->size =12;
+		$edit->crios->maxlength =10;
+
+		$edit->h2o = new inputField('H2o','h2o');
+		$edit->h2o->rule='max_length[10]|numeric';
+		$edit->h2o->css_class='inputnum';
+		$edit->h2o->size =12;
+		$edit->h2o->maxlength =10;
+
+		$edit->temp = new inputField('Temp','temp');
+		$edit->temp->rule='max_length[10]|numeric';
+		$edit->temp->css_class='inputnum';
+		$edit->temp->size =12;
+		$edit->temp->maxlength =10;
+
+		$edit->brix = new inputField('Brix','brix');
+		$edit->brix->rule='max_length[10]|numeric';
+		$edit->brix->css_class='inputnum';
+		$edit->brix->size =12;
+		$edit->brix->maxlength =10;
+
+		$edit->grasa = new inputField('Grasa','grasa');
+		$edit->grasa->rule='max_length[10]|numeric';
+		$edit->grasa->css_class='inputnum';
+		$edit->grasa->size =12;
+		$edit->grasa->maxlength =10;
+
+		$edit->acidez = new inputField('Acidez','acidez');
+		$edit->acidez->rule='max_length[10]|numeric';
+		$edit->acidez->css_class='inputnum';
+		$edit->acidez->size =12;
+		$edit->acidez->maxlength =10;
+
+		$edit->cloruros = new inputField('Cloruros','cloruros');
+		$edit->cloruros->rule='max_length[10]|numeric';
+		$edit->cloruros->css_class='inputnum';
+		$edit->cloruros->size =12;
+		$edit->cloruros->maxlength =10;
+
+		$edit->dtoagua = new inputField('Dtoagua','dtoagua');
+		$edit->dtoagua->rule='max_length[10]|numeric';
+		$edit->dtoagua->css_class='inputnum';
+		$edit->dtoagua->size =12;
+		$edit->dtoagua->maxlength =10;
+
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+			echo json_encode($rt);
+		}else{
+			echo $edit->output;
+		}
+	}
+
+	function vaqueras(){
+		//Cheque que tenga vehiculos
+		$dbid=$this->db->escape($id);
+		$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$dbid");
+		if(empty($cana)){
+			$mSQL="SELECT c.codigo,c.descrip,c.peso,b.cantidad AS cana
+				FROM scst   AS a
+				JOIN itscst AS b ON a.control=b.control
+				JOIN sinv   AS c ON b.codigo=c.codigo
+				WHERE c.serial='V' AND a.id=$dbid";
+			$query = $this->db->query($mSQL);
+
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $row){
+					for($i=0;$i<$row->cana;$i++){
+						$data=array(
+							'codigo_sinv'=>$row->codigo,
+							'modelo'     =>$row->descrip,
+							'peso'       =>$row->peso,
+							'anio'       =>date('Y'),
+							'color'      =>'',
+							'motor'      =>'',
+							'carroceria' =>'',
+							'id_scst'    =>$id
+						);
+						$sql = $this->db->insert_string('sinvehiculo', $data);
+						$this->db->simple_query($sql);
+					}
+				}
+			}else{
+				echo 'Compra no tiene Veh&iacute;culos.';
+				exit();
+			}
+		}
+
+
+
+
+	}
 
 	function dataedit(){
 		$this->rapyd->load('dataedit');

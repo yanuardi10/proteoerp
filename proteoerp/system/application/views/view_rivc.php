@@ -28,7 +28,8 @@ if($form->_status!='show'){ ?>
 var itrivc_cont =<?php echo $form->max_rel_count['itrivc']; ?>;
 
 $(function(){
-
+	$("#emision").datepicker({ dateFormat: "dd/mm/yy" });
+	$("#fecha").datepicker({ dateFormat: "dd/mm/yy" });
 	com=false;
 	$(document).keydown(function(e){
 		if (18 == e.which) {
@@ -81,11 +82,13 @@ $(function(){
 		},
 		minLength: 1,
 		select: function( event, ui ) {
+			$('#cod_cli').attr("readonly", "readonly");
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
 			$('#rif').val(ui.item.rifci);
 			$('#rif_val').text(ui.item.rifci);
 			$('#cod_cli').val(ui.item.cod_cli);
+			setTimeout(function() {  $("#cod_cli").removeAttr("readonly"); }, 1500);
 		}
 	});
 
@@ -193,6 +196,8 @@ function autocod(id){
 		},
 		minLength: 0,
 		select: function( event, ui ) {
+			$('#numero_'+id).attr("readonly", "readonly");
+
 			$('#tipo_doc_'+id).val(ui.item.tipo_doc);
 			$('#tipo_doc_val_'+id).text(ui.item.tipo_doc);
 
@@ -210,6 +215,7 @@ function autocod(id){
 			$('#fecha_'+id).val(ui.item.fecha);
 
 			totalizar();
+			setTimeout(function() {  $('#numero_'+id).removeAttr("readonly"); }, 1500);
 		}
 	});
 }
@@ -217,15 +223,6 @@ function autocod(id){
 <?php }else $anulado=$form->get_from_dataobjetct('anulado'); ?>
 
 <table width='100%' align='center'>
-
-	<?php if($form->_status=='show'){ ?>
-	<tr>
-		<td valign="bottom">
-			<a href="javascript:void(0);" onclick="window.open('<?php echo base_url(); ?>/formatos/ver/RIVC/<?php echo $form->get_from_dataobjetct('id'); ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');">
-			<img src="<?php echo base_url(); ?>/images/reportes.gif" alt="Imprimir Documento" title="Imprimir Documento" border="0" height="30"></a>
-		</td>
-	</tr>
-	<?php } ?>
 	<tr>
 		<td align=right>
 			<?php echo $container_tr; ?>
