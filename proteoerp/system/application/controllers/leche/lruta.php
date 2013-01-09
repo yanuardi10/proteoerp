@@ -1,8 +1,8 @@
 <?php
 class Lruta extends Controller {
 	var $mModulo = 'LRUTA';
-	var $titp    = 'Modulo LRUTA';
-	var $tits    = 'Modulo LRUTA';
+	var $titp    = 'Rutas de Recoleccion';
+	var $tits    = 'Rutas de Recoleccion';
 	var $url     = 'leche/lruta/';
 
 	function Lruta(){
@@ -13,11 +13,6 @@ class Lruta extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('lruta','id') ) {
-			$this->db->simple_query('ALTER TABLE lruta DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE lruta ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE lruta ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		$this->datasis->creaintramenu( $data = array('modulo'=>'221','titulo'=>'Rutas de Acopio','mensaje'=>'Rutas de Acopio','panel'=>'LECHE','ejecutar'=>'leche/lruta','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
@@ -40,7 +35,7 @@ class Lruta extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Rutas")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -101,7 +96,7 @@ class Lruta extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 700, modal: true,
+			autoOpen: false, height: 320, width: 550, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -149,11 +144,11 @@ class Lruta extends Controller {
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('codigo');
-		$grid->label('Codigo');
+		$grid->label('Ruta');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 40,
+			'width'         => 50,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:4, maxlength: 4 }',
@@ -161,7 +156,7 @@ class Lruta extends Controller {
 
 
 		$grid->addField('nombre');
-		$grid->label('Nombre');
+		$grid->label('Nombre de Ruta');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -169,6 +164,30 @@ class Lruta extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:50, maxlength: 50 }',
+		));
+
+
+		$grid->addField('codprv');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('proveed');
+		$grid->label('Nombre de Transportista');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:45, maxlength: 45 }',
 		));
 
 
@@ -181,30 +200,6 @@ class Lruta extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:50, maxlength: 50 }',
-		));
-
-
-		$grid->addField('codprv');
-		$grid->label('Codprv');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 50,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:5, maxlength: 5 }',
-		));
-
-
-		$grid->addField('proveed');
-		$grid->label('Proveed');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:45, maxlength: 45 }',
 		));
 
 
@@ -393,23 +388,23 @@ class Lruta extends Controller {
 		$edit->nombre->size =52;
 		$edit->nombre->maxlength =50;
 
+		$edit->codprv = new inputField('Propietario','codprv');
+		$edit->codprv->rule='max_length[15]';
+		$edit->codprv->size =7;
+		$edit->codprv->maxlength=15;
+
+		$edit->proveed = new inputField('Proveedor','proveed');
+		$edit->proveed->rule='max_length[45]';
+		$edit->proveed->size =45;
+		$edit->proveed->type='inputhidden';
+		$edit->proveed->maxlength =45;
+		$edit->proveed->in ='codprv';
+
 		$edit->zona = new dropdownField('Zona', 'zona');
 		$edit->zona->rule = 'trim|max_length[4]';
 		$edit->zona->option('','Seleccionar');
 		$edit->zona->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM zona ORDER BY nombre');
 		$edit->zona->style = 'width:166px';
-
-		$edit->codprv = new inputField('Codprv','codprv');
-		$edit->codprv->rule='max_length[5]';
-		$edit->codprv->size =7;
-		$edit->codprv->maxlength =5;
-
-		$edit->proveed = new inputField('Proveedor','proveed');
-		$edit->proveed->rule='max_length[45]';
-		$edit->proveed->size =47;
-		$edit->proveed->type='inputhidden';
-		$edit->proveed->maxlength =45;
-		$edit->proveed->in ='codprv';
 
 		$edit->build();
 

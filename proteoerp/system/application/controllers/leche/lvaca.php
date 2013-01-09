@@ -13,11 +13,6 @@ class Lvaca extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('lvaca','id') ) {
-			$this->db->simple_query('ALTER TABLE lvaca DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE lvaca ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE lvaca ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		$this->datasis->creaintramenu( $data = array('modulo'=>'222','titulo'=>'Vaqueras','mensaje'=>'Vaqueras','panel'=>'LECHE','ejecutar'=>'leche/lvaca','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
@@ -40,7 +35,7 @@ class Lvaca extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-			array("id"=>"fedita",  "title"=>"Agregar/Editar Registro"),
+			array("id"=>"fedita",  "title"=>"Agregar/Editar Vaquera"),
 			array("id"=>"fborra",  "title"=>"Agregar/Editar Registro")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
@@ -130,7 +125,7 @@ class Lvaca extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 700, modal: true,
+			autoOpen: false, height: 320, width: 550, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -208,9 +203,8 @@ class Lvaca extends Controller {
 			'editoptions'   => '{ size:10, maxlength: 10 }',
 		));
 
-
 		$grid->addField('nombre');
-		$grid->label('Nombre');
+		$grid->label('Vaquera Nombre');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -219,19 +213,6 @@ class Lvaca extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:100, maxlength: 100 }',
 		));
-
-
-		$grid->addField('finca');
-		$grid->label('Finca');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:100, maxlength: 100 }',
-		));
-
 
 		$grid->addField('ruta');
 		$grid->label('Ruta');
@@ -244,7 +225,6 @@ class Lvaca extends Controller {
 			'editoptions'   => '{ size:4, maxlength: 4 }',
 		));
 
-
 		$grid->addField('zona');
 		$grid->label('Zona');
 		$grid->params(array(
@@ -255,7 +235,6 @@ class Lvaca extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:4, maxlength: 4 }',
 		));
-
 
 		$grid->addField('ubicacion');
 		$grid->label('Ubicacion');
@@ -268,9 +247,8 @@ class Lvaca extends Controller {
 			'editoptions'   => '{ size:200, maxlength: 200 }',
 		));
 
-
 		$grid->addField('codprv');
-		$grid->label('Codprv');
+		$grid->label('Codigo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -280,9 +258,8 @@ class Lvaca extends Controller {
 			'editoptions'   => '{ size:5, maxlength: 5 }',
 		));
 
-
 		$grid->addField('proveed');
-		$grid->label('Proveed');
+		$grid->label('Propietario');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -292,6 +269,16 @@ class Lvaca extends Controller {
 			'editoptions'   => '{ size:45, maxlength: 45 }',
 		));
 
+		$grid->addField('finca');
+		$grid->label('Finca');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:100, maxlength: 100 }',
+		));
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -453,7 +440,7 @@ class Lvaca extends Controller {
 			});
 		});';
 
-		$edit = new DataEdit($this->tits, 'lvaca');
+		$edit = new DataEdit('', 'lvaca');
 		$edit->on_save_redirect=false;
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
@@ -471,8 +458,9 @@ class Lvaca extends Controller {
 		$edit->codigo->rule='max_length[10]';
 		$edit->codigo->size =12;
 		$edit->codigo->maxlength =10;
+		$edit->codigo->mode = 'autohide';
 
-		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre = new inputField('Vaquera Nombre','nombre');
 		$edit->nombre->rule='max_length[100]';
 		$edit->nombre->maxlength =100;
 
@@ -496,10 +484,10 @@ class Lvaca extends Controller {
 		$edit->ubicacion->rule='max_length[200]';
 		$edit->ubicacion->maxlength =200;
 
-		$edit->codprv = new inputField('Proveedor','codprv');
-		$edit->codprv->rule='max_length[5]';
+		$edit->codprv = new inputField('Propietario','codprv');
+		$edit->codprv->rule='max_length[15]';
 		$edit->codprv->size =7;
-		$edit->codprv->maxlength =5;
+		$edit->codprv->maxlength =15;
 
 		$edit->proveed = new inputField('Proveed','proveed');
 		$edit->proveed->rule='max_length[45]';
