@@ -74,6 +74,7 @@ $(function(){
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
 			$('#proveed').val(ui.item.proveed);
+			$('#sprvreteiva').val(ui.item.reteiva);
 			setTimeout(function() {  $("#proveed").removeAttr("readonly"); }, 1500);
 		}
 	});
@@ -156,6 +157,7 @@ function totalizar(){
 	civas=roundNumber(cgenera*(tasa_general/100)+creduci*(tasa_reducid/100)+cadicio*(tasa_adicion/100),2);
 	montotot = Number($("#montotot").val());
 	montoiva = Number($("#montoiva").val());
+	porreten = Number($("#sprvreteiva").val());
 
 	$("#peso").val(roundNumber(peso,2));
 
@@ -166,9 +168,18 @@ function totalizar(){
 	}
 	if(Math.abs(civas-montoiva) >=0.02 ){
 		$("#montoiva").val(roundNumber(civas,2));
+		montoiva = civas;
 	}else{
 		iva = montoiva;
 	}
+
+	<?php
+	$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
+	$rif     = $this->datasis->traevalor('RIF');
+	if($contribu=='ESPECIAL' && strtoupper($rif[0])!='V'){
+		echo "\t".'$("#reteiva").val(roundNumber(montoiva*porreten/100,2));';
+	}
+	?>
 
 	$("#montonet").val(roundNumber(totals+civas,2));
 	$("#peso_val").text(nformat(peso,2));
@@ -354,7 +365,10 @@ if (!$solo){
 								<td class="littletablerowth" width='40'><?php echo $form->tipo->label  ?></td>
 								<td class="littletablerow"   align='left' width='150'>  <?php echo $form->tipo->output ?></td>
 								<td class="littletablerowth" align='right' width='100'><?php echo $form->proveed->label  ?>*</td>
-								<td class="littletablerow">  <?php echo $form->proveed->output ?><b id='nombre_val'><?php echo $form->nombre->value ?></b><?php echo $form->nombre->output ?></td>
+								<td class="littletablerow">
+									<?php echo $form->proveed->output ?>
+									<b id='nombre_val'><?php echo $form->nombre->value ?></b>
+									<?php echo $form->nombre->output.$form->sprvreteiva->output ?></td>
 							</tr>
 						</table>
 					</td>

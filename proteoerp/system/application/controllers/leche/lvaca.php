@@ -490,7 +490,6 @@ class Lvaca extends Controller {
 		$edit->codprv->maxlength =15;
 
 		$edit->proveed = new inputField('Proveed','proveed');
-		$edit->proveed->rule='max_length[45]';
 		$edit->proveed->size =47;
 		$edit->proveed->type='inputhidden';
 		$edit->proveed->maxlength =45;

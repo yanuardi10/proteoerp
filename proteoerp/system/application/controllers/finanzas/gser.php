@@ -3985,7 +3985,7 @@ function gserfiscal(mid){
 			$ivat +=$iva;
 			$subt +=$precio;
 
-			$do->set_rel('gitser','iva'    ,$iva        ,$i);
+			$do->set_rel('gitser','iva'    ,$iva    ,$i);
 			$do->set_rel('gitser','importe',$importe,$i);
 		}
 
@@ -4310,6 +4310,7 @@ function gserfiscal(mid){
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'gser');}
 			}
+			//Fin de la retencion de IVA
 
 			//Si tiene ISLR
 			if($reten>0){
