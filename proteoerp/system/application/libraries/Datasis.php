@@ -783,18 +783,18 @@ class Datasis {
 		$CI->db->simple_query($mSQL);
 
 		// SI NO EXISTE LO CREA
-		$mSQL = "SELECT COUNT(*) FROM bsal WHERE codbanc='${dbcodbanc}' AND ano=".substr($fecha,0,4);
+		$mSQL = "SELECT COUNT(*) FROM bsal WHERE codbanc=${dbcodbanc} AND ano=".substr($fecha,0,4);
 		if ( $this->dameval($mSQL) == 0 ) {
-			$mSQL = "INSERT INTO bcaj SET codbanc='${codbanc}' AND ano=".substr($fecha,0,4);
+			$mSQL = "INSERT INTO bcaj SET codbanc=${dbcodbanc} AND ano=".substr($fecha,0,4);
 			$CI->db->simple_query($mSQL);
 
 			//SALDO INICIAL
 			$mSQL   = "SELECT saldo+saldo01+ saldo02+ saldo03+ saldo04+ saldo05+ saldo06+saldo07+ saldo08+ saldo09+ saldo10+ saldo11+ saldo12 ";
-			$mSQL  .= "FROM bsal WHERE codbanc='${codbanc}' ORDER BY ano DESC";
+			$mSQL  .= "FROM bsal WHERE codbanc=${dbcodbanc} ORDER BY ano DESC";
 			$mSALDO = $this->dameval($mSQL);
 		}
 		$nomsal = 'saldo'.substr($fecha,6,2);
-		$mSQL   = "UPDATE bsal SET $nomsal=$nomsal+$monto WHERE codbanc='${codbanc}' AND ano=".substr($fecha,0,4);
+		$mSQL   = "UPDATE bsal SET $nomsal=$nomsal+$monto WHERE codbanc=${dbcodbanc} AND ano=".substr($fecha,0,4);
 		$CI->db->simple_query($mSQL);
 		//$sql='CALL sp_actusal('.$CI->db->escape($banco).",'$fecha',$monto)";
 	}
