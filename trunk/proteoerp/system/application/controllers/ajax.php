@@ -232,10 +232,11 @@ class Ajax extends Controller {
 
 		$ut = $this->datasis->dameval("SELECT valor FROM utributa ORDER BY fecha DESC LIMIT 1");
 
-		$data = '[{ }]';
+		$data = '[ ]';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc, round(b.minimo*$ut,2) precio1, a.upago, a.telefono, b.id codigo,b.minimo AS utribu
+			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc,
+				ROUND(b.minimo*$ut,2) precio1, a.upago, a.telefono, b.id codigo,b.minimo AS utribu,b.tipo AS taritipo
 				FROM scli AS a
 				JOIN tarifa AS b ON a.tarifa=b.id
 				WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb})
@@ -247,13 +248,14 @@ class Ajax extends Controller {
 					$retArray['label']    = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
 					$retArray['rifci']    = $row['rifci'];
 					$retArray['nombre']   = utf8_encode($row['nombre']);
-					$retArray['cod_cli']  = $row['cliente'];
+					$retArray['cod_cli']  = utf8_encode($row['cliente']);
 					$retArray['codigo']   = $row['codigo'];
 					$retArray['tipo']     = $row['tipo'];
 					$retArray['precio1']  = $row['precio1'];
 					$retArray['telefono'] = $row['telefono'];
 					$retArray['upago']    = $row['upago'];
 					$retArray['utribu']   = $row['utribu'];
+					$retArray['taritipo'] = $row['taritipo'];
 					$retArray['direc']    = utf8_encode($row['direc']);
 					array_push($retorno, $retArray);
 				}
