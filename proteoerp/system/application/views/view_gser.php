@@ -183,7 +183,9 @@ function gsucursal(val){
 
 //Calcula la retencion del iva
 function reteiva(){
-	<?php if($tipo_rete=='ESPECIAL'){ ?>
+	<?php
+	$rif = trim($this->datasis->traevalor('RIF'));
+	if($tipo_rete=='ESPECIAL' && strtoupper($rif[0])!='V'){ ?>
 		reteval= Number($("#reteiva").val());
 		totiva = Number($("#totiva").val());
 		preten = Number($("#sprvreteiva").val());
@@ -191,7 +193,7 @@ function reteiva(){
 			$("#sprvreteiva").val(100);
 			riva=totiva;
 		}else{
-			riva = roundNumber(totiva*(preten/100),2);
+			riva = roundNumber(totiva*preten/100,2);
 			$("#reteiva").val(riva);
 		}
 		return riva;

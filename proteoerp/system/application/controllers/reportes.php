@@ -23,14 +23,16 @@ class Reportes extends Controller
 		$this->rapyd->load("datafilter2");
 		$repo =$this->uri->segment(3);
 		$esta =$this->uri->segment(4);
-		$mSQL= "SELECT proteo FROM reportes WHERE nombre='$repo'";
+		$mSQL= 'SELECT proteo FROM reportes WHERE nombre='.$this->db->escape($repo);
 		$mc  = $this->datasis->dameval($mSQL);
 		$nombre =strtolower($repo).'.pdf';
+
+		if(empty($mc)) $mc=$this->_crearep($repo,'proteo');
 		if(!empty($mc)){
 			$data["regresar"]='<a href='.site_url("/reportes/enlistar/$esta").'>'.image('go-previous.png','Regresar',array('border'=>0)).'Regresar'.'</a>';
 
 			$_formato=$this->input->post('salformat');
-			if($_formato or !empty($_formato))
+			if($_formato || !empty($_formato))
 				$_mclase=$_formato.'Reporte';
 			else
 				$_mclase='PDFReporte';
@@ -197,6 +199,23 @@ class Reportes extends Controller
 		//$linea->onchange = "get_grupo();";
 		$modelo->build();
 		echo $modelo->output;
+	}
+
+	function _crearep($nombre,$tipo='proteo'){
+		$nombre = strtoupper($nombre);
+		$arch = "./formrep/reportes/${tipo}/${nombre}.rep";
+		if (file_exists($arch)){
+			$forma=file_get_contents($arch);
+			$data = array('nombre' => $nombre, $tipo => $forma);
+			$mSQL = $this->db->insert_string('reportes', $data).' ON DUPLICATE KEY UPDATE proteo=VALUES(proteo)';
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){
+				return '';
+			}
+			return $forma;
+		}else{
+			return '';
+		}
 	}
 
 	function instalar(){

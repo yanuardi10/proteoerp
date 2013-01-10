@@ -76,7 +76,8 @@ class gser extends Controller {
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fgasto",  "title"=>"Agregar/Editar Gasto/Egreso")
+			array("id"=>"fgasto",  "title"=>"Agregar/Editar Gasto/Egreso"),
+			array("id"=>"fimpri",  "title"=>"Imprimir Gasto/Egreso")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -118,7 +119,7 @@ class gser extends Controller {
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('formatos/ver/RIVA/').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+				window.open(\''.site_url($this->url.'printrete').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
 			} else { $.prompt("<h1>Por favor Seleccione un gasto</h1>");}
 		});';
 
@@ -214,9 +215,33 @@ class gser extends Controller {
 					allFields.val("").removeClass( "ui-state-error" );
 					$("#fgasto").html("");
 				}
-			});
-		});';
+			});';
 
+
+		$bodyscript .= '
+			$("#fimpri").dialog({
+				autoOpen: false, height: 590, width: 950, modal: true,
+				buttons: {
+					"R. IVA": function() {
+
+
+					},
+					"R. ISLR": function() {
+
+
+					},
+					"Cancelar": function() {
+						$(this).dialog( "close" );
+						$("#fimpri").html("");
+					}
+				},
+				close: function() {
+					allFields.val("").removeClass( "ui-state-error" );
+					$("#fimpri").html("");
+				}
+			});';
+
+		$bodyscript .= '});';
 
 		$bodyscript .= "\n</script>\n";
 		return $bodyscript;
@@ -2735,7 +2760,7 @@ function gserfiscal(mid){
 		if($monto==0.00 || $monto==$totiva || round($totiva*0.75,2)==$monto){
 			return true;
 		}else{
-			$this->validation->set_message('chreteiva', 'El campo %s tiene que ser 0, 75 o 100% del monto del iva');
+			$this->validation->set_message('chreteiva', 'El campo %s tiene que ser 0, 75 o 100 del monto del iva');
 			return false;
 		}
 	}
@@ -4309,6 +4334,33 @@ function gserfiscal(mid){
 				$sql=$this->db->insert_string('sprm', $data);
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'gser');}
+
+				//Aplica la NC a la FC
+				$itppro=array();
+				$itppro['numppro']    = $ncsprm;
+				$itppro['tipoppro']   = 'NC';
+				$itppro['cod_prv']    = $codprv;
+				$itppro['tipo_doc']   = 'FC';
+				$itppro['numero']     = $numero;
+				$itppro['fecha']      = $fecha;
+				$itppro['monto']      = $reiva;
+				$itppro['abono']      = $reiva;
+				$itppro['ppago']      = 0;
+				$itppro['reten']      = 0;
+				$itppro['cambio']     = 0;
+				$itppro['mora']       = 0;
+				$itppro['transac']    = $transac;
+				$itppro['estampa']    = $estampa;
+				$itppro['hora']       = $hora;
+				$itppro['usuario']    = $usuario;
+				$itppro['preten']     = 0;
+				$itppro['creten']     = 0;
+				$itppro['breten']     = 0;
+				$itppro['reteiva']    = 0;
+				$mSQL = $this->db->insert_string('itppro', $itppro);
+				$ban=$this->db->simple_query($mSQL);
+				if(!$ban){ memowrite($mSQL,'gser'); $error++;}
+
 			}
 			//Fin de la retencion de IVA
 
@@ -4346,7 +4398,34 @@ function gserfiscal(mid){
 				$sql=$this->db->insert_string('sprm', $data);
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'gser');}
+
+				//Aplica la NC a la FC
+				$itppro=array();
+				$itppro['numppro']    = $ncsprm;
+				$itppro['tipoppro']   = 'NC';
+				$itppro['cod_prv']    = $codprv;
+				$itppro['tipo_doc']   = 'FC';
+				$itppro['numero']     = $numero;
+				$itppro['fecha']      = $fecha;
+				$itppro['monto']      = $reten;
+				$itppro['abono']      = $reten;
+				$itppro['ppago']      = 0;
+				$itppro['reten']      = 0;
+				$itppro['cambio']     = 0;
+				$itppro['mora']       = 0;
+				$itppro['transac']    = $transac;
+				$itppro['estampa']    = $estampa;
+				$itppro['hora']       = $hora;
+				$itppro['usuario']    = $usuario;
+				$itppro['preten']     = 0;
+				$itppro['creten']     = 0;
+				$itppro['breten']     = 0;
+				$itppro['reteiva']    = 0;
+				$mSQL = $this->db->insert_string('itppro', $itppro);
+				$ban=$this->db->simple_query($mSQL);
+				if(!$ban){ memowrite($mSQL,'gser'); $error++;}
 			}
+			//Fin de la retencion ISLR
 		}
 		//Fin de la cuenta por pagar
 
@@ -4436,7 +4515,7 @@ function gserfiscal(mid){
 		$iva   = (empty($iva))?   0: $iva  ;
 		$monto = (empty($monto))? 0: $monto;
 		if(!is_numeric($monto)){
-			$this->validation->set_message('chtasa', 'El campo %s general debe contener numeros.');
+			$this->validation->set_message('chtasa', 'El campo %s general debe contener n&uacutemeros.');
 			return false;
 		}
 
@@ -4488,12 +4567,12 @@ function gserfiscal(mid){
 		}
 	}
 
-	function printrete($id_scst){
+	function printrete($id_gser){
 		$sel=array('b.id');
 		$this->db->select($sel);
 		$this->db->from('gser AS a');
 		$this->db->join('riva AS b','a.transac=b.transac');
-		$this->db->where('a.id' , $id_scst);
+		$this->db->where('a.id' , $id_gser);
 		$mSQL_1 = $this->db->get();
 
 		if ($mSQL_1->num_rows() == 0){ show_error('Retención no encontrada');}
@@ -4672,4 +4751,3 @@ function gserfiscal(mid){
 		echo $salida;
 	}
 }
-?>
