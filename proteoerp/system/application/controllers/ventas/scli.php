@@ -2377,6 +2377,210 @@ function chrif(rif){
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
+	//Dataedit express para servicio
+	function dataeditexpresser(){
+		$this->rapyd->load('dataedit');
+
+		$script ='
+<script type="text/javascript" >
+$(function() {
+	$("#rifci").focusout(function() {
+		rif=$(this).val();
+		if(!chrif(rif)){
+			alert("Al parecer el Rif colocado no es correcto, por favor verifique con el SENIAT.");
+		}
+	});
+
+	$("#tarifa").autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "'.site_url('ajax/buscastarifa').'",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						if(data.length==0){
+							$("#tarifa").val("");
+							$("#tactividad").val("");
+							$("#tactividad_val").text("");
+							$("#tminimo").val("");
+							$("#tminimo_val").text("");
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$("#tarifa").attr("readonly", "readonly");
+
+			$("#tarifa").val(ui.item.value);
+			$("#tactividad").val(ui.item.actividad);
+			$("#tactividad_val").text(ui.item.actividad);
+			$("#tminimo").val(ui.item.minimo);
+			$("#tminimo_val").text(ui.item.minimo);
+			setTimeout(function() {  $("#tarifa").removeAttr("readonly"); }, 1500);
+		}
+	});
+
+});
+
+function chrif(rif){
+	rif.toUpperCase();
+	var patt=/[EJPGV][0-9]{9} * /g;
+	if(patt.test(rif)){
+		var factor= new Array(4,3,2,7,6,5,4,3,2);
+		var v=0;
+		if(rif[0]=="V"){
+			v=1;
+		}else if(rif[0]=="E"){
+			v=2;
+		}else if(rif[0]=="J"){
+			v=3;
+		}else if(rif[0]=="P"){
+			v=4;
+		}else if(rif[0]=="G"){
+			v=5;
+		}
+		acum=v*factor[0];
+		for(i=1;i<9;i++){
+			acum=acum+parseInt(rif[i])*factor[i];
+		}
+		acum=11-acum%11;
+		if(acum>=10 || acum<=0){
+			acum=0;
+		}
+		return (acum==parseInt(rif[9]));
+	}else{
+		return true;
+	}
+}
+</script>';
+
+		$do = new DataObject('scli');
+
+		$edit = new DataEdit('Ficha clientes', $do);
+		$edit->back_save   = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+		$edit->back_url = site_url('ajax/reccierraventana/N');
+
+		$edit->pre_process('delete','_pre_del');
+		$edit->pre_process('insert','_pre_ins');
+		$edit->pre_process('update','_pre_udp');
+
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
+
+		$edit->tarifa = new inputField('Tarifa', 'tarifa');
+		$edit->tarifa->rule = 'trim|callback_chtarifa|required';
+		$edit->tarifa->size = 6;
+		//$edit->tarifa->maxlength =15;
+
+		$edit->tactividad = new inputField('', 'tactividad');
+		$edit->tactividad->db_name     = 'tactividad';
+		$edit->tactividad->pointer     = true;
+		$edit->tactividad->type='inputhidden';
+		$edit->tactividad->in = 'tarifa';
+
+		$edit->upago = new dateonlyField('Fecha de Recepci&oacute;n','fecha','Ym');
+		$edit->upago->rule='chfecha|required';
+		$edit->upago->dbformat='Ym';
+		$edit->upago->insertValue = date('Y-m-d');
+		$edit->upago->size =10;
+		$edit->upago->maxlength =8;
+		$edit->upago->calendar=true;
+
+		//$edit->upago = new inputField('Ultimo Pago', 'upago');
+		//$edit->upago->rule = 'trim';
+		//$edit->upago->size = 6;
+		//$edit->upago->maxlength =6;
+		//$edit->upago->insertValue=date('Y01');
+
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->rule = 'trim|strtoupper|required';
+		$edit->nombre->size = 55;
+		$edit->nombre->maxlength = 45;
+		$edit->nombre->style = 'width:95%;';
+
+		$edit->rifci = new inputField('RIF/CI', 'rifci');
+		$edit->rifci->rule = 'trim|strtoupper|required|callback_chci';
+		$edit->rifci->maxlength =13;
+		$edit->rifci->size =13;
+
+		$edit->grupo = new dropdownField('Grupo', 'grupo');
+		$edit->grupo->option('','Seleccione un grupo');
+		$edit->grupo->options('SELECT grupo, CONCAT(grupo," ",gr_desc) gr_desc FROM grcl ORDER BY gr_desc');
+		$edit->grupo->rule = 'required';
+		$edit->grupo->size = 6;
+		$edit->grupo->maxlength = 4;
+		$edit->grupo->style = 'width:200px';
+		$edit->grupo->insertValue = $this->datasis->dameval('SELECT grupo FROM grcl WHERE gr_desc like "CONSUMIDOR FINAL%"');
+
+		$obj  ="dire11";
+		$edit->$obj = new inputField('Direcci&oacute;n',$obj);
+		$edit->$obj->rule = 'trim|required';
+		$edit->$obj->size      = 45;
+		$edit->$obj->maxlength = 40;
+		$edit->$obj->style = 'width:95%;';
+
+		$obj="ciudad1";
+		$edit->$obj = new dropdownField('Ciudad',$obj);
+		$edit->$obj->rule = 'trim';
+		$edit->$obj->option('','Seleccionar');
+		$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
+		$edit->$obj->style = 'width:200px';
+		$edit->$obj->insertValue = $this->datasis->traevalor("CIUDAD");
+
+		$edit->tiva = new dropdownField('Tipo Fiscal', 'tiva');
+		$edit->tiva->option('N','No Contribuyente');
+		$edit->tiva->option('C','Contribuyente');
+		$edit->tiva->option('E','Especial');
+		$edit->tiva->option('R','Regimen Exento');
+		$edit->tiva->option('O','Otro');
+		$edit->tiva->style = 'width:130px';
+		$edit->tiva->insertValue = 'N';
+		$edit->tiva->rule='required|enum[N,C,E,R,O]';
+
+		$edit->zona = new dropdownField('Zona', 'zona');
+		$edit->zona->rule = 'trim|required';
+		$edit->zona->option('','Seleccionar');
+		$edit->zona->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM zona ORDER BY nombre');
+		$edit->zona->style = 'width:166px';
+		$edit->zona->insertValue = $this->datasis->traevalor("ZONAXDEFECTO");
+
+		$edit->email = new inputField('E-mail', 'email');
+		$edit->email->rule = 'trim|valid_email';
+		$edit->email->size =22;
+		$edit->email->maxlength =100;
+
+		$edit->buttons('save', 'undo');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['head']	.= style("jquery.alerts.css");
+		$data['head']	.= style("redmond/jquery-ui.css");
+		$data['head']   .= style('jquery.autocomplete.css');
+		$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script("jquery-ui.js");
+		$data['script'] .= script("jquery.alerts.js");
+		$data['script'] .= $script;
+		$data['title']   = '';
+		$this->load->view('view_ventanas_sola', $data);
+	}
+
+
 	function filtergridcredi(){
 		$this->rapyd->load('datafilter','datagrid');
 

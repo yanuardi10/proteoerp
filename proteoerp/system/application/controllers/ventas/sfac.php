@@ -333,12 +333,12 @@ class Sfac extends Controller {
 				autoOpen: false, height: 430, width: 540, modal: true,
 				buttons: {
 					"Guardar": function() {
-						$.post("'.site_url('ventas/mensualidad/servxmes/insert').'", { cod_cli: $("#fcliente").val(),cana_0: $("#fmespaga").val(),tipo_0: $("#fcodigo").val(),num_ref_0: $("#fcomprob").val(),preca_0: $("#ftarifa").val() },
+						$.post("'.site_url('ventas/mensualidad/servxmes/insert').'", { cod_cli: $("#fcliente").val(),cana_0: $("#fmespaga").val(),tipo_0: $("#fcodigo").val(),num_ref_0: $("#fcomprob").val(),preca_0: $("#ftarifa").val(),fnombre: $("#fnombre").val()},
 							function(data) {
 								if( data.substr(0,14) == "Venta Guardada"){
 									$("#fcobroser").dialog( "close" );
 									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
-									apprise(data);
+									//apprise(data);
 									$("#fcobroser").html("");
 									$.post("'.site_url('ventas/sfac/dataprintser/modify').'/"+data.substr(15,10), function(data){
 										$("#fimpser").html(data);
@@ -1861,17 +1861,21 @@ class Sfac extends Controller {
 	function fcobroser(){
 		$mSQL    = "SELECT tipo, CONCAT(tipo, ' ', nombre) descrip FROM tarjeta WHERE tipo NOT IN ('DE','NC','IR') ORDER BY tipo ";
 		$tarjeta = $this->datasis->llenaopciones($mSQL, true, 'fcodigo');
-
-
+		$ivas=$this->datasis->ivaplica();
 
 		$salida = '
 		<script type="text/javascript">
 
 		var totaliza = function (){
+			var taritipo = $("#taritipo").val();
+			var iva = 1;
+			if(taritipo=="C"){
+				iva = 1+'.($ivas['tasa']/100).';
+			}
 			var meses = Number($("#fmespaga").val());
 			var monto = Number($("#ftarifa").val());
 			var pagado= Number($("#pagado").val());
-			var total = meses*monto;
+			var total = meses*monto*iva;
 			var vuelto= 0;
 
 			if(pagado>total) vuelto = pagado-total;
@@ -1894,34 +1898,41 @@ class Sfac extends Controller {
 						function(data){
 							var sugiere = [];
 							if(data.length==0){
+								$("#fcliente").val("");
 								$("#fnombre").val("");
 								$("#fdire11").val("");
 								$("#ftelefono").val("");
 								$("#ftarifa").val("");
 								$("#fupago").val("");
 								$("#utribu").text("0,000");
+								$("#taritipo").val("");
+								apprise("Cliente inexistente");
 							}else{
 								$.each(data,
 									function(i, val){
-											sugiere.push( val );
-										}
-									);
-								}
-								add(sugiere);
-								totaliza();
-							},
+										sugiere.push( val );
+									}
+								);
+							}
+							add(sugiere);
+							totaliza();
+						},
 					})
 				},
 				minLength: 2,
-				select: function( event, ui ) {
+				select: function( event, ui ){
+					$("#fcliente").attr("readonly", "readonly");
+
 					$("#fnombre").val(ui.item.nombre);
 					$("#ftelefono").val(ui.item.telefono);
 					$("#ftarifa").val(ui.item.precio1);
 					$("#fcodtar").val(ui.item.codigo);
 					$("#fdire11").val(ui.item.direc);
 					$("#fupago").val(ui.item.upago);
+					$("#taritipo").val(ui.item.taritipo);
 					$("#utribu").text(nformat(ui.item.utribu,3));
 					totaliza();
+					setTimeout(function() {  $("#fcliente").removeAttr("readonly"); }, 1500);
 				}
 			});
 		</script>
@@ -1932,8 +1943,10 @@ class Sfac extends Controller {
 		<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
 		<table width="90%" align="center" border="0">
 		<tr>
-			<td class="CaptionTD" align="right">Cliente: </td>
-			<td>&nbsp;<input name="fcliente" id="fcliente" type="text" value="" maxlengh="12" size="12" /></td>
+			<td class="CaptionTD" align="right">Cliente:</td>
+			<td>&nbsp;<input name="fcliente" id="fcliente" type="text" value="" maxlengh="12" size="12" />
+			<a href="'.site_url('ventas/scli/dataeditexpresser/create').'" target="_blank" onClick="window.open(this.href, this.target, \'width=500,height=550,screenx=\'+((screen.availWidth/2)-250)+\',screeny=\'+((screen.availHeight/2)-200)); return false;">'.image('add1-.png').'</a>
+			</td>
 			<td class="CaptionTD" align="right">Telefono: </td>
 			<td>&nbsp;<input name="ftelefono" id="ftelefono" type="text" value="" maxlengh="12" size="12" /></td>
 		</tr>
@@ -1958,7 +1971,10 @@ class Sfac extends Controller {
 			<td class="CaptionTD" align="right">Ultimo Pago: </td>
 			<td>&nbsp;<input name="fupago" id="fupago" type="text" value="201112" maxlengh="12" size="8" /></td>
 			<td  class="CaptionTD"  align="right">Unidades Trub.</td>
-			<td>&nbsp;<b id="utribu">0,000</b><input type="hidden" name="fcodtar" id="fcodtar" type="text" value="" maxlengh="12" size="15"  /></td>
+			<td>&nbsp;<b id="utribu">0,000</b>
+				<input type="hidden" name="fcodtar"  id="fcodtar"  value="" />
+				<input type="hidden" name="taritipo" id="taritipo" value="" />
+			</td>
 			<td  class="CaptionTD"  align="right">Monto</td>
 			<td>&nbsp;<input name="ftarifa" id="ftarifa" type="text" value="" maxlengh="12" size="12"  /></td>
 		</tr>

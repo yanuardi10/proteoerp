@@ -15,16 +15,43 @@ class mensualidad extends sfac {
 
 	//Para facturar servicios por mes
 	function servxmes($status){
+		 $this->load->library('validation');
 		$this->genesal=false;
 		$this->back_url=$this->url.'filteredgrid';
 
-		$codigo = $this->datasis->traevalor('SINVTARIFA');
 		$cliente = $this->input->post('cod_cli');
+		$nombre  = $this->input->post('fnombre');
 		$cana    = $this->input->post('cana_0');
+
+		//Averigua si es residencial o no para cobrar iva
+		$tipotari= trim($this->datasis->dameval('SELECT b.tipo FROM scli AS a JOIN tarifa AS b ON a.tarifa=b.id WHERE cliente='.$this->db->escape($cliente)));
+		if($tipotari=='C'){
+			$codigo = $this->datasis->traevalor('SINVTARIFAIVA','RELACIONA ARTICULO CON LOS SERVICOS CON IVA');
+		}else{
+			$codigo = $this->datasis->traevalor('SINVTARIFA','RELACIONA ARTICULO CON LOS SERVICIOS');
+		}
 
 		if(empty($cana) || empty($cliente)){
 			echo 'Los campos de cliente y cantidad son obligatorios.';
 			return;
+		}
+
+		if(!$this->validation->existescli($cliente)){
+			echo 'El c&oacute;digo del cliente es inv&aacute;lido';
+			return;
+		}
+
+		if(empty($nombre)){
+			echo 'El campo nombre es necesario.';
+			return;
+		}else{
+			$dbcliente=$this->db->escape($cliente);
+			$nom= $this->datasis->dameval('SELECT nombre FROM scli WHERE cliente='.$dbcliente);
+			if(empty($nom)){
+				$dbnombre = $this->db->escape(utf8_decode($nombre));
+				$mSQL="UPDATE scli SET nombre=$dbnombre WHERE cliente=$dbcliente";
+				$this->db->simple_query($mSQL);
+			}
 		}
 
 		$sclir  = $this->datasis->damereg("SELECT * FROM scli WHERE cliente= ".$this->db->escape($cliente));
