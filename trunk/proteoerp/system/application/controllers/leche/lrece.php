@@ -147,7 +147,7 @@ class Lrece extends Controller {
 		jQuery("#banalisis").click( function(){
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
-				$.post("'.site_url('leche/lrece/analisis/create').'",
+				$.post("'.site_url('leche/lrece/analisis/modify').'/"+id,
 				function(data){
 					$("#fedita").html(data);
 					$("#fedita").dialog( "open" );
@@ -221,15 +221,25 @@ class Lrece extends Controller {
 
 		$grid  = new $this->jqdatagrid;
 
-		$grid->addField('numero');
-		$grid->label('Numero');
+		//$grid->addField('numero');
+		//$grid->label('Numero');
+		//$grid->params(array(
+		//	'search'        => 'true',
+		//	'editable'      => $editar,
+		//	'width'         => 80,
+		//	'edittype'      => "'text'",
+		//	'editrules'     => '{ required:true}',
+		//	'editoptions'   => '{ size:8, maxlength: 8 }',
+		//));
+
+		$grid->addField('id');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:8, maxlength: 8 }',
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
 		));
 
 
@@ -518,18 +528,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
-		$grid->addField('id');
-		$grid->label('Id');
-		$grid->params(array(
-			'align'         => "'center'",
-			'frozen'        => 'true',
-			'width'         => 40,
-			'editable'      => 'false',
-			'search'        => 'false'
-		));
-
-
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('290');
@@ -654,15 +652,25 @@ class Lrece extends Controller {
 
 		$grid  = new $this->jqdatagrid;
 
-		$grid->addField('numero');
-		$grid->label('Numero');
+		//$grid->addField('numero');
+		//$grid->label('Numero');
+		//$grid->params(array(
+		//	'search'        => 'true',
+		//	'editable'      => $editar,
+		//	'width'         => 80,
+		//	'edittype'      => "'text'",
+		//	'editrules'     => '{ required:true}',
+		//	'editoptions'   => '{ size:8, maxlength: 8 }',
+		//));
+
+		$grid->addField('id');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:8, maxlength: 8 }',
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
 		));
 
 
@@ -851,18 +859,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
 		));
 
-
-		$grid->addField('id');
-		$grid->label('Id');
-		$grid->params(array(
-			'align'         => "'center'",
-			'frozen'        => 'true',
-			'width'         => 40,
-			'editable'      => 'false',
-			'search'        => 'false'
-		));
-
-
 		$grid->setShrinkToFit('false');
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdatait/'));
@@ -880,15 +876,13 @@ class Lrece extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait( $id = 0 )
-	{
+	function getdatait( $id = 0 ){
 		if ($id === 0 ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM lrece");
 		}
 		if(empty($id)) return "";
-		$numero   = $this->datasis->dameval("SELECT numero FROM lrece WHERE id=$id");
 		$grid    = $this->jqdatagrid;
-		$mSQL    = "SELECT * FROM itlrece WHERE numero='$numero' ";
+		$mSQL    = 'SELECT * FROM itlrece WHERE id_lrece='.$this->db->escape($id);
 		$response   = $grid->getDataSimple($mSQL);
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
@@ -897,8 +891,7 @@ class Lrece extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setDatait()
-	{
+	function setDatait(){
 	}
 
 	//***********************************
@@ -908,7 +901,15 @@ class Lrece extends Controller {
 	function apertura(){
 		$this->rapyd->load('dataedit');
 
+		$script='
+		$(function(){
+			$(".inputnum").numeric(".");
+		});
+		';
+
 		$edit = new DataEdit($this->tits, 'lrece');
+		$edit->script($script,'create');
+		$edit->script($script,'modify');
 		$edit->on_save_redirect=false;
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
@@ -916,20 +917,26 @@ class Lrece extends Controller {
 		//$edit->post_process('update','_post_update');
 		//$edit->post_process('delete','_post_delete');
 		$edit->pre_process('insert' ,'_pre_apertura_insert');
-		$edit->pre_process('update' ,'_pre_apertura_update');
-		$edit->pre_process('delete' ,'_pre_apertura_delete');
+		//$edit->pre_process('update' ,'_pre_apertura_update');
+		//$edit->pre_process('delete' ,'_pre_apertura_delete');
 
 		$edit->ruta = new dropdownField('Ruta', 'ruta');
-		$edit->ruta->rule = 'trim|max_length[4]';
+		$edit->ruta->rule = 'trim|max_length[4]|required';
 		$edit->ruta->option('','Seleccionar');
 		$edit->ruta->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM lruta ORDER BY nombre');
 		$edit->ruta->style = 'width:166px';
 
+		$edit->lleno = new inputField('Peso','lleno');
+		$edit->lleno->rule='max_length[16]|numeric|required';
+		$edit->lleno->css_class='inputnum';
+		$edit->lleno->size =12;
+		$edit->lleno->mode='autohide';
+		$edit->lleno->maxlength =16;
+
 		$edit->nombre = new inputField('Nombre del chofer','nombre');
-		$edit->nombre->rule='max_length[45]';
+		$edit->nombre->rule='max_length[45]|strtoupper|required';
 		$edit->nombre->size =40;
 		$edit->nombre->maxlength =45;
-
 		$edit->build();
 
 		if($edit->on_success()){
@@ -942,6 +949,10 @@ class Lrece extends Controller {
 		}else{
 			echo $edit->output;
 		}
+	}
+
+	function _pre_apertura_insert($do){
+		$do->set('fecha',date('Y-m-d'));
 	}
 
 	function analisis(){
@@ -958,11 +969,11 @@ class Lrece extends Controller {
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
 
-		$edit->numero = new inputField('Numero','numero');
-		$edit->numero->rule='max_length[8]';
-		$edit->numero->size =9;
-		$edit->numero->mode='autohide';
-		$edit->numero->maxlength =8;
+		//$edit->numero = new inputField('Numero','numero');
+		//$edit->numero->rule='max_length[8]';
+		//$edit->numero->size =9;
+		//$edit->numero->mode='autohide';
+		//$edit->numero->maxlength =8;
 
 		$edit->fecha = new dateField('Fecha','fecha');
 		$edit->fecha->rule='chfecha';

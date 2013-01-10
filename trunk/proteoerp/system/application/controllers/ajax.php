@@ -46,7 +46,7 @@ class Ajax extends Controller {
 		$qdb  = $this->db->escape('%'.$mid.'%');
 		$qmid = $this->db->escape($mid);
 
-		$data = '[{ }]';
+		$data = '[]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
@@ -84,6 +84,8 @@ class Ajax extends Controller {
 					$retArray['reteiva'] = $row['reteiva'];
 					array_push($retorno, $retArray);
 				}
+			}
+			if(count($retorno)>0){
 				$data = json_encode($retorno);
 			}
 		}

@@ -1,0 +1,56 @@
+$base_process_uri   = $this->rapyd->uri->implode_uri("base_uri","gfid","orderby");
+$filter = new DataForm("");
+$filter->_process_uri = $this->rapyd->uri->add_clause($base_process_uri,"search");
+
+$filter->fechad = new dateonlyField("Fecha", "fechad",'d/m/Y');
+$filter->fechad->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), date("d")-30, date("Y")));
+$filter->fechad->rule='required';
+
+$filter->salformat = new radiogroupField("Formato de salida","salformat");
+$filter->salformat->options($this->opciones);
+$filter->salformat->insertValue ='PDF';
+$filter->salformat->clause = '';
+
+$filter->submit("btnsubmit",RAPYD_BUTTON_SEARCH);  
+$filter->build_form();
+ 
+if($this->rapyd->uri->is_set("search")  AND $filter->is_valid()){
+
+	$fecha=$filter->fechad->newValue;
+
+	$mSQL  =  "SELECT meco.codigo, meco.descrip, costos.salcant, costos.saldo, meco.origen, meco.fecha ";
+	$mSQL .=  "FROM ( SELECT a.codigo, b.descrip,  max(a.fecha) fecha, ";
+	$mSQL .=  "(SELECT costoint.origen FROM costos AS costoint WHERE a.codigo=costoint.codigo AND MAX(a.fecha)=costoint.fecha ORDER BY costoint.origen DESC LIMIT 1 ) origen ";
+	$mSQL .=  "FROM costos AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo ";
+	$mSQL .=  "WHERE a.fecha<=".$filter->fechad->newValue." AND SUBSTRING(b.tipo,1,1)='A'  ";
+	$mSQL .=  "GROUP BY a.codigo ) meco ";
+	$mSQL .=  "JOIN costos ON meco.codigo = costos.codigo AND meco.fecha=costos.fecha AND meco.origen=costos.origen ";
+	$mSQL .=  "ORDER BY meco.codigo ";
+
+	//echo $mSQL;
+	//$this->db->query($mSQL);
+
+	//$mSQL=$this->rapyd->db->_compile_select();
+
+	$pdf = new PDFReporte($mSQL);
+	$pdf->setHeadValores('TITULO1');
+	$pdf->setSubHeadValores('TITULO2','TITULO3');
+	$pdf->setTitulo("Inventario a Fecha ".$filter->fechad->value);
+	$pdf->AddPage();
+	$pdf->setTableTitu(10,'Times');
+
+	$pdf->AddCol('codigo' ,30,'Código'     ,'L',8);
+	$pdf->AddCol('descrip',80,'Descripción','L',8);
+	$pdf->AddCol('fecha'  ,20,'Fecha','L',8); 
+	$pdf->AddCol('salcant',30,'Cantidad'   ,'R',8);
+	$pdf->AddCol('saldo'  ,30,'Costo Total','R',8);
+	$pdf->setTotalizar('saldo');
+	$pdf->Table();
+	$pdf->Output();
+
+}else{
+	$data["filtro"] = $filter->output;
+	$data["titulo"] = '<h2 class="mainheader">Inventario a Fecha<h2>';
+	$data["head"] = $this->rapyd->get_head();
+	$this->load->view('view_freportes', $data);
+}
