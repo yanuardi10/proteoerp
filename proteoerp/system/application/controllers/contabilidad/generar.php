@@ -164,8 +164,12 @@ class Generar extends Metodos {
 					continue;
 				}
 
-				$mSQL="UPDATE scst SET reten=0   WHERE reten   IS NULL AND  recep BETWEEN $qfechai AND $qfechaf ";
-				$mSQL="UPDATE scst SET reteiva=0 WHERE reteiva IS NULL AND  recep BETWEEN $qfechai AND $qfechaf ";
+				$mSQL="UPDATE scst SET reten=0   WHERE reten   IS NULL AND  recep >= $qfechai ";
+				$query = $this->db->query($mSQL);
+
+				$mSQL="UPDATE scst SET reteiva=0 WHERE reteiva IS NULL AND  recep >= $qfechai ";
+				$query = $this->db->query($mSQL);
+
 				if ($modulo == 'SCST' ) {
 					$mSQL="SELECT a.$mCONTROL mgrupo FROM $mTABLA WHERE a.recep BETWEEN $qfechai AND $qfechaf GROUP BY a.$mCONTROL";
 				} else {
