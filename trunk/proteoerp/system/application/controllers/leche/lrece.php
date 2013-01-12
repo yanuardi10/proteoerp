@@ -1103,31 +1103,36 @@ class Lrece extends Controller {
 		}
 	}
 
-	function vaqueras(){
+	function vaqueras($id){
 		//Cheque que tenga vehiculos
 		$dbid=$this->db->escape($id);
-		$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM sinvehiculo WHERE id_scst=$dbid");
+		$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM itlrece WHERE id_scst=$dbid");
 		if(empty($cana)){
 			$mSQL="SELECT c.codigo,c.descrip,c.peso,b.cantidad AS cana
-				FROM scst   AS a
-				JOIN itscst AS b ON a.control=b.control
-				JOIN sinv   AS c ON b.codigo=c.codigo
-				WHERE c.serial='V' AND a.id=$dbid";
+				FROM lrece   AS a
+				JOIN lvaca AS b ON a.ruta=b.ruta
+				WHERE a.id=$dbid";
 			$query = $this->db->query($mSQL);
 
 			if ($query->num_rows() > 0){
 				foreach ($query->result() as $row){
 					for($i=0;$i<$row->cana;$i++){
-						$data=array(
-							'codigo_sinv'=>$row->codigo,
-							'modelo'     =>$row->descrip,
-							'peso'       =>$row->peso,
-							'anio'       =>date('Y'),
-							'color'      =>'',
-							'motor'      =>'',
-							'carroceria' =>'',
-							'id_scst'    =>$id
-						);
+						$data=array();
+						$data['densidad']   ='';
+						$data['litros']     ='';
+						$data['lista']      ='';
+						$data['animal']     ='';
+						$data['crios']      ='';
+						$data['h2o']        ='';
+						$data['temp']       ='';
+						$data['brix']       ='';
+						$data['grasa']      ='';
+						$data['acidez']     ='';
+						$data['cloruros']   ='';
+						$data['dtoagua']    ='';
+						$data['id_lrece']   ='';
+						$data['id']         ='';
+
 						$sql = $this->db->insert_string('sinvehiculo', $data);
 						$this->db->simple_query($sql);
 					}
