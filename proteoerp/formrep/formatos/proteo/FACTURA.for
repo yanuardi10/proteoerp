@@ -73,7 +73,7 @@ $detalle  = $mSQL_2->result();
 <title><?php echo $documento.' '.$numero ?></title>
 <link rel="stylesheet" href="<?php echo $this->_direccion ?>/assets/default/css/formatos.css" type="text/css" />
 </head>
-<body>
+<body style="margin-left: 30px; margin-right: 30px;">
 
 <script type="text/php">
 	if (isset($pdf)) {

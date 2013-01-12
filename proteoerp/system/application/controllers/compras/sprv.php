@@ -1,4 +1,4 @@
-<?php 
+<?php
 //require_once(BASEPATH.'application/controllers/validaciones.php');
 class Sprv extends Controller {
 	var $genesal = true;
@@ -972,8 +972,6 @@ class Sprv extends Controller {
 		$edit->telefono->maxlength =200;
 		//$edit->nomfis->style = 'width:170;';
 
-
-
 		$edit->email  = new inputField("Email", "email");
 		$edit->email->rule = "trim|valid_email";
 		$edit->email->size =29;
@@ -1012,9 +1010,9 @@ class Sprv extends Controller {
 		$edit->banco1->style='width:140px;';
 
 		$edit->cuenta1 = new inputField("&nbsp;&nbsp;N&uacute;mero (1)","cuenta1");
-		$edit->cuenta1->size = 21;
+		$edit->cuenta1->size = 28;
 		$edit->cuenta1->rule = "trim";
-		$edit->cuenta1->maxlength = 23;
+		$edit->cuenta1->maxlength = 25;
 		$edit->cuenta1->group = "Cuentas Bancarias";
 		//$edit->cuenta1->in="banco$i";
 
@@ -1026,9 +1024,9 @@ class Sprv extends Controller {
 		$edit->banco2->style='width:140px;';
 
 		$edit->cuenta2 = new inputField("&nbsp;&nbsp;N&uacute;mero (2)",'cuenta2');
-		$edit->cuenta2->size = 21;
+		$edit->cuenta2->size = 28;
 		$edit->cuenta2->rule = "trim";
-		$edit->cuenta2->maxlength = 23;
+		$edit->cuenta2->maxlength = 25;
 		$edit->cuenta2->group = "Cuentas Bancarias";
 
 		$edit->cliente  = new inputField("Como Cliente", "cliente");
@@ -1054,7 +1052,8 @@ class Sprv extends Controller {
 		//$lcuent=anchor_popup('/contabilidad/cpla/dataedit/create','Agregar Cuenta Contable',$atts);
 		$edit->cuenta = new inputField('Contable', 'cuenta');
 		$edit->cuenta->rule='trim|callback_chcuentac';
-		$edit->cuenta->size =15;
+		$edit->cuenta->size =17;
+		$edit->cuenta->maxlength =15;
 		$edit->cuenta->append($bcpla);
 		//$edit->cuenta->append($lcuent);
 
