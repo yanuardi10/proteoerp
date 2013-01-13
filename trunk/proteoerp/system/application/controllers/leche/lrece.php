@@ -958,7 +958,16 @@ class Lrece extends Controller {
 	function analisis(){
 		$this->rapyd->load('dataedit');
 
+		$script= '
+		$(document).ready(function() {
+			$(".inputnum").numeric(".");
+		});';
+
 		$edit = new DataEdit($this->tits, 'lrece');
+
+		$edit->script($script,'modify');
+		$edit->script($script,'create');
+
 		$edit->on_save_redirect=false;
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
@@ -993,20 +1002,20 @@ class Lrece extends Controller {
 		$edit->nombre->size =40;
 		$edit->nombre->maxlength =45;
 
-		$edit->lleno = new inputField('Lleno','lleno');
+		$edit->lleno = new inputField('Peso lleno','lleno');
 		$edit->lleno->rule='max_length[16]|numeric';
 		$edit->lleno->css_class='inputnum';
 		$edit->lleno->size =12;
 		$edit->lleno->mode='autohide';
 		$edit->lleno->maxlength =16;
 
-		$edit->vacio = new inputField('Vacio','vacio');
+		$edit->vacio = new inputField('Peso vac&iacute;o','vacio');
 		$edit->vacio->rule='max_length[16]|numeric';
 		$edit->vacio->css_class='inputnum';
 		$edit->vacio->size =12;
 		$edit->vacio->maxlength =16;
 
-		$edit->neto = new inputField('Neto','neto');
+		$edit->neto = new inputField('Peso neto','neto');
 		$edit->neto->rule='max_length[16]|numeric';
 		$edit->neto->css_class='inputnum';
 		$edit->neto->size =12;
@@ -1024,48 +1033,50 @@ class Lrece extends Controller {
 		$edit->litros->size =12;
 		$edit->litros->maxlength =16;
 
-		$edit->lista = new inputField('Lista','lista');
+		$edit->lista = new inputField('Litros lista','lista');
 		$edit->lista->rule='max_length[16]|numeric';
 		$edit->lista->css_class='inputnum';
 		$edit->lista->size =12;
 		$edit->lista->maxlength =16;
 
-		$edit->diferen = new inputField('Diferen','diferen');
-		$edit->diferen->rule='max_length[16]|numeric';
-		$edit->diferen->css_class='inputnum';
-		$edit->diferen->size =12;
-		$edit->diferen->maxlength =16;
+		//$edit->diferen = new inputField('Diferencia','diferen');
+		//$edit->diferen->rule='max_length[16]|numeric';
+		//$edit->diferen->css_class='inputnum';
+		//$edit->diferen->size =12;
+		//$edit->diferen->maxlength =16;
 
-		$edit->animal = new inputField('Animal','animal');
-		$edit->animal->rule='max_length[1]';
-		$edit->animal->size =3;
-		$edit->animal->maxlength =1;
+		$edit->animal = new  dropdownField ('Animal', 'animal');
+		$edit->animal->option('V' ,'Vaca');
+		$edit->animal->option('B' ,'Bufala');
+		$edit->animal->option('M' ,'Mezcla');
+		$edit->animal->rule = 'required';
+		$edit->animal->style= 'width:145px;';
 
-		$edit->crios = new inputField('Crios','crios');
+		$edit->crios = new inputField('D. Criosc&oacute;pico','crios');
 		$edit->crios->rule='max_length[10]|numeric';
 		$edit->crios->css_class='inputnum';
 		$edit->crios->size =12;
 		$edit->crios->maxlength =10;
 
-		$edit->h2o = new inputField('H2o','h2o');
+		$edit->h2o = new inputField('Agua %','h2o');
 		$edit->h2o->rule='max_length[10]|numeric';
 		$edit->h2o->css_class='inputnum';
 		$edit->h2o->size =12;
 		$edit->h2o->maxlength =10;
 
-		$edit->temp = new inputField('Temp','temp');
+		$edit->temp = new inputField('Temperatura','temp');
 		$edit->temp->rule='max_length[10]|numeric';
 		$edit->temp->css_class='inputnum';
 		$edit->temp->size =12;
 		$edit->temp->maxlength =10;
 
-		$edit->brix = new inputField('Brix','brix');
+		$edit->brix = new inputField('Grados Brix','brix');
 		$edit->brix->rule='max_length[10]|numeric';
 		$edit->brix->css_class='inputnum';
 		$edit->brix->size =12;
 		$edit->brix->maxlength =10;
 
-		$edit->grasa = new inputField('Grasa','grasa');
+		$edit->grasa = new inputField('Grasa %','grasa');
 		$edit->grasa->rule='max_length[10]|numeric';
 		$edit->grasa->css_class='inputnum';
 		$edit->grasa->size =12;
@@ -1083,7 +1094,7 @@ class Lrece extends Controller {
 		$edit->cloruros->size =12;
 		$edit->cloruros->maxlength =10;
 
-		$edit->dtoagua = new inputField('Dtoagua','dtoagua');
+		$edit->dtoagua = new inputField('Dto. Agua','dtoagua');
 		$edit->dtoagua->rule='max_length[10]|numeric';
 		$edit->dtoagua->css_class='inputnum';
 		$edit->dtoagua->size =12;
@@ -1103,12 +1114,12 @@ class Lrece extends Controller {
 		}
 	}
 
-	function vaqueras($id){
+	function vaqueras($status,$id){
 		//Cheque que tenga vehiculos
 		$dbid=$this->db->escape($id);
-		$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM itlrece WHERE id_scst=$dbid");
+		$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM itlrece WHERE id_lrece=$dbid");
 		if(empty($cana)){
-			$mSQL="SELECT c.codigo,c.descrip,c.peso,b.cantidad AS cana
+			$mSQL="SELECT b.id,a.animal
 				FROM lrece   AS a
 				JOIN lvaca AS b ON a.ruta=b.ruta
 				WHERE a.id=$dbid";
@@ -1116,36 +1127,302 @@ class Lrece extends Controller {
 
 			if ($query->num_rows() > 0){
 				foreach ($query->result() as $row){
-					for($i=0;$i<$row->cana;$i++){
-						$data=array();
-						$data['densidad']   ='';
-						$data['litros']     ='';
-						$data['lista']      ='';
-						$data['animal']     ='';
-						$data['crios']      ='';
-						$data['h2o']        ='';
-						$data['temp']       ='';
-						$data['brix']       ='';
-						$data['grasa']      ='';
-						$data['acidez']     ='';
-						$data['cloruros']   ='';
-						$data['dtoagua']    ='';
-						$data['id_lrece']   ='';
-						$data['id']         ='';
+					$data=array();
+					$data['densidad']   = '';
+					$data['lista']      = '';
+					$data['animal']     = $row->animal;
+					$data['crios']      = '';
+					$data['h2o']        = '';
+					$data['temp']       = '';
+					$data['brix']       = '';
+					$data['grasa']      = '';
+					$data['acidez']     = '';
+					$data['cloruros']   = '';
+					$data['dtoagua']    = '';
+					$data['id_lvaca']   = $row->id;
+					$data['id_lrece']   = $id;
 
-						$sql = $this->db->insert_string('sinvehiculo', $data);
-						$this->db->simple_query($sql);
-					}
+					$sql = $this->db->insert_string('itlrece', $data);
+					$this->db->simple_query($sql);
 				}
 			}else{
-				echo 'Compra no tiene Veh&iacute;culos.';
+				echo 'Ruta no tiene vaqueras';
 				exit();
 			}
 		}
 
+		$this->rapyd->load('dataobject','datadetails');
 
+		$script= '
+		$(document).ready(function() {
+			$(".inputnum").numeric(".");
+		});';
 
+		$do = new DataObject('lrece');
+		$do->rel_one_to_many('itlrece', 'itlrece', array('id'=>'id_lrece'));
+		$do->pointer('sprv' ,'sprv.proveed=lrece.chofer','sprv.nombre AS sprvnombre','left');
+		//$do->order_rel_one_to_many('lvaca','codigo AS lvaca');
+		$do->rel_pointer('itlrece','lvaca','lvaca.id=itlrece.id_lvaca','lvaca.nombre AS lvacadescrip');
 
+		$edit = new DataDetails('Recepci&oacute;n de leche',$do);
+		$edit->script($script,'modify');
+		$edit->script($script,'create');
+
+		$edit->back_url = site_url($this->url.'filteredgrid');
+
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
+		$edit->pre_process( 'insert','_pre_insert');
+		$edit->pre_process( 'update','_pre_update');
+		$edit->pre_process( 'delete','_pre_delete');
+
+		$edit->id = new inputField('N&uacute;mero','id');
+		$edit->id->rule='max_length[8]';
+		$edit->id->mode = 'autohide';
+		$edit->id->size =9;
+		$edit->id->maxlength =8;
+
+		$edit->fecha = new dateField('Fecha','fecha');
+		$edit->fecha->rule='chfecha';
+		$edit->fecha->size =10;
+		$edit->fecha->mode = 'autohide';
+		$edit->fecha->maxlength =8;
+
+		$edit->ruta = new inputField('Ruta','ruta');
+		$edit->ruta->rule='max_length[4]';
+		$edit->ruta->mode = 'autohide';
+		$edit->ruta->size =6;
+		$edit->ruta->maxlength =4;
+
+		$edit->chofer = new inputField('Chofer','chofer');
+		$edit->chofer->rule='max_length[5]';
+		$edit->chofer->mode = 'autohide';
+		$edit->chofer->size =6;
+		$edit->chofer->maxlength =5;
+
+		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre->rule='max_length[45]';
+		$edit->nombre->mode = 'autohide';
+		$edit->nombre->size =40;
+		$edit->nombre->maxlength =45;
+
+		$edit->lleno = new inputField('Lleno','lleno');
+		$edit->lleno->rule='max_length[16]|numeric';
+		$edit->lleno->mode = 'autohide';
+		$edit->lleno->css_class='inputnum';
+		$edit->lleno->size =12;
+		$edit->lleno->maxlength =16;
+
+		$edit->vacio = new inputField('Vacio','vacio');
+		$edit->vacio->rule='max_length[16]|numeric';
+		$edit->vacio->mode = 'autohide';
+		$edit->vacio->css_class='inputnum';
+		$edit->vacio->size =12;
+		$edit->vacio->maxlength =16;
+
+		$edit->neto = new inputField('Neto','neto');
+		$edit->neto->rule='max_length[16]|numeric';
+		$edit->neto->mode = 'autohide';
+		$edit->neto->css_class='inputnum';
+		$edit->neto->size =12;
+		$edit->neto->maxlength =16;
+
+		$edit->densidad = new inputField('Densidad','densidad');
+		$edit->densidad->rule='max_length[10]|numeric';
+		$edit->densidad->mode = 'autohide';
+		$edit->densidad->css_class='inputnum';
+		$edit->densidad->size =12;
+		$edit->densidad->maxlength =10;
+
+		$edit->litros = new inputField('Litros','litros');
+		$edit->litros->rule='max_length[16]|numeric';
+		$edit->litros->css_class='inputnum';
+		$edit->litros->mode = 'autohide';
+		$edit->litros->size =12;
+		$edit->litros->maxlength =16;
+
+		$edit->lista = new inputField('Lista','lista');
+		$edit->lista->rule='max_length[16]|numeric';
+		$edit->lista->mode = 'autohide';
+		$edit->lista->css_class='inputnum';
+		$edit->lista->size =12;
+		$edit->lista->maxlength =16;
+
+		//Diferencia neto-lista
+		$edit->diferen = new inputField('Diferencia','diferen');
+		$edit->diferen->rule='max_length[16]|numeric';
+		$edit->diferen->css_class='inputnum';
+		$edit->diferen->size =12;
+		$edit->diferen->mode = 'autohide';
+		$edit->diferen->maxlength =16;
+
+		$edit->animal = new  dropdownField ('Animal', 'animal');
+		$edit->animal->option('V' ,'Vaca');
+		$edit->animal->option('B' ,'Bufala');
+		$edit->animal->rule = 'required';
+		$edit->animal->mode = 'autohide';
+		$edit->animal->style= 'width:145px;';
+
+		$edit->crios = new inputField('D. Criosc&oacute;pico','crios');
+		$edit->crios->rule='max_length[10]|numeric';
+		$edit->crios->css_class='inputnum';
+		$edit->crios->mode = 'autohide';
+		$edit->crios->size =12;
+		$edit->crios->maxlength =10;
+
+		$edit->h2o = new inputField('Agua %','h2o');
+		$edit->h2o->rule='max_length[10]|numeric';
+		$edit->h2o->mode = 'autohide';
+		$edit->h2o->css_class='inputnum';
+		$edit->h2o->size =12;
+		$edit->h2o->maxlength =10;
+
+		$edit->temp = new inputField('Temperatura','temp');
+		$edit->temp->rule='max_length[10]|numeric';
+		$edit->temp->mode = 'autohide';
+		$edit->temp->css_class='inputnum';
+		$edit->temp->size =12;
+		$edit->temp->maxlength =10;
+
+		$edit->brix = new inputField('Grados Brix','brix');
+		$edit->brix->rule='max_length[10]|numeric';
+		$edit->brix->mode = 'autohide';
+		$edit->brix->css_class='inputnum';
+		$edit->brix->size =12;
+		$edit->brix->maxlength =10;
+
+		$edit->grasa = new inputField('Grasa %','grasa');
+		$edit->grasa->rule='max_length[10]|numeric';
+		$edit->grasa->mode = 'autohide';
+		$edit->grasa->css_class='inputnum';
+		$edit->grasa->size =12;
+		$edit->grasa->maxlength =10;
+
+		$edit->acidez = new inputField('Acidez','acidez');
+		$edit->acidez->rule='max_length[10]|numeric';
+		$edit->acidez->mode = 'autohide';
+		$edit->acidez->css_class='inputnum';
+		$edit->acidez->size =12;
+		$edit->acidez->maxlength =10;
+
+		$edit->cloruros = new inputField('Cloruros','cloruros');
+		$edit->cloruros->rule='max_length[10]|numeric';
+		$edit->cloruros->mode = 'autohide';
+		$edit->cloruros->css_class='inputnum';
+		$edit->cloruros->size =12;
+		$edit->cloruros->maxlength =10;
+
+		$edit->dtoagua = new inputField('Dto. Agua','dtoagua');
+		$edit->dtoagua->rule='max_length[10]|numeric';
+		$edit->dtoagua->mode = 'autohide';
+		$edit->dtoagua->css_class='inputnum';
+		$edit->dtoagua->size =12;
+		$edit->dtoagua->maxlength =10;
+
+		//Inicio del detalle
+		$edit->itid = new hiddenField('','id_<#i#>');
+		$edit->itid->rel_id   = 'itlrece';
+		$edit->tiid->db_name  = 'id';
+
+		$edit->itid_lvaca = new hiddenField('','id_lvaca_<#i#>');
+		$edit->itid_lvaca->rel_id   = 'itlrece';
+		$edit->tiid_lvaca->db_name  = 'id_lvaca';
+
+		$edit->itanimal = new  dropdownField ('Animal', 'animal_<#i#>');
+		$edit->itanimal->db_name  = 'animal';
+		$edit->itanimal->rel_id = 'itlrece';
+		$edit->itanimal->option('V' ,'Vaca');
+		$edit->itanimal->option('B' ,'Bufala');
+		$edit->itanimal->rule = 'required';
+		$edit->itanimal->mode = 'autohide';
+		$edit->itanimal->style='width:145px;';
+
+		$edit->itdensidad = new inputField('Densidad','densidad_<#i#>');
+		$edit->itdensidad->db_name = 'densidad';
+		$edit->itdensidad->rel_id  = 'itlrece';
+		$edit->itdensidad->rule='max_length[10]|numeric';
+		$edit->itdensidad->css_class='inputnum';
+		$edit->itdensidad->size =12;
+		$edit->itdensidad->maxlength =10;
+
+		$edit->itlista = new inputField('Litros lista','lista_<#i#>');
+		$edit->itlista->db_name = 'lista';
+		$edit->itlista->rel_id  = 'itlrece';
+		$edit->itlista->rule='max_length[16]|numeric';
+		$edit->itlista->css_class='inputnum';
+		$edit->itlista->size =12;
+		$edit->itlista->maxlength =16;
+
+		$edit->itcrios = new inputField('Criosc&oacute;pica','crios_<#i#>');
+		$edit->itcrios->db_name  = 'crios';
+		$edit->itcrios->rel_id = 'itlrece';
+		$edit->itcrios->rule='max_length[10]|numeric';
+		$edit->itcrios->css_class='inputnum';
+		$edit->itcrios->size =12;
+		$edit->itcrios->maxlength =10;
+
+		$edit->ith2o = new inputField('Agua %','h2o_<#i#>');
+		$edit->ith2o->db_name  = 'h2o';
+		$edit->ith2o->rel_id = 'itlrece';
+		$edit->ith2o->rule='max_length[10]|numeric';
+		$edit->ith2o->css_class='inputnum';
+		$edit->ith2o->size =12;
+		$edit->ith2o->maxlength =10;
+
+		$edit->ittemp = new inputField('Temperatura','temp_<#i#>');
+		$edit->ittemp->db_name  = 'temp';
+		$edit->ittemp->rel_id = 'itlrece';
+		$edit->ittemp->rule='max_length[10]|numeric';
+		$edit->ittemp->css_class='inputnum';
+		$edit->ittemp->size =12;
+		$edit->ittemp->maxlength =10;
+
+		$edit->itbrix = new inputField('Grados Brix','brix_<#i#>');
+		$edit->itbrix->db_name  = 'brix';
+		$edit->itbrix->rel_id = 'itlrece';
+		$edit->itbrix->rule='max_length[10]|numeric';
+		$edit->itbrix->css_class='inputnum';
+		$edit->itbrix->size =12;
+		$edit->itbrix->maxlength =10;
+
+		$edit->itgrasa = new inputField('Grasa %','grasa_<#i#>');
+		$edit->itgrasa->db_name  = 'grasa';
+		$edit->itgrasa->rel_id = 'itlrece';
+		$edit->itgrasa->rule='max_length[10]|numeric';
+		$edit->itgrasa->css_class='inputnum';
+		$edit->itgrasa->size =12;
+		$edit->itgrasa->maxlength =10;
+
+		$edit->itacidez = new inputField('Acidez','acidez_<#i#>');
+		$edit->itacidez->db_name  = 'acidez';
+		$edit->itacidez->rel_id = 'itlrece';
+		$edit->itacidez->rule='max_length[10]|numeric';
+		$edit->itacidez->css_class='inputnum';
+		$edit->itacidez->size =12;
+		$edit->itacidez->maxlength =10;
+
+		$edit->itcloruros = new inputField('Cloruros','cloruros_<#i#>');
+		$edit->itcloruros ->db_name  = 'cloruros ';
+		$edit->itcloruros->rel_id = 'itlrece';
+		$edit->itcloruros->rule='max_length[10]|numeric';
+		$edit->itcloruros->css_class='inputnum';
+		$edit->itcloruros->size =12;
+		$edit->itcloruros->maxlength =10;
+
+		$edit->itdtoagua = new inputField('Dto. Agua','dtoagua_<#i#>');
+		$edit->itdtoagua->db_name  = 'dtoagua';
+		$edit->itdtoagua->rel_id = 'itlrece';
+		$edit->itdtoagua->rule='max_length[10]|numeric';
+		$edit->itdtoagua->css_class='inputnum';
+		$edit->itdtoagua->size =12;
+		$edit->itdtoagua->maxlength =10;
+		//Fin del detalle
+
+		$edit->build();
+
+		$conten["form"] =&  $edit;
+		$this->load->view('view_lrece', $conten);
 	}
 
 	function dataedit(){
@@ -1162,9 +1439,10 @@ class Lrece extends Controller {
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
 
-		$edit->numero = new inputField('Numero','numero');
+		$edit->numero = new inputField('Numero','id');
 		$edit->numero->rule='max_length[8]';
 		$edit->numero->size =9;
+		$edit->numero->when=array('show');
 		$edit->numero->maxlength =8;
 
 		$edit->fecha = new dateField('Fecha','fecha');
@@ -1185,15 +1463,16 @@ class Lrece extends Controller {
 		$edit->nombre = new inputField('Nombre','nombre');
 		$edit->nombre->rule='max_length[45]';
 		$edit->nombre->size =40;
+		$edit->nombre->in='chofer';
 		$edit->nombre->maxlength =45;
 
-		$edit->lleno = new inputField('Lleno','lleno');
+		$edit->lleno = new inputField('Peso Lleno','lleno');
 		$edit->lleno->rule='max_length[16]|numeric';
 		$edit->lleno->css_class='inputnum';
 		$edit->lleno->size =12;
 		$edit->lleno->maxlength =16;
 
-		$edit->vacio = new inputField('Vacio','vacio');
+		$edit->vacio = new inputField('Peso Vac&iacute;o','vacio');
 		$edit->vacio->rule='max_length[16]|numeric';
 		$edit->vacio->css_class='inputnum';
 		$edit->vacio->size =12;
@@ -1217,13 +1496,13 @@ class Lrece extends Controller {
 		$edit->litros->size =12;
 		$edit->litros->maxlength =16;
 
-		$edit->lista = new inputField('Lista','lista');
+		$edit->lista = new inputField('Litros lista','lista');
 		$edit->lista->rule='max_length[16]|numeric';
 		$edit->lista->css_class='inputnum';
 		$edit->lista->size =12;
 		$edit->lista->maxlength =16;
 
-		$edit->diferen = new inputField('Diferen','diferen');
+		$edit->diferen = new inputField('Diferencia','diferen');
 		$edit->diferen->rule='max_length[16]|numeric';
 		$edit->diferen->css_class='inputnum';
 		$edit->diferen->size =12;
