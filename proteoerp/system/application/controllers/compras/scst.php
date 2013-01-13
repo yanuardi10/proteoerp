@@ -2770,7 +2770,7 @@ class Scst extends Controller {
 		$edit->motor->rel_id   = 'sinvehiculo';
 		$edit->motor->rule='max_length[50]|strtoupper|callback_chrepetidos[motor]|required';
 		$edit->motor->db_name  = 'motor';
-		$edit->motor->size =20;
+		$edit->motor->size =25;
 		$edit->motor->maxlength =50;
 		$edit->motor->autocomplete=false;
 
@@ -2778,7 +2778,7 @@ class Scst extends Controller {
 		$edit->carroceria->rel_id   = 'sinvehiculo';
 		$edit->carroceria->rule='max_length[50]|strtoupper|callback_chrepetidos[carroceria]|required';
 		$edit->carroceria->db_name  = 'carroceria';
-		$edit->carroceria->size =20;
+		$edit->carroceria->size =25;
 		$edit->carroceria->maxlength =50;
 		$edit->carroceria->autocomplete=false;
 
