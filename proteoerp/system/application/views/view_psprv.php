@@ -22,7 +22,7 @@ if($form->getstatus()!='show'){
 	$bmov_scampos .='<td class="littletablerow" align="left" >'.$bmov_campos['banco']['field']. '</td>';
 	$bmov_scampos .='<td class="littletablerow" align="left" >'.$bmov_campos['tipo_op']['field'].  '</td>';
 	$bmov_scampos .='<td class="littletablerow" align="left" >'.$bmov_campos['bmovfecha']['field'].  '</td>';
-	$bmov_scampos .='<td class="littletablerow" align="left" >'.$bmov_campos['numref']['field'].'</td>';
+	$bmov_scampos .='<td class="littletablerow" align="left" >'.$bmov_campos['numche']['field'].'</td>';
 	$bmov_scampos .='<td class="littletablerow" align="right">'.$bmov_campos['itmonto']['field'].'</td>';
 	//$bmov_scampos .='<td class="littletablerow"><a href=# onclick="del_bmov(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 	$bmov_campos=$form->js_escape($bmov_scampos);
@@ -149,9 +149,9 @@ function faltante(){
 	<tr>
 		<td colspan=3><?php echo $form->numero->value.$form->cod_prv->output ?>
 		<?php if($form->getstatus()=='show'){ ?>
-			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/CCLIAB/<?php echo raencode($form->cod_prv->value).'/'.raencode($form->tipo_doc->value).'/'.raencode($form->numero->value).'/'.raencode($form->get_from_dataobjetct('fecha')) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/PPROABC/<?php echo raencode($form->cod_prv->value).'/'.raencode($form->tipo_doc->value).'/'.raencode($form->numero->value).'/'.raencode($form->get_from_dataobjetct('fecha')) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 			<img src='<?php echo base_url() ?>images/html_logo.gif'></a>
-			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/ver/CCLIAB/<?php echo raencode($form->cod_prv->value).'/'.raencode($form->tipo_doc->value).'/'.raencode($form->numero->value).'/'.raencode($form->get_from_dataobjetct('fecha')) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/ver/PPROABC/<?php echo raencode($form->cod_prv->value).'/'.raencode($form->tipo_doc->value).'/'.raencode($form->numero->value).'/'.raencode($form->get_from_dataobjetct('fecha')) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 			<img src='<?php echo base_url() ?>images/pdf_logo.gif'></a>
 		<?php } ?>
 		</td>
@@ -160,8 +160,8 @@ function faltante(){
 	<tr>
 		<td><?php echo $form->tipo_doc->label;  ?></td>
 		<td><?php echo $form->tipo_doc->output; ?></td>
-		<td><?php echo $form->fecdoc->label;    ?></td>
-		<td><?php echo $form->fecdoc->output;   ?></td>
+		<td></td>
+		<td></td>
 	</tr>
 </table>
 
@@ -233,7 +233,7 @@ function faltante(){
 	for($i=0; $i < $form->max_rel_count['bmov']; $i++) {
 		$tipo      = "tipo_op_$i";
 		$bmovfecha = "bmovfecha_$i";
-		$numref    = "numref_$i";
+		$numche    = "numche_$i";
 		$monto     = "itmonto_$i";
 		$banco     = "banco_$i";
 	?>
@@ -241,7 +241,7 @@ function faltante(){
 		<td class="littletablerow">       <?php echo $form->$banco->output     ?></td>
 		<td class="littletablerow" nowrap><?php echo $form->$tipo->output      ?></td>
 		<td class="littletablerow" nowrap><?php echo $form->$bmovfecha->output ?></td>
-		<td class="littletablerow">       <?php echo $form->$numref->output    ?></td>
+		<td class="littletablerow">       <?php echo $form->$numche->output    ?></td>
 		<td class="littletablerow" align="right"><?php echo $form->$monto->output ?></td>
 		<?php
 		//if($form->_status!='show') {
