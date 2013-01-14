@@ -1,4 +1,4 @@
-<?php
+<?php include('common.php');
 class psprv extends Controller {
 	var $titp='Pago a proveedores';
 	var $tits='Pago a proveedor';
@@ -113,22 +113,16 @@ class psprv extends Controller {
 		$edit->tipo_doc->style='width:140px;';
 		$edit->tipo_doc->rule ='enum[AB,NC,AN]|required';
 
-		$edit->codigo = new  dropdownField('Motivo', 'codigo');
-		$edit->codigo->option('','Ninguno');
-		$edit->codigo->options('SELECT TRIM(codigo) AS cod, nombre FROM botr WHERE tipo=\'C\' ORDER BY nombre');
-		$edit->codigo->style='width:200px;';
-		$edit->codigo->rule ='';
+		//$edit->codigo = new  dropdownField('Motivo', 'codigo');
+		//$edit->codigo->option('','Ninguno');
+		//$edit->codigo->options('SELECT TRIM(codigo) AS cod, nombre FROM botr WHERE tipo=\'C\' ORDER BY nombre');
+		//$edit->codigo->style='width:200px;';
+		//$edit->codigo->rule ='';
 
 		$edit->numero = new inputField('N&uacute;mero','numero');
 		$edit->numero->rule='max_length[8]';
 		$edit->numero->size =10;
 		$edit->numero->maxlength =8;
-
-		$edit->fecdoc = new dateonlyField('Fecha','fecdoc');
-		$edit->fecdoc->size =10;
-		$edit->fecdoc->maxlength =8;
-		$edit->fecdoc->insertValue=date('Y-m-d');
-		$edit->fecdoc->rule ='chfecha|required';
 
 		$edit->monto = new inputField('Total','monto');
 		$edit->monto->rule='max_length[17]|numeric';
@@ -170,13 +164,13 @@ class psprv extends Controller {
 		foreach ($query->result() as $row){
 			$obj='cod_prv_'.$i;
 			$edit->$obj = new autoUpdateField('cod_prv',$proveed,$proveed);
-			$edit->$obj->rel_id  = 'itpsprv';
+			$edit->$obj->rel_id  = 'itppro';
 			$edit->$obj->ind     = $i;
 
 			$obj='tipo_doc_'.$i;
 			$edit->$obj = new inputField('Tipo_doc',$obj);
 			$edit->$obj->db_name='tipo_doc';
-			$edit->$obj->rel_id = 'itpsprv';
+			$edit->$obj->rel_id = 'itppro';
 			$edit->$obj->rule='max_length[2]';
 			$edit->$obj->insertValue=$row->tipo_doc;
 			$edit->$obj->size =4;
@@ -187,7 +181,7 @@ class psprv extends Controller {
 			$obj='numero_'.$i;
 			$edit->$obj = new inputField('Numero',$obj);
 			$edit->$obj->db_name='numero';
-			$edit->$obj->rel_id = 'itpsprv';
+			$edit->$obj->rel_id = 'itppro';
 			$edit->$obj->rule='max_length[8]';
 			$edit->$obj->insertValue=$row->numero;
 			$edit->$obj->size =10;
@@ -198,7 +192,7 @@ class psprv extends Controller {
 			$obj='fecha_'.$i;
 			$edit->$obj = new dateonlyField('Fecha',$obj);
 			$edit->$obj->db_name='fecha';
-			$edit->$obj->rel_id = 'itpsprv';
+			$edit->$obj->rel_id = 'itppro';
 			$edit->$obj->rule='chfecha';
 			$edit->$obj->insertValue=$row->fecha;
 			$edit->$obj->size =10;
@@ -209,7 +203,7 @@ class psprv extends Controller {
 			$obj='monto_'.$i;
 			$edit->$obj = new inputField('Monto',$obj);
 			$edit->$obj->db_name='monto';
-			$edit->$obj->rel_id = 'itpsprv';
+			$edit->$obj->rel_id = 'itppro';
 			$edit->$obj->rule='max_length[18]|numeric';
 			$edit->$obj->css_class='inputnum';
 			$edit->$obj->size =20;
@@ -231,7 +225,7 @@ class psprv extends Controller {
 	        $obj='abono_'.$i;
 			$edit->$obj = new inputField('Abono',$obj);
 			$edit->$obj->db_name      = 'abono';
-			$edit->$obj->rel_id       = 'itpsprv';
+			$edit->$obj->rel_id       = 'itppro';
 			$edit->$obj->rule         = "max_length[18]|numeric|positive|callback_chabono[$i]";
 			$edit->$obj->css_class    = 'inputnum';
 			$edit->$obj->showformat   = 'decimal';
@@ -245,7 +239,7 @@ class psprv extends Controller {
 	        $obj='ppago_'.$i;
 			$edit->$obj = new inputField('Pronto Pago',$obj);
 			$edit->$obj->db_name      = 'ppago';
-			$edit->$obj->rel_id       = 'itpsprv';
+			$edit->$obj->rel_id       = 'itppro';
 			$edit->$obj->rule         = "max_length[18]|numeric|positive|callback_chppago[$i]";
 			$edit->$obj->css_class    = 'inputnum';
 			$edit->$obj->showformat   = 'decimal';
@@ -261,7 +255,7 @@ class psprv extends Controller {
 		//************************************************
 		//fin de campos para detalle,inicio detalle2 bmov
 		//************************************************
-		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
+		$edit->banco = new dropdownField('Banco <#o#>', 'codban_<#i#>');
 		$edit->banco->option('','Seleccionar');
 		$edit->banco->options('SELECT codbanc, CONCAT(codbanc," ",banco) banco  FROM banc ORDER BY codbanc');
 		$edit->banco->db_name='banco';
@@ -271,12 +265,12 @@ class psprv extends Controller {
 
 		$edit->tipo_op = new  dropdownField('Tipo Operacion <#o#>', 'tipo_op_<#i#>');
 		$edit->tipo_op->option('','Seleccionar');
-		$edit->tipo_op->option('CH','Cheque');
 		$edit->tipo_op->option('ND','Nota de Debito');
-		$edit->tipo_op->db_name  = 'tipo';
+		$edit->tipo_op->option('CH','Cheque');
+		$edit->tipo_op->db_name  = 'tipo_op';
 		$edit->tipo_op->rel_id   = 'bmov';
 		$edit->tipo_op->style    = 'width:160px;';
-		$edit->tipo_op->rule     = 'required|enum[CH,ND]';
+		$edit->tipo_op->rule     = 'condi_required|enum[CH,ND]|callback_chtipo[<#i#>]';
 		//$edit->tipo_op->insertValue='CH';
 
 		$edit->bmovfecha = new dateonlyField('Fecha','bmovfecha_<#i#>');
@@ -286,11 +280,11 @@ class psprv extends Controller {
 		$edit->bmovfecha->maxlength= 8;
 		$edit->bmovfecha->rule ='condi_required|chsitfecha|callback_chtipo[<#i#>]';
 
-		$edit->numref = new inputField('Numero <#o#>', 'num_ref_<#i#>');
-		$edit->numref->size     = 12;
-		$edit->numref->db_name  = 'num_ref';
-		$edit->numref->rel_id   = 'bmov';
-		$edit->numref->rule     = 'condi_required|callback_chtipo[<#i#>]';
+		$edit->numche = new inputField('Numero <#o#>', 'numche_<#i#>');
+		$edit->numche->size     = 12;
+		$edit->numche->db_name  = 'comprob';
+		$edit->numche->rel_id   = 'bmov';
+		$edit->numche->rule     = 'condi_required|callback_chtipo[<#i#>]';
 
 		$edit->itmonto = new inputField('Monto <#o#>', 'itmonto_<#i#>');
 		$edit->itmonto->db_name     = 'monto';
@@ -346,11 +340,12 @@ class psprv extends Controller {
 	}
 
 	function chtipo($val,$i){
-		$tipo=$this->input->post('tipo_'.$i);
+		$tipo=$this->input->post('codban_'.$i);
 		if(empty($tipo)) return true;
-		$this->validation->set_message('chtipo', 'El campo %s es obligatorio');
+		$dat=common::_traebandata($tipo);
+		$this->validation->set_message('chtipo', 'El campo %s es obligatorio se paga con bancos');
 
-		if(empty($val) && ($tipo!='EF'))
+		if(empty($val) && ($dat['tbanco']!='CAJ'))
 			return false;
 		else
 			return true;
@@ -412,7 +407,7 @@ class psprv extends Controller {
 		$r1 = array('tipo_doc' => 'numpsprv' ,'numero'=>'numpsprv');
 		$r2 = array('tipo_doc' => 'tipo_doc','numero'=>'numero' );
 
-		$do->rel_many_to_many('smov', 'smov','itpsprv',$r1,$r2);
+		$do->rel_many_to_many('smov', 'smov','itppro',$r1,$r2);
 	}
 
 	function _exitesprv($proveed){
@@ -436,12 +431,12 @@ class psprv extends Controller {
 		$tipo_doc= $do->get('tipo_doc');
 		$fecha   = $do->get('fecha');
 		$itabono=$sfpamonto=$ppagomonto=0;
+		$nombre='';
 
 		$rrow    = $this->datasis->damerow('SELECT nombre,rif,direc1,direc2 FROM sprv WHERE proveed='.$this->db->escape($proveed));
 		if($rrow!=false){
 			$do->set('nombre',$rrow['nombre']);
-			$do->set('dire1' ,$rrow['dire1']);
-			$do->set('dire2' ,$rrow['dire2']);
+			$nombre = $rrow['nombre'];
 		}
 
 		//Totaliza el abonado
@@ -502,19 +497,17 @@ class psprv extends Controller {
 		$transac  = $this->datasis->fprox_numero('ntransa');
 
 		if($tipo_doc=='AB'){
-			$mnum = $this->datasis->fprox_numero('nabcli');
-		}elseif($tipo_doc=='GI'){
-			$mnum = $this->datasis->fprox_numero('ngicli');
+			$mnum = $this->datasis->fprox_numero('num_ab');
 		}elseif($tipo_doc=='NC'){
-			$mnum = $this->datasis->fprox_numero('npsprv');
+			$mnum = $this->datasis->fprox_numero('num_nc');
 		}else{
-			$mnum = $this->datasis->fprox_numero('nancli');
+			$mnum = $this->datasis->fprox_numero('num_an');
 		}
 		$do->set('vence'  , $fecha);
 		$do->set('numero' , $mnum);
 		$do->set('transac', $transac);
 
-		$rel='itpsprv';
+		$rel='itppro';
 		$observa=array();
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
@@ -525,16 +518,16 @@ class psprv extends Controller {
 				$do->rel_rm($rel,$i);
 			}else{
 				$observa[]=$ittipo.$itnumero;
-				$do->set_rel($rel, 'tipopsprv', $tipo_doc, $i);
-				$do->set_rel($rel, 'cod_prv' , $cod_prv , $i);
-				$do->set_rel($rel, 'estampa' , $estampa , $i);
-				$do->set_rel($rel, 'hora'    , $hora    , $i);
-				$do->set_rel($rel, 'usuario' , $usuario , $i);
-				$do->set_rel($rel, 'transac' , $transac , $i);
-				$do->set_rel($rel, 'mora'    , 0, $i);
-				$do->set_rel($rel, 'reten'   , 0, $i);
-				$do->set_rel($rel, 'cambio'  , 0, $i);
-				$do->set_rel($rel, 'reteiva' , 0, $i);
+				$do->set_rel($rel, 'tipoppro' , $tipo_doc, $i);
+				$do->set_rel($rel, 'cod_prv'  , $cod_prv , $i);
+				$do->set_rel($rel, 'estampa'  , $estampa , $i);
+				$do->set_rel($rel, 'hora'     , $hora    , $i);
+				$do->set_rel($rel, 'usuario'  , $usuario , $i);
+				$do->set_rel($rel, 'transac'  , $transac , $i);
+				$do->set_rel($rel, 'mora'     , 0, $i);
+				$do->set_rel($rel, 'reten'    , 0, $i);
+				$do->set_rel($rel, 'cambio'   , 0, $i);
+				$do->set_rel($rel, 'reteiva'  , 0, $i);
 			}
 		}
 		if(count($observa)>0){
@@ -553,12 +546,11 @@ class psprv extends Controller {
 			$do->set_rel($rel,'hora'     , $hora    , $i);
 			$do->set_rel($rel,'usuario'  , $usuario , $i);
 			$do->set_rel($rel,'transac'  , $transac , $i);
-			$do->set_rel($rel,'f_factura', $fecha   , $i);
-			$do->set_rel($rel,'cod_prv'  ,$cliente  , $i);
-			$do->set_rel($rel,'cobro'    ,$fecha    , $i);
-			$do->set_rel($rel,'vendedor' ,$this->secu->getvendedor(),$i);
-			$do->set_rel($rel,'cobrador' ,$this->secu->getcajero()  ,$i);
-			$do->set_rel($rel,'almacen'  ,$this->secu->getalmacen() ,$i);
+			$do->set_rel($rel,'fecha'    , $fecha   , $i);
+			$do->set_rel($rel,'codcp'    , $cod_prv , $i);
+			$do->set_rel($rel,'nombre'   , $nombre  , $i);
+			$do->set_rel($rel,'concepto' , substr($observa,0,50), $i);
+
 		}
 		$this->ppagomonto=$ppagomonto;
 
@@ -567,9 +559,8 @@ class psprv extends Controller {
 		$do->set('cambio'  ,0);
 		$do->set('reteiva' ,0);
 		$do->set('ppago'   ,$ppagomonto);
-		$do->set('codigo'  ,'NOCON');
-		$do->set('descrip' ,'NOTA DE CONTABILIDAD');
-		$do->set('vendedor', $this->secu->getvendedor());
+		$do->set('codigo'  ,'');
+		$do->set('descrip' ,'');
 		return true;
 	}
 
@@ -577,18 +568,16 @@ class psprv extends Controller {
 		$cliente  =$do->get('cod_prv');
 		$dbcliente=$this->db->escape($cliente);
 
-		$rel_id='itpsprv';
+		$rel_id='itppro';
 		$cana = $do->count_rel($rel_id);
 		if($cana>0){
 			if($this->ppagomonto>0){
 				//Crea la NC por Pronto pago
-				$mnumnc = $this->datasis->fprox_numero('npsprv');
+				$mnumnc = $this->datasis->fprox_numero('num_nc');
 
 				$dbdata=array();
 				$dbdata['cod_prv']    = $cliente;
 				$dbdata['nombre']     = $do->get('nombre');
-				$dbdata['dire1']      = $do->get('dire1');
-				$dbdata['dire2']      = $do->get('dire2');
 				$dbdata['tipo_doc']   = 'NC';
 				$dbdata['numero']     = $mnumnc;
 				$dbdata['fecha']      = $do->get('fecha');
@@ -603,8 +592,8 @@ class psprv extends Controller {
 				$dbdata['hora']       = $do->get('hora');
 				$dbdata['transac']    = $do->get('transac');
 				$dbdata['usuario']    = $do->get('usuario');
-				$dbdata['codigo']     = 'NOCON';
-				$dbdata['descrip']    = 'NOTA DE CONTABILIDAD';
+				$dbdata['codigo']     = '';
+				$dbdata['descrip']    = '';
 				$dbdata['fecdoc']     = $do->get('fecha');
 				$dbdata['nroriva']    = '';
 				$dbdata['emiriva']    = '';
@@ -612,7 +601,7 @@ class psprv extends Controller {
 				$dbdata['cambio']     = 0;
 				$dbdata['mora']       = 0;
 
-				$mSQL = $this->db->insert_string('smov', $dbdata);
+				$mSQL = $this->db->insert_string('sprm', $dbdata);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'psprv'); }
 
@@ -654,7 +643,7 @@ class psprv extends Controller {
 					$itdbdata['numero']   = $numero;
 					$itdbdata['abono']    = $ppago;
 
-					$mSQL = $this->db->insert_string('itpsprv', $itdbdata);
+					$mSQL = $this->db->insert_string('itppro', $itdbdata);
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'psprv'); }
 				}
