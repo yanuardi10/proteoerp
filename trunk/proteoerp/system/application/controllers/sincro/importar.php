@@ -47,7 +47,8 @@ class Importar extends Controller {
 		$form->qtrae = new dropdownField('Que traer?', 'qtrae');
 		$form->qtrae->rule ='required';
 		$form->qtrae->option('','Selecionar');
-		$form->qtrae->option('scli'       ,'Clientes');
+		//$form->qtrae->option('scli'       ,'Clientes');
+		$form->qtrae->option('sclilimit'  ,'Clientes');
 		$form->qtrae->option('sprv'       ,'Proveedores');
 		$form->qtrae->option('sinv'       ,'Inventario (clonar)');
 		$form->qtrae->option('sinvprec'   ,'Inventario (Solo precios)');
