@@ -27,6 +27,8 @@ $nfiscal   = $row->nfiscal  ;
 $afecta    = $row->afecta   ;
 $clipro    = $row->clipro   ;
 $nombre    = $row->nombre   ;
+$direc     = $row->direc   ;
+
 $rif       = $row->rif      ;
 $exento    = $row->exento   ;
 $tasa      = $row->tasa     ;
@@ -94,67 +96,77 @@ if ( isset($pdf) ) {
 						<br />
 						<table style="width: 100%;">
 							<tr>
-								<td colspan='2' style="text-align: right">Comprobante N&uacute;mero: <b><?php echo str_replace('-','',$periodo).$nrocomp ?></b></td>
-							</tr>
-							<tr>
-								<td colspan='2' style="text-align: right">Fecha de Ingreso: <b><?php echo $emision; ?></b></td>
-							</tr>
-							<tr>
-								<td colspan='2' style="text-align: right">Per&iacute;odo F&iacute;scal: <b><?php echo $periodo; ?></b></td>
+								<td style="text-align:center;font-size:12pt; ">N&uacute;mero: <b><?php echo str_replace('-','',$periodo).$nrocomp ?></b></td>
+								<td style="text-align:center;font-size:12pt;">Per&iacute;odo F&iacute;scal: <b><?php echo $periodo; ?></b></td>
+								<td style="text-align:center;font-size:12pt;">Fecha de Emision: <b><?php echo $emision; ?></b></td>
 							</tr>
 						</table
 						</div>
-
-						<h2 style="text-align: left">Agente de Retenci&oacute;n</h2>
+						<br>
+						<span style="text-align: left">Agente de Retenci&oacute;n</span>
 						<div class="page" style="font-size: 7pt">
-						<p>
-							<?php echo $this->datasis->traevalor('TITULO1'); ?>
+						<p style="font-size: 10pt;font-weight:bold;">
+							<?php echo $this->datasis->traevalor('TITULO1'); ?><br>
+							RIF: <?php echo str_replace ('-','',$this->datasis->traevalor('RIF')); ?>
 						</p>
-						<p>
-							<?php echo $this->datasis->traevalor('TITULO2').' '.$this->datasis->traevalor('TITULO3'); ?> <br>
-							<b>RIF: <?php echo str_replace ('-','',$this->datasis->traevalor('RIF')); ?></b>
+						<p style="font-size: 10pt;">
+							<?php echo $this->datasis->traevalor('TITULO2').' '.$this->datasis->traevalor('TITULO3'); ?>
 						</p>
 						</div>
-
-						<h2 style="text-align: left">Sujeto Retenido</h2>
-						<div class="page" style="font-size: 7pt">
-						<p>
-							<?php echo $nombre;  ?>
-						</p>
-						<p>
-							<?php echo 'Direc' ?> <br>
+						<br />
+						<span style="text-align: left">Sujeto de Retencion</span>
+						<div class="page" >
+						<p style="font-size: 10pt;font-weight:bold;">
+							<?php echo $nombre;  ?><br>
 							<b>RIF: <?php echo $rif; ?></b>
 						</p>
+						<p style="font-size: 10pt;">
+							<?php echo $direc ?>
+						</p>
+						<br />
+						<br />
 
-						<table align='center' font-size: 7pt;">
+						<table align='center' style="font-size: 11pt;">
 							<tr>
 								<td><b>Fecha del Documento:</b></td>
 								<td><?php echo $fecha; ?></td>
 							</tr>
+
 							<tr>
 								<td><b>N&uacute;mero de Factura:</b> </b></td>
 								<td><?php echo ($tipo_doc=='FC')? $numero:' '; ?></td>
 							</tr>
+
 							<tr>
 								<td><b>N&uacute;mero de control:</b></td>
 								<td><?php echo $nfiscal; ?></td>
 							</tr>
+							<?php if ( $tipo_doc=='ND'){ ?>
 							<tr>
 								<td><b>N&uacute;mero de Nota de D&eacute;bito:</b></td>
 								<td><?php echo ($tipo_doc=='ND')? $numero:' '; ?></td>
 							</tr>
+							<?php }; ?>
+
+							<?php if ( $tipo_doc=='NC'){ ?>
 							<tr>
 								<td><b>N&uacute;mero de Nota de Cr&eacute;dito:</b></td>
 								<td><?php echo ($tipo_doc=='NC')? $numero:' '; ?></td>
 							</tr>
+							<?php }; ?>
+
 							<tr>
 								<td><b>Tipo de Transacci&oacute;n:</b></td>
 								<td><?php echo ($tipo_doc=='FC')? '01': ($tipo_doc=='ND')? '02': '03'; ?></td>
 							</tr>
+
+							<?php if ( !empty($afecta) ){ ?>
 							<tr>
 								<td><b>N&uacute;mero de Documento Afectado:</b></td>
 								<td><?php echo $afecta; ?></td>
 							</tr>
+							<?php }; ?>
+
 						</table>
 					</div>
 				</td>
@@ -163,10 +175,10 @@ if ( isset($pdf) ) {
 		<tr>
 			<td>
 				<div id="content">
-					<div class="page" style="font-size: 7pt">
+					<div class="page" style="font-size: 11pt;">
 						<table class="change_order_items">
 							<thead>
-								<tr>
+								<tr style="font-size: 10pt;background:#FAFAFA;">
 									<th>Total Compra con I.V.A.</th>
 									<th>Total Compra Exenta</th>
 									<th>Base Imponible</th>
@@ -175,31 +187,31 @@ if ( isset($pdf) ) {
 								</tr>
 							</thead>
 							<tbody>
-								<tr class="even_row">
-									<td style="text-align: right" rowspan="3"><?php echo nformat($gtotal); ?></td>
-									<td style="text-align: right" rowspan="3"><?php echo nformat($exento); ?></td>
-									<td style="text-align: right"><?php echo nformat($reducida);  ?></td>
-									<td style="text-align: right"><?php echo nformat($tasaredu);  ?></td>
-									<td style="text-align: right"><?php echo nformat($reduimpu);  ?></td>
+								<tr>
+									<td style="text-align: right;font-size: 10pt" rowspan="3"><?php echo nformat($gtotal); ?></td>
+									<td style="text-align: right;font-size: 10pt" rowspan="3"><?php echo nformat($exento); ?></td>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($reducida);  ?></td>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($tasaredu);  ?></td>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($reduimpu);  ?></td>
 								</tr>
-								<tr class="odd_row">
-									<td style="text-align: right"><?php echo nformat($general);   ?></td>
-									<td style="text-align: right"><?php echo nformat($tasa);      ?></td>
-									<td style="text-align: right"><?php echo nformat($geneimpu);  ?></td>
+								<tr>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($general);   ?></td>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($tasa);      ?></td>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($geneimpu);  ?></td>
 								</tr>
-								<tr class="even_row">
-									<td style="text-align: right"><?php echo nformat($adicional); ?></td>
-									<td style="text-align: right"><?php echo nformat($tasaadic);  ?></td>
-									<td style="text-align: right"><?php echo nformat($adicimpu);  ?></td>
+								<tr>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($adicional); ?></td>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($tasaadic);  ?></td>
+									<td style="text-align: right;font-size: 10pt"><?php echo nformat($adicimpu);  ?></td>
 								</tr>
 								</tbody><tfoot>
 								<tr>
-									<td colspan='4' style="text-align: right">Total I.V.A. CAUSADO Bs:</td>
-									<td style="text-align: right"><?php echo nformat($impuesto);  ?></td>
+									<td colspan='4' style="text-align:right;font-size:12pt">Total I.V.A. CAUSADO Bs:</td>
+									<td style="text-align: right;font-size:12pt"><?php echo nformat($impuesto);  ?></td>
 								</tr>
 								<tr>
-									<td colspan='4' style="text-align: right" >Total I.V.A. RETENIDO Bs:</td>
-									<td style="text-align: right"><?php echo nformat($reiva);  ?></td>
+									<td colspan='4' style="text-align:right;font-size:12pt;font-weight:bold;" >Total I.V.A. RETENIDO Bs:</td>
+									<td style="text-align: right;font-size:12pt;font-weight:bold;"><?php echo nformat($reiva);  ?></td>
 								</tr>
 							</tfoot>
 						</table>
@@ -208,24 +220,30 @@ if ( isset($pdf) ) {
 			</td>
 		</tr>
 </table>
+Firma Y Sello:
+
 <br />
 <br />
 <br />
 <br />
 <br />
 <br />
-<br />
-<br />
-<hr>
-<table  style="width: 100%;" class="header">
+
+<table align='center' style="width: 90%;" colspacing='4' colspan='4'>
 		<tr>
-			<td><b><div align="center" style="font-size: 8pt">Firma Y Sello<br>Agente de Retenci&oacute;n</div></b></td>
-			<td><b><div align="center" style="font-size: 8pt">Firma Y Sello<br>Del Beneficiario</div></b></td>
+			<td><hr></td>
+			<td>&nbsp;&nbsp;&nbsp;</td>
+			<td><hr></td>
 		</tr>
 		<tr>
-			<td style="text-align: right" colspan='2'><b><div style="font-size: 8pt;text-align: right">Fecha de Entrega <?php echo $emision; ?></div></b></td>
+			<td><b><div align="center" style="font-size: 9pt">Agente de Retenci&oacute;n</div></b></td>
+			<td>&nbsp;&nbsp;&nbsp;</td>
+			<td><b><div align="center" style="font-size: 9pt">Sujeto de Retencion</div></b></td>
 		</tr>
 </table>
+<br>
+<div style="font-size: 11pt;text-align:center">Fecha de Entrega ____/____/______</div>
+
 </div>
 </body>
 </html>

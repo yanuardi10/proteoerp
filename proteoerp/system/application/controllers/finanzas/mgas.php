@@ -12,16 +12,11 @@ class Mgas extends validaciones {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		$this->datasis->modulo_nombre( 'MGAS', $ventana=0 );
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('mgas','id') ) {
-			$this->db->simple_query('ALTER TABLE mgas DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE mgas ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE mgas ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		$this->datasis->modulo_nombre( 'MGAS', $ventana=0 );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -45,7 +40,7 @@ class Mgas extends validaciones {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Inventario de Gastos")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -106,7 +101,7 @@ class Mgas extends validaciones {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 700, modal: true,
+			autoOpen: false, height: 400, width: 700, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -173,6 +168,7 @@ class Mgas extends validaciones {
 
 
 		$grid->addField('descrip');
+		$grid->label('Descrip');
 		$grid->label('Descrip');
 		$grid->params(array(
 			'search'        => 'true',
@@ -778,7 +774,7 @@ class Mgas extends validaciones {
 		$edit->codigo->append($ultimo);
 
 		$edit->descrip= new inputField("Descripci&oacute;n", "descrip");
-		$edit->descrip->size = 35;
+		$edit->descrip->size = 30;
 		//$edit->descrip->readonly=true;
 
 		$edit->tipo= new dropdownField("Tipo", "tipo");
@@ -790,13 +786,15 @@ class Mgas extends validaciones {
 
 		$edit->grupo= new dropdownField("Grupo", "grupo");
 		$edit->grupo->options('SELECT grupo, CONCAT(grupo," - ",nom_grup) nom_grup from grga order by nom_grup');
-		$edit->grupo->style ="width:250px;";
+		$edit->grupo->style ="width:200px;";
 		//$edit->grupo->onchange ="grupo();";
 
 		//$edit->nom_grup  = new inputField("nom_grup", "nom_grup");
 
-		$lcuent=anchor_popup("/contabilidad/cpla/dataedit/create","Agregar Cuenta Contable",$atts);
-		$edit->cuenta    = new inputField("Cuenta Contable", "cuenta");
+		//$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una cuenta">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
+
+		$lcuent=anchor_popup("/contabilidad/cpla/dataedit/create",image('list_plus.png','Agregar',array("border"=>"0")),$atts);
+		$edit->cuenta    = new inputField("Cta. Contable", "cuenta");
 		$edit->cuenta->size = 12;
 		$edit->cuenta->maxlength = 15;
 		$edit->cuenta->rule = "trim|callback_chcuentac";
@@ -804,57 +802,76 @@ class Mgas extends validaciones {
 		$edit->cuenta->append($lcuent);
 		$edit->cuenta->readonly=true;
 
-		$edit->iva = new inputField("Iva", "iva");
+/*
+		$edit->iva = new inputField("IVA", "iva");
 		$edit->iva->css_class='inputnum';
-		$edit->iva->size =12;
+		$edit->iva->size =9;
 		$edit->iva->maxlength =5;
 		$edit->iva->rule ="trim";
+*/	
+		$ivas=$this->datasis->ivaplica();
+		$edit->iva = new dropdownField('IVA %', 'iva');
+		foreach($ivas as $tasa=>$ivamonto){
+			$edit->iva->option($ivamonto,nformat($ivamonto));
+		}
+		$edit->iva->style='width:100px;';
+		$edit->iva->insertValue=$ivas['tasa'];
+		//$edit->iva->onchange='calculos(\'S\');';
+		
 
-		$edit->medida    = new inputField("Unidad Medida", "medida");
-		$edit->medida->size = 10;
 
-		$edit->fraxuni   = new inputField("Cantidad por Caja", "fraxuni");
+		//$edit->medida    = new inputField("Unidad Medida", "medida");
+		//$edit->medida->size = 5;
+
+		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
+		$edit->medida = new dropdownField('Medida','medida');
+		$edit->medida->style='width:100px;';
+		$edit->medida->option('','Seleccionar');
+		$edit->medida->options('SELECT unidades, unidades AS valor FROM unidad ORDER BY unidades');
+		$edit->medida->append($AddUnidad);
+
+		$edit->fraxuni   = new inputField("Cant. X Caja", "fraxuni");
 		$edit->fraxuni->css_class='inputnum';//no sirve
 		$edit->fraxuni->group = 'Existencias';
-		$edit->fraxuni->size = 10;
+		$edit->fraxuni->size = 5;
 
-		$edit->ultimo    = new inputField("Ultimo Costo", "ultimo");
+		$edit->ultimo    = new inputField("Costo", "ultimo");
 		$edit->ultimo->css_class='inputnum';//no sirve
-		$edit->ultimo->size = 15;
+		$edit->ultimo->size = 9;
 
-		$edit->promedio  = new inputField("Costo Promedio", "promedio");
+		$edit->promedio  = new inputField("Promedio", "promedio");
 		$edit->promedio->css_class='inputnum';//no sirve
-		$edit->promedio->size = 15;
+		$edit->promedio->size = 9;
 
-		$edit->minimo    = new inputField("Existencia M&iacute;nima", "minimo");
+		$edit->minimo    = new inputField("M&iacute;nima", "minimo");
 		$edit->minimo->css_class='inputnum';//no sirve
 		$edit->minimo->group = 'Existencias';
-		$edit->minimo->size = 10;
+		$edit->minimo->size = 5;
 
-		$edit->maximo    = new inputField("Existencia M&aacute;xima", "maximo");
+		$edit->maximo    = new inputField("M&aacute;xima", "maximo");
 		$edit->maximo->css_class='inputnum';//no sirve
 		$edit->maximo->group = 'Existencias';
-		$edit->maximo->size = 10;
+		$edit->maximo->size = 5;
 
-		$edit->unidades  = new inputField("Existencia Actual en Unidades o Cajas", "unidades");
+		$edit->unidades  = new inputField("Cajas", "unidades");
 		$edit->unidades->css_class='inputnum';//no sirve
 		$edit->unidades->group = 'Existencias';
 		$edit->unidades->size = 5;
 
-		$edit->fraccion  = new inputField("Existencia Actual en Fracci&oacute;nes", "fraccion");
+		$edit->fraccion  = new inputField("Fracci&oacute;nes", "fraccion");
 		$edit->fraccion->css_class='inputnum';//no sirve
 		$edit->fraccion->group = 'Existencias';
 		$edit->fraccion->size = 5;
 
-		$edit->reten= new dropdownField("Retenci&oacute;n Persona Natural.", "reten");
+		$edit->reten= new dropdownField("Natural.", "reten");
 		$edit->reten->option('','Ninguno');
 		$edit->reten->options('SELECT codigo, CONCAT(codigo," - ",activida) val FROM rete WHERE tipo="NR" ORDER BY codigo');
-		$edit->reten->style ="width:250px;";
+		$edit->reten->style ="width:220px;";
 
-		$edit->retej= new dropdownField("Retenci&oacute;n Persona Jur&iacute;dica.", "retej");
+		$edit->retej= new dropdownField("Jur&iacute;dica.", "retej");
 		$edit->retej->option('','Ninguno');
 		$edit->retej->options('SELECT codigo, CONCAT(codigo," - ",activida) val FROM rete WHERE tipo="JD" ORDER BY codigo');
-		$edit->retej->style ="width:250px;";
+		$edit->retej->style ="width:220px;";
 
 		$codigo=$edit->_dataobject->get("codigo");
 		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
