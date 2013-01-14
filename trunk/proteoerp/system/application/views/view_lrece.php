@@ -7,51 +7,25 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 $mod=true;
 ?>
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
-<table border=0 width="100%">
-	<tr>
-		<td colspan='2'>
-			<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
-			<table border=0 width="100%">
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->id->label; ?></td>
-				<td class="littletablerow"    ><?php echo $form->id->output;?></td>
-			</tr>
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->fecha->label; ?></td>
-				<td class="littletablerow"    ><?php echo $form->fecha->output;?></td>
-			</tr>
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->ruta->label; ?></td>
-				<td class="littletablerow"    ><?php echo $form->ruta->output;?></td>
-			</tr>
-			</table>
-			</fieldset>
-		</td>
-		<td>
-			<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
-			<legend>&nbsp;</legend>
-			<table border=0 width="100%">
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->chofer->label; ?></td>
-				<td class="littletablerow"    ><?php echo $form->chofer->output;?></td>
-			</tr>
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->nombre->label; ?></td>
-				<td class="littletablerow"    ><?php echo $form->nombre->output;?></td>
-			</tr>
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->lleno->label; ?></td>
-				<td class="littletablerow"    ><?php echo $form->lleno->output;?></td>
-			</tr>
-			</table>
-			</fieldset>
-		</td>
-	</tr>
-</table>
 <div style='border: 1px solid #9AC8DA;background: #FAFAFA'>
-<table width='100%'>
+<table>
+		
+</table>
+<table width='100%' cellspacing='0' cellpadding='0'>
+	<tr style='background:#121212;color:#FDFDFD;'>
+		<th align="center">Animal</th>
+		<th align="center">Acidez</th>
+		<th align="center">Densidad</th>
+		<th align="center">% Agua</th>
+		<th align="center">Crioscopia</th>
+		<th align="center">Grados Brix</th>
+		<th align="center">% Grasa</th>
+		<th align="center">Cloruros</th>
+		<th align="center">Dscto.Agua</th>
+	</tr>
 
-	<?php for($i=0;$i<$form->max_rel_count['itlrece'];$i++) {
+<?php 
+	for($i=0;$i<$form->max_rel_count['itlrece'];$i++) {
 
 		$it_densidad     = "itdensidad_${i}";
 		$it_lista        = "itlista_${i}";
@@ -69,31 +43,39 @@ $mod=true;
 		$it_id           = "itid_${i}";
 		$it_lvacacodigo  = "itlvacacodigo_${i}";
 		$it_lvacadescrip = "itlvacadescrip_${i}";
-	?>
+		echo $form->$it_id->output. $form->$it_id_lvaca->output;
+?>
 
-	<tr style="<?php if(!$mod) echo 'background:#E4E4E4;'; else  echo ''; ?>">
-		<th colspan='5'><b>Vaquera:<?php echo '('.$form->$it_lvacacodigo->output.') '.$form->$it_lvacadescrip->output; ?></b></th>
+	<tr style='background:#E4E4E4;'>
+		<td colspan='9' align='left'><b>Vaquera:<?php echo '('.$form->$it_lvacacodigo->output.') '.$form->$it_lvacadescrip->output; ?></b></td>
 	</tr>
-	<tr style="<?php if(!$mod) echo 'background:#E4E4E4'; else  echo ''; ?>">
-		<td class="littletablerow" align="right"><?php echo $form->$it_id->output. $form->$it_id_lvaca->output; ?>
-			<label for='<?php echo $it_animal;   ?>'><?php echo $form->$it_animal->label;   ?></label><?php echo $form->$it_animal->output;   ?><br>
-			<label for='<?php echo $it_acidez;   ?>'><?php echo $form->$it_acidez->label;   ?></label><?php echo $form->$it_acidez->output;   ?><br>
+	<tr>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_animal->output; ?>
 		</td>
-		<td class="littletablerow" align="right">
-			<label for='<?php echo $it_densidad; ?>'><?php echo $form->$it_densidad->label; ?></label><?php echo $form->$it_densidad->output; ?><br>
-			<label for='<?php echo $it_lista;    ?>'><?php echo $form->$it_lista->label;    ?></label><?php echo $form->$it_lista->output;    ?><br>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_acidez->output; ?>
 		</td>
-		<td class="littletablerow" align="right">
-			<label for='<?php echo $it_h20;      ?>'><?php echo $form->$it_h2o->label;      ?></label><?php echo $form->$it_h2o->output;      ?><br>
-			<label for='<?php echo $it_crios;    ?>'><?php echo $form->$it_crios->label;    ?></label><?php echo $form->$it_crios->output;    ?><br>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_densidad->output; ?>
 		</td>
-		<td class="littletablerow" align="right">
-			<label for='<?php echo $it_brix;     ?>'><?php echo $form->$it_brix->label;     ?></label><?php echo $form->$it_brix->output;     ?><br>
-			<label for='<?php echo $it_grasa;    ?>'><?php echo $form->$it_grasa->label;    ?></label><?php echo $form->$it_grasa->output;    ?><br>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_h2o->output;   ?>
 		</td>
-		<td class="littletablerow" align="right">
-			<label for='<?php echo $it_cloruros; ?>'><?php echo $form->$it_cloruros->label; ?></label><?php echo $form->$it_cloruros->output; ?><br>
-			<label for='<?php echo $it_dtoagua;  ?>'><?php echo $form->$it_dtoagua->label;  ?></label><?php echo $form->$it_dtoagua->output;  ?><br>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_crios->output; ?>
+		</td>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_brix->output;  ?>
+		</td>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_grasa->output; ?>
+		</td>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_cloruros->output; ?>
+		</td>
+		<td class="littletablerow" align="center">
+			<?php echo $form->$it_dtoagua->output;  ?>
 		</td>
 	</tr>
 	<?php
