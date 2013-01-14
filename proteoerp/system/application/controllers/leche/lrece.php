@@ -18,6 +18,7 @@ class Lrece extends Controller {
 	}
 
 	function index(){
+		$this->instalar();
 		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
 		$this->datasis->creaintramenu( $data = array('modulo'=>'220','titulo'=>'Recepcion de Leche','mensaje'=>'Recepcion de Leche','panel'=>'LECHE','ejecutar'=>'leche/lrece','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 
@@ -1508,5 +1509,57 @@ class Lrece extends Controller {
 			$do->set('diferen',$litros-$lista);
 		}
 		return true;
+	}
+
+	function instalar(){
+		if(!$this->db->table_exists('lrece')){
+			$mSQL="CREATE TABLE `lrece` (
+			`fecha` date DEFAULT NULL,
+			`ruta` char(4) DEFAULT NULL COMMENT 'Ruta Grupo de Proveedor',
+			`chofer` char(5) DEFAULT NULL COMMENT 'Chofer Proveedor',
+			`nombre` char(45) DEFAULT NULL COMMENT 'Nombre Chofer ',
+			`lleno` decimal(16,3) DEFAULT NULL COMMENT 'Peso de la Unidad llena',
+			`vacio` decimal(16,3) DEFAULT NULL COMMENT 'Peso de la Unidad Vacia',
+			`neto` decimal(16,3) DEFAULT NULL COMMENT 'Neto lleno-vacio',
+			`densidad` decimal(10,5) DEFAULT NULL COMMENT 'Densidad',
+			`litros` decimal(16,3) DEFAULT NULL COMMENT 'Total Litros neto*densidad',
+			`lista` decimal(16,3) DEFAULT NULL COMMENT 'Segun Lista',
+			`diferen` decimal(16,3) DEFAULT NULL COMMENT 'Diferencia Neto/Lista',
+			`animal` char(1) DEFAULT NULL COMMENT 'Vaca o Bufala',
+			`crios` decimal(10,3) DEFAULT NULL COMMENT 'Crioscopia',
+			`h2o` decimal(10,3) DEFAULT NULL COMMENT '% de Agua',
+			`temp` decimal(10,3) DEFAULT NULL COMMENT 'Temperatura',
+			`brix` decimal(10,3) DEFAULT NULL COMMENT 'Grados Brix',
+			`grasa` decimal(10,3) DEFAULT NULL COMMENT '% Grasa',
+			`acidez` decimal(10,3) DEFAULT NULL COMMENT 'Acidez',
+			`cloruros` decimal(10,3) DEFAULT NULL COMMENT 'Cloruros',
+			`dtoagua` decimal(10,3) DEFAULT NULL COMMENT 'Dto. Agua',
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+			PRIMARY KEY (`id`),
+			KEY `fecha` (`fecha`)
+			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Recepcion de Leche'";
+		}
+
+		if(!$this->db->table_exists('itlrece')){
+			$mSQL="CREATE TABLE `itlrece` (
+			`densidad` decimal(10,5) DEFAULT NULL COMMENT 'Densidad',
+			`lista` decimal(16,3) DEFAULT NULL COMMENT 'Segun Lista',
+			`animal` char(1) DEFAULT NULL COMMENT 'Vaca o Bufala',
+			`crios` decimal(10,3) DEFAULT NULL COMMENT 'Crioscopia',
+			`h2o` decimal(10,3) DEFAULT NULL COMMENT '% de Agua',
+			`temp` decimal(10,3) DEFAULT NULL COMMENT 'Temperatura',
+			`brix` decimal(10,3) DEFAULT NULL COMMENT 'Grados Brix',
+			`grasa` decimal(10,3) DEFAULT NULL COMMENT '% Grasa',
+			`acidez` decimal(10,3) DEFAULT NULL COMMENT 'Acidez',
+			`cloruros` decimal(10,3) DEFAULT NULL COMMENT 'Cloruros',
+			`dtoagua` decimal(10,3) DEFAULT NULL COMMENT 'Dto. Agua',
+			`id_lrece` int(11) DEFAULT NULL,
+			`id_lvaca` int(11) DEFAULT NULL,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+			PRIMARY KEY (`id`),
+			KEY `id_lrece` (`id_lrece`),
+			KEY `id_lvaca` (`id_lvaca`)
+			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Detalle Recepcion de Leche'";
+		}
 	}
 }
