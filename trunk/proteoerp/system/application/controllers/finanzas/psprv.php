@@ -263,7 +263,7 @@ class psprv extends Controller {
 		//************************************************
 		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->option('','Seleccionar');
-		$edit->banco->options('SELECT "**" codbanc,"** PENDIENTE" banco FROM banc LIMIT 1 UNION ALL SELECT codbanc, CONCAT(codbanc," ",banco) banco  FROM banc ORDER BY codbanc');
+		$edit->banco->options('SELECT codbanc, CONCAT(codbanc," ",banco) banco  FROM banc ORDER BY codbanc');
 		$edit->banco->db_name='banco';
 		$edit->banco->rel_id ='bmov';
 		$edit->banco->style  ='width:200px;';
@@ -277,7 +277,7 @@ class psprv extends Controller {
 		$edit->tipo_op->rel_id   = 'bmov';
 		$edit->tipo_op->style    = 'width:160px;';
 		$edit->tipo_op->rule     = 'required|enum[CH,ND]';
-		$edit->tipo_op->insertValue='CH';
+		//$edit->tipo_op->insertValue='CH';
 
 		$edit->bmovfecha = new dateonlyField('Fecha','bmovfecha_<#i#>');
 		$edit->bmovfecha->rel_id   = 'bmov';
@@ -428,7 +428,7 @@ class psprv extends Controller {
 	}
 
 	function _pre_insert($do){
-		$proveed =$do->get('cod_prv');
+		$proveed = $do->get('cod_prv');
 		$estampa = $do->get('estampa');
 		$hora    = $do->get('hora');
 		$usuario = $do->get('usuario');
@@ -459,7 +459,7 @@ class psprv extends Controller {
 		$itabono=round($itabono,2);
 
 		//Totaliza lo pagado
-		$rel='sfpa';
+		$rel='bmov';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
 			$sfpamonto+=$do->get_rel($rel, 'monto', $i);
@@ -498,11 +498,6 @@ class psprv extends Controller {
 		//fin de las validaciones
 		$do->set('monto',$itabono);
 
-		$dbcliente= $this->db->escape($cliente);
-		$rowscli  = $this->datasis->damerow('SELECT nombre,dire11,dire12 FROM scli WHERE cliente='.$dbcliente);
-		$do->set('nombre', $rowscli['nombre']);
-		$do->set('dire1' , $rowscli['dire11']);
-		$do->set('dire2' , $rowscli['dire12']);
 
 		$transac  = $this->datasis->fprox_numero('ntransa');
 
@@ -548,7 +543,7 @@ class psprv extends Controller {
 			if(strlen($observa)>50) $do->set('observa2' , substr($observa,50));
 		}
 
-		$rel='sfpa';
+		$rel='bmov';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
 			$sfpatipo=$do->get_rel($rel, 'tipo_doc', $i);
