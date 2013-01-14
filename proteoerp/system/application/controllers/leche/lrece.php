@@ -21,7 +21,6 @@ class Lrece extends Controller {
 		$this->instalar();
 		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
 		$this->datasis->creaintramenu( $data = array('modulo'=>'220','titulo'=>'Recepcion de Leche','mensaje'=>'Recepcion de Leche','panel'=>'LECHE','ejecutar'=>'leche/lrece','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
-
 		redirect($this->url.'jqdatag');
 	}
 
@@ -89,6 +88,7 @@ class Lrece extends Controller {
 			$.post("'.site_url($this->url.'apertura/create').'",
 			function(data){
 				$("#fedita").html(data);
+				$("#fedita").dialog({height: 230, width: 500, title: "Agregar Recepcion de Leche"});
 				$("#fedita").dialog( "open" );
 			});
 		};';
@@ -101,6 +101,7 @@ class Lrece extends Controller {
 				mId = id;
 				$.post("'.site_url($this->url.'apertura/modify').'/"+id, function(data){
 					$("#fedita").html(data);
+					$("#fedita").dialog({height: 240, width: 500, title: "Editar Recepcion Nro. "+id+" Ruta "+ret.ruta })
 					$("#fedita").dialog( "open" );
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
@@ -135,9 +136,11 @@ class Lrece extends Controller {
 		jQuery("#bvaqueras").click( function(){
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				$.post("'.site_url('leche/lrece/vaqueras/modify').'/"+id,
 				function(data){
 					$("#fedita").html(data);
+					$("#fedita").dialog({height: 500, width: 780, title: "Analisis Vaqueras Recepcion "+id+" Ruta "+ret.ruta+" Chofer "+ret.nombre});
 					$("#fedita").dialog( "open" );
 				});
 			} else {
@@ -149,9 +152,11 @@ class Lrece extends Controller {
 		jQuery("#banalisis").click( function(){
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				$.post("'.site_url('leche/lrece/analisis/modify').'/"+id,
 				function(data){
 					$("#fedita").html(data);
+					$("#fedita").dialog({height: 500, width: 700, title: "Analisis la Recepcion "+id+" Ruta "+ret.ruta+" Nombre "+ret.nombre});
 					$("#fedita").dialog( "open" );
 				});
 			} else {
@@ -275,7 +280,7 @@ class Lrece extends Controller {
 			'editoptions'   => '{ size:4, maxlength: 4 }',
 		));
 
-
+/*
 		$grid->addField('chofer');
 		$grid->label('Chofer');
 		$grid->params(array(
@@ -286,10 +291,11 @@ class Lrece extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:5, maxlength: 5 }',
 		));
+*/
 
 
 		$grid->addField('nombre');
-		$grid->label('Nombre');
+		$grid->label('Nombre del Chofer');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -300,14 +306,29 @@ class Lrece extends Controller {
 		));
 
 
-		$grid->addField('lleno');
-		$grid->label('P.Lleno');
+		$grid->addField('lista');
+		$grid->label('Lista');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 80,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('lleno');
+		$grid->label('Peso Lleno');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 90,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -316,7 +337,7 @@ class Lrece extends Controller {
 
 
 		$grid->addField('vacio');
-		$grid->label('P.Vac&iacute;o');
+		$grid->label('Peso Vacio');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -374,20 +395,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
-		$grid->addField('lista');
-		$grid->label('P.Lista');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
 
 
 		$grid->addField('diferen');
@@ -669,12 +676,35 @@ class Lrece extends Controller {
 		//	'search'        => 'false'
 		//));
 
-
-		$grid->addField('litros');
-		$grid->label('Litros');
+		$grid->addField('vaquera');
+		$grid->label('Vaquera');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Vaquera Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:45, maxlength: 45 }',
+		));
+
+
+		$grid->addField('lista');
+		$grid->label('Litros');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 100,
@@ -831,12 +861,44 @@ class Lrece extends Controller {
 		//	'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
 		//));
 
+		$grid->setHeight('170');
+		$grid->setfilterToolbar(false);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setOnSelectRow('
+			function(id){if (id){var ret = 0;}}
+			,cellEdit: true
+			,cellsubmit: "remote"
+			,cellurl: "'.site_url($this->url.'setdatait/').'"
+			,afterSaveCell: function(r,n,v,ir,ic) {
+				var id = $(gridId1).jqGrid(\'getGridParam\',\'selrow\');
+ 				$(gridId1).trigger("reloadGrid");
+ 				//$(gridId1).loadComplete);
+					$(gridId1).setSelection(id,false);
+			}
+		');
+
+
+		$grid->setOndblClickRow("");
+
+		$grid->setFormOptionsE('');
+		$grid->setFormOptionsA('');
+		$grid->setAfterSubmit('');
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(true);
+		$grid->setDelete(false);
+		$grid->setSearch(false);
+		$grid->setRowNum(90);
 		$grid->setShrinkToFit('false');
+
+
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdatait/'));
 
 		#GET url
-		$grid->setUrlget(site_url($this->url.'getdatait/'));
+		//$grid->setUrlget(site_url($this->url.'getdatait/'));
 
 		if ($deployed) {
 			return $grid->deploy();
@@ -864,6 +926,31 @@ class Lrece extends Controller {
 	* Guarda la Informacion
 	*/
 	function setDatait(){
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$this->db->where('id', $id);
+			$this->db->update('itlrece', $data);
+			logusu('LRECE',"Registro $id MODIFICADO");
+			$idlrece = $this->datasis->dameval("SELECT id_lrece FROM itlrece WHERE id=$id");
+			//SUMA AL ENCABEZADO
+			$litros = $this->datasis->dameval("SELECT sum(lista) FROM itlrece WHERE id_lrece=$idlrece");
+			$this->db->query("UPDATE lrece SET lista=$litros WHERE id=$idlrece");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+		};
+	
 	}
 
 	//***********************************
@@ -879,7 +966,7 @@ class Lrece extends Controller {
 		});
 		';
 
-		$edit = new DataEdit($this->tits, 'lrece');
+		$edit = new DataEdit('', 'lrece');
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
 		$edit->on_save_redirect=false;
@@ -887,6 +974,7 @@ class Lrece extends Controller {
 
 		$edit->post_process('insert','_post_apertura_insert');
 		$edit->post_process('update','_post_apertura_update');
+
 		$edit->post_process('delete','_post_apertura_delete');
 		$edit->pre_process( 'insert', '_pre_apertura_insert');
 		$edit->pre_process( 'update', '_pre_apertura_update');
@@ -926,6 +1014,7 @@ class Lrece extends Controller {
 		}
 	}
 
+
 	function analisis(){
 		$this->rapyd->load('dataedit');
 
@@ -934,7 +1023,7 @@ class Lrece extends Controller {
 			$(".inputnum").numeric(".");
 		});';
 
-		$edit = new DataEdit($this->tits, 'lrece');
+		$edit = new DataEdit('', 'lrece');
 
 		$edit->script($script,'modify');
 		$edit->script($script,'create');
@@ -1087,11 +1176,9 @@ class Lrece extends Controller {
 
 		$dbid=$this->db->escape($id);
 		$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM itlrece WHERE id_lrece=$dbid");
+
 		if(empty($cana)){
-			$mSQL="SELECT b.id,a.animal,a.temp
-				FROM lrece   AS a
-				JOIN lvaca AS b ON a.ruta=b.ruta
-				WHERE a.id=$dbid";
+			$mSQL="SELECT b.id, a.animal, a.temp FROM lrece AS a JOIN lvaca AS b ON a.ruta=b.ruta WHERE a.id=$dbid";
 			$query = $this->db->query($mSQL);
 
 			if ($query->num_rows() > 0){
@@ -1112,7 +1199,7 @@ class Lrece extends Controller {
 					$data['id_lrece']   = $id;
 
 					$sql = $this->db->insert_string('itlrece', $data);
-					$this->db->simple_query($sql);
+					$this->db->query($sql);
 				}
 			}else{
 				echo 'Ruta no tiene vaqueras';
@@ -1202,13 +1289,6 @@ class Lrece extends Controller {
 		$edit->densidad->css_class='inputnum';
 		$edit->densidad->size =12;
 		$edit->densidad->maxlength =10;
-
-		$edit->litros = new inputField('Litros','litros');
-		$edit->litros->rule='max_length[16]|numeric';
-		$edit->litros->css_class='inputnum';
-		$edit->litros->mode = 'autohide';
-		$edit->litros->size =12;
-		$edit->litros->maxlength =16;
 
 		$edit->lista = new inputField('Lista','lista');
 		$edit->lista->rule='max_length[16]|numeric';
@@ -1317,14 +1397,14 @@ class Lrece extends Controller {
 		$edit->itanimal->option('V' ,'Vaca');
 		$edit->itanimal->option('B' ,'Bufala');
 		$edit->itanimal->rule = 'required';
-		$edit->itanimal->style='width:145px;';
+		$edit->itanimal->style='width:70px;';
 
 		$edit->itdensidad = new inputField('Densidad','densidad_<#i#>');
 		$edit->itdensidad->db_name = 'densidad';
 		$edit->itdensidad->rel_id  = 'itlrece';
 		$edit->itdensidad->rule='max_length[10]|numeric|required';
 		$edit->itdensidad->css_class='inputnum';
-		$edit->itdensidad->size =12;
+		$edit->itdensidad->size =6;
 		$edit->itdensidad->maxlength =10;
 
 		$edit->itlista = new inputField('Litros lista','lista_<#i#>');
@@ -1332,7 +1412,7 @@ class Lrece extends Controller {
 		$edit->itlista->rel_id  = 'itlrece';
 		$edit->itlista->rule='max_length[16]|numeric|required';
 		$edit->itlista->css_class='inputnum';
-		$edit->itlista->size =12;
+		$edit->itlista->size =6;
 		$edit->itlista->maxlength =16;
 
 		$edit->itcrios = new inputField('Criosc&oacute;pica','crios_<#i#>');
@@ -1340,7 +1420,7 @@ class Lrece extends Controller {
 		$edit->itcrios->rel_id = 'itlrece';
 		$edit->itcrios->rule='max_length[10]|numeric|required';
 		$edit->itcrios->css_class='inputnum';
-		$edit->itcrios->size =12;
+		$edit->itcrios->size =6;
 		$edit->itcrios->maxlength =10;
 
 		$edit->ith2o = new inputField('Agua %','h2o_<#i#>');
@@ -1348,7 +1428,7 @@ class Lrece extends Controller {
 		$edit->ith2o->rel_id = 'itlrece';
 		$edit->ith2o->rule='max_length[10]|numeric|porcent|required';
 		$edit->ith2o->css_class='inputnum';
-		$edit->ith2o->size =12;
+		$edit->ith2o->size =6;
 		$edit->ith2o->maxlength =10;
 
 		$edit->ittemp = new inputField('Temperatura','temp_<#i#>');
@@ -1356,7 +1436,7 @@ class Lrece extends Controller {
 		$edit->ittemp->rel_id = 'itlrece';
 		$edit->ittemp->rule='max_length[10]|numeric|required';
 		$edit->ittemp->css_class='inputnum';
-		$edit->ittemp->size =12;
+		$edit->ittemp->size =6;
 		$edit->ittemp->maxlength =10;
 
 		$edit->itbrix = new inputField('Grados Brix','brix_<#i#>');
@@ -1364,7 +1444,7 @@ class Lrece extends Controller {
 		$edit->itbrix->rel_id = 'itlrece';
 		$edit->itbrix->rule='max_length[10]|numeric|required';
 		$edit->itbrix->css_class='inputnum';
-		$edit->itbrix->size =12;
+		$edit->itbrix->size =6;
 		$edit->itbrix->maxlength =10;
 
 		$edit->itgrasa = new inputField('Grasa %','grasa_<#i#>');
@@ -1372,7 +1452,7 @@ class Lrece extends Controller {
 		$edit->itgrasa->rel_id = 'itlrece';
 		$edit->itgrasa->rule='max_length[10]|numeric|porcent|required';
 		$edit->itgrasa->css_class='inputnum';
-		$edit->itgrasa->size =12;
+		$edit->itgrasa->size =6;
 		$edit->itgrasa->maxlength =10;
 
 		$edit->itacidez = new inputField('Acidez','acidez_<#i#>');
@@ -1380,7 +1460,7 @@ class Lrece extends Controller {
 		$edit->itacidez->rel_id = 'itlrece';
 		$edit->itacidez->rule='max_length[10]|numeric|required';
 		$edit->itacidez->css_class='inputnum';
-		$edit->itacidez->size =12;
+		$edit->itacidez->size =6;
 		$edit->itacidez->maxlength =10;
 
 		$edit->itcloruros = new inputField('Cloruros','cloruros_<#i#>');
@@ -1388,7 +1468,7 @@ class Lrece extends Controller {
 		$edit->itcloruros->rel_id = 'itlrece';
 		$edit->itcloruros->rule='max_length[10]|numeric|required';
 		$edit->itcloruros->css_class='inputnum';
-		$edit->itcloruros->size =12;
+		$edit->itcloruros->size =6;
 		$edit->itcloruros->maxlength =10;
 
 		$edit->itdtoagua = new inputField('Dto. Agua','dtoagua_<#i#>');
@@ -1396,7 +1476,7 @@ class Lrece extends Controller {
 		$edit->itdtoagua->rel_id = 'itlrece';
 		$edit->itdtoagua->rule='max_length[10]|numeric|required';
 		$edit->itdtoagua->css_class='inputnum';
-		$edit->itdtoagua->size =12;
+		$edit->itdtoagua->size =6;
 		$edit->itdtoagua->maxlength =10;
 		//Fin del detalle
 
@@ -1415,15 +1495,48 @@ class Lrece extends Controller {
 		}
 	}
 
+
 	function cierre(){
 		echo 'En construcci&oacute;n';
 	}
 
+
 	//Pre y Pos para la apertura
 	function _post_apertura_insert($do){
-		$primary =implode(',',$do->pk);
+		$primary = implode(',',$do->pk);
+		// Crea los itrece
+		$mSQL="SELECT b.id, b.codigo, b.nombre FROM lrece AS a JOIN lvaca AS b ON a.ruta=b.ruta WHERE a.id=$primary";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$data=array();
+				$data['vaquera']   = $row->codigo ;
+				$data['nombre']    = $row->nombre ;
+				$data['densidad']   = 0;
+				$data['lista']      = 0;
+				$data['animal']     = 'V'; 
+				$data['crios']      = '';
+				$data['h2o']        = '';
+				$data['temp']       = '';
+				$data['brix']       = '';
+				$data['grasa']      = '';
+				$data['acidez']     = '';
+				$data['cloruros']   = '';
+				$data['dtoagua']    = '';
+				$data['id_lvaca']   = $row->id;
+				$data['id_lrece']   = $primary;
+
+				$sql = $this->db->insert_string('itlrece', $data);
+				$this->db->query($sql);
+			}
+		}else{
+			echo 'Ruta no tiene vaqueras';
+		}
 		logusu($do->table,"Ingreso recepcion $this->tits $primary ");
 	}
+	
+	
+	
 	function _post_apertura_update($do){
 		$ruta  = $do->get('ruta');
 		$id    = $do->get('id');
@@ -1542,20 +1655,22 @@ class Lrece extends Controller {
 
 		if(!$this->db->table_exists('itlrece')){
 			$mSQL="CREATE TABLE `itlrece` (
+			`vaquera`  VARCHAR(5)    NULL DEFAULT NULL COMMENT 'Vaquera',
+			`nombre`   VARCHAR(45)   NULL DEFAULT NULL COMMENT 'Productor ',
 			`densidad` decimal(10,5) DEFAULT NULL COMMENT 'Densidad',
-			`lista` decimal(16,3) DEFAULT NULL COMMENT 'Segun Lista',
-			`animal` char(1) DEFAULT NULL COMMENT 'Vaca o Bufala',
-			`crios` decimal(10,3) DEFAULT NULL COMMENT 'Crioscopia',
-			`h2o` decimal(10,3) DEFAULT NULL COMMENT '% de Agua',
-			`temp` decimal(10,3) DEFAULT NULL COMMENT 'Temperatura',
-			`brix` decimal(10,3) DEFAULT NULL COMMENT 'Grados Brix',
-			`grasa` decimal(10,3) DEFAULT NULL COMMENT '% Grasa',
-			`acidez` decimal(10,3) DEFAULT NULL COMMENT 'Acidez',
+			`lista`    decimal(16,3) DEFAULT NULL COMMENT 'Segun Lista',
+			`animal`   char(1)       DEFAULT NULL COMMENT 'Vaca o Bufala',
+			`crios`    decimal(10,3) DEFAULT NULL COMMENT 'Crioscopia',
+			`h2o`      decimal(10,3) DEFAULT NULL COMMENT '% de Agua',
+			`temp`     decimal(10,3) DEFAULT NULL COMMENT 'Temperatura',
+			`brix`     decimal(10,3) DEFAULT NULL COMMENT 'Grados Brix',
+			`grasa`    decimal(10,3) DEFAULT NULL COMMENT '% Grasa',
+			`acidez`   decimal(10,3) DEFAULT NULL COMMENT 'Acidez',
 			`cloruros` decimal(10,3) DEFAULT NULL COMMENT 'Cloruros',
-			`dtoagua` decimal(10,3) DEFAULT NULL COMMENT 'Dto. Agua',
-			`id_lrece` int(11) DEFAULT NULL,
-			`id_lvaca` int(11) DEFAULT NULL,
-			`id` int(11) NOT NULL AUTO_INCREMENT,
+			`dtoagua`  decimal(10,3) DEFAULT NULL COMMENT 'Dto. Agua',
+			`id_lrece` int(11)       DEFAULT NULL,
+			`id_lvaca` int(11)       DEFAULT NULL,
+			`id`       int(11)       NOT NULL AUTO_INCREMENT,
 			PRIMARY KEY (`id`),
 			KEY `id_lrece` (`id_lrece`),
 			KEY `id_lvaca` (`id_lvaca`)
