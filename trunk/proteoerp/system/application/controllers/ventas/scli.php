@@ -23,12 +23,14 @@ class Scli extends validaciones {
 			$mSQL='ALTER TABLE `scli` ADD `id` INT AUTO_INCREMENT PRIMARY KEY';
 			$this->db->simple_query($mSQL);
 		}
-		if (!in_array('url',     $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
-		if (!in_array('pin',     $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN pin VARCHAR(10) NULL ');
-		if (!in_array('fb',      $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN fb VARCHAR(120) NULL ');
-		if (!in_array('twitter', $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
-		if (!in_array('upago',   $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
-		if (!in_array('tarifa',  $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(15) NULL ');
+		if (!in_array('url',      $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
+		if (!in_array('pin',      $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN pin VARCHAR(10) NULL ');
+		if (!in_array('fb',       $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN fb VARCHAR(120) NULL ');
+		if (!in_array('twitter',  $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
+		if (!in_array('upago',    $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
+		if (!in_array('tarifa',   $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(15) NULL ');
+		if (!in_array('tarimonto',$campos)) $this->db->query("ALTER TABLE `scli` ADD COLUMN `tarimonto` FLOAT UNSIGNED NULL DEFAULT NULL COMMENT 'unidades tributarias a cobrar por servicio' AFTER `crm`");
+
 
 		if(!$this->db->table_exists('tarifa')){
 			$mSQL="CREATE TABLE `tarifa` (
@@ -1482,8 +1484,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -1497,8 +1498,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -2194,6 +2194,10 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->tarifa->rule = 'trim|callback_chtarifa';
 		$edit->tarifa->size = 6;
 		//$edit->tarifa->maxlength =15;
+
+		$edit->tarimonto = new inputField('Tarifa ajustada', 'tarimonto');
+		$edit->tarimonto->rule = 'trim';
+		$edit->tarimonto->size = 6;
 
 		$edit->tactividad = new inputField('', 'tactividad');
 		$edit->tactividad->db_name     = 'tactividad';

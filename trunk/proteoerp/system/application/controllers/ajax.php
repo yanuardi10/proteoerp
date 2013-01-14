@@ -236,7 +236,8 @@ class Ajax extends Controller {
 		if($mid !== false){
 			$retArray = $retorno = array();
 			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc,
-				ROUND(b.minimo*$ut,2) precio1, a.upago, a.telefono, b.id codigo,b.minimo AS utribu,b.tipo AS taritipo
+				IF(a.tarimonto>0,ROUND(a.tarimonto*$ut,2), ROUND(b.minimo*$ut,2)) precio1, a.upago, a.telefono, b.id codigo,
+				IF(a.tarimonto>0,a.tarimonto,b.minimo) AS utribu,b.tipo AS taritipo
 				FROM scli AS a
 				JOIN tarifa AS b ON a.tarifa=b.id
 				WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb})
