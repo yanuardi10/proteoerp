@@ -6,7 +6,7 @@ $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
 ?>
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
-<table border=0 width="100%">
+<table width="100%">
 	<tr>
 		<td>
 			<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>

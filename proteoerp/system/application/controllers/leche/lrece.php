@@ -44,12 +44,32 @@ class Lrece extends Controller {
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
+		//Panel Derecho
+		$WpAdic = "
+		<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n
+		<tr><td><div class=\"tema1\">
+			<table cellpadding='0' cellspacing='0' style='width:100%;'>
+				<tr>
+					<td colspan='3' style='text-align:center;border:1px solid #AFAFAF;background:#FEBE25;'><div class='botones'>ANALISIS DE LABORATORIO</div></td>
+				</tr>
+				<tr>
+					<td style='vertical-align:center;border:1px solid #AFAFAF;'><div class='botones'>".img(array('src' =>"images/lab.png",  'height' => 18, 'alt' => 'Imprimir',    'title' => 'Imprimir', 'border'=>'0'))."</div></td>
+					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:70px;text-align:left;vertical-align:top;' href='#' id='banalisis'>Ruta</a></div></td>
+					<td style='vertical-align:top;'><div class='botones'><a style='width:80px;text-align:left;vertical-align:top;' href='#' id='bvaqueras'>Vaqueras</a></div></td>
+				</tr>
+			</table>
+			</div>
+		</td></tr>\n
+		";
+
+		$grid->setWpAdicional($WpAdic);
+
+
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
-
-		$grid->wbotonadd(array("id"=>"bvaqueras", "img"=>"images/star.png","alt" => 'Vaqueras', "label"=>"Vaqueras"));
-		$grid->wbotonadd(array("id"=>"banalisis", "img"=>"images/star.png","alt" => 'Analisis', "label"=>"Analisis"));
-		$grid->wbotonadd(array("id"=>"bcierre"  , "img"=>"images/star.png","alt" => 'Cierre'  , "label"=>"Cierre"  ));
+		//$grid->wbotonadd(array("id"=>"bvaqueras", "img"=>"images/lab.png","alt" => 'Vaqueras', "label"=>"Vaqueras"));
+		//$grid->wbotonadd(array("id"=>"banalisis", "img"=>"images/lab.png","alt" => 'Analisis', "label"=>"Analisis"));
+		$grid->wbotonadd(array("id"=>"bcierre"  , "img"=>"images/candado.png","alt" => 'Cierre'  , "label"=>"Cierre"  ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -58,7 +78,6 @@ class Lrece extends Controller {
 		$adic = array(
 		array("id"=>"fedita" , "title"=>"Agregar/Editar Pedido"),
 		);
-
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$param['WestPanel']    = $WestPanel;
@@ -140,7 +159,7 @@ class Lrece extends Controller {
 				$.post("'.site_url('leche/lrece/vaqueras/modify').'/"+id,
 				function(data){
 					$("#fedita").html(data);
-					$("#fedita").dialog({height: 500, width: 780, title: "Analisis Vaqueras Recepcion "+id+" Ruta "+ret.ruta+" Chofer "+ret.nombre});
+					$("#fedita").dialog({height: 500, width: 840, title: "Analisis Vaqueras Recepcion "+id+" Ruta "+ret.ruta+" Chofer "+ret.nombre});
 					$("#fedita").dialog( "open" );
 				});
 			} else {
@@ -156,7 +175,7 @@ class Lrece extends Controller {
 				$.post("'.site_url('leche/lrece/analisis/modify').'/"+id,
 				function(data){
 					$("#fedita").html(data);
-					$("#fedita").dialog({height: 500, width: 700, title: "Analisis la Recepcion "+id+" Ruta "+ret.ruta+" Nombre "+ret.nombre});
+					$("#fedita").dialog({height: 370, width: 400, title: "Analisis la Recepcion "+id+" Ruta "+ret.ruta+" Nombre "+ret.nombre});
 					$("#fedita").dialog( "open" );
 				});
 			} else {
@@ -234,17 +253,6 @@ class Lrece extends Controller {
 
 		$grid  = new $this->jqdatagrid;
 
-		//$grid->addField('numero');
-		//$grid->label('Numero');
-		//$grid->params(array(
-		//	'search'        => 'true',
-		//	'editable'      => $editar,
-		//	'width'         => 80,
-		//	'edittype'      => "'text'",
-		//	'editrules'     => '{ required:true}',
-		//	'editoptions'   => '{ size:8, maxlength: 8 }',
-		//));
-
 		$grid->addField('id');
 		$grid->label('N&uacute;mero');
 		$grid->params(array(
@@ -254,7 +262,6 @@ class Lrece extends Controller {
 			'editable'      => 'false',
 			'search'        => 'false'
 		));
-
 
 		$grid->addField('fecha');
 		$grid->label('Fecha');
@@ -267,7 +274,6 @@ class Lrece extends Controller {
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-
 
 		$grid->addField('ruta');
 		$grid->label('Ruta');
@@ -395,8 +401,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
-
 		$grid->addField('diferen');
 		$grid->label('Diferencia');
 		$grid->params(array(
@@ -411,7 +415,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('animal');
 		$grid->label('Animal');
 		$grid->params(array(
@@ -422,7 +425,6 @@ class Lrece extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:1, maxlength: 1 }',
 		));
-
 
 		$grid->addField('crios');
 		$grid->label('Crioscopia');
@@ -438,7 +440,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('h2o');
 		$grid->label('Agua %');
 		$grid->params(array(
@@ -452,7 +453,6 @@ class Lrece extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('temp');
 		$grid->label('Temp.');
@@ -468,7 +468,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('brix');
 		$grid->label('Grados Brix');
 		$grid->params(array(
@@ -482,7 +481,6 @@ class Lrece extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('grasa');
 		$grid->label('Grasa %');
@@ -498,7 +496,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('acidez');
 		$grid->label('Acidez');
 		$grid->params(array(
@@ -513,7 +510,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('cloruros');
 		$grid->label('Cloruros');
 		$grid->params(array(
@@ -527,7 +523,6 @@ class Lrece extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('dtoagua');
 		$grid->label('Dto.Agua');
@@ -707,7 +702,7 @@ class Lrece extends Controller {
 			'editable'      => 'true',
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 60,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -718,9 +713,10 @@ class Lrece extends Controller {
 		$grid->addField('animal');
 		$grid->label('Animal');
 		$grid->params(array(
+			'align'         => "'center'",
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 40,
+			'width'         => 50,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:1, maxlength: 1 }',
@@ -734,7 +730,7 @@ class Lrece extends Controller {
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 80,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -749,14 +745,14 @@ class Lrece extends Controller {
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+/*
 		$grid->addField('temp');
 		$grid->label('Temp.');
 		$grid->params(array(
@@ -770,16 +766,16 @@ class Lrece extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('brix');
-		$grid->label('Brix');
+		$grid->label('Gr.Brix');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -794,7 +790,7 @@ class Lrece extends Controller {
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -809,7 +805,7 @@ class Lrece extends Controller {
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -824,7 +820,7 @@ class Lrece extends Controller {
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -839,7 +835,7 @@ class Lrece extends Controller {
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -916,7 +912,7 @@ class Lrece extends Controller {
 		}
 		if(empty($id)) return "";
 		$grid    = $this->jqdatagrid;
-		$mSQL    = 'SELECT * FROM itlrece WHERE id_lrece='.$this->db->escape($id);
+		$mSQL    = 'SELECT * FROM itlrece WHERE id_lrece='.$this->db->escape($id).' ORDER BY vaquera';
 		$response   = $grid->getDataSimple($mSQL);
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
@@ -950,13 +946,11 @@ class Lrece extends Controller {
 		} elseif($oper == 'del') {
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 		};
-	
 	}
 
 	//***********************************
 	// DataEdit
 	//***********************************
-
 	function apertura(){
 		$this->rapyd->load('dataedit');
 
@@ -1070,19 +1064,20 @@ class Lrece extends Controller {
 		$edit->vacio = new inputField('Peso vac&iacute;o','vacio');
 		$edit->vacio->rule='max_length[16]|numeric|required';
 		$edit->vacio->css_class='inputnum';
-		$edit->vacio->size =12;
+		$edit->vacio->size =7;
 		$edit->vacio->maxlength =16;
 
-		//$edit->neto = new inputField('Peso neto','neto');
-		//$edit->neto->rule='max_length[16]|numeric';
-		//$edit->neto->css_class='inputnum';
-		//$edit->neto->size =12;
-		//$edit->neto->maxlength =16;
+		$edit->neto = new inputField('Peso Neto','neto');
+		$edit->neto->rule='max_length[16]|numeric';
+		$edit->neto->css_class='inputnum';
+		$edit->neto->type = 'inputhidden';
+		$edit->neto->size=7;
+		$edit->neto->maxlength=16;
 
 		$edit->densidad = new inputField('Densidad','densidad');
 		$edit->densidad->rule='max_length[10]|numeric|required';
 		$edit->densidad->css_class='inputnum';
-		$edit->densidad->size =12;
+		$edit->densidad->size =7;
 		$edit->densidad->maxlength =10;
 
 		//$edit->litros = new inputField('Litros','litros');
@@ -1108,54 +1103,54 @@ class Lrece extends Controller {
 		$edit->animal->option('V' ,'Vaca');
 		$edit->animal->option('B' ,'Bufala');
 		$edit->animal->rule = 'required';
-		$edit->animal->style= 'width:145px;';
+		$edit->animal->style= 'width:100px;';
 
 		$edit->crios = new inputField('Criosc&oacute;pia','crios');
 		$edit->crios->rule='max_length[10]|numeric|required';
 		$edit->crios->css_class='inputnum';
-		$edit->crios->size =12;
+		$edit->crios->size =7;
 		$edit->crios->maxlength =10;
 
 		$edit->h2o = new inputField('Agua %','h2o');
 		$edit->h2o->rule='max_length[10]|numeric|porcent|required';
 		$edit->h2o->css_class='inputnum';
-		$edit->h2o->size =12;
+		$edit->h2o->size =7;
 		$edit->h2o->maxlength =10;
 
 		$edit->temp = new inputField('Temperatura','temp');
 		$edit->temp->rule='max_length[10]|numeric|required';
 		$edit->temp->css_class='inputnum';
-		$edit->temp->size =12;
+		$edit->temp->size =7;
 		$edit->temp->maxlength =10;
 
 		$edit->brix = new inputField('Grados Brix','brix');
 		$edit->brix->rule='max_length[10]|numeric|required';
 		$edit->brix->css_class='inputnum';
-		$edit->brix->size =12;
+		$edit->brix->size =7;
 		$edit->brix->maxlength =10;
 
 		$edit->grasa = new inputField('Grasa %','grasa');
 		$edit->grasa->rule='max_length[10]|numeric|porcent|required';
 		$edit->grasa->css_class='inputnum';
-		$edit->grasa->size =12;
+		$edit->grasa->size =7;
 		$edit->grasa->maxlength =10;
 
 		$edit->acidez = new inputField('Acidez','acidez');
 		$edit->acidez->rule='max_length[10]|numeric|required';
 		$edit->acidez->css_class='inputnum';
-		$edit->acidez->size =12;
+		$edit->acidez->size =7;
 		$edit->acidez->maxlength =10;
 
 		$edit->cloruros = new inputField('Cloruros','cloruros');
 		$edit->cloruros->rule='max_length[10]|numeric|required';
 		$edit->cloruros->css_class='inputnum';
-		$edit->cloruros->size =12;
+		$edit->cloruros->size =7;
 		$edit->cloruros->maxlength =10;
 
-		$edit->dtoagua = new inputField('Descuento por Agua','dtoagua');
+		$edit->dtoagua = new inputField('Dcto. de Agua','dtoagua');
 		$edit->dtoagua->rule='max_length[10]|numeric|required';
 		$edit->dtoagua->css_class='inputnum';
-		$edit->dtoagua->size =12;
+		$edit->dtoagua->size =7;
 		$edit->dtoagua->maxlength =10;
 
 		$edit->build();
@@ -1168,28 +1163,36 @@ class Lrece extends Controller {
 			);
 			echo json_encode($rt);
 		}else{
-			echo $edit->output;
+			//echo $edit->output;
+			$conten['form'] =&  $edit;
+			$this->load->view('view_lrecean', $conten);
 		}
 	}
 
+	//****************************************
+	//
+	// Analisis de Laboratorio de Vaqueras
+	//
 	function vaqueras($status,$id){
 
 		$dbid=$this->db->escape($id);
 		$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM itlrece WHERE id_lrece=$dbid");
 
 		if(empty($cana)){
-			$mSQL="SELECT b.id, a.animal, a.temp FROM lrece AS a JOIN lvaca AS b ON a.ruta=b.ruta WHERE a.id=$dbid";
+			$mSQL="SELECT b.codigo, b.nombre, b.id, a.animal  FROM lrece AS a JOIN lvaca AS b ON a.ruta=b.ruta WHERE a.id=$dbid";
 			$query = $this->db->query($mSQL);
 
 			if ($query->num_rows() > 0){
 				foreach ($query->result() as $row){
 					$data=array();
-					$data['densidad']   = '';
+					$data['vaquera']    = $row->codigo;
+					$data['nombre']     = $row->nombre;
+					$data['densidad']   = 0;
 					$data['lista']      = '';
-					$data['animal']     = ($row->animal!='M')? $row->animal:'';
+					$data['animal']     = 'V';
 					$data['crios']      = '';
 					$data['h2o']        = '';
-					$data['temp']       = $row->temp;
+					$data['temp']       = 0;
 					$data['brix']       = '';
 					$data['grasa']      = '';
 					$data['acidez']     = '';
@@ -1228,6 +1231,7 @@ class Lrece extends Controller {
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
 		$edit->post_process('update','_post_vaqueras_update');
+		
 		$edit->pre_process( 'insert', '_pre_vaqueras_insert');
 		$edit->pre_process( 'update', '_pre_vaqueras_update');
 		$edit->pre_process( 'delete', '_pre_vaqueras_delete');
@@ -1377,6 +1381,14 @@ class Lrece extends Controller {
 		$edit->itid_lvaca->rel_id   = 'itlrece';
 		$edit->itid_lvaca->db_name  = 'id_lvaca';
 
+		$edit->itvaquera = new hiddenField('','vaquera_<#i#>');
+		$edit->itvaquera->rel_id   = 'itlrece';
+		$edit->itvaquera->db_name  = 'vaquera';
+
+		$edit->itnombre = new hiddenField('','nombre_<#i#>');
+		$edit->itnombre->rel_id   = 'itlrece';
+		$edit->itnombre->db_name  = 'nombre';
+
 		$edit->itlvacadescrip = new inputField('','lvacadescrip_<#i#>');
 		$edit->itlvacadescrip->db_name = 'lvacadescrip';
 		$edit->itlvacadescrip->pointer = true;
@@ -1407,13 +1419,13 @@ class Lrece extends Controller {
 		$edit->itdensidad->size =6;
 		$edit->itdensidad->maxlength =10;
 
-		$edit->itlista = new inputField('Litros lista','lista_<#i#>');
+		$edit->itlista = new hiddenField('Litros lista','lista_<#i#>');
 		$edit->itlista->db_name = 'lista';
 		$edit->itlista->rel_id  = 'itlrece';
-		$edit->itlista->rule='max_length[16]|numeric|required';
-		$edit->itlista->css_class='inputnum';
-		$edit->itlista->size =6;
-		$edit->itlista->maxlength =16;
+		//$edit->itlista->rule='max_length[16]|numeric|required';
+		//$edit->itlista->css_class='inputnum';
+		//$edit->itlista->size =6;
+		//$edit->itlista->maxlength =16;
 
 		$edit->itcrios = new inputField('Criosc&oacute;pica','crios_<#i#>');
 		$edit->itcrios->db_name  = 'crios';
@@ -1534,16 +1546,45 @@ class Lrece extends Controller {
 		}
 		logusu($do->table,"Ingreso recepcion $this->tits $primary ");
 	}
-	
-	
+
 	
 	function _post_apertura_update($do){
-		$ruta  = $do->get('ruta');
-		$id    = $do->get('id');
-		$dbruta= $this->db->escape($ruta);
+		$ruta   = $do->get('ruta');
+		$id     = $do->get('id');
+		$dbruta = $this->db->escape($ruta);
+
 		$mSQL="DELETE itlrece FROM itlrece JOIN lvaca ON itlrece.id_lvaca=lvaca.id WHERE lvaca.ruta != $dbruta AND id_lrece = $id";
-		//echo $mSQL;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
+
+		$mSQL="SELECT b.id, b.codigo, b.nombre FROM lrece AS a JOIN lvaca AS b ON a.ruta=b.ruta WHERE a.id=$id";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$data=array();
+				$data['vaquera']   = $row->codigo ;
+				$data['nombre']    = $row->nombre ;
+				$data['densidad']   = 0;
+				$data['lista']      = 0;
+				$data['animal']     = 'V'; 
+				$data['crios']      = '';
+				$data['h2o']        = '';
+				$data['temp']       = '';
+				$data['brix']       = '';
+				$data['grasa']      = '';
+				$data['acidez']     = '';
+				$data['cloruros']   = '';
+				$data['dtoagua']    = '';
+				$data['id_lvaca']   = $row->id;
+				$data['id_lrece']   = $id;
+
+				$sql = $this->db->insert_string('itlrece', $data);
+				$sql = str_replace('INSERT ','INSERT IGNORE ',$sql);
+				$this->db->query($sql);
+			}
+		}else{
+			echo 'Ruta no tiene vaqueras';
+		}
+
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Modifico Apertura $this->tits $primary ");
@@ -1578,12 +1619,10 @@ class Lrece extends Controller {
 		$densidad= $do->get('densidad');
 		$lleno   = $do->get('lleno');
 		$vacio   = $do->get('vacio');
-
 		if($vacio>$lleno){
 			$do->error_message_ar['pre_ins']='El peso lleno debe ser mayor al peso vac&iacute;o.';
 			return false;
 		}
-
 		$peso    = $lleno-$vacio ;
 		$litros  = ($densidad>0)? round($peso/$densidad,2) : 0;
 
@@ -1614,7 +1653,6 @@ class Lrece extends Controller {
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
 			$lista += $do->get_rel($rel, 'lista', $i);
-
 		}
 		$litros = $do->get('litros');
 		if($litros > 0){

@@ -7,15 +7,23 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 $mod=true;
 ?>
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
-<div style='border: 1px solid #9AC8DA;background: #FAFAFA'>
-<table>
-		
+<table width='100%' style='font-size:11pt;background:#F2E69D;'>
+	<tr>
+		<td                           width='60'>Numero:</td>
+		<td style='font-weight:bold;' width='70'><?php echo str_pad(trim($form->id->output),7,'0',STR_PAD_LEFT);    ?></td>
+		<td                           width='60' align='right'>Fecha:</td>
+		<td style='font-weight:bold;' width='90'><?php echo $form->fecha->output; ?></td>
+		<td                           width='50' align='right'>Ruta:</td>
+		<td style='font-weight:bold;' width='50' align='left'><?php echo $form->ruta->output;  ?></td>
+		<td style='font-weight:bold;'><?php echo $this->datasis->dameval("SELECT nombre FROM lruta WHERE codigo='".$form->ruta->value."'");  ?></td>
+	</tr>
 </table>
+<div style='border: 1px solid #9AC8DA;background: #FAFAFA'>
 <table width='100%' cellspacing='0' cellpadding='0'>
-	<tr style='background:#121212;color:#FDFDFD;'>
+	<tr style='background:#030B7A;color:#FDFDFD;font-size:10pt;'>
+		<th align="center">Vaquera</th>
 		<th align="center">Animal</th>
 		<th align="center">Acidez</th>
-		<th align="center">Densidad</th>
 		<th align="center">% Agua</th>
 		<th align="center">Crioscopia</th>
 		<th align="center">Grados Brix</th>
@@ -43,40 +51,29 @@ $mod=true;
 		$it_id           = "itid_${i}";
 		$it_lvacacodigo  = "itlvacacodigo_${i}";
 		$it_lvacadescrip = "itlvacadescrip_${i}";
-		echo $form->$it_id->output. $form->$it_id_lvaca->output;
-?>
-
-	<tr style='background:#E4E4E4;'>
-		<td colspan='9' align='left'><b>Vaquera:<?php echo '('.$form->$it_lvacacodigo->output.') '.$form->$it_lvacadescrip->output; ?></b></td>
-	</tr>
-	<tr>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_animal->output; ?>
-		</td>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_acidez->output; ?>
-		</td>
+		$it_vaquera      = "itvaquera_${i}";
+		$it_nombre       = "itnombre_${i}";
+		
+		echo $form->$it_lista->output.$form->$it_id->output.$form->$it_id_lvaca->output.$form->$it_nombre->output.$form->$it_vaquera->output;
+/*
+		<th align="center">Densidad</th>
 		<td class="littletablerow" align="center">
 			<?php echo $form->$it_densidad->output; ?>
 		</td>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_h2o->output;   ?>
-		</td>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_crios->output; ?>
-		</td>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_brix->output;  ?>
-		</td>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_grasa->output; ?>
-		</td>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_cloruros->output; ?>
-		</td>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_dtoagua->output;  ?>
-		</td>
+*/
+
+?>
+
+	<tr style='background:#E4E4E4;'>
+		<td align='left'><b><?php echo $form->$it_lvacacodigo->output.' '.$form->$it_lvacadescrip->output; ?></b></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_animal->output;  ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_acidez->output;  ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_h2o->output;     ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_crios->output;   ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_brix->output;    ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_grasa->output;   ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_cloruros->output;?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_dtoagua->output; ?></td>
 	</tr>
 	<?php
 	$mod=!$mod;
