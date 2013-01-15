@@ -1069,6 +1069,7 @@ class Lrece extends Controller {
 		$edit->vacio->css_class='inputnum';
 		$edit->vacio->size =7;
 		$edit->vacio->maxlength =16;
+		$edit->vacio->onkeyup = 'calconeto()';
 
 		$edit->neto = new inputField('Peso Neto','neto');
 		$edit->neto->rule='max_length[16]|numeric';
@@ -1082,6 +1083,7 @@ class Lrece extends Controller {
 		$edit->densidad->css_class='inputnum';
 		$edit->densidad->size =7;
 		$edit->densidad->maxlength =10;
+		$edit->densidad->onkeyup = 'calcolitro()';
 
 		//$edit->litros = new inputField('Litros','litros');
 		//$edit->litros->rule='max_length[16]|numeric';
@@ -1234,7 +1236,7 @@ class Lrece extends Controller {
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
 		$edit->post_process('update','_post_vaqueras_update');
-		
+
 		$edit->pre_process( 'insert', '_pre_vaqueras_insert');
 		$edit->pre_process( 'update', '_pre_vaqueras_update');
 		$edit->pre_process( 'delete', '_pre_vaqueras_delete');
@@ -1529,7 +1531,7 @@ class Lrece extends Controller {
 				$data['nombre']    = $row->nombre ;
 				$data['densidad']   = 0;
 				$data['lista']      = 0;
-				$data['animal']     = 'V'; 
+				$data['animal']     = 'V';
 				$data['crios']      = '';
 				$data['h2o']        = '';
 				$data['temp']       = '';
@@ -1550,7 +1552,7 @@ class Lrece extends Controller {
 		logusu($do->table,"Ingreso recepcion $this->tits $primary ");
 	}
 
-	
+
 	function _post_apertura_update($do){
 		$ruta   = $do->get('ruta');
 		$id     = $do->get('id');
@@ -1568,7 +1570,7 @@ class Lrece extends Controller {
 				$data['nombre']    = $row->nombre ;
 				$data['densidad']   = 0;
 				$data['lista']      = 0;
-				$data['animal']     = 'V'; 
+				$data['animal']     = 'V';
 				$data['crios']      = '';
 				$data['h2o']        = '';
 				$data['temp']       = '';

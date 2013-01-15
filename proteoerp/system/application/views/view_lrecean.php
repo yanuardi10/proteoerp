@@ -1,14 +1,36 @@
-<?php echo $form_scripts?>
-<?php echo $form_begin?>
 <?php
+echo $form_scripts;
+echo $form_begin;
+
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
 $mod=true;
+
+if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
 ?>
-<?php 
-	if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; 
-?>
+<script type="text/javascript">
+$(function(){
+	calconeto();
+	calcolitro();
+});
+
+function calcolitro(){
+	var densidad=Number($("#densidad").val());
+	var neto    =Number($("#neto").val());
+
+	//$('#litros').val(masa/densidad);
+	//$('#litros_val').text(nformat(masa/densidad,2));
+}
+
+function calconeto(){
+	var lleno=<?php echo $form->lleno->value ?>;
+	var vacio=Number($("#vacio").val());
+
+	$('#neto').val(lleno-vacio);
+	$('#neto_val').text(nformat(lleno-vacio,2));
+}
+</script>
 <table width='100%' style='font-size:11pt;background:#F2E69D;'>
 	<tr>
 		<td                           width='60'>Numero:</td>
@@ -18,7 +40,7 @@ $mod=true;
 	</tr>
 	<tr>
 		<td>Ruta:</td>
-		<td colspan='3' style='font-weight:bold;' width='50' align='left'><?php echo $form->ruta->output;  ?> 
+		<td colspan='3' style='font-weight:bold;' width='50' align='left'><?php echo $form->ruta->output;  ?>
 		<span style='font-weight:bold;'><?php echo $this->datasis->dameval("SELECT nombre FROM lruta WHERE codigo='".$form->ruta->value."'");  ?></span></td>
 	</tr>
 </table>
@@ -33,7 +55,7 @@ $mod=true;
 		<td class="littletableheaderc"><?php echo $form->densidad->label; ?></td>
 		<td class="littletablerow"    ><?php echo $form->densidad->output;?></td>
 		<td class="littletableheaderc"><?php echo $form->neto->label;     ?></td>
-		<td class="littletablerow"    ><?php echo $form->neto->output;    ?></td>
+		<td class="littletablerow"     ><?php echo $form->neto->output;    ?></td>
 	</tr><tr>
 		<td class="littletableheaderc"><?php echo $form->temp->label;    ?></td>
 		<td class="littletablerow"    ><?php echo $form->temp->output;   ?></td>
