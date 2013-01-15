@@ -3437,6 +3437,7 @@ class Scst extends Controller {
 
 		$control=$do->get('control');
 		$transac=$do->get('transac');
+		$tolera =0.07; //Tolerancia entre los items y el encabezado
 
 		if(substr($control,7,1)=='_') $control = $this->datasis->fprox_numero('nscst');
 		if(empty($control)) $control = $this->datasis->fprox_numero('nscst');
@@ -3546,11 +3547,11 @@ class Scst extends Controller {
 		$montotot = $do->get('montotot');
 		$montoiva = $do->get('montoiva');
 		$cm=false;
-		if(abs($montotot-$stotal)<=0.02){
+		if(abs($montotot-$stotal)<=$tolera){
 			$cm     = true;
 			$stotal = $montotot;
 		}
-		if(abs($montoiva-$iva)<=0.02){
+		if(abs($montoiva-$iva)<=$tolera){
 			$cm  = true;
 			$iva = $montoiva;
 		}

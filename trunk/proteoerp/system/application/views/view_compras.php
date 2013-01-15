@@ -249,7 +249,6 @@ function cmontotot(){
 }
 
 function timecmontotot(){
-	alert('Hola');
 	var totals  = 0;
 	var vimporte = $("#montotot").val();
 	var iva      = Number($("#montoiva").val());
