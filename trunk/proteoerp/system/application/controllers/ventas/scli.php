@@ -2008,7 +2008,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->$obj = new inputField('Oficina',$obj);
 		$edit->$obj->rule = 'trim';
 		$edit->$obj->size      = 45;
-		$edit->$obj->maxlength = 40;
+		$edit->$obj->maxlength = 60;
 		$edit->$obj->style = 'width:95%;';
 
 		$obj  ="dire12";

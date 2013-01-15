@@ -28,7 +28,7 @@ var itscst_cont =<?php echo $form->max_rel_count['itscst']; ?>;
 var tasa_general=<?php echo $alicuota['tasa'];     ?>;
 var tasa_reducid=<?php echo $alicuota['redutasa']; ?>;
 var tasa_adicion=<?php echo $alicuota['sobretasa'];?>;
-
+var ctimeout = -1;
 $(function(){
 	$(".inputnum").numeric(".");
 
@@ -121,6 +121,7 @@ function totalizar(){
 	var civaadi  =0;
 	var montotot =0;
 	var montoiva =0;
+	var tolera   =0.07
 
 	var arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
@@ -161,12 +162,12 @@ function totalizar(){
 
 	$("#peso").val(roundNumber(peso,2));
 
-	if(Math.abs(totals-montotot) >= 0.02 ){
+	if(Math.abs(totals-montotot) >= tolera ){
 		$("#montotot").val(roundNumber(totals,2));
 	}else{
 		totals = montotot;
 	}
-	if(Math.abs(civas-montoiva) >=0.02 ){
+	if(Math.abs(civas-montoiva) >=tolera ){
 		$("#montoiva").val(roundNumber(civas,2));
 		montoiva = civas;
 	}else{
@@ -243,6 +244,12 @@ function post_modbus_sinv(nind){
 }
 
 function cmontotot(){
+	if(ctimeout > 0) clearTimeout(ctimeout);
+	ctimeout=setTimeout('timecmontotot();', 1000);
+}
+
+function timecmontotot(){
+	alert('Hola');
 	var totals  = 0;
 	var vimporte = $("#montotot").val();
 	var iva      = Number($("#montoiva").val());
@@ -265,6 +272,7 @@ function cmontotot(){
 
 	$("#montonet_val").text(nformat(totals+iva,2));
 	$("#montonet").val(totals+iva);
+
 }
 
 function cmontoiva(){
