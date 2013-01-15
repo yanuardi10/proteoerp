@@ -1008,7 +1008,10 @@ class Lrece extends Controller {
 		}
 	}
 
-
+	//****************************************
+	//
+	//    Analisis de Laboratorio
+	//
 	function analisis(){
 		$this->rapyd->load('dataedit');
 
