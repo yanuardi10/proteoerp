@@ -95,6 +95,15 @@ class Dispmoviles extends Controller {
 		echo json_encode($data);
 	}
 
+	function ping($uuid){
+		$rt=$this->secu->login_uuid($uuid);
+		if($rt===false){
+			echo '0';
+		}else{
+			echo '1';
+		}
+	}
+
 	//Recibe y guarda los pedidos de Cerix
 	function pfac($uuid,$matri){
 		$this->load->library('rapyd');
@@ -110,6 +119,12 @@ class Dispmoviles extends Controller {
 		if(count($sclirow)!=5) return false;
 		unset($_POST['idscli']);
 
+		if(isset($_POST['observa'])){
+			$observa=$_POST['observa'].' '.'Cerix '.$uuid;
+		}else{
+			$observa = '';
+		}
+
 		$_POST['btn_submit'] = 'Guardar';
 		$_POST['fecha']      = date('d/m/Y');
 		$_POST['vd']         = $this->secu->vendedor;
@@ -118,7 +133,7 @@ class Dispmoviles extends Controller {
 		$_POST['nombre']     = $sclirow['nombre'];
 		$_POST['rifci']      = $sclirow['rifci'];
 		$_POST['direc']      = $sclirow['dire11'];
-		$_POST['observa']    = 'Cerix '.$uuid;
+		$_POST['observa']    = $observa;
 		$_POST['observ1']    = '';
 		$_POST['mmargen']    = 0;
 

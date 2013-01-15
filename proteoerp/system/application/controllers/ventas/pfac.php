@@ -1,4 +1,4 @@
-<?php 
+<?php
 class Pfac extends Controller {
 	var $mModulo = 'PFAC';
 	var $titp    = 'Pedidos de Clientes';
@@ -157,7 +157,7 @@ class Pfac extends Controller {
 							grid.trigger("reloadGrid");
 							'.$this->datasis->jwinopen(site_url('formatos/ver/PFAC').'/\'+res.id+\'/id\'').';
 							return true;
-						} else { 
+						} else {
 							$("#fedita").html(r);
 						}
 					}
@@ -1083,8 +1083,7 @@ class Pfac extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait( $id = 0 )
-	{
+	function getdatait( $id = 0 ){
 		if ($id === 0 ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM pfac");
 		}
@@ -1101,200 +1100,9 @@ class Pfac extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setdatait()
-	{
+	function setdatait(){
 
 	}
-
-
-
-
-
-/*
-require_once(BASEPATH . 'application/controllers/validaciones.php');
-class pfac extends validaciones{
-	var $genesal=true;
-
-	function pfac(){
-		parent :: Controller();
-		$this->load->library('rapyd');
-		$this->datasis->modulo_id(120,1);
-		$this->instalar();
-	}
-
-	function index(){
-		//redirect('ventas/pfac/filteredgrid');
-		if(!$this->db->field_exists('fenvia','pfac'))
-		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `fenvia` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que el vendedor termino el pedido'");
-
-		if(!$this->db->field_exists('faplica','pfac'))
-		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `faplica` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que se aplicaron los descuentos'");
-
-		if(!$this->db->field_exists('faplica','pfac'))
-		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `reserva` CHAR(1) NOT NULL DEFAULT 'N'");
-
-		if ( !$this->datasis->iscampo('pfac','id') ) {
-			$this->db->simple_query('ALTER TABLE pfac DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE pfac ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
-			$this->db->simple_query('ALTER TABLE pfac ADD UNIQUE INDEX numero (numero)');
-		}
-		$this->pfacextjs();
-	}
-
-	function filteredgrid(){
-		$this->rapyd->load('datagrid', 'datafilter');
-
-		$atts = array(
-			'width'      => '800',
-			'height'     => '600',
-			'scrollbars' => 'yes',
-			'status'     => 'yes',
-			'resizable'  => 'yes',
-			'screenx'    => '0',
-			'screeny'    => '0'
-		);
-
-		$atts2 = array(
-			'width'      => '480',
-			'height'     => '240',
-			'scrollbars' => 'yes',
-			'status'     => 'yes',
-			'resizable'  => 'yes',
-			'screenx'    => '980',
-			'screeny'    => '760'
-		);
-
-		$scli = array(
-			'tabla' => 'scli',
-			'columnas' => array(
-				'cliente' => 'C&oacute;digo Cliente',
-				'nombre' => 'Nombre',
-				'contacto' => 'Contacto'),
-			'filtro' => array('cliente' => 'C&oacute;digo Cliente', 'nombre' => 'Nombre'),
-			'retornar' => array('cliente' => 'cod_cli'),
-			'titulo' => 'Buscar Cliente');
-
-		$boton = $this->datasis->modbus($scli);
-
-		$filter = new DataFilter('Filtro de Pedidos Clientes', 'pfac');
-
-		$filter->fechad = new dateonlyField('Desde', 'fechad');
-		$filter->fechah = new dateonlyField('Hasta', 'fechah');
-		$filter->fechad->clause = $filter->fechah->clause   = 'where';
-		$filter->fechad->db_name = $filter->fechah->db_name = 'fecha';
-		//$filter->fechad->insertValue = date('Y-m-d');
-		//$filter->fechah->insertValue = date('Y-m-d');
-		$filter->fechah->size = $filter->fechad->size = 10;
-		$filter->fechad->operator = '>=';
-		$filter->fechah->operator = '<=';
-		$filter->fechad->group = "uno";
-		$filter->fechah->group = "uno";
-
-		$filter->numero = new inputField('N&uacute;mero', 'numero');
-		$filter->numero->size = 10;
-		$filter->numero->group = "dos";
-
-		$filter->cliente = new inputField('Cliente', 'cod_cli');
-		$filter->cliente->size = 8;
-		$filter->cliente->append($boton);
-		$filter->cliente->group = "dos";
-
-		$filter->buttons('reset', 'search');
-		$filter->build('dataformfiltro');
-
-		$uri = anchor('ventas/pfac/dataedit/show/<#id#>', '<#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
-		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
-
-		$mtool  = "<table background='#554455'><tr>";
-		$mtool .= "<td>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='".base_url()."ventas/pfac/dataedit/create'>";
-		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
-		$mtool .= 'onclick="window.open(\''.base_url()."reportes/index/pfac', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600" width="900" '.'>';
-		$mtool .= img(array('src' => 'images/reportes.gif', 'alt' => 'Reportes', 'title' => 'Reportes','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "</tr></table>";
-
-
-		$grid = new DataGrid($mtool);
-		$grid->order_by('numero', 'desc');
-		$grid->per_page = 50;
-
-		//$grid->column('Vista'    , $uri2, "align='center'");
-		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
-		$grid->column_orderby('Facturar'     , $uri3,'numero');
-		$grid->column_orderby("Fecha"        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
-		$grid->column_orderby("Cliente"      , 'cod_cli','cod_cli');
-		$grid->column_orderby("Nombre"       , 'nombre','nombre');
-		$grid->column_orderby('Sub.Total'    , '<nformat><#totals#></nformat>', "totals", "align=right");
-		$grid->column_orderby('IVA'          , '<nformat><#iva#></nformat>'   , "iva",    "align=right");
-		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "totalg", "align=right");
-		$grid->column_orderby("Referencia"   , 'referen','referen');
-		$grid->column_orderby("Factura"      , 'factura','factura');
-		$grid->column_orderby("Status"       , 'status', 'status');
-
-		//$grid->add('ventas/pfac/dataedit/create');
-		$grid->build('datagridST');
-
-// *************************************
-//
-//       Para usar SuperTable
-//
-// *************************************
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer {      // The parent container 
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px;     // Required to set 
-    height: 320px;    // Required to set 
-    overflow: hidden; // Required to set 
-}
-</style>';
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('jquery.alerts.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script('superTables.js');
-
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-		$data['style']	.= style("jquery.alerts.css");
-
-		$data['extras']  = $extras;
-
-		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Pedidos Clientes');
-		$this->load->view('view_ventanas', $data);
-	}
-*/
-
 
 	function dataedit(){
 		$this->rapyd->load('dataobject', 'datadetails');
@@ -1568,6 +1376,8 @@ class pfac extends validaciones{
 		$edit->totalg->size = 10;
 
 		$edit->usuario = new autoUpdateField('usuario', $this->secu->usuario(), $this->secu->usuario());
+		$edit->estampa = new autoUpdateField('estampa', date('Ymd')  , date('Ymd')  );
+		$edit->hora    = new autoUpdateField('hora'   , date('H:i:s'), date('H:i:s'));
 
 		$control=$this->rapyd->uri->get_edited_id();
 
@@ -1576,7 +1386,7 @@ class pfac extends validaciones{
 
 			$accion="javascript:window.location='".site_url('ventas/pfaclite/enviar/'.$control)."'";
 			$edit->button_status('btn_envia'  ,'Enviar Pedido'         ,$accion,'TR','show');
-		
+
 		}elseif($faplica < $fenvia){
 			$hide=array('vd','peso','cliente','nombre','rifci','direc','observa','observ1','codigoa','desca','cana');
 			foreach($hide as $value)
@@ -1586,10 +1396,10 @@ class pfac extends validaciones{
 			$edit->button_status('btn_envia'  ,'Aplicar Descuentos'         ,$accion,'TR','show');
 
 			$edit->buttons( 'delete', 'back');
-		
+
 		}else{
 			$edit->buttons( 'delete', 'back', 'add_rel');
-		
+
 		}
 
 		if($this->genesal){
@@ -1809,6 +1619,8 @@ class pfac extends validaciones{
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('npfac');
 		$do->set('numero', $numero);
+
+
 		//$transac = $this->datasis->fprox_numero('ntransa');
 		//$do->set('transac', $transac);
 		$fecha = $do->get('fecha');
@@ -1967,7 +1779,6 @@ class pfac extends validaciones{
 		}
 	}
 
-
 	function enviar($id,$dir='pfac'){
 		$ide=$this->db->escape($id);
 		$this->db->query("UPDATE pfac SET fenvia=CURDATE() WHERE id=$ide");
@@ -2089,8 +1900,7 @@ class pfac extends validaciones{
 			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
 
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				$salida .= "<tr>";
 				$salida .= "<td>".$row['tipo_doc']."</td>";
 				$salida .= "<td>".$row['numero'].  "</td>";
@@ -2137,8 +1947,7 @@ class pfac extends validaciones{
 		$query = $this->db->query($mSQL);
 		$results =  0;
 		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
+		foreach ($query->result_array() as $row){
 			$meco = array();
 			foreach( $row as $idd=>$campo ) {
 				$meco[$idd] = utf8_encode($campo);
@@ -2153,281 +1962,5 @@ class pfac extends validaciones{
 		$id = $this->datasis->dameval("SELECT b.id FROM pfac a JOIN scli b ON a.cod_cli=b.cliente WHERE numero='$numero'");
 		redirect('ventas/scli/dataedit/show/'.$id);
 	}
-
-	function pfacextjs() {
-		$encabeza='PEDIDO DE CLIENTES';
-
-		$modulo = 'pfac';
-		$urlajax = 'ventas/pfac/';
-
-		$listados= $this->datasis->listados($modulo);
-		$otros=$this->datasis->otros($modulo, $urlajax);
-
-
-		$columnas = "
-		{ header: 'Numero',      width: 60, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Fecha',       width: 70, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Vende',       width: 40, sortable: true, dataIndex: 'vd' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Cliente',     width: 60, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'RIF/CI',      width: 90, sortable: true, dataIndex: 'rifci' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Nombre',      width:200, sortable: true, dataIndex: 'nombre' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Base',        width: 90, sortable: true, dataIndex: 'totals' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'IVA',         width: 90, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Total',       width: 90, sortable: true, dataIndex: 'totalg' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Ref.',        width: 70, sortable: true, dataIndex: 'referen' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Status',      width: 60, sortable: true, dataIndex: 'status' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Observa',     width: 60, sortable: true, dataIndex: 'observa' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Observ1',     width: 60, sortable: true, dataIndex: 'observ1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Cajero',      width: 60, sortable: true, dataIndex: 'cajero' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Peso',        width: 60, sortable: true, dataIndex: 'peso' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Factura',     width: 60, sortable: true, dataIndex: 'factura' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Usuario',     width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Estampa',     width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Hora',        width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Transac',     width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Zona',        width: 60, sortable: true, dataIndex: 'zona' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Ciudad',      width: 60, sortable: true, dataIndex: 'ciudad' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Presup',      width: 60, sortable: true, dataIndex: 'presup' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Anticipo',    width: 60, sortable: true, dataIndex: 'anticipo' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Entregar',    width: 60, sortable: true, dataIndex: 'entregar' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Numant',      width: 60, sortable: true, dataIndex: 'numant' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Ftoma',       width: 60, sortable: true, dataIndex: 'ftoma' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Modificado',  width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Direccion 1', width: 60, sortable: true, dataIndex: 'direc' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Direccion 2', width: 60, sortable: true, dataIndex: 'dire1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-";
-
-		$coldeta = "
-	var Deta1Col = [
-		{ header: 'Codigo',       width:100, sortable: true, dataIndex: 'codigoa' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Descripcion',  width:250, sortable: true, dataIndex: 'desca' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Cantidad',     width: 70, sortable: true, dataIndex: 'cana' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Precio',       width: 80, sortable: true, dataIndex: 'preca' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Total',        width: 80, sortable: true, dataIndex: 'tota' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'IVA',          width: 60, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Entregado',    width: 60, sortable: true, dataIndex: 'entregado' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'PVP',          width: 60, sortable: true, dataIndex: 'pvp' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Comision',     width: 60, sortable: true, dataIndex: 'comision' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'id',           width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'modificado',   width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'dxapli',       width: 60, sortable: true, dataIndex: 'dxapli' , field: { type: 'textfield' }, filter: { type: 'string' }}
-	]";
-
-
-		$variables='';
-
-		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-
-
-		$funciones = "
-function renderScli(value, p, record) {
-	var mreto='';
-	if ( record.data.cod_cli == '' ){
-		mreto = '{0}';
-	} else {
-		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlAjax+'sclibu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	}
-	return Ext.String.format(mreto,	value, record.data.numero );
-}
-
-
-function renderSinv(value, p, record) {
-	var mreto='';
-	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	return Ext.String.format(mreto,	value, record.data.codid );
-}
-
-	";
-
-		$campos = $this->datasis->extjscampos($modulo);
-
-		$stores = "
-	Ext.define('It".$modulo."', {
-		extend: 'Ext.data.Model',
-		fields: [".$this->datasis->extjscampos("it".$modulo)."],
-		proxy: {
-			type: 'ajax',
-			noCache: false,
-			api: {
-				read   : urlAjax + 'gridit".$modulo."',
-				method: 'POST'
-			},
-			reader: {
-				type: 'json',
-				root: 'data',
-				successProperty: 'success',
-				messageProperty: 'message',
-				totalProperty: 'results'
-			}
-		}
-	});
-
-	//////////////////////////////////////////////////////////
-	// create the Data Store
-	var storeIt".$modulo." = Ext.create('Ext.data.Store', {
-		model: 'It".$modulo."',
-		autoLoad: false,
-		autoSync: true,
-		method: 'POST'
-	});
-
-	//////////////////////////////////////////////////////////
-	//
-	var gridDeta1 = Ext.create('Ext.grid.Panel', {
-		width:   '100%',
-		height:  '100%',
-		store:   storeIt".$modulo.",
-		title:   'Detalle de la NE',
-		iconCls: 'icon-grid',
-		frame:   true,
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		columns: Deta1Col
-	});
-
-	var ".$modulo."TplMarkup = [
-		'<table width=\'100%\' bgcolor=\"#F3F781\">',
-		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR DESPACHO</p></td></tr><tr>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/PRESUP/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
-		'<td align=\'center\'>{numero}</td>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/PRESUP/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
-		'</table>','nanai'
-	];
-
-	// Al cambiar seleccion
-	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
-		if (selectedRecord.length) {
-			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
-			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
-			numero = selectedRecord[0].data.numero;
-			gridDeta1.setTitle(selectedRecord[0].data.numero+' '+selectedRecord[0].data.nombre);
-			storeIt".$modulo.".load({ params: { numero: numero }});
-			var meco1 = Ext.getCmp('imprimir');
-			Ext.Ajax.request({
-				url: urlAjax +'tabla',
-				params: { numero: numero, id: selectedRecord[0].data.id },
-				success: function(response) {
-					var vaina = response.responseText;
-					".$modulo."TplMarkup.pop();
-					".$modulo."TplMarkup.push(vaina);
-					var ".$modulo."Tpl = Ext.create('Ext.Template', ".$modulo."TplMarkup );
-					meco1.setTitle('Imprimir Compra');
-					".$modulo."Tpl.overwrite(meco1.body, selectedRecord[0].data );
-				}
-			});
-		}
-	});
-";
-
-		$acordioni = "{
-					layout: 'fit',
-					items:[
-						{
-							name: 'imprimir',
-							id: 'imprimir',
-							border:false,
-							html: 'Para imprimir seleccione una Compra '
-						}
-					]
-				},
-";
-
-
-		$dockedItems = "{
-			xtype: 'toolbar',
-			items: [
-				{
-					iconCls: 'icon-add',
-					text: 'Agregar',
-					scope: this,
-					handler: function(){
-						window.open(urlAjax+'dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},
-				{
-					iconCls: 'icon-update',
-					text: 'Modificar',
-					disabled: true,
-					itemId: 'update',
-					scope: this,
-					handler: function(selModel, selections){
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						gridMaest.down('#delete').setDisabled(selections.length === 0);
-						window.open(urlAjax+'dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},{
-					iconCls: 'icon-delete',
-					text: 'Eliminar',
-					disabled: true,
-					itemId: 'delete',
-					scope: this,
-					handler: function() {
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						Ext.MessageBox.show({
-							title: 'Confirme',
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
-							buttons: Ext.MessageBox.YESNO,
-							fn: function(btn){
-								if (btn == 'yes') {
-									if (selection) {
-										//storeMaest.remove(selection);
-									}
-									storeMaest.load();
-								}
-							},
-							icon: Ext.MessageBox.QUESTION
-						});
-					}
-				}
-			]
-		}
-		";
-
-		$grid2 = ",{
-				itemId: 'viewport-center-detail',
-				activeTab: 0,
-				region: 'south',
-				height: '40%',
-				split: true,
-				margins: '0 0 0 0',
-				preventHeader: true,
-				items: gridDeta1
-			}";
-
-
-		$titulow = 'Compras';
-
-		$filtros = "";
-		$features = "
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
-";
-
-		$final = "storeIt".$modulo.".load();";
-
-		$data['listados']    = $listados;
-		$data['otros']       = $otros;
-		$data['encabeza']    = $encabeza;
-		$data['urlajax']     = $urlajax;
-		$data['variables']   = $variables;
-		$data['funciones']   = $funciones;
-		$data['valida']      = $valida;
-		$data['stores']      = $stores;
-		$data['columnas']    = $columnas;
-		$data['campos']      = $campos;
-		$data['titulow']     = $titulow;
-		$data['dockedItems'] = $dockedItems;
-		$data['features']    = $features;
-		$data['filtros']     = $filtros;
-		$data['grid2']       = $grid2;
-		$data['coldeta']     = $coldeta;
-		$data['acordioni']   = $acordioni;
-		$data['final']       = $final;
-
-		$data['title']  = heading('Pedido de Clientes');
-		$this->load->view('extjs/extjsvenmd',$data);
-
-	}
-
 
 }
