@@ -29,7 +29,7 @@ class Scli extends validaciones {
 		if (!in_array('twitter',  $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
 		if (!in_array('upago',    $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
 		if (!in_array('tarifa',   $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(15) NULL ');
-		if (!in_array('tarimonto',$campos)) $this->db->query("ALTER TABLE `scli` ADD COLUMN `tarimonto` FLOAT UNSIGNED NULL DEFAULT NULL COMMENT 'unidades tributarias a cobrar por servicio' AFTER `crm`");
+		if (!in_array('tarimonto',$campos)) $this->db->query("ALTER TABLE `scli` ADD COLUMN `tarimonto` FLOAT UNSIGNED NULL DEFAULT NULL COMMENT 'unidades tributarias a cobrar por servicio'");
 
 
 		if(!$this->db->table_exists('tarifa')){
