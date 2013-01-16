@@ -60,10 +60,11 @@ class Scst extends Controller {
 
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"cprecios", "img"=>"images/precio.png",   "alt" => 'Ajustar Precios',     "label"=>"Cambiar Precios"));
-		$grid->wbotonadd(array("id"=>"reversar", "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
-		if ( $this->datasis->traevalor('MOTOS') == 'S' ) 
-			$grid->wbotonadd(array("id"=>"vehiculo", "img"=>"images/carro.png",    "alt" => 'Seriales Vehiculares',   "label"=>"Seriales Vehiculares"));
+		$grid->wbotonadd(array('id'=>'cprecios','img'=>'images/precio.png'   ,'alt' => 'Ajustar Precios'    ,'label'=>'Cambiar Precios'));
+		$grid->wbotonadd(array('id'=>'reversar','img'=>'images/arrow_up.png' ,'alt' => 'Actualizar/Reversar','label'=>'Actualizar Reversar'));
+		$grid->wbotonadd(array('id'=>'bcmonto' ,'img'=>'images/arrow_up.png' ,'alt' => 'Modificar la CxP'   ,'label'=>'Modificar la CxP'));
+		if ( $this->datasis->traevalor('MOTOS') == 'S' )
+			$grid->wbotonadd(array('id'=>'vehiculo', 'img'=>'images/carro.png',  'alt' => 'Seriales Vehiculares',   'label'=>'Seriales Vehiculares'));
 
 		$WestPanel = $grid->deploywestp();
 
@@ -72,9 +73,10 @@ class Scst extends Controller {
 
 		//Panel de pie de forma
 		$adic = array(
-			array("id"=>"fcompra",  "title"=>"Modificar Compra"),
-			array("id"=>"factuali", "title"=>"Actualizar"),
-			array("id"=>"fvehi"   , "title"=>"Seriales Vehiculares"),
+			array('id'=>'fcompra' , 'title'=>'Modificar Compra'),
+			array('id'=>'factuali', 'title'=>'Actualizar'),
+			array('id'=>'fvehi'   , 'title'=>'Seriales Vehiculares'),
+			array('id'=>'fcmonto' , 'title'=>'Cambiar los montos que van a CxP'),
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -190,6 +192,28 @@ class Scst extends Controller {
 		});';
 
 		$bodyscript .= '
+		jQuery("#bcmonto").click(function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id){
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				if ( ret.actuali >= ret.fecha ) {
+					$.prompt("<h1>Compra ya Actualizada</h1>Debe reversarla si desea hacer modificaciones");
+				}else{
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url('compras/scst/montoscxp/modify').'/"+id, function(data){
+						$("#factuali").html("");
+						$("#fcompra").html("");
+						$("#fcmonto").html(data);
+						$("#fcmonto").dialog("open");
+					});
+				}
+			}else{
+				$.prompt("<h1>Por favor Seleccione una compra</h1>");
+			}
+		});';
+
+		$bodyscript .= '
 		function scstedit() {
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id){
@@ -233,7 +257,7 @@ class Scst extends Controller {
 					var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 					if ( ret.tipo_doc == "XX"){
 						$.prompt( "<h1>Documento Eliminado.</h1>");
-					} else { 
+					} else {
 					mid = id;
 					if ( ret.actuali < ret.fecha ){'."\n";
 
@@ -253,7 +277,7 @@ class Scst extends Controller {
 						$.prompt( "<h1>Opcion no Autorizada, comuniquese con el supervisor.</h1>");
 					';
 		}
-					
+
 		$bodyscript .= '
 					} else {
 					';
@@ -314,9 +338,15 @@ class Scst extends Controller {
 							});
 						}
 					},
-					Cancelar: function() { $( this ).dialog( "close" ); }
+					Cancelar: function() {
+						$( this ).dialog( "close" );
+						$( "#factuali" ).html("");
+					}
 				},
-				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+				close: function() {
+					allFields.val( "" ).removeClass( "ui-state-error" );
+					$( "#factuali" ).html("");
+				}
 			});';
 
 		//Cambiar Precios
@@ -370,9 +400,58 @@ class Scst extends Controller {
 							});
 						}
 					},
-					Cancelar: function() { $( this ).dialog( "close" ); }
+					Cancelar: function() {
+						$( this ).dialog( "close" );
+						$( "#fcompra" ).html("");
+					}
 				},
-				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+				close: function() {
+					allFields.val( "" ).removeClass( "ui-state-error" );
+					$( "#fcompra" ).html("");
+				}
+			});';
+
+		$bodyscript .= '
+			$( "#fcmonto" ).dialog({
+				autoOpen: false, height: 300, width: 300, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url: murl,
+								data: $("#df1").serialize(),
+								success: function(r,s,x){
+									try{
+										var json = JSON.parse(r);
+										if ( json.status == "A" ) {
+											$( "#fcmonto" ).dialog( "close" );
+											jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+											$("#fcmonto").html("");
+											apprise("Montos Guardado");
+											return true;
+										} else {
+											apprise(json.mensaje);
+										}
+									}catch(e){
+										$("#fcmonto").html(r);
+									}
+								}
+							});
+						}
+					},
+					Cancelar: function() {
+						$( this ).dialog( "close" );
+						$( "#fcmonto" ).html("");
+					}
+				},
+				close: function() {
+					allFields.val( "" ).removeClass( "ui-state-error" );
+					$( "#fcmonto" ).html("");
+				}
 			});';
 
 		$bodyscript .= '
@@ -407,9 +486,16 @@ class Scst extends Controller {
 							});
 						}
 					},
-					Cancelar: function() { $( this ).dialog( "close" ); }
+					Cancelar: function() {
+						$( this ).dialog( "close" );
+						$( "#fvehi" ).html("");
+					}
 				},
-				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+				close: function() {
+					allFields.val( "" ).removeClass( "ui-state-error" );
+					$( "#fvehi" ).html("");
+
+				}
 			});
 		});';
 
@@ -1976,84 +2062,6 @@ class Scst extends Controller {
 		}
 	}
 
-
-	//***************************************
-	//
-	// Compra Financiera
-	//
-	function finanzas(){
-
-		$this->rapyd->load('dataedit');
-
-		$edit = new DataEdit('', 'scst');
-
-		$edit->on_save_redirect=false;
-
-		$this->rapyd->load('datagrid','fields');
-
-		$edit->cexento = new inputField('Cexento','cexento');
-		$edit->cexento->rule='max_length[17]|numeric';
-		$edit->cexento->css_class='inputnum';
-		$edit->cexento->size =10;
-		$edit->cexento->maxlength =17;
-
-		$edit->cgenera = new inputField('Cgenera','cgenera');
-		$edit->cgenera->rule='max_length[17]|numeric';
-		$edit->cgenera->css_class='inputnum';
-		$edit->cgenera->size =10;
-		$edit->cgenera->maxlength =17;
-
-		$edit->civagen = new inputField('Civagen','civagen');
-		$edit->civagen->rule='max_length[17]|numeric';
-		$edit->civagen->css_class='inputnum';
-		$edit->civagen->size =10;
-		$edit->civagen->maxlength =17;
-
-		$edit->creduci = new inputField('Creduci','creduci');
-		$edit->creduci->rule='max_length[17]|numeric';
-		$edit->creduci->css_class='inputnum';
-		$edit->creduci->size =10;
-		$edit->creduci->maxlength =17;
-
-		$edit->civared = new inputField('Civared','civared');
-		$edit->civared->rule='max_length[17]|numeric';
-		$edit->civared->css_class='inputnum';
-		$edit->civared->size =10;
-		$edit->civared->maxlength =17;
-
-		$edit->cadicio = new inputField('Cadicio','cadicio');
-		$edit->cadicio->rule='max_length[17]|numeric';
-		$edit->cadicio->css_class='inputnum';
-		$edit->cadicio->size =10;
-		$edit->cadicio->maxlength =17;
-
-		$edit->civaadi = new inputField('Civaadi','civaadi');
-		$edit->civaadi->rule='max_length[17]|numeric';
-		$edit->civaadi->css_class='inputnum';
-		$edit->civaadi->size =10;
-		$edit->civaadi->maxlength =17;
-
-		$edit->cstotal = new inputField('Cstotal','cstotal');
-		$edit->cstotal->rule='max_length[17]|numeric';
-		$edit->cstotal->css_class='inputnum';
-		$edit->cstotal->size =10;
-		$edit->cstotal->maxlength =17;
-
-		$edit->ctotal = new inputField('Ctotal','ctotal');
-		$edit->ctotal->rule='max_length[17]|numeric';
-		$edit->ctotal->css_class='inputnum';
-		$edit->ctotal->size =10;
-		$edit->ctotal->maxlength =17;
-
-		$edit->cimpuesto = new inputField('Cimpuesto','cimpuesto');
-		$edit->cimpuesto->rule='max_length[17]|numeric';
-		$edit->cimpuesto->css_class='inputnum';
-		$edit->cimpuesto->size =10;
-		$edit->cimpuesto->maxlength =17;
-
-
-	}
-
 	//***************************************
 	// Precios
 	//
@@ -2246,7 +2254,7 @@ class Scst extends Controller {
 
 	function montoscxp(){
 		$this->rapyd->load('dataedit');
-		$this->rapyd->uri->keep_persistence();
+		//$this->rapyd->uri->keep_persistence();
 		$control=$this->rapyd->uri->get_edited_id();
 
 		//$ffecha=$edit->get_from_dataobjetct('fecha');
@@ -2254,7 +2262,7 @@ class Scst extends Controller {
 		$alicuota=$this->datasis->ivaplica(($ffecha==false)? null : $ffecha);
 
 		$edit = new DataEdit('Compras','scst');
-		$edit->back_url = 'compras/scst/dataedit/show/'.$control;
+		$edit->on_save_redirect=false;
 		//$edit->post_process('update' ,'_post_cxp_update');
 
 		//Para CXP
@@ -2341,39 +2349,25 @@ class Scst extends Controller {
 		$edit->ctotal->css_class='inputnum';
 		//Fin de CxP
 
-		$edit->buttons('save', 'undo','modify', 'back');
 		$edit->build();
 
-		$conten['form'] =& $edit;
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
 
-		//$ffecha=$edit->get_from_dataobjetct('fecha');
-		$ffecha=false;
-		$conten['alicuota'] = $alicuota;
+			echo json_encode($rt);
+		}else{
+			$conten['form'] =& $edit;
+			$conten['alicuota'] = $alicuota;
+			$proveed=$edit->get_from_dataobjetct('proveed');
+			$conten['priva']   = $this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+			$conten['priva']   = $conten['priva']/100;
+			$data['content']   = $this->load->view('view_compras_cmontos', $conten);
+		}
 
-		$proveed=$edit->get_from_dataobjetct('proveed');
-		$conten['priva']   = $this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
-		$conten['priva']   = $conten['priva']/100;
-		$data['script']    = script('jquery.js');
-		$data['script']   .= script('jquery-ui.js');
-		$data['script']   .= script('jquery.layout.js');
-		$data['script']   .= script('grid.locale-sp.js');
-		$data['script']   .= script('ui.multiselect.js');
-		$data['script']   .= script('jquery.jqGrid.min.js');
-		$data['script']   .= script('jquery.tablednd.js');
-		$data['script']   .= script('jquery.contextmenu.js');
-		$data['script']   .= style('ui.jqgrid.css');
-		$data['script']   .= style('ui.multiselect.css');
-
-		$data['script']   .= script('plugins/jquery.numeric.pack.js');
-		$data['script']   .= script('plugins/jquery.floatnumber.js');
-		$data['script']   .= phpscript('nformat.js');
-
-		$data['head']      = $this->rapyd->get_head();
-		$data['head']     .= style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['content']   = $this->load->view('view_compras_cmontos', $conten,true);
-		$data['title']     = heading('Compras');
-
-		$this->load->view('view_ventanas', $data);
 	}
 
 	//Chequea que los registros no esten repatidos en los datos vehiculares
