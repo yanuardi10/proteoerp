@@ -18,6 +18,14 @@ class Scst extends Controller {
 	function index(){
 		$this->instalar();
 		$this->datasis->modintramenu( 900, 650, substr($this->url,0,-1) );
+		// Crea los accesos en tmenus
+		if ($this->datasis->dameval("SELECT COUNT(*) FROM tmenus WHERE modulo='SCSTOTR' AND proteo='actualizar'") == 0) {
+			$this->db->query("INSERT INTO tmenus SET modulo='SCSTOTR',secu=1,titulo='Actualizar',proteo='actualizar' ");
+		}
+		if ($this->datasis->dameval("SELECT COUNT(*) FROM tmenus WHERE modulo='SCSTOTR' AND proteo='reversar'") == 0) {
+			$this->db->query("INSERT INTO tmenus SET modulo='SCSTOTR',secu=2,titulo='Reversar',proteo='reversar' ");
+		}
+
 		redirect($this->url.'jqdatag');
 	}
 
@@ -36,18 +44,15 @@ class Scst extends Controller {
 		$readyLayout = $grid->readyLayout2( 212, 200, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
 		$bodyscript  = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
-
 		$WpAdic = "
-		<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n
-		<tr><td><div class=\"tema1\">
+		<tr><td>\n
 			<table cellpadding='0' cellspacing='0' style='width:100%;'>
 				<tr>
-					<td style='vertical-align:center;border:1px solid #AFAFAF;'><div class='botones'>".img(array('src' =>"assets/default/images/print.png",  'height' => 18, 'alt' => 'Imprimir',  'title' => 'Imprimir', 'border'=>'0'))."</div></td>
-					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:70px;text-align:left;vertical-align:top;' href='#' id='imprimir'>Compra</a></div></td>
-					<td style='vertical-align:top;'><div class='botones'><a style='width:80px;text-align:left;vertical-align:top;' href='#' id='reteprin'>Retencion</a></div></td>
+					<td style='vertical-align:center;border:1px solid #AFAFAF;'><div class='tema1 botones'>".img(array('src' =>"assets/default/images/print.png",  'height' => 18, 'alt' => 'Imprimir',  'title' => 'Imprimir', 'border'=>'0'))."</div></td>
+					<td style='vertical-align:top;text-align:center;'><div class='tema1 botones'><a style='width:70px;text-align:left;vertical-align:top;' border='0' href='#' id='imprimir'>Compra</a></div></td>
+					<td style='vertical-align:top;text-align:center;'><div class='tema1 botones'><a class='tema1 botones' style='width:80px;text-align:left;vertical-align:top;' href='#' id='reteprin'>Retencion</a></div></td>
 				</tr>
 			</table>
-			</div>
 		</td></tr>\n
 		";
 
@@ -55,13 +60,10 @@ class Scst extends Controller {
 
 
 		//Botones Panel Izq
-		//$grid->wbotonadd(array("id"=>"imprimir", "img"=>"assets/default/images/print.png",    "alt" => 'Formato PDF',         "label"=>"Reimprimir Documento"));
-		//$grid->wbotonadd(array("id"=>"reteprin", "img"=>"assets/default/images/print.png",    "alt" => 'Formato PDF',         "label"=>"Reimprimir Retención"));
-		$grid->wbotonadd(array("id"=>"cprecios", "img"=>"images/precio.png",   "alt" => 'Precios',             "label"=>"Cambiar Precios"));
-		//$grid->wbotonadd(array("id"=>"serie",    "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
+		$grid->wbotonadd(array("id"=>"cprecios", "img"=>"images/precio.png",   "alt" => 'Ajustar Precios',     "label"=>"Cambiar Precios"));
 		$grid->wbotonadd(array("id"=>"reversar", "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
-
-		$grid->wbotonadd(array("id"=>"vehiculo", "img"=>"images/carro.png", "alt" => 'Seriales Vehiculares', "label"=>"Seriales Vehiculares"));
+		if ( $this->datasis->traevalor('MOTOS') == 'S' ) 
+			$grid->wbotonadd(array("id"=>"vehiculo", "img"=>"images/carro.png",    "alt" => 'Seriales Vehiculares',   "label"=>"Seriales Vehiculares"));
 
 		$WestPanel = $grid->deploywestp();
 
@@ -223,21 +225,43 @@ class Scst extends Controller {
 			s = grid.getGridParam(\'selarrrow\');
 		';
 
-		//Reversar
+		//Actualizar y Reversar
 		$bodyscript .= '
 			$("#reversar").click( function(){
 				var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 				if (id)	{
 					var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+					if ( ret.tipo_doc == "XX"){
+						$.prompt( "<h1>Documento Eliminado.</h1>");
+					} else { 
 					mid = id;
-					if ( ret.actuali < ret.fecha ){
+					if ( ret.actuali < ret.fecha ){'."\n";
+
+		if ( $this->datasis->sidapuede('SCSTOTR','actualizar') ) {
+
+		//Revisa si puede Actualizar
+		$bodyscript .= '
 						$.post("'.site_url('compras/scst/solo/actualizar').'/"+ret.control,
 						function(data){
 							$("#fcompra").html("");
 							$("#factuali").html(data);
 							$("#factuali").dialog( "open" );
 						})
+					';
+		} else {
+		$bodyscript .= '
+						$.prompt( "<h1>Opcion no Autorizada, comuniquese con el supervisor.</h1>");
+					';
+		}
+					
+		$bodyscript .= '
 					} else {
+					';
+
+		if ( $this->datasis->sidapuede('SCSTOTR', 'reversar' ) ) {
+
+		//Revisa si puede Reversar
+		$bodyscript .= '
 						$.prompt( "<h1>Reversar Compra Nro. "+ret.control+" ?</h1>", {
 							buttons: { Reversar: true, Cancelar: false },
 							submit: function(e,v,m,f){
@@ -250,7 +274,15 @@ class Scst extends Controller {
 								}
 							}
 						});
-					}
+					';
+		} else {
+		$bodyscript .= '
+						$.prompt( "<h1>Opcion no Autorizada, comuniquese con el supervisor.</h1>");
+					';
+		}
+
+		$bodyscript .= '
+					}}
 				} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 			});';
 
@@ -1124,6 +1156,9 @@ class Scst extends Controller {
 				if ( aData.fecha >  aData.actuali ){
 					$(this).jqGrid( "setCell", rid, "tipo_doc","", {color:"#FFFFFF", background:"#166D05" });
 				}
+				if ( aData.tipo_doc == "XX" ){
+					$(this).jqGrid( "setCell", rid, "tipo_doc","", {color:"#FFFFFF", background:"#C90623" });
+				}
 			}
 		');
 
@@ -1584,194 +1619,10 @@ class Scst extends Controller {
 		echo $salida;
 	}
 
-
-/*
-class Scst extends Controller {
-
-	function scst(){
-		parent::Controller();
-		$this->load->library('rapyd');
-		$this->datasis->modulo_id(201,1);
-		$this->back_dataedit='compras/scst/datafilter';
-	}
-
-	function index(){
-		redirect('compras/scst/extgrid');
-	}
-
-	function datafilter(){
-		//redirect('compras/scst/extgrid');
-
-		$this->rapyd->load('datagrid','datafilter');
-		$this->rapyd->uri->keep_persistence();
-
-		$atts = array(
-		  'width'      => '800',
-		  'height'     => '600',
-		  'scrollbars' => 'yes',
-		  'status'     => 'yes',
-		  'resizable'  => 'yes',
-		  'screenx'    => '0',
-		  'screeny'    => '0'
-		);
-
-		$modbus=array(
-			'tabla'   =>'sprv',
-			'columnas'=>array(
-				'proveed' =>'C&oacute;digo Proveedor',
-				'nombre'=>'Nombre',
-				'rif'=>'RIF'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
-			'retornar'=>array('proveed'=>'proveed'),
-			'titulo'  =>'Buscar Proveedor');
-
-		$boton=$this->datasis->modbus($modbus);
-
-		$filter = new DataFilter('Filtro de Compras');
-		$filter->db->select=array('numero','fecha','recep','vence','depo','nombre','montoiva','montonet','montotot','reiva','proveed','control','serie','usuario');
-		$filter->db->from('scst');
-
-		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
-		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause='where';
-		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator='>=';
-		$filter->fechah->operator='<=';
-		$filter->fechah->group='Fecha Emisi&oacute;n';
-		$filter->fechad->group='Fecha Emisi&oacute;n';
-
-		$filter->tipo = new dropdownField('Tipo Doc.', 'tipo_doc');
-		$filter->tipo->option('','Todos');
-		$filter->tipo->option('FC','Factura a Cr&eacute;dito');
-		$filter->tipo->option('NC','Nota de Cr&eacute;dito');
-		$filter->tipo->option('NE','Nota de Entrega');
-		$filter->tipo->style='width:140px;';
-
-		$filter->numero = new inputField('Factura', 'numero');
-		$filter->numero->size=20;
-
-		$filter->proveedor = new inputField('Proveedor','proveed');
-		$filter->proveedor->append($boton);
-		$filter->proveedor->db_name = 'proveed';
-		$filter->proveedor->size=20;
-
-		$filter->buttons('reset','search');
-		$filter->build('dataformfiltro');
-
-		$uri  = anchor('compras/scst/dataedit/show/<#control#>','<#tipo_doc#><#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>','Ver HTML',$atts);
-		$uri3 = anchor_popup('compras/scst/dataedit/show/<#control#>','<#serie#>',$atts);
-
-		$grid = new DataGrid();
-		$grid->order_by('fecha','desc');
-		$grid->per_page = 30;
-
-
-		$uri_2  = "<a href='javascript:void(0);' ";
-		$uri_2 .= 'onclick="window.open(\''.base_url()."compras/scst/serie/<#control#>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
-		$uri_2 .= img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar'));
-		$uri_2 .= "</a>";
-
-		$uri_2  = anchor('compras/scst/dataedit/show/<#control#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'16','title'=>'Editar')));
-		$uri_2 .= "&nbsp;";
-		$uri_2 .= anchor('formatos/verhtml/COMPRA/<#control#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
-
-		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:scstserie(\"<#control#>\")'>";
-		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Serie', 'title' => 'Modifica Nro. de Serie','border'=>'0','height'=>'12');
-		$uri_3 .= img($propiedad);
-		$uri_3 .= "</a>";
-
-		$grid->column('Acci&oacute;n',$uri_2);
-		$grid->column_orderby('Factura',$uri,'numero');
-		$grid->column_orderby('Serie',$uri_3.'<#serie#>','serie');
-		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
-		$grid->column_orderby('Recep','<dbdate_to_human><#recep#></dbdate_to_human>','recep','align=\'center\'');
-		$grid->column_orderby('Vence','<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
-		$grid->column_orderby('Alma','depo','depo');
-		$grid->column_orderby('Prv.','proveed','proveed');
-		$grid->column_orderby('Nombre','nombre','nombre');
-		$grid->column_orderby('Base' ,'<nformat><#montotot#></nformat>','montotot','align=\'right\'');
-		$grid->column_orderby('IVA'   ,'<nformat><#montoiva#></nformat>','montoiva','align=\'right\'');
-		$grid->column_orderby('Importe' ,'<nformat><#montonet#></nformat>','montonet','align=\'right\'');
-		$grid->column_orderby('Ret.IVA' ,'<nformat><#reteiva#></nformat>','reteiva','align=\'right\'');
-		$grid->column_orderby('Control','control','control');
-		$grid->column_orderby('Usuario','usuario','usuario');
-		//$grid->column('Vista',$uri2,'align=\'center\'');
-
-		$grid->add('compras/scst/dataedit/create');
-		$grid->build('datagridST');
-
-		//************ SUPER TABLE *************
-		$extras = '
-		<script type="text/javascript">
-		//<![CDATA[
-		(function() {
-			var mySt = new superTable("demoTable", {
-			cssSkin : "sSky",
-			fixedCols : 1,
-			headerRows : 1,
-			onStart : function () {	this.start = new Date();},
-			onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-			});
-		})();
-		//]]>
-		</script>';
-
-		$style ='
-		<style type="text/css">
-		.fakeContainer {
-		    margin: 5px;
-		    padding: 0px;
-		    border: none;
-		    width: 740px;
-		    height: 320px;
-		    overflow: hidden;
-		}
-		</style>';
-		//****************************************
-
-		$script ='<script type="text/javascript">
-		function scstserie(mcontrol){
-			//var mserie=Prompt("Numero de Serie");
-			//jAlert("Cancelado","Informacion");
-			jPrompt("Numero de Serie","" ,"Cambio de Serie", function(mserie){
-				if( mserie==null){
-					jAlert("Cancelado","Informacion");
-				} else {
-					$.ajax({ url: "'.site_url().'compras/scst/scstserie/"+mcontrol+"/"+mserie,
-						success: function(msg){
-							jAlert("Cambio Finalizado "+msg,"Informacion");
-							location.reload();
-							}
-					});
-				}
-			})
-		}
-		</script>';
-
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-		$data['style']  .= style('jquery.alerts.css');
-
-		$data['extras']  = $extras;
-
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery.alerts.js');
-		$data['script'] .= script('superTables.js');
-		$data['script'] .= $script;
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-		$data['head']    = $this->rapyd->get_head();
-
-		$data['title']   =heading('Compras');
-		$this->load->view('view_ventanas', $data);
-
-	}
-*/
-
-
+	//***********************************
+	//
+	// DataEdit Principal
+	//
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
 		$this->rapyd->uri->keep_persistence();
@@ -2125,7 +1976,87 @@ class Scst extends Controller {
 		}
 	}
 
+
+	//***************************************
+	//
+	// Compra Financiera
+	//
+	function finanzas(){
+
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit('', 'scst');
+
+		$edit->on_save_redirect=false;
+
+		$this->rapyd->load('datagrid','fields');
+
+		$edit->cexento = new inputField('Cexento','cexento');
+		$edit->cexento->rule='max_length[17]|numeric';
+		$edit->cexento->css_class='inputnum';
+		$edit->cexento->size =10;
+		$edit->cexento->maxlength =17;
+
+		$edit->cgenera = new inputField('Cgenera','cgenera');
+		$edit->cgenera->rule='max_length[17]|numeric';
+		$edit->cgenera->css_class='inputnum';
+		$edit->cgenera->size =10;
+		$edit->cgenera->maxlength =17;
+
+		$edit->civagen = new inputField('Civagen','civagen');
+		$edit->civagen->rule='max_length[17]|numeric';
+		$edit->civagen->css_class='inputnum';
+		$edit->civagen->size =10;
+		$edit->civagen->maxlength =17;
+
+		$edit->creduci = new inputField('Creduci','creduci');
+		$edit->creduci->rule='max_length[17]|numeric';
+		$edit->creduci->css_class='inputnum';
+		$edit->creduci->size =10;
+		$edit->creduci->maxlength =17;
+
+		$edit->civared = new inputField('Civared','civared');
+		$edit->civared->rule='max_length[17]|numeric';
+		$edit->civared->css_class='inputnum';
+		$edit->civared->size =10;
+		$edit->civared->maxlength =17;
+
+		$edit->cadicio = new inputField('Cadicio','cadicio');
+		$edit->cadicio->rule='max_length[17]|numeric';
+		$edit->cadicio->css_class='inputnum';
+		$edit->cadicio->size =10;
+		$edit->cadicio->maxlength =17;
+
+		$edit->civaadi = new inputField('Civaadi','civaadi');
+		$edit->civaadi->rule='max_length[17]|numeric';
+		$edit->civaadi->css_class='inputnum';
+		$edit->civaadi->size =10;
+		$edit->civaadi->maxlength =17;
+
+		$edit->cstotal = new inputField('Cstotal','cstotal');
+		$edit->cstotal->rule='max_length[17]|numeric';
+		$edit->cstotal->css_class='inputnum';
+		$edit->cstotal->size =10;
+		$edit->cstotal->maxlength =17;
+
+		$edit->ctotal = new inputField('Ctotal','ctotal');
+		$edit->ctotal->rule='max_length[17]|numeric';
+		$edit->ctotal->css_class='inputnum';
+		$edit->ctotal->size =10;
+		$edit->ctotal->maxlength =17;
+
+		$edit->cimpuesto = new inputField('Cimpuesto','cimpuesto');
+		$edit->cimpuesto->rule='max_length[17]|numeric';
+		$edit->cimpuesto->css_class='inputnum';
+		$edit->cimpuesto->size =10;
+		$edit->cimpuesto->maxlength =17;
+
+
+	}
+
+	//***************************************
 	// Precios
+	//
 	function cprecios($control){
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('datagrid','fields');
@@ -2163,7 +2094,6 @@ class Scst extends Controller {
 			}
 			if ( $this->solo )
 				return '{"status":"C","id":"'.$control.'" ,"mensaje":"'.$msj.$error.'"}';
-
 		}
 
 		if ( $this->solo )
@@ -2175,8 +2105,6 @@ class Scst extends Controller {
 		function costo($formcal,$pond,$ultimo,$standard,$existen,$itcana){
 			$CI =& get_instance();
 			$costo_pond=$CI->_pond($existen,$itcana,$pond,$ultimo);
-			//echo "_pond($existen,$itcana,$pond,$ultimo);".br();
-			//$costo_pond=(($pond*$existen)+($itcana*$ultimo))/($itcana+$existen);
 			return $CI->_costos($formcal,$costo_pond,$ultimo,$standard);
 		}
 
