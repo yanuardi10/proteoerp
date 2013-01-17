@@ -175,7 +175,7 @@ class Lrece extends Controller {
 				$.post("'.site_url('leche/lrece/analisis/modify').'/"+id,
 				function(data){
 					$("#fedita").html(data);
-					$("#fedita").dialog({height: 370, width: 400, title: "Analisis la Recepcion "+id+" Ruta "+ret.ruta+" Nombre "+ret.nombre});
+					$("#fedita").dialog({height: 380, width: 500, title: "Analisis la Recepcion "+id+" Ruta "+ret.ruta+" Nombre "+ret.nombre});
 					$("#fedita").dialog( "open" );
 				});
 			} else {
@@ -989,6 +989,7 @@ class Lrece extends Controller {
 		$edit->lleno->size =12;
 		$edit->lleno->mode='autohide';
 		$edit->lleno->maxlength =16;
+		$edit->lleno->showformat   = 'decimal';
 
 		$edit->nombre = new inputField('Nombre del chofer','nombre');
 		$edit->nombre->rule='max_length[45]|strtoupper|required';
@@ -1063,6 +1064,7 @@ class Lrece extends Controller {
 		$edit->lleno->size =12;
 		$edit->lleno->mode='autohide';
 		$edit->lleno->maxlength =16;
+		$edit->lleno->showformat = 'decimal';
 
 		$edit->vacio = new inputField('Peso vac&iacute;o','vacio');
 		$edit->vacio->rule='max_length[16]|numeric|required';
@@ -1070,38 +1072,35 @@ class Lrece extends Controller {
 		$edit->vacio->size =7;
 		$edit->vacio->maxlength =16;
 		$edit->vacio->onkeyup = 'calconeto()';
+		$edit->vacio->showformat   = 'decimal';
 
 		$edit->neto = new inputField('Peso Neto','neto');
-		$edit->neto->rule='max_length[16]|numeric';
+		$edit->neto->rule='numeric';
 		$edit->neto->css_class='inputnum';
 		$edit->neto->type = 'inputhidden';
 		$edit->neto->size=7;
-		$edit->neto->maxlength=16;
+		$edit->neto->maxlength=7;
+		$edit->neto->showformat   = 'decimal';
 
 		$edit->densidad = new inputField('Densidad','densidad');
-		$edit->densidad->rule='max_length[10]|numeric|required';
+		$edit->densidad->rule='numeric|required';
 		$edit->densidad->css_class='inputnum';
-		$edit->densidad->size =7;
+		$edit->densidad->size =5;
 		$edit->densidad->maxlength =10;
 		$edit->densidad->onkeyup = 'calcolitro()';
 
-		//$edit->litros = new inputField('Litros','litros');
-		//$edit->litros->rule='max_length[16]|numeric';
-		//$edit->litros->css_class='inputnum';
-		//$edit->litros->size =12;
-		//$edit->litros->maxlength =16;
+		$edit->litros = new inputField('Litros','litros');
+		$edit->litros->rule='numeric';
+		$edit->litros->css_class='inputnum';
+		$edit->litros->size =7;
+		$edit->litros->maxlength =16;
+		$edit->litros->type = 'inputhidden';
 
 		$edit->lista = new inputField('Litros lista','lista');
 		$edit->lista->rule='max_length[16]|numeric';
 		$edit->lista->css_class='inputnum';
 		$edit->lista->size =12;
 		$edit->lista->maxlength =16;
-
-		//$edit->diferen = new inputField('Diferencia','diferen');
-		//$edit->diferen->rule='max_length[16]|numeric';
-		//$edit->diferen->css_class='inputnum';
-		//$edit->diferen->size =12;
-		//$edit->diferen->maxlength =16;
 
 		$edit->animal = new  dropdownField ('Animal', 'animal');
 		$edit->animal->option('M' ,'Mezcla');
@@ -1192,17 +1191,17 @@ class Lrece extends Controller {
 					$data=array();
 					$data['vaquera']    = $row->codigo;
 					$data['nombre']     = $row->nombre;
-					$data['densidad']   = 0;
-					$data['lista']      = '';
+					$data['densidad']   = 1.032;
+					$data['lista']      = 0;
 					$data['animal']     = 'V';
-					$data['crios']      = '';
-					$data['h2o']        = '';
-					$data['temp']       = 0;
-					$data['brix']       = '';
-					$data['grasa']      = '';
-					$data['acidez']     = '';
-					$data['cloruros']   = '';
-					$data['dtoagua']    = '';
+					$data['crios']      = 0;
+					$data['h2o']        = 0;
+					$data['temp']       = 10;
+					$data['brix']       = 0;
+					$data['grasa']      = 0;
+					$data['acidez']     = 0;
+					$data['cloruros']   = 0;
+					$data['dtoagua']    = 0;
 					$data['id_lvaca']   = $row->id;
 					$data['id_lrece']   = $id;
 
@@ -1529,17 +1528,17 @@ class Lrece extends Controller {
 				$data=array();
 				$data['vaquera']   = $row->codigo ;
 				$data['nombre']    = $row->nombre ;
-				$data['densidad']   = 0;
+				$data['densidad']   = 1.032;
 				$data['lista']      = 0;
 				$data['animal']     = 'V';
-				$data['crios']      = '';
-				$data['h2o']        = '';
-				$data['temp']       = '';
-				$data['brix']       = '';
-				$data['grasa']      = '';
-				$data['acidez']     = '';
-				$data['cloruros']   = '';
-				$data['dtoagua']    = '';
+				$data['crios']      = 0;
+				$data['h2o']        = 0;
+				$data['temp']       = 10;
+				$data['brix']       = 0;
+				$data['grasa']      = 0;
+				$data['acidez']     = 0;
+				$data['cloruros']   = 0;
+				$data['dtoagua']    = 0;
 				$data['id_lvaca']   = $row->id;
 				$data['id_lrece']   = $primary;
 
@@ -1568,17 +1567,17 @@ class Lrece extends Controller {
 				$data=array();
 				$data['vaquera']   = $row->codigo ;
 				$data['nombre']    = $row->nombre ;
-				$data['densidad']   = 0;
+				$data['densidad']   = 1.032;
 				$data['lista']      = 0;
 				$data['animal']     = 'V';
-				$data['crios']      = '';
-				$data['h2o']        = '';
-				$data['temp']       = '';
-				$data['brix']       = '';
-				$data['grasa']      = '';
-				$data['acidez']     = '';
-				$data['cloruros']   = '';
-				$data['dtoagua']    = '';
+				$data['crios']      = 0;
+				$data['h2o']        = 0;
+				$data['temp']       = 10;
+				$data['brix']       = 0;
+				$data['grasa']      = 0;
+				$data['acidez']     = 0;
+				$data['cloruros']   = 0;
+				$data['dtoagua']    = 0;
 				$data['id_lvaca']   = $row->id;
 				$data['id_lrece']   = $id;
 
@@ -1670,26 +1669,26 @@ class Lrece extends Controller {
 	function instalar(){
 		if(!$this->db->table_exists('lrece')){
 			$mSQL="CREATE TABLE `lrece` (
-			`fecha` date DEFAULT NULL,
-			`ruta` char(4) DEFAULT NULL COMMENT 'Ruta Grupo de Proveedor',
-			`chofer` char(5) DEFAULT NULL COMMENT 'Chofer Proveedor',
-			`nombre` char(45) DEFAULT NULL COMMENT 'Nombre Chofer ',
-			`lleno` decimal(16,3) DEFAULT NULL COMMENT 'Peso de la Unidad llena',
-			`vacio` decimal(16,3) DEFAULT NULL COMMENT 'Peso de la Unidad Vacia',
-			`neto` decimal(16,3) DEFAULT NULL COMMENT 'Neto lleno-vacio',
-			`densidad` decimal(10,5) DEFAULT NULL COMMENT 'Densidad',
-			`litros` decimal(16,3) DEFAULT NULL COMMENT 'Total Litros neto*densidad',
-			`lista` decimal(16,3) DEFAULT NULL COMMENT 'Segun Lista',
-			`diferen` decimal(16,3) DEFAULT NULL COMMENT 'Diferencia Neto/Lista',
-			`animal` char(1) DEFAULT NULL COMMENT 'Vaca o Bufala',
-			`crios` decimal(10,3) DEFAULT NULL COMMENT 'Crioscopia',
-			`h2o` decimal(10,3) DEFAULT NULL COMMENT '% de Agua',
-			`temp` decimal(10,3) DEFAULT NULL COMMENT 'Temperatura',
-			`brix` decimal(10,3) DEFAULT NULL COMMENT 'Grados Brix',
-			`grasa` decimal(10,3) DEFAULT NULL COMMENT '% Grasa',
-			`acidez` decimal(10,3) DEFAULT NULL COMMENT 'Acidez',
-			`cloruros` decimal(10,3) DEFAULT NULL COMMENT 'Cloruros',
-			`dtoagua` decimal(10,3) DEFAULT NULL COMMENT 'Dto. Agua',
+			`fecha`    date DEFAULT NULL,
+			`ruta`     char(4) DEFAULT NULL COMMENT 'Ruta Grupo de Proveedor',
+			`chofer`   char(5) DEFAULT NULL COMMENT 'Chofer',
+			`nombre`   char(45) DEFAULT NULL COMMENT 'Nombre Chofer ',
+			`lleno`    decimal(16,3) DEFAULT  0 COMMENT 'Peso de la Unidad llena',
+			`vacio`    decimal(16,3) DEFAULT  0 COMMENT 'Peso de la Unidad Vacia',
+			`neto`     decimal(16,3) DEFAULT  0 COMMENT 'Neto lleno-vacio',
+			`densidad` decimal(10,5) DEFAULT 1.032 COMMENT 'Densidad',
+			`litros`   decimal(16,3) DEFAULT  0 COMMENT 'Total Litros neto*densidad',
+			`lista`    decimal(16,3) DEFAULT  0 COMMENT 'Segun Lista',
+			`diferen`  decimal(16,3) DEFAULT  0 COMMENT 'Diferencia Neto/Lista',
+			`animal`   char(1)       DEFAULT 'V' COMMENT 'Vaca o Bufala',
+			`crios`    decimal(10,3) DEFAULT  0 COMMENT 'Crioscopia',
+			`h2o`      decimal(10,3) DEFAULT  0 COMMENT '% de Agua',
+			`temp`     decimal(10,3) DEFAULT 10 COMMENT 'Temperatura',
+			`brix`     decimal(10,3) DEFAULT  0 COMMENT 'Grados Brix',
+			`grasa`    decimal(10,3) DEFAULT  0 COMMENT '% Grasa',
+			`acidez`   decimal(10,3) DEFAULT  0 COMMENT 'Acidez',
+			`cloruros` decimal(10,3) DEFAULT  0 COMMENT 'Cloruros',
+			`dtoagua`  decimal(10,3) DEFAULT  0 COMMENT 'Dto. Agua',
 			`id` int(11) NOT NULL AUTO_INCREMENT,
 			PRIMARY KEY (`id`),
 			KEY `fecha` (`fecha`)
@@ -1700,7 +1699,7 @@ class Lrece extends Controller {
 			$mSQL="CREATE TABLE `itlrece` (
 			`vaquera`  VARCHAR(5)    NULL DEFAULT NULL COMMENT 'Vaquera',
 			`nombre`   VARCHAR(45)   NULL DEFAULT NULL COMMENT 'Productor ',
-			`densidad` decimal(10,5) DEFAULT NULL COMMENT 'Densidad',
+			`densidad` decimal(10,5) DEFAULT 1.032 COMMENT 'Densidad',
 			`lista`    decimal(16,3) DEFAULT NULL COMMENT 'Segun Lista',
 			`animal`   char(1)       DEFAULT NULL COMMENT 'Vaca o Bufala',
 			`crios`    decimal(10,3) DEFAULT NULL COMMENT 'Crioscopia',

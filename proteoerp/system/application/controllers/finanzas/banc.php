@@ -963,7 +963,6 @@ class Banc extends Controller {
 	//
 	function recalban($codbanc, $ano ){
 
-
 		$mSQL = "SELECT 
 		SUM( monto*(month(fecha)=1)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=1)*(tipo_op  IN ('CH','ND'))) saldo01,
 		SUM( monto*(month(fecha)=2)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=3)*(tipo_op  IN ('CH','ND'))) saldo02,
@@ -985,7 +984,7 @@ class Banc extends Controller {
 
 		$this->db->where('codbanc', $codbanc);
 		$this->db->where('ano',     $ano);
-		$this->db->update('bsal', $data); 
+		$this->db->update('bsal',   $data); 
 
 		//Actualiza Banc
 		

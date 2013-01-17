@@ -31,71 +31,15 @@ class Pers extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$fvari = '"<h1>Variables del Trabajador</h1>Cliente: <b>"+ret.nombre+"</b><br><br><table align=center><tr><td>';
-		$fvari .= $this->datasis->traevalor('NOMVARI1').':</td><td> <input type=\'text\' id=\'xvari1\' name=\'xvari1\' size=\'6\' maxlength=\'5\' value=\""+ret.vari1+"\"></td></tr><tr><td>';
-		$fvari .= $this->datasis->traevalor('NOMVARI2').':</td><td> <input type=\'text\' id=\'xvari2\' name=\'xvari2\' size=\'6\' maxlength=\'5\' value=\""+ret.vari2+"\"></td></tr><tr><td>';
-		$fvari .= $this->datasis->traevalor('NOMVARI3').':</td><td> <input type=\'text\' id=\'xvari3\' name=\'xvari3\' size=\'6\' maxlength=\'5\' value=\""+ret.vari3+"\"></td></tr><tr><td>';
-		$fvari .= $this->datasis->traevalor('NOMVARI4').':</td><td> <input type=\'text\' id=\'xvari4\' name=\'xvari4\' size=\'6\' maxlength=\'5\' value=\""+ret.vari4+"\"></td></tr><tr><td>';
-		$fvari .= $this->datasis->traevalor('NOMVARI5').':</td><td> <input type=\'text\' id=\'xvari5\' name=\'xvari5\' size=\'6\' maxlength=\'5\' value=\""+ret.vari5+"\"></td></tr><tr><td>';
-		$fvari .= $this->datasis->traevalor('NOMVARI6').':</td><td> <input type=\'text\' id=\'xvari6\' name=\'xvari6\' size=\'6\' maxlength=\'5\' value=\""+ret.vari6+"\"></td></tr></table>"';
 
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"a1", "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Imprimir"));
+		$WestPanel = $grid->deploywestp();
 
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/PERS/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-
-function variables(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var mnuevo = "";
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		$.prompt('.$fvari.',{
-			buttons: { Cambiar:true, Salir:false},
-			callback: function(e,v,m,f){
-				mvari1 = f.xvari1;
-				mvari2 = f.xvari2;
-				mvari3 = f.xvari3;
-				mvari4 = f.xvari4;
-				mvari5 = f.xvari5;
-				mvari6 = f.xvari6;
-				if (v) {
-					$.ajax({
-						url: "'.site_url('nomina/pers/variables').'",
-						global: false,
-						type: "POST",
-						data: ({ mid: id, xvari1 : encodeURIComponent(mvari1), xvari2 : encodeURIComponent(mvari2), xvari3 : encodeURIComponent(mvari3), xvari4 : encodeURIComponent(mvari4), xvari5 : encodeURIComponent(mvari5), xvari6 : encodeURIComponent(mvari6) }),
-						dataType: "text",
-						async: false,
-						success: function(sino) {
-							apprise(sino);
-							jQuery("#newapi'. $param['grids'][0]['gridname'].'").trigger("reloadGrid");
-						},
-						error: function(h,t,e) { apprise("Error..codigo="+yurl+" ",e) }
-					});
-				}
-			}
-		});
-	} else
-		$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
-}
-
-
-</script>
-';
-
-		#Set url
-		$grid->setUrlput(site_url($this->url.'setdata/'));
-
+/*
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
 <div class="anexos">
@@ -120,11 +64,15 @@ function variables(){
 '</div> <!-- #LeftPane -->
 ';
 
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
+*/
+
+
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
+
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
@@ -136,6 +84,144 @@ function variables(){
 		$param['encabeza'] = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
 	}
+
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#a1").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.base_url().'formatos/ver/PERS/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});';
+
+		$fvari = '"<h1>Variables del Trabajador</h1>Cliente: <b>"+ret.nombre+"</b><br><br><table align=center><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI1').':</td><td> <input type=\'text\' id=\'xvari1\' name=\'xvari1\' size=\'6\' maxlength=\'5\' value=\""+ret.vari1+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI2').':</td><td> <input type=\'text\' id=\'xvari2\' name=\'xvari2\' size=\'6\' maxlength=\'5\' value=\""+ret.vari2+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI3').':</td><td> <input type=\'text\' id=\'xvari3\' name=\'xvari3\' size=\'6\' maxlength=\'5\' value=\""+ret.vari3+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI4').':</td><td> <input type=\'text\' id=\'xvari4\' name=\'xvari4\' size=\'6\' maxlength=\'5\' value=\""+ret.vari4+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI5').':</td><td> <input type=\'text\' id=\'xvari5\' name=\'xvari5\' size=\'6\' maxlength=\'5\' value=\""+ret.vari5+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI6').':</td><td> <input type=\'text\' id=\'xvari6\' name=\'xvari6\' size=\'6\' maxlength=\'5\' value=\""+ret.vari6+"\"></td></tr></table>"';
+
+		$bodyscript .= '
+		function variables(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var mnuevo = "";
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				$.prompt('.$fvari.',{
+					buttons: { Cambiar:true, Salir:false},
+					callback: function(e,v,m,f){
+						mvari1 = f.xvari1;
+						mvari2 = f.xvari2;
+						mvari3 = f.xvari3;
+						mvari4 = f.xvari4;
+						mvari5 = f.xvari5;
+						mvari6 = f.xvari6;
+						if (v) {
+							$.ajax({
+								url: "'.site_url('nomina/pers/variables').'",
+								global: false,
+								type: "POST",
+								data: ({ mid: id, xvari1 : encodeURIComponent(mvari1), xvari2 : encodeURIComponent(mvari2), xvari3 : encodeURIComponent(mvari3), xvari4 : encodeURIComponent(mvari4), xvari5 : encodeURIComponent(mvari5), xvari6 : encodeURIComponent(mvari6) }),
+								dataType: "text",
+								async: false,
+								success: function(sino) {
+									apprise(sino);
+									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+								},
+								error: function(h,t,e) { apprise("Error..codigo="+yurl+" ",e) }
+							});
+						}
+					}
+				});
+			} else
+				$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
+		}
+		';
+
+		$bodyscript .= '
+		function persadd() {
+			$.post("'.site_url($this->url.'dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function persedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+			';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						try{
+							var json = JSON.parse(r);
+							if (json.status == "A"){
+								apprise("Registro Guardado");
+								$( "#fedita" ).dialog( "close" );
+								grid.trigger("reloadGrid");
+								'.$this->datasis->jwinopen(site_url('formatos/ver/PERS').'/\'+res.id+\'/id\'').';
+								return true;
+							} else {
+								apprise(json.mensaje);
+							}
+						}catch(e){
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); }
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+		$bodyscript .= '});'."\n";
+
+		$bodyscript .= "\n</script>\n";
+		$bodyscript .= "";
+		return $bodyscript;
+	}
+
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -535,7 +621,7 @@ function variables(){
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 100,
-			'editrules'     => '{ required:true }',
+			'editrules'     => '{ required:false }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
@@ -551,7 +637,7 @@ function variables(){
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 100,
-			'editrules'     => '{ required:true }',
+			'editrules'     => '{ required:false }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
@@ -567,7 +653,7 @@ function variables(){
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 100,
-			'editrules'     => '{ required:true }',
+			'editrules'     => '{ required:false }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
@@ -583,7 +669,7 @@ function variables(){
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 100,
-			'editrules'     => '{ required:true }',
+			'editrules'     => '{ required:false }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
@@ -599,7 +685,7 @@ function variables(){
 			'width'         => 80,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
+			'editrules'     => '{ required:false, date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
@@ -613,7 +699,7 @@ function variables(){
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 100,
-			'editrules'     => '{ required:true }',
+			'editrules'     => '{ required:false }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
@@ -828,12 +914,15 @@ function variables(){
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);
-		$grid->setEdit(true);
-		$grid->setDelete(true);
-		$grid->setSearch(true);
+		#show/hide navigations buttons
+		$grid->setAdd(    $this->datasis->sidapuede('PERS','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('PERS','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('PERS','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('PERS','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("\t\taddfunc: persadd,\n\t\teditfunc: persedit");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -940,146 +1029,15 @@ function variables(){
 
 
 
-
-/*
-class pers extends validaciones {
-
-	function pers(){
-		parent::Controller(); 
-		$this->load->library("rapyd");
-	}
-
-	function index(){
-		$this->datasis->modulo_id(707,1);
-		$this->persextjs();
-	}
-
-	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
-		$this->rapyd->uri->keep_persistence();
-		$this->datasis->modulo_id(707,1);
-
-		$script ='
-		$(function() {
-			$(".inputnum").numeric(".");
-		});
-		';
-
-		$filter = new DataFilter("Filtro de Personal", 'pers');
-		$filter->script($script, "create");
-		$filter->script($script, "modify");
-		$filter->script->css_class='inputnum';
-		
-		$filter->cedula = new inputField("C&eacute;dula", "cedula");
-		$filter->cedula->size=10;
-		$filter->cedula->css_class='inputnum';
-		
-		$filter->nombre = new inputField("Nombre", "nombre");
-		$filter->nombre->size=30;
-		
-		$filter->apellido = new inputField("Apellido", "apellido");
-		$filter->apellido->size=30;
-		
-		$filter->contrato = new dropdownField("Contrato","contrato");
-		$filter->contrato->style ="width:400px;";
-		$filter->contrato->option("","");
-		$filter->contrato->options("SELECT codigo,CONCAT('',codigo,nombre)as nombre FROM noco ORDER BY codigo");
-		
-		$filter->divi = new dropdownField("Divisi&oacute;n", "divi");
-		$filter->divi->style ="width:250px;";
-		$filter->divi->option("","");
-		$filter->divi->options("SELECT division,descrip FROM divi ORDER BY division");
-				
-		$filter->buttons("reset","search");
-		$filter->build('dataformfiltro');
-
-		$uri = anchor('nomina/pers/dataedit/show/<#codigo#>','<#codigo#>');
-		$uri_2  = anchor('nomina/pers/dataedit/modify/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
-
-		$mtool  = "<table background='#554455'><tr>";
-		$mtool .= "<td>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='".base_url()."nomina/pers/dataedit/create'>";
-		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "</tr></table>";
-		
-		$grid = new DataGrid($mtool);
-		$grid->order_by("codigo","asc");
-		$grid->per_page = 30;
-
-		$grid->column('Acci&oacute;n',$uri_2,'align=center');
-		$grid->column_orderby("C&oacute;digo",$uri,'codigo');
-		$grid->column_orderby("C&eacute;dula","cedula",'cedula');
-		$grid->column_orderby("Nombre","nombre",'nombre');
-		$grid->column_orderby("Apellidos","apellido",'apellido');
-		$grid->column_orderby("Sexo","sexo",'sexo');
-		$grid->column_orderby("E.Civil","civil",'civil');
-		$grid->column_orderby("Direcci&oacute;n","direc1",'direc1');
-		$grid->column_orderby("Telefono","telefono",'telefono');
-		$grid->column_orderby("F.Nacimiento","<dbdate_to_human><#nacimi#></dbdate_to_human>",'nacimi');
-		$grid->column_orderby("F.Ingreso","<dbdate_to_human><#ingreso#></dbdate_to_human>",'ingreso');
-		$grid->column_orderby("Sueldo","<nformat><#sueldo#></nformat>",'sueldo');
-		
-		//$grid->add("nomina/pers/dataedit/create");
-		$grid->build('datagridST');
-		
-		//************ SUPER TABLE ************* 
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { // The parent container
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; // Required to set 
-    height: 320px; // Required to set 
-    overflow: hidden; // Required to set 
-}
-</style>	
-';
-//****************************************
-
-
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-		$data['extras']  = $extras;		
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-		
-		$data['title']  = heading('Personal');
-		$data['script'] = script('jquery.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js");
-		$data["script"].= script('superTables.js');
-		$data['head']   = $this->rapyd->get_head();
-		
-		$this->load->view('view_ventanas', $data);	
-	}
-	
+	//******************************
+	//
+	//  DataEdit
+	//
 	function dataedit(){
 		
 		$this->rapyd->load("dataedit2");
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
 		$script ='
-		$(function() {
-			$(".inputnum").numeric(".");
-		});
-		
 		function consulrif(){
 				vrif=$("#rif").val();
 				if(vrif.length==0){
@@ -1090,11 +1048,10 @@ class pers extends validaciones {
 					window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 				}
 		}
-		
 		';	
 				
 		$edit = new DataEdit2("Personal", "pers");
-		$edit->back_url = site_url("nomina/pers/filteredgrid");
+		//$edit->back_url = site_url("nomina/pers/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
 
@@ -1141,47 +1098,47 @@ class pers extends validaciones {
 		$edit->codigo->rule="trim|required|callback_chexiste";
 		$edit->codigo->mode="autohide";
 		$edit->codigo->maxlength=15;
-		$edit->codigo->size=16;
+		$edit->codigo->size=10;
 		
 		$edit->nacional = new dropdownField("C&eacute;dula", "nacional");
-		$edit->nacional->style = "width:110px;";
+		$edit->nacional->style = "width:100px;";
 		$edit->nacional->option("V","Venezolano");
 		$edit->nacional->option("E","Extranjero");
 		$edit->nacional->group = "Datos del Trabajador";
 		 
 		$edit->cedula =  new inputField("", "cedula");
-		$edit->cedula->size = 14;
+		$edit->cedula->size = 9;
 		$edit->cedula->maxlength= 8;
 		$edit->cedula->in = "nacional";
 		$edit->cedula->rule="trim|required";
 		$edit->cedula->css_class='inputnum';
 			
-		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick=""> Consultar RIF en el SENIAT</a>';
+		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">SENIAT</a>';
 		$edit->rif =  new inputField("RIF", "rif");
 		//$edit->rif->mode="autohide";
 		$edit->rif->rule = "trim|strtoupper|callback_chrif";
 		$edit->rif->append($lriffis);
 		$edit->rif->maxlength=10;
-		$edit->rif->size = 13;
+		$edit->rif->size = 10;
 		$edit->rif->group = "Datos del Trabajador";
 		
 		$edit->nombre =  new inputField("Nombre", "nombre");
 		$edit->nombre->group = "Datos del Trabajador";
-		$edit->nombre->size = 40;
+		$edit->nombre->size = 30;
 		$edit->nombre->maxlength=30;
 		$edit->nombre->rule="trim|required|strtoupper";
 		
 		$edit->apellido = new inputField("Apellidos", "apellido");
 		$edit->apellido->group = "Datos del Trabajador";
-		$edit->apellido->size = 40;
+		$edit->apellido->size = 30;
 		$edit->apellido->maxlength=30;
 		//$edit->apellido->in = "nombre";
 		$edit->apellido->rule="trim|required|strtoupper";
 		
 		$edit->sexo = new dropdownField("Sexo", "sexo");
-		$edit->sexo->style = "width:60px;";
-		$edit->sexo->option("F","F");
-		$edit->sexo->option("M","M");
+		$edit->sexo->style = "width:100px;";
+		$edit->sexo->option("F","Femenino");
+		$edit->sexo->option("M","Masculino");
 		$edit->sexo->group = "Datos del Trabajador";
 		
 		//$edit->label1 = new freeField("EC","EC","<id class='littletableheader'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estado Civil&nbsp;&nbsp; </id>");
@@ -1198,30 +1155,30 @@ class pers extends validaciones {
 		
 		$edit->direc1 = new inputField("Direcci&oacute;n", "direc1");
 		$edit->direc1->group = "Datos del Trabajador";
-		$edit->direc1->size =40;
+		$edit->direc1->size =30;
 		$edit->direc1->maxlength=30;
 		$edit->direc1->rule="trim|strtoupper";
 		
 		$edit->direc2 = new inputField("&nbsp;", "direc2");
-		$edit->direc2->size =40;
+		$edit->direc2->size =30;
 		$edit->direc2->group = "Datos del Trabajador";
 		$edit->direc2->maxlength=30; 
 		$edit->direc2->rule="trim|strtoupper";
 		
 		$edit->direc3 = new inputField("&nbsp;", "direc3");
-		$edit->direc3->size =40;
+		$edit->direc3->size =30;
 		$edit->direc3->group = "Datos del Trabajador";
 		$edit->direc3->maxlength=30;
 		$edit->direc3->rule="trim|strtoupper";
 		
 		$edit->telefono = new inputField("Tel&eacute;fono", "telefono");
-		$edit->telefono->size =40;
+		$edit->telefono->size =30;
 		$edit->telefono->group = "Datos del Trabajador";
 		$edit->telefono->maxlength=30;
 		$edit->telefono->rule="trim|strtoupper";
 		
 		$edit->email = new inputField("Email","email");
-		$edit->email->size =50;
+		$edit->email->size =30;
 		$edit->email->group = "Datos del Trabajador";
 		$edit->email->maxlength=50;
 		$edit->email->rule="trim";
@@ -1236,7 +1193,7 @@ class pers extends validaciones {
 		
 		
 		$edit->civil = new dropdownField("Estado Civil", "civil");
-		$edit->civil->style = "width:100px;";
+		$edit->civil->style = "width:80px;";
 		$edit->civil->option("S","Soltero");
 		$edit->civil->option("C","Casado");
 		$edit->civil->option("D","Divorciado");
@@ -1245,28 +1202,31 @@ class pers extends validaciones {
 		
 		$edit->profes = new dropdownField("Profesion","profes");
 		$edit->profes->options("SELECT codigo,profesion FROM prof ORDER BY profesion");
+		$edit->profes->style = "width:200px;";
 		
-		$edit->nacimi = new DateOnlyField("Fecha de Nacimiento", "nacimi","d/m/Y");
+		$edit->nacimi = new DateOnlyField("Nacimiento", "nacimi","d/m/Y");
 		$edit->nacimi->size = 12;
 		$edit->nacimi->group = "Datos del Trabajador"; 
 		$edit->nacimi->rule="trim|chfecha";
 		
-		$edit->sucursal = new inputField("Sucursal", "sucursal");
-		$edit->sucursal->size =4;
-		$edit->sucursal->maxlength=2;
+		$edit->sucursal = new dropdownField("Sucursal", "sucursal");
+		$edit->sucursal->style ="width:120px;";
+		$edit->sucursal->options("SELECT codigo, CONCAT(codigo,' ',sucursal) desrip FROM sucu ORDER BY sucursal");
+		//$edit->sucursal->size =4;
+		//$edit->sucursal->maxlength=2;
 		$edit->sucursal->group = "Relaci&oacute;n Laboral";
-		$edit->sucursal->append($boton);
-		$edit->sucursal->rule="trim|strtoupper";
+		//$edit->sucursal->append($boton);
+		//$edit->sucursal->rule="trim|strtoupper";
 				
 		$edit->divi = new dropdownField("Divisi&oacute;n", "divi");
-		$edit->divi->style ="width:250px;";
+		$edit->divi->style ="width:200px;";
 		$edit->divi->option("","");
 		$edit->divi->options("SELECT division,descrip FROM divi ORDER BY division");
 		$edit->divi->onchange = "get_depto();";
 		$edit->divi->group = "Relaci&oacute;n Laboral";
 		
 		$edit->depa = new dropdownField("Departamento", "depto");
-		$edit->depa->style ="width:250px;";
+		$edit->depa->style ="width:200px;";
 		$edit->depa->option("","");
 		if($edit->_status=='modify' || $edit->_status=='show' ){
 		$divi=$edit->getval('divi');
@@ -1279,7 +1239,7 @@ class pers extends validaciones {
 		$edit->depa->group = "Relaci&oacute;n Laboral";	
 		
 		$edit->contrato = new dropdownField("Contrato","contrato");
-		$edit->contrato->style ="width:400px;";
+		$edit->contrato->style ="width:200px;";
 		$edit->contrato->option("","");
 		$edit->contrato->options("SELECT codigo,CONCAT('',codigo,nombre)as nombre FROM noco ORDER BY codigo");
 		$edit->contrato->group = "Relaci&oacute;n Laboral";
@@ -1303,7 +1263,7 @@ class pers extends validaciones {
 		$edit->enlace->append($cboton); 
 		$edit->enlace->rule="trim|strtoupper";
 						
-		$edit->sso = new inputField("Nro. Seguro Social", "sso");
+		$edit->sso = new inputField("Nro. SSO", "sso");
 		$edit->sso->size =13;
 		$edit->sso->maxlength=11;
 		$edit->sso->group = "Relaci&oacute;n Laboral"; 
@@ -1360,7 +1320,7 @@ class pers extends validaciones {
 		//$edit->dialab->css_class='inputnum';
 		
 		$edit->status = new dropdownField("Estatus", "status");
-		$edit->status->option("","");
+		//$edit->status->option("","");
 		$edit->status->options(array("A"=> "Activo","V"=>"Vacaciones","R"=>"Retirado","I"=>"Inactivo","P"=>"Permiso"));
 		$edit->status->group = "Relaci&oacute;n Laboral";
 		$edit->status->style = "width:100px;";
@@ -1422,7 +1382,7 @@ class pers extends validaciones {
 		
 		$edit->cuentab = new inputField("Nro. Cuenta", "cuentab");
 		$edit->cuentab->group = "Datos Cuenta Bancaria";
-		$edit->cuentab->size =40;
+		$edit->cuentab->size =20;
 		$edit->cuentab->maxlength=40;
 		//$edit->cuentab->rule="trim|numeric";
 		//$edit->cuentab->css_class='inputnum';
@@ -1468,7 +1428,7 @@ class pers extends validaciones {
 		$edit->vari6->rule="trim|numeric";
 		$edit->vari6->css_class='inputnum';
 		    
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		//$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 		
 		$link=site_url('nomina/pers/depto');
@@ -1488,11 +1448,13 @@ class pers extends validaciones {
 script;
 
 		$conten["form"]  =& $edit;
-		$data['content'] = $this->load->view('view_pers', $conten,true);
+		$this->load->view('view_pers', $conten);
+		//$data['content'] = $this->load->view('view_pers', $conten,true);
 		//$data['content'] = $edit->output; 
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$data['title']   = '<h1>Personal</h1>';
-		$this->load->view('view_ventanas', $data);
+		//$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		//$data['title']   = '<h1>Personal</h1>';
+		//$this->load->view('view_ventanas', $data);
+
 	}
 	
 	function depto($divi=NULL){
@@ -1604,7 +1566,7 @@ script;
 		}
 	}
 	
-
+/*
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
@@ -1719,12 +1681,12 @@ script;
 			echo "{ success: true, message: 'Trabajador Eliminado'}";
 		}
 	}
-
-//****************************************************************8
+/*
+//****************************************************************
 //
 //
 //
-//****************************************************************8
+//****************************************************************
 	function persextjs(){
 
 		$mSQL = "SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo";
@@ -1983,7 +1945,7 @@ var scliStore = new Ext.data.Store({
 		$data['title']  = heading('Personal/Trabajadores');
 		$this->load->view('extjs/extjsven',$data);
 	}
-	
+*/	
 	//Busca Trabajadores
 	function persbusca() {
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
@@ -2019,7 +1981,7 @@ var scliStore = new Ext.data.Store({
 			echo '{success:true, message:"Todo bien", results:'. $results.', data:'.json_encode($arr).'}';
 		}
 	}
-*/
+
 }
 
 ?>

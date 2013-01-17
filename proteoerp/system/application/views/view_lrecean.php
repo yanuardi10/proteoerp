@@ -19,17 +19,31 @@ function calcolitro(){
 	var densidad=Number($("#densidad").val());
 	var neto    =Number($("#neto").val());
 
-	//$('#litros').val(masa/densidad);
-	//$('#litros_val').text(nformat(masa/densidad,2));
+	if ( densidad == '' ) {
+		densidad = 1.032;
+		$('#densidad').val(1.032);
+		$('#densidad_val').val(1.032);
+	}
+	
+	$('#litros').val(neto/densidad);
+	$('#litros_val').text(nformat(neto/densidad,2));
 }
 
 function calconeto(){
 	var lleno=<?php echo $form->lleno->value ?>;
 	var vacio=Number($("#vacio").val());
+	var densidad=Number($("#densidad").val());
+
+	if ( densidad == '' ) densidad = 1.032;
 
 	$('#neto').val(lleno-vacio);
 	$('#neto_val').text(nformat(lleno-vacio,2));
+
+	$('#litros').val((lleno-vacio)/densidad);
+	$('#litros_val').text(nformat((lleno-vacio)/densidad,2));
+
 }
+
 </script>
 <table width='100%' style='font-size:11pt;background:#F2E69D;'>
 	<tr>
@@ -45,27 +59,34 @@ function calconeto(){
 	</tr>
 </table>
 <br />
-<table width='100%' align='center'>
+<fieldset style='border: 1px outset #407E13;background: #FAFAFA;'>
+<legend class='subtitulotabla'>Pesadas del Transporte</legend>
+<table width='100%' >
 	<tr>
-		<td class="littletableheaderc"><?php echo $form->lleno->label;  ?></td>
-		<td class="littletablerow"    ><?php echo $form->lleno->output; ?></td>
-		<td class="littletableheaderc"><?php echo $form->vacio->label;  ?></td>
-		<td class="littletablerow"    ><?php echo $form->vacio->output; ?></td>
-	</tr><tr>
-		<td class="littletableheaderc"><?php echo $form->densidad->label; ?></td>
-		<td class="littletablerow"    ><?php echo $form->densidad->output;?></td>
-		<td class="littletableheaderc"><?php echo $form->neto->label;     ?></td>
-		<td class="littletablerow"     ><?php echo $form->neto->output;    ?></td>
-	</tr><tr>
-		<td class="littletableheaderc"><?php echo $form->temp->label;    ?></td>
-		<td class="littletablerow"    ><?php echo $form->temp->output;   ?></td>
-		<td class="littletableheaderc"><?php echo $form->crios->label;   ?></td>
-		<td class="littletablerow"    ><?php echo $form->crios->output;  ?></td>
+		<td class="littletableheaderc">Lleno</td>
+		<td class="littletableheaderc">Vacio</td>
+		<td class="littletableheaderc">Neto</td>
+		<td class="littletableheaderc">Densidad</td>
+		<td class="littletableheaderc">Litros</td>
+	</tr>
+	<tr>
+		<td class="littletablerow"><?php echo $form->lleno->output;?></td>
+		<td class="littletablerow"><?php echo $form->vacio->output;?></td>
+		<td class="littletablerow"><?php echo $form->neto->output; ?></td>
+		<td class="littletablerow"><?php echo $form->densidad->output;?></td>
+		<td class="littletablerow"><?php echo $form->litros->output;  ?></td>
 	</tr>
 </table>
+</fieldset>
 
 <div style='border: 1px solid #9AC8DA;background: #FAFAFA'>
 <table width='100%' align='center'>
+	<tr>
+		<td class="littletableheaderc"><?php echo $form->temp->label;    ?></td>
+		<td class="littletablerow"    ><?php echo $form->temp->output;   ?></td>
+		<td class="littletableheaderc"></td>
+		<td class="littletablerow"    ></td>
+	</tr>
 	<tr>
 		<td class="littletableheaderc"><?php echo $form->animal->label;  ?></td>
 		<td class="littletablerow"    ><?php echo $form->animal->output; ?></td>

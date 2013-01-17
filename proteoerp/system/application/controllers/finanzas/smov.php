@@ -79,16 +79,6 @@ class Smov extends Controller {
 
 		$grid  = new $this->jqdatagrid;
 
-		$grid->addField('id');
-		$grid->label('Id');
-		$grid->params(array(
-			'align'    => "'center'",
-			'frozen'   => 'true',
-			'width'    => 50,
-			'editable' => 'false',
-			'search'   => 'false'
-		));
-
 		$grid->addField('cod_cli');
 		$grid->label('Cliente');
 		$grid->params(array(
@@ -678,6 +668,16 @@ class Smov extends Controller {
 			'editable'      => 'false',
 			'width'         => 70,
 			'edittype'      => "'text'",
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 50,
+			'editable' => 'false',
+			'search'   => 'false'
 		));
 
 
