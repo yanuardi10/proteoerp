@@ -1051,7 +1051,8 @@ class Pers extends Controller {
 		}
 		';	
 				
-		$edit = new DataEdit("Personal", "pers");
+		$edit = new DataEdit("Personal", 'pers');
+		$edit->on_save_redirect=false;
 		//$edit->back_url = site_url("nomina/pers/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
@@ -1296,8 +1297,8 @@ class Pers extends Controller {
 		//$edit->trabaja->style = "width:200px;";
 		
 		$edit->tipo = new dropdownField("Tipo de N&oacute;mina","tipo");
-		$edit->tipo->option("","");
-		$edit->tipo->options(array("Q"=> "Quincenal","M"=>"Mensual","S"=>"Semanal"));
+		//$edit->tipo->option("","");
+		$edit->tipo->options(array("Q"=> "Quincenal","M"=>"Mensual","S"=>"Semanal","B"=>"BiSemanal"));
 		$edit->tipo->group = "Relaci&oacute;n Laboral";
 		$edit->tipo->style = "width:100px;";
 		
@@ -1384,8 +1385,6 @@ class Pers extends Controller {
 		$edit->cuentab->group = "Datos Cuenta Bancaria";
 		$edit->cuentab->size =20;
 		$edit->cuentab->maxlength=40;
-		//$edit->cuentab->rule="trim|numeric";
-		//$edit->cuentab->css_class='inputnum';
 		
 		$edit->vari1 = new inputField("Retenci&oacute;n SSO", "vari1");
 		$edit->vari1->group = "Variables";
@@ -1428,25 +1427,7 @@ class Pers extends Controller {
 		$edit->vari6->rule="trim|numeric";
 		$edit->vari6->css_class='inputnum';
 		    
-		//$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
-/*		
-		$link=site_url('nomina/pers/depto');
-	$data['script']  =<<<script
-		<script type="text/javascript" charset="utf-8">
-		function get_depto(){
-				var divi=$("#divi").val();
-				$.ajax({
-					url: "$link"+'/'+divi,
-					success: function(msg){
-						$("#td_depto").html(msg);								
-					}
-				});
-									//alert(divi);
-			} 
-		</script>
-script;
-*/
 
 		if($edit->on_success()){
 			$rt=array(
