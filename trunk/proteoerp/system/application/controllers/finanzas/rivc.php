@@ -115,7 +115,6 @@ class Rivc extends Controller {
 			} else {
 				$.prompt("<h1>Por favor Seleccione un registro</h1>");
 			}
-
 		};';
 
 		$bodyscript .= '
