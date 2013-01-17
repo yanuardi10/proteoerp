@@ -89,9 +89,9 @@ echo $form_begin
 		<table>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->profes->label  ?></td>
-				<td class="littletablerow"  ><?php echo $form->profes->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->profes->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->email->label  ?></td>
-				<td class="littletablerow"  ><?php echo $form->email->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->email->output ?></td>
 			</tr> 
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->divi->label      ?></td>
@@ -103,21 +103,21 @@ echo $form_begin
 				<td class="littletableheaderc"><?php echo $form->depa->label  ?></td>
 				<td class="littletablerow" id='td_depto'><?php echo $form->depa->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->cargo->label  ?></td>
-				<td class="littletablerow"><?php echo $form->cargo->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->cargo->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->contrato->label  ?></td>
-				<td class="littletablerow"><?php echo $form->contrato->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->contrato->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->vencimiento->label  ?></td>
-				<td class="littletablerow"><?php echo $form->vencimiento->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->vencimiento->output ?></td>
 			</tr>
 			<tr>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->enlace->label  ?></td>
-				<td class="littletablerow"><?php echo $form->enlace->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->sso->label  ?></td>
-				<td class="littletablerow"><?php echo $form->sso->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->enlace->output ?></td>
+				<td class="littletableheaderc"></td>
+				<td class="littletablerow"    ></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->ingreso->label  ?></td>
@@ -127,27 +127,27 @@ echo $form_begin
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->tipo->label  ?></td>
-				<td class="littletablerow"><?php echo $form->tipo->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->tipo->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->sueldo->label ?></td>
-				<td class="littletablerow"><?php echo $form->sueldo->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->sueldo->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->dialib->label  ?></td>
-				<td class="littletablerow"><?php echo $form->dialib->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->dialib->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->dialab->label  ?></td>
-				<td class="littletablerow"><?php echo $form->dialab->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->dialab->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->status->label  ?></td>
-				<td class="littletablerow"><?php echo $form->status->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->status->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->carnet->label  ?></td>
-				<td class="littletablerow"><?php echo $form->carnet->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->carnet->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->tipocuent->label  ?></td>
-				<td class="littletablerow"><?php echo $form->tipocuent->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->tipocuent->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->cuentab->label  ?></td>
-				<td class="littletablerow"><?php echo $form->cuentab->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->cuentab->output ?></td>
 			</tr>
 		</table>
 		</fieldset>
