@@ -768,7 +768,7 @@ function sfpatipo(id){
 				<td class="littletablerow">       <?php echo $form->$banco->output     ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$monto->output ?></td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletablerow"><a href=# onclick="del_sfpa(<?php echo $i; ?>);return false;"><?php echo img('images/delete.jpg'); ?></a></td></tr>
+					<td class="littletablerow"><a href=# onclick="del_sfpa(<?php echo $i; ?>);return false;"><?php echo img('images/delete.jpg'); ?></a></td>
 				<?php } ?>
 			</tr>
 			<?php } ?>
