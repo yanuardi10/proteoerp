@@ -11,7 +11,22 @@ else:
 if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
 
 echo $form_scripts;
-echo $form_begin?>
+echo $form_begin
+?>
+<script type="text/javascript" charset="utf-8">
+	function get_depto(){
+		var divi=$("#divi").val();
+		$.ajax({
+			url: "<?php echo site_url('nomina/pers/depto'); ?>"+'/'+divi,
+			success: function(msg){
+				$("#td_depto").html(msg);								
+			}
+		});
+							//alert(divi);
+	} 
+</script>
+
+
 <table width="100%">
 	<tr>
 		<td>

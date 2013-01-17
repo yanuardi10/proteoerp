@@ -13,11 +13,11 @@ class Pers extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('pers','id') ) {
+		if ( !$this->datasis->iscampo('pers','id') ) {
 			$this->db->simple_query('ALTER TABLE pers DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE pers ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE pers ADD UNIQUE INDEX codigo (codigo)');
 			$this->db->simple_query('ALTER TABLE pers ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
+		};
 		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -1035,8 +1035,9 @@ class Pers extends Controller {
 	//
 	function dataedit(){
 		
-		$this->rapyd->load("dataedit2");
+		$this->rapyd->load("dataedit");
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
+
 		$script ='
 		function consulrif(){
 				vrif=$("#rif").val();
@@ -1050,7 +1051,7 @@ class Pers extends Controller {
 		}
 		';	
 				
-		$edit = new DataEdit2("Personal", "pers");
+		$edit = new DataEdit("Personal", "pers");
 		//$edit->back_url = site_url("nomina/pers/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
@@ -1228,14 +1229,15 @@ class Pers extends Controller {
 		$edit->depa = new dropdownField("Departamento", "depto");
 		$edit->depa->style ="width:200px;";
 		$edit->depa->option("","");
-		if($edit->_status=='modify' || $edit->_status=='show' ){
+
+		//if($edit->_status=='modify' || $edit->_status=='show' ){
 		$divi=$edit->getval('divi');
 			if($divi!==FALSE){
 				$edit->depa->options("SELECT departa,depadesc FROM depa where division='$divi' ORDER BY division");
 			}else{
-				$edit->depa->option("Seleccione un Division");
+				$edit->depa->option("","Seleccione un Division");
 			}
-		}
+		//}
 		$edit->depa->group = "Relaci&oacute;n Laboral";	
 		
 		$edit->contrato = new dropdownField("Contrato","contrato");
@@ -1249,13 +1251,11 @@ class Pers extends Controller {
 		$edit->vencimiento->group = "Relaci&oacute;n Laboral";
 		$edit->vencimiento->rule="trim|chfecha";
 		
-		$edit->cargo = new inputField("Cargo", "cargo");
+		$edit->cargo = new dropdownField("Cargo", "cargo");
+		$edit->cargo->style ="width:200px;";
 		$edit->cargo->group = "Relaci&oacute;n Laboral";
-		$edit->cargo->size =11;
-		$edit->cargo->maxlength=8;
-		$edit->cargo->append($boton1);
-		$edit->cargo->rule="trim";                                   
-		
+		$edit->cargo->options("SELECT cargo, CONCAT(descrip, ' ', cargo) descrip FROM carg ORDER BY cargo");
+	
 		$edit->enlace = new inputField("Enlace","enlace");
 		$edit->enlace->size =11;
 		$edit->enlace->maxlength=5;
@@ -1430,7 +1430,7 @@ class Pers extends Controller {
 		    
 		//$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
-		
+/*		
 		$link=site_url('nomina/pers/depto');
 	$data['script']  =<<<script
 		<script type="text/javascript" charset="utf-8">
@@ -1446,9 +1446,22 @@ class Pers extends Controller {
 			} 
 		</script>
 script;
+*/
 
-		$conten["form"]  =& $edit;
-		$this->load->view('view_pers', $conten);
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+			echo json_encode($rt);
+		}else{
+			$conten["form"]  =& $edit;
+			$this->load->view('view_pers', $conten);
+		}
+
+
+
 		//$data['content'] = $this->load->view('view_pers', $conten,true);
 		//$data['content'] = $edit->output; 
 		//$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
@@ -1461,7 +1474,7 @@ script;
 		$this->rapyd->load("fields");
 		$depa = new dropdownField("Departamento", "depto");
 		$depa->status = "modify";
-		$depa->style ="width:400px;";
+		$depa->style ="width:200px;";
 		//echo 'de nuevo:'.$tipoa;
 		if ($divi!==false){
 			$depa->options("SELECT departa,depadesc FROM depa where division='$divi' ORDER BY division");			
