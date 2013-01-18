@@ -1,8 +1,8 @@
 <?php
 class Lprod extends Controller {
 	var $mModulo = 'LPROD';
-	var $titp    = 'Orden de producci&oacute;n de lacteos';
-	var $tits    = 'Orden de producci&oacute;n de lacteos';
+	var $titp    = 'Orden de producci&oacute;n de derivados lacteos';
+	var $tits    = 'Orden de producci&oacute;n de derivados lacteos';
 	var $url     = 'leche/lprod/';
 
 	function Lprod(){
@@ -228,15 +228,28 @@ class Lprod extends Controller {
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 60,
 			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'editoptions'   => '{ size:5, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 
 		));
 
 
-		$grid->addField('nombre');
-		$grid->label('Nombre');
+		$grid->addField('descrip');
+		$grid->label('Descripci&oacute;n');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'left'",
+			'edittype'      => "'text'",
+			'width'         => 200,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:20, maxlength: 20, dataInit: function (elem) { $(elem).numeric(); }  }',
+		));
+
+
+		$grid->addField('litros');
+		$grid->label('Litros');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -246,7 +259,6 @@ class Lprod extends Controller {
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 		));
-
 
 		$grid->addField('inventario');
 		$grid->label('Inventario');
@@ -463,10 +475,11 @@ class Lprod extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
+			'align'         => "'right'",
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:50, maxlength: 50 }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 		));
 
 

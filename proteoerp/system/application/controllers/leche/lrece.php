@@ -1693,6 +1693,7 @@ class Lrece extends Controller {
 			PRIMARY KEY (`id`),
 			KEY `fecha` (`fecha`)
 			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Recepcion de Leche'";
+			$this->db->simple_query($mSQL);
 		}
 
 		if(!$this->db->table_exists('itlrece')){
@@ -1717,6 +1718,7 @@ class Lrece extends Controller {
 			KEY `id_lrece` (`id_lrece`),
 			KEY `id_lvaca` (`id_lvaca`)
 			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Detalle Recepcion de Leche'";
+			$this->db->simple_query($mSQL);
 		}
 	}
 }

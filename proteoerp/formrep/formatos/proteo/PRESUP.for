@@ -1,10 +1,11 @@
 <?php
-$maxlin=20; //Maximo de lineas de items.
+$maxlin=39; //Maximo de lineas de items.
 
 if(count($parametros)==0) show_error('Faltan parametros');
-$numero = $parametros[0];
+$id = $parametros[0];
+$dbid=$this->db->escape($id);
 
-$mSQL_1 = $this->db->query("SELECT fecha,numero,cod_cli,rifci,peso,CONCAT_WS(' ',direc,dire1) AS direccion,nombre,iva,totalg,totals FROM spre  WHERE numero='$numero'");
+$mSQL_1 = $this->db->query("SELECT fecha,numero,cod_cli,rifci,peso,CONCAT_WS(' ',direc,dire1) AS direccion,nombre,iva,totalg,totals FROM spre  WHERE id=$dbid");
 if($mSQL_1->num_rows()==0) show_error('Registro no encontrado');
 $row = $mSQL_1->row();
 
@@ -66,7 +67,7 @@ $encabezado = <<<encabezado
 	<table style="width: 100%;" class="header">
 		<tr>
 			<td><h1 style="text-align: left">Presupuesto</h1></td>
-			<td><h1 style="text-align: right">Número: ${numero}</h1></td>
+			<td><h1 style="text-align: right">N&uacute;mero: ${numero}</h1></td>
 		</tr><tr>
 			<td>Cliente:<b>${cod_cli}</b></td>
 			<td>Fecha:  <b>${fecha}</b></td>
@@ -74,7 +75,7 @@ $encabezado = <<<encabezado
 			<td>Nombre: <b>${nombre}</b></td>
 			<td>Rif/CI: <b>${rifci}</b></td>
 		</tr><tr>
-			<td>Dirección: <b>${direccion}</b></td>
+			<td>Direcci&oacute;n: <b>${direccion}</b></td>
 			<td>Peso:      <b>${peso}</b></td>
 		</tr>
 	</table>
@@ -88,11 +89,11 @@ $encabezado_tabla=<<<encabezado_tabla
 	<table class="change_order_items">
 		<thead>
 			<tr>
-				<th>Código</th>
-				<th>Descripción</th>
-				<th>Cantidad</th>
-				<th>Precio</th>
-				<th>Importe</th>
+				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >C&oacute;digo</th>
+				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >DescripciÃ³n</th>
+				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >Cantidad</th>
+				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >Precio</th>
+				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >Importe</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -104,7 +105,8 @@ encabezado_tabla;
 //************************
 $pie_final=<<<piefinal
 		</tbody>
-		<tfoot>
+
+		<tfoot style='border:1px solid;background:#EEEEEE;'>
 			<tr>
 				<td colspan="2" style="text-align: right;"></td>
 				<td colspan="2" style="text-align: right;"><b>SUB-TOTAL:</b></td>
@@ -113,7 +115,7 @@ $pie_final=<<<piefinal
 				<td colspan="2" style="text-align: right;"></td>
 				<td colspan="2" style="text-align: right;"><b>IMPUESTO:</b></td>
 				<td class="change_order_total_col"><b>${impuesto}</b></td>
-			</tr><tr>
+			</tr><tr  style='border-top: 1px solid;background:#AAAAAA;'>
 				<td colspan="2" style="text-align: right;"></td>
 				<td colspan="2" style="text-align: right;"><b>TOTAL:</b></td>
 				<td class="change_order_total_col"><b>${gtotal}</b></td>
@@ -206,3 +208,4 @@ echo $pie_final;
 ?>
 </body>
 </html>
+

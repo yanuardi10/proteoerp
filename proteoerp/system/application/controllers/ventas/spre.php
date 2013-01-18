@@ -1,4 +1,4 @@
-<?php 
+<?php
 class Spre extends Controller {
 	var $mModulo = 'SPRE';
 	var $titp    = 'Presupuestos';
@@ -42,12 +42,6 @@ class Spre extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"precierre","img"=>"images/dinero.png", "alt" => 'Cierre de Caja',"label"=>"Cierre de Caja"));
-		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
-		if($fiscal=='S'){
-			$grid->wbotonadd(array("id"=>"bcierrex","img"=>"assets/default/images/print.png", "alt" => 'Imprimir Cierre X',"label"=>"Cierre X"));
-			$grid->wbotonadd(array("id"=>"bcierrez","img"=>"assets/default/images/print.png", "alt" => 'Imprimir Cierre Z',"label"=>"Cierre Z"));
-		}
 
 		$WestPanel = $grid->deploywestp();
 
@@ -83,6 +77,15 @@ class Spre extends Controller {
 	//***************************
 	function bodyscript( $grid0, $grid1 ){
 		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#boton1").click(function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('formatos/ver/PRESUP').'/\'+id+\'/id\'').';
+			} else { $.prompt("<h1>Por favor Seleccione un Presupuesto</h1>");}
+		});';
 
 		$bodyscript .= '
 		function spreadd() {
@@ -124,29 +127,36 @@ class Spre extends Controller {
 		$("#fedita").dialog({
 			autoOpen: false, height: 550, width: 800, modal: true,
 			buttons: {
-			"Guardar": function() {
-				var bValid = true;
-				var murl = $("#df1").attr("action");
-				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST", dataType: "html", async: false,
-					url: murl,
-					data: $("#df1").serialize(),
-					success: function(r,s,x){
-						if ( r.length == 0 ) {
-							apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/SPRE').'/\'+res.id+\'/id\'').';
-							return true;
-						} else { 
-							$("#fedita").html(r);
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							if ( r.length == 0 ) {
+								apprise("Registro Guardado");
+								$( "#fedita" ).dialog( "close" );
+								grid.trigger("reloadGrid");
+								'.$this->datasis->jwinopen(site_url('formatos/ver/SPRE').'/\'+res.id+\'/id\'').';
+								return true;
+							} else {
+								$("#fedita").html(r);
+							}
 						}
-					}
-			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
+					})
+				},
+				"Cancelar": function() {
+					$("#fedita").html("");
+					$( this ).dialog( "close" );
+				}
 			},
-			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			close: function() {
+				$("#fedita").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
 		});';
 		$bodyscript .= '});'."\n";
 
