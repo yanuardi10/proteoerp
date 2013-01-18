@@ -282,6 +282,7 @@ class Ajax extends Controller {
 			$retArray = $retorno = array();
 			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.codigo) AS codigo
 				FROM lruta AS a
+				JOIN lrece AS b ON a.codigo=b.ruta AND b.fecha=CURDATE()
 				WHERE (a.codigo LIKE ${qdb} OR a.nombre LIKE ${qdb})
 				ORDER BY a.nombre LIMIT ".$this->autolimit;
 			$query = $this->db->query($mSQL);
