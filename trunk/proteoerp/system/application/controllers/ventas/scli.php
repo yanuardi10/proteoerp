@@ -479,7 +479,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		// Busca el RIF en el SENIAT
 		$funciones = '
 		$("#tiva").change(function () { anomfis(); }).change();
-		//$(":input").enter2tab();
 		$("#maintabcontainer").tabs();
 		';
 
