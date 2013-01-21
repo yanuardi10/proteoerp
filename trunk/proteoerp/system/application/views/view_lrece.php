@@ -55,12 +55,6 @@ $mod=true;
 		$it_nombre       = "itnombre_${i}";
 		
 		echo $form->$it_lista->output.$form->$it_id->output.$form->$it_id_lvaca->output.$form->$it_nombre->output.$form->$it_vaquera->output;
-/*
-		<th align="center">Densidad</th>
-		<td class="littletablerow" align="center">
-			<?php echo $form->$it_densidad->output; ?>
-		</td>
-*/
 
 ?>
 

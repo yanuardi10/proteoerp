@@ -9,7 +9,7 @@ class Pers extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+		$this->datasis->modulo_nombre( 'PERS', $ventana=0 );
 	}
 
 	function index(){
@@ -39,49 +39,20 @@ class Pers extends Controller {
 		$grid->wbotonadd(array("id"=>"a1", "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Imprimir"));
 		$WestPanel = $grid->deploywestp();
 
-/*
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
-
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
-';
-
-*/
-
-
 		$adic = array(
 		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
-
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('PERS', 'JQ');
-		$param['otros']    = $this->datasis->otros('PERS', 'JQ');
-		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['listados']   = $this->datasis->listados('PERS', 'JQ');
+		$param['otros']      = $this->datasis->otros('PERS', 'JQ');
+		$param['temas']      = array('proteo','darkness','anexos1');
 		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
+		$param['tabs']       = false;
+		$param['encabeza']   = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
 	}
 
@@ -1206,10 +1177,18 @@ class Pers extends Controller {
 		$edit->profes->options("SELECT codigo,profesion FROM prof ORDER BY profesion");
 		$edit->profes->style = "width:200px;";
 		
-		$edit->nacimi = new DateOnlyField("Nacimiento", "nacimi","d/m/Y");
+		$edit->nacimi = new DateonlyField("Nacimiento", "nacimi","d/m/Y");
+		//$edit->nacimi->insertValue = date('Y-m-d');
+		$edit->nacimi->size = 10;
+		$edit->nacimi->rule ='required';
+		$edit->nacimi->calendar=false;
+
+/*
+
 		$edit->nacimi->size = 12;
 		$edit->nacimi->group = "Datos del Trabajador"; 
 		$edit->nacimi->rule="trim|chfecha";
+*/
 		
 		$edit->sucursal = new dropdownField("Sucursal", "sucursal");
 		$edit->sucursal->style ="width:120px;";
@@ -1247,10 +1226,11 @@ class Pers extends Controller {
 		$edit->contrato->options("SELECT codigo,CONCAT('',codigo,nombre)as nombre FROM noco ORDER BY codigo");
 		$edit->contrato->group = "Relaci&oacute;n Laboral";
 		
-		$edit->vencimiento = new DateField("Vencimiento", "vence","d/m/Y");
+		$edit->vencimiento = new DateonlyField("Vencimiento", "vence","d/m/Y");
 		$edit->vencimiento->size = 12;
 		$edit->vencimiento->group = "Relaci&oacute;n Laboral";
 		$edit->vencimiento->rule="trim|chfecha";
+		$edit->vencimiento->calendar = false;
 		
 		$edit->cargo = new dropdownField("Cargo", "cargo");
 		$edit->cargo->style ="width:200px;";
@@ -1277,18 +1257,20 @@ class Pers extends Controller {
 		$edit->observa->rows =3;
 		$edit->observa->group = "Relaci&oacute;n Laboral"; 
 		
-		$edit->ingreso = new DateField("Fecha de Ingreso", "ingreso","d/m/Y");
+		$edit->ingreso = new DateonlyField("Fecha de Ingreso", "ingreso","d/m/Y");
 		$edit->ingreso->size = 12;
 		$edit->ingreso->group = "Relaci&oacute;n Laboral";
 		$edit->ingreso->rule="trim|chfecha";
+		$edit->ingreso->calendar = false;
 		
 		$edit->label2 = new freeField("Edo. C","edoci","<id class='littletableheader'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fecha de Retiro&nbsp;&nbsp; </id>");
 		$edit->label2->in = "ingreso";
 		
-		$edit->retiro =  new DateField("Fecha de Retiro", "retiro","d/m/Y");    
+		$edit->retiro =  new DateonlyField("Fecha de Retiro", "retiro","d/m/Y");    
 		$edit->retiro->size = 12;
 		$edit->retiro->in = "ingreso";
 		$edit->retiro->rule="trim|chfecha";
+		$edit->retiro->calendar = false;
 		
 		//$edit->trabaja = new dropdownField("Tipo de Trabajador","tipot");
 		//$edit->trabaja->option("","");
@@ -1385,44 +1367,53 @@ class Pers extends Controller {
 		$edit->cuentab->group = "Datos Cuenta Bancaria";
 		$edit->cuentab->size =20;
 		$edit->cuentab->maxlength=40;
+
+
+		$vari1 = $this->datasis->traevalor('NOMVARI1');
+		$vari2 = $this->datasis->traevalor('NOMVARI2');
+		$vari3 = $this->datasis->traevalor('NOMVARI3');
+		$vari4 = $this->datasis->traevalor('NOMVARI4');
+		$vari5 = $this->datasis->traevalor('NOMVARI5');
+		$vari6 = $this->datasis->traevalor('NOMVARI6');
+
 		
-		$edit->vari1 = new inputField("Retenci&oacute;n SSO", "vari1");
+		$edit->vari1 = new inputField($vari1, "vari1");
 		$edit->vari1->group = "Variables";
-		$edit->vari1->size =16;
+		$edit->vari1->size =8;
 		$edit->vari1->maxlength=14;
 		$edit->vari1->rule="trim|numeric";
 		$edit->vari1->css_class='inputnum';
 		
-		$edit->vari2 = new inputField("Retenci&oacute;n FAOV", "vari2");
+		$edit->vari2 = new inputField($vari2, "vari2");
 		$edit->vari2->group = "Variables";
-		$edit->vari2->size =16;
+		$edit->vari2->size =8;
 		$edit->vari2->maxlength=14;
 		$edit->vari2->rule="trim|numeric";
 		$edit->vari2->css_class='inputnum';
 		
-		$edit->vari3 = new inputField("Retenci&oacute;n ISLR", "vari3");
+		$edit->vari3 = new inputField($vari3, "vari3");
 		$edit->vari3->group = "Variables";
-		$edit->vari3->size =16;
+		$edit->vari3->size =8;
 		$edit->vari3->maxlength=14;
 		$edit->vari3->rule="trim|numeric";
 		$edit->vari3->css_class='inputnum';
 		        
-		$edit->vari4 = new inputField("Variable 4", "vari4");
+		$edit->vari4 = new inputField($vari4, "vari4");
 		$edit->vari4->group = "Variables";
-		$edit->vari4->size =12;
+		$edit->vari4->size =8;
 		$edit->vari4->maxlength=11;
 		$edit->vari4->rule="trim|numeric";
 		$edit->vari4->css_class='inputnum';
 		      
-		$edit->vari5 = new DateField("Variable 5", "vari5");
+		$edit->vari5 = new DateField($vari5, "vari5");
 		$edit->vari5->group = "Variables";
-		$edit->vari5->size =12;
+		$edit->vari5->size =8;
 		$edit->vari5->maxlength=12;
 		$edit->vari5->rule="trim|chfecha";
 		
-		$edit->vari6 = new inputField("Variable 6", "vari6");
+		$edit->vari6 = new inputField($vari6, "vari6");
 		$edit->vari6->group = "Variables";
-		$edit->vari6->size =16;
+		$edit->vari6->size =8;
 		$edit->vari6->maxlength=14;
 		$edit->vari6->rule="trim|numeric";
 		$edit->vari6->css_class='inputnum';
@@ -1510,7 +1501,7 @@ class Pers extends Controller {
 	
 	function instalar(){
 		if ( !$this->datasis->iscampo('pers','email') )
-			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `email` VARCHAR(50) NULL");
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `email` VARCHAR(100) NULL");
 
 		if ( !$this->datasis->iscampo('pers','tipoe') )
 			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `tipoe` VARCHAR(10)");

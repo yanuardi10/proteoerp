@@ -34,13 +34,15 @@ class gser extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
+		$grid->setHeight('265');
 		$param['grids'][] = $grid->deploy();
 
 		$grid1   = $this->defgridit();
+		$grid->setHeight('170');
 		$param['grids'][] = $grid1->deploy();
 
 		// Configura los Paneles
-		$readyLayout = $grid->readyLayout2( 212, 200, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
 
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );

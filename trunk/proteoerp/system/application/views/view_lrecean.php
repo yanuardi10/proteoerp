@@ -13,37 +13,64 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 $(function(){
 	calconeto();
 	calcolitro();
+	descuagua()
 });
 
 function calcolitro(){
+	var lleno=<?php echo $form->lleno->value ?>;
 	var densidad=Number($("#densidad").val());
 	var neto    =Number($("#neto").val());
+	var vacio=Number($("#vacio").val());
 
 	if ( densidad == '' ) {
-		densidad = 1.032;
-		$('#densidad').val(1.032);
-		$('#densidad_val').val(1.032);
+		densidad = 1.016;
+		$('#densidad').val(1.016);
+		$('#densidad_val').val(1.016);
 	}
-	
-	$('#litros').val(neto/densidad);
-	$('#litros_val').text(nformat(neto/densidad,2));
+
+	if ( vacio == 0 ) {
+		$('#litros').val(neto);
+		$('#litros_val').text(nformat(neto,2));
+	} else {
+		$('#litros').val(neto/densidad);
+		$('#litros_val').text(nformat(neto/densidad,2));
+	}
 }
 
 function calconeto(){
 	var lleno=<?php echo $form->lleno->value ?>;
 	var vacio=Number($("#vacio").val());
 	var densidad=Number($("#densidad").val());
+	var neto = 0;
+	
+	neto = lleno-vacio;
 
-	if ( densidad == '' ) densidad = 1.032;
+	if ( densidad == '' ) densidad = 1.016;
 
 	$('#neto').val(lleno-vacio);
 	$('#neto_val').text(nformat(lleno-vacio,2));
 
-	$('#litros').val((lleno-vacio)/densidad);
-	$('#litros_val').text(nformat((lleno-vacio)/densidad,2));
-
+	if ( vacio == 0 ) {
+		$('#litros').val(neto);
+		$('#litros_val').text(nformat(neto,2));
+	} else {
+		$('#litros').val(neto/densidad);
+		$('#litros_val').text(nformat(neto/densidad,2));
+	}
 }
 
+function descuagua(){
+	var h2o  = Number($("#h2o").val());
+	var neto = Number($("#neto").val());
+
+	if ( h2o == '' ){
+		h2o = 0;
+	}
+
+	$('#dtoagua').val(neto*h2o/100);
+	$('#dtoagua_val').text(nformat(neto*h2o/100,2));
+
+}
 </script>
 <table width='100%' style='font-size:11pt;background:#F2E69D;'>
 	<tr>
