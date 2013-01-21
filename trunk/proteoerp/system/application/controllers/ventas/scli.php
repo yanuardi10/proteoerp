@@ -969,7 +969,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
-/*
+
 		$grid->addField('socio');
 		$grid->label('Socio');
 		$grid->params(array(
@@ -981,7 +981,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			'editoptions'   => '{ size:5, maxlength: 5 }',
 		));
 
-		$grid->addField('dire21');
+		/*$grid->addField('dire21');
 		$grid->label('Dire21');
 		$grid->params(array(
 			'search'        => 'true',
