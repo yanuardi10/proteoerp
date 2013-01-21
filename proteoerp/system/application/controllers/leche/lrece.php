@@ -1021,6 +1021,9 @@ class Lrece extends Controller {
 			$(".inputnum").numeric(".");
 		});';
 
+		$script= '';
+
+
 		$edit = new DataEdit('', 'lrece');
 
 		$edit->script($script,'modify');
@@ -1120,6 +1123,7 @@ class Lrece extends Controller {
 		$edit->h2o->css_class='inputnum';
 		$edit->h2o->size =7;
 		$edit->h2o->maxlength =10;
+		$edit->h2o->onkeyup = 'descuagua()';
 
 		$edit->temp = new inputField('Temperatura','temp');
 		$edit->temp->rule='max_length[10]|numeric|required';
@@ -1333,6 +1337,7 @@ class Lrece extends Controller {
 		$edit->h2o->css_class='inputnum';
 		$edit->h2o->size =12;
 		$edit->h2o->maxlength =10;
+		$edit->h2o->insertValue="0";
 
 		$edit->temp = new inputField('Temperatura','temp');
 		$edit->temp->rule='max_length[10]|numeric';
@@ -1375,6 +1380,7 @@ class Lrece extends Controller {
 		$edit->dtoagua->css_class='inputnum';
 		$edit->dtoagua->size =12;
 		$edit->dtoagua->maxlength =10;
+		$edit->dtoagua->mode = 'autohide';
 
 		//Inicio del detalle
 		$edit->itid = new hiddenField('','id_<#i#>');

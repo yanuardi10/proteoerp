@@ -14,6 +14,15 @@ echo $form_scripts;
 echo $form_begin
 ?>
 <script type="text/javascript" charset="utf-8">
+	$("#nacimi").datepicker({   dateFormat: "dd/mm/yy" });
+	$("#vence").datepicker({   dateFormat: "dd/mm/yy" });
+	$("#ingreso").datepicker({ dateFormat: "dd/mm/yy" });
+	$("#retiro").datepicker({ dateFormat: "dd/mm/yy" });
+	$("#vari5").datepicker({ dateFormat: "dd/mm/yy" });
+
+	$("#maintabcontainer").tabs();
+
+	
 	function get_depto(){
 		var divi=$("#divi").val();
 		$.ajax({
@@ -22,14 +31,10 @@ echo $form_begin
 				$("#td_depto").html(msg);								
 			}
 		});
-							//alert(divi);
 	} 
 </script>
 
 
-<table width="100%">
-	<tr>
-		<td>
 		<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 		<legend class="subtitulotabla" >Datos del Trabajador </legend>
 		<table width='100%'  border='0'>
@@ -51,47 +56,55 @@ echo $form_begin
 				<td class="littletableheaderc"><?php echo $form->telefono->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->telefono->output ?></td>
 			</tr>
+			<tr>
+				<td class="littletableheaderc"><?php echo $form->contrato->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->contrato->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->vencimiento->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->vencimiento->output ?></td>
+			</tr>
+			<tr>
+				<td class="littletableheaderc"><?php echo $form->tipo->label    ?></td>
+				<td class="littletablerow"    ><?php echo $form->tipo->output   ?></td>
+				<td class="littletableheaderc"><?php echo $form->sueldo->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->sueldo->output ?></td>
+			</tr>
 		</table>
 		</fieldset>
-		</td>
-	</tr>
-	<tr>
-		<td>
-		<fieldset>
-		<legend class="subtitulotabla" >Relaci&oacute;n Laboral </legend>
-		<table>
+		
+<div id="maintabcontainer">
+	<ul>
+		<li><a href="#tab1">Relaci&oacute;n Laboral</a></li>
+		<li><a href="#tab2">Valores</a></li>
+		<li><a href="#tab3">Horarios</a></li>
+		<li><a href="#tab4">Variables</a></li>
+	</ul>
+	<div id="tab1" style='background:#EEFFFF'>
+		
+		<fieldset style='border: 1px outset #8A0808;'>
+		<table width='100%'>
 			<tr>
-				<td class="littletableheaderc"><?php echo $form->civil->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->civil->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->civil->label   ?></td>
+				<td class="littletablerow"    ><?php echo $form->civil->output  ?></td>
 				<td class="littletableheaderc"><?php echo $form->direc1->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->direc1->output ?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?php echo $form->nacimi->label    ?></td>
-				<td class="littletablerow"    ><?php echo $form->nacimi->output   ?></td>
+				<td class="littletableheaderc"><?php echo $form->nacimi->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->nacimi->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->direc2->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->direc2->output ?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?php echo $form->sexo->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->sexo->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->direc3->label    ?></td>
-				<td class="littletablerow"    ><?php echo $form->direc3->output   ?></td>
+				<td class="littletableheaderc"><?php echo $form->sexo->label    ?></td>
+				<td class="littletablerow"    ><?php echo $form->sexo->output   ?></td>
+				<td class="littletableheaderc"><?php echo $form->direc3->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->direc3->output ?></td>
 			</tr>
-		</table>
-		</fieldset>
-		</td>
-	</tr>
-	<tr>
-		<td>
-		<fieldset>
-		<legend class="subtitulotabla" >Relaci&oacute;n Laboral </legend>
-		<table>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->profes->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->profes->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->email->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->email->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->email->label   ?></td>
+				<td class="littletablerow"    ><?php echo $form->email->output  ?></td>
 			</tr> 
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->divi->label      ?></td>
@@ -100,19 +113,18 @@ echo $form_begin
 				<td class="littletablerow"    ><?php echo $form->sucursal->output ?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?php echo $form->depa->label  ?></td>
+				<td class="littletableheaderc"><?php echo $form->depa->label   ?></td>
 				<td class="littletablerow" id='td_depto'><?php echo $form->depa->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->cargo->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->cargo->output ?></td>
 			</tr>
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->contrato->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->contrato->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->vencimiento->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->vencimiento->output ?></td>
-			</tr>
-			<tr>
-			</tr>
+		</table>
+		</fieldset>
+	</div>
+
+	<div id="tab2" style='background:#EEFFFF'>
+		<fieldset style='border: 1px outset #8A0808;'>
+		<table width='100%'>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->enlace->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->enlace->output ?></td>
@@ -124,12 +136,6 @@ echo $form_begin
 				<td class="littletablerow"    ><?php echo $form->ingreso->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->retiro->label   ?></td>
 				<td class="littletablerow"    ><?php echo $form->retiro->output  ?></td>
-			</tr>
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->tipo->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->tipo->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->sueldo->label ?></td>
-				<td class="littletablerow"    ><?php echo $form->sueldo->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->dialib->label  ?></td>
@@ -146,70 +152,66 @@ echo $form_begin
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->tipocuent->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->tipocuent->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->cuentab->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->cuentab->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->cuentab->label    ?></td>
+				<td class="littletablerow"    ><?php echo $form->cuentab->output   ?></td>
 			</tr>
 		</table>
 		</fieldset>
-		</td>
-	</tr>
+	</div>
+	<div id="tab3" style='background:#EEFFFF'>
 
-	<tr>
-		<td>
-		<fieldset>
-		<legend class="subtitulotabla" >Horarios</legend>
+
+		<fieldset style='border: 1px outset #8A0808;'>
 		<table width='100%' border='0' >
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->turno->label  ?></td>
-				<td class="littletablerow"><?php echo $form->turno->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->turno->output ?></td>
 				<td class="littletableheaderc">&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
+				<td class="littletablerow"    >&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->horame->label.' Desde'  ?></td>
-				<td class="littletablerow"><?php echo $form->horame->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->horame->output ?></td>
 				<td class="littletableheaderc"><?php echo 'Hasta'  ?></td>
-				<td class="littletablerow"><?php echo $form->horams->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->horams->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->horate->label.' Desde'  ?></td>
-				<td class="littletablerow"><?php echo $form->horate->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->horate->output ?></td>
 				<td class="littletableheaderc"><?php echo 'Hasta' ?></td>
-				<td class="littletablerow"><?php echo $form->horats->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->horats->output ?></td>
 			</tr>
 		</table>
 		</fieldset>
-		</td>
-	</tr>
-	<tr>
-		<td>
-		<fieldset>
-		<legend class="subtitulotabla" >Variables </legend>
+
+	</div>
+	<div id="tab4" style='background:#EEFFFF'>
+
+		<fieldset style='border: 1px outset #8A0808;'>
 		<table width='100%' border='0' >
 			<tr>
-				<td class="littletableheaderc"><?php echo $form->vari1->label ?></td>
-				<td class="littletablerow"><?php echo $form->vari1->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->vari2->label ?></td>
-				<td class="littletablerow"><?php echo $form->vari2->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->vari1->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->vari1->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->vari2->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->vari2->output ?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?php echo $form->vari3->label ?></td>
-				<td class="littletablerow"><?php echo $form->vari3->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->vari4->label ?></td>
-				<td class="littletablerow"><?php echo $form->vari4->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->vari3->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->vari3->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->vari4->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->vari4->output ?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?php echo $form->vari5->label ?></td>
-				<td class="littletablerow"><?php echo $form->vari5->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->vari6->label ?></td>
-				<td class="littletablerow"><?php echo $form->vari6->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->vari5->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->vari5->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->vari6->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->vari6->output ?></td>
 			</tr>
 		</table>
 		</fieldset>
+	</div>
+</div>
 <?php echo $form_end?>
 <?php echo $container_bl ?>
 <?php echo $container_br ?>
-		<td>
-	<tr>
-<table>
 <?php endif; ?>

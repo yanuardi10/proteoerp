@@ -1301,7 +1301,7 @@ class Scst extends Controller {
 		$grid     = $this->jqdatagrid;
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE   = $grid->geneTopWhere('scst');
-		$response = $grid->getData('scst', array(array()), array(), false, $mWHERE, '(fecha>actuali) desc, fecha', 'desc');
+		$response = $grid->getData('scst', array(array()), array(), false, $mWHERE, '(tipo_doc="XX"),  (fecha>actuali) desc, fecha', 'desc');
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}

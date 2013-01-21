@@ -1,8 +1,8 @@
 <?php
 class Lprod extends Controller {
 	var $mModulo = 'LPROD';
-	var $titp    = 'Orden de producci&oacute;n de derivados lacteos';
-	var $tits    = 'Orden de producci&oacute;n de derivados lacteos';
+	var $titp    = 'Conrol de producci&oacute;n';
+	var $tits    = 'Control de producci&oacute;n';
 	var $url     = 'leche/lprod/';
 
 	function Lprod(){
@@ -13,12 +13,9 @@ class Lprod extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('lprod','id') ) {
-			$this->db->simple_query('ALTER TABLE lprod DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE lprod ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE lprod ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
+		$this->instalar();
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		$this->datasis->creaintramenu( $data = array('modulo'=>'223','titulo'=>'Control de Produccion','mensaje'=>'Control de Produccion','panel'=>'LECHE','ejecutar'=>'leche/lprod','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
 	}
 
@@ -29,15 +26,15 @@ class Lprod extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$grid->setHeight('185');
+		$grid->setHeight('150');
 		$param['grids'][] = $grid->deploy();
 
 		$grid1   = $this->defgridit();
-		$grid1->setHeight('190');
+		$grid1->setHeight('180');
 		$param['grids'][] = $grid1->deploy();
 
 		// Configura los Paneles
-		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+		$readyLayout = $grid->readyLayout2( 212, 210, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
 
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
@@ -226,11 +223,11 @@ class Lprod extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'align'         => "'right'",
+			'align'         => "'left'",
 			'edittype'      => "'text'",
 			'width'         => 60,
 			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:5, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			//'editoptions'   => '{ size:5, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 
 		));
 
@@ -244,7 +241,7 @@ class Lprod extends Controller {
 			'edittype'      => "'text'",
 			'width'         => 200,
 			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:20, maxlength: 20, dataInit: function (elem) { $(elem).numeric(); }  }',
+			//'editoptions'   => '{ size:20, maxlength: 20, dataInit: function (elem) { $(elem).numeric(); }  }',
 		));
 
 
@@ -257,7 +254,7 @@ class Lprod extends Controller {
 			'edittype'      => "'text'",
 			'width'         => 100,
 			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			//'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 		));
 
 		$grid->addField('inventario');
@@ -353,7 +350,7 @@ class Lprod extends Controller {
 		echo $rs;
 	}
 
-	/**
+	/****************************
 	* Guarda la Informacion
 	*/
 	function setData(){
@@ -541,9 +538,9 @@ class Lprod extends Controller {
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
 
-		$edit->codigo = new inputField('C&oacute;digo','codigo');
-		$edit->codigo->rule='max_length[10]|required';
-		$edit->codigo->css_class='inputonlynum';
+		$edit->codigo = new inputField('Producto','codigo');
+		$edit->codigo->rule='required';
+		//$edit->codigo->css_class='inputonlynum';
 		$edit->codigo->size =12;
 		$edit->codigo->maxlength =10;
 
@@ -636,4 +633,45 @@ class Lprod extends Controller {
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
+
+	function instalar(){
+
+		if(!$this->db->table_exists('lprod')){
+			$mSQL = "
+			CREATE TABLE `lprod` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`codigo` VARCHAR(15) NULL DEFAULT NULL,
+				`descrip` VARCHAR(45) NULL DEFAULT NULL,
+				`litros` DECIMAL(12,2) NULL DEFAULT NULL,
+				`inventario` DECIMAL(12,2) NULL DEFAULT NULL,
+				`estampa` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+				`usuario` VARCHAR(15) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			)
+			COMMENT='Control de produccion de lacteos'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM;";
+			$this->db->simple_query($mSQL);
+		}
+
+
+		if(!$this->db->table_exists('itlprod')){
+			$mSQL = "
+			CREATE TABLE `itlprod` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`id_lprod` INT(10) NOT NULL DEFAULT '0',
+				`codrut` CHAR(4) NOT NULL DEFAULT '0',
+				`nombre` VARCHAR(50) NOT NULL DEFAULT '0',
+				`litros` DECIMAL(12,2) NOT NULL DEFAULT '0.00',
+				PRIMARY KEY (`id`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=0;";
+			$this->db->simple_query($mSQL);
+		}
+
+	}
+
 }
+?>
