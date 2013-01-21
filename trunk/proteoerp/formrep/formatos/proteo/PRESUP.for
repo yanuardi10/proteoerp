@@ -90,7 +90,7 @@ $encabezado_tabla=<<<encabezado_tabla
 		<thead>
 			<tr>
 				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >C&oacute;digo</th>
-				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >DescripciÃ³n</th>
+				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >Descripci&oacute;n</th>
 				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >Cantidad</th>
 				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >Precio</th>
 				<th style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;' >Importe</th>
@@ -208,4 +208,3 @@ echo $pie_final;
 ?>
 </body>
 </html>
-
