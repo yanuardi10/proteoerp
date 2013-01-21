@@ -1260,7 +1260,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule = 'required';
-		$edit->fecha->mode = 'autohide';
+		//$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
 		$vend=$this->secu->getvendedor();
