@@ -145,6 +145,12 @@ class Formatos extends Controller{
 		$query = $this->db->query('SELECT proteo FROM formatos WHERE nombre='.$_dbfnombre);
 		if ($query->num_rows() > 0){
 			$row = $query->row();
+			if(empty($row->proteo)){
+				$rep = $this->_crearep($nombre,'proteo');
+			}else{
+				$rep = $row->proteo;
+			}
+
 			echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
 		}
 	}
