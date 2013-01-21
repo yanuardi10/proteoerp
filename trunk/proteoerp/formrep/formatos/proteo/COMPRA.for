@@ -52,7 +52,7 @@ $encabeza = '
 		<table style="width:100%;font-size:7pt;" class="header">
 		<tr>
 			<td><h1 style="text-align: left">Compra '.$cargada.'</h1></td>
-			<td><h1 style="text-align: right">Número: '.$numero.'</h1></td>
+			<td><h1 style="text-align: right">Numero: '.$numero.'</h1></td>
 		</tr>
 	</table>
 </div>

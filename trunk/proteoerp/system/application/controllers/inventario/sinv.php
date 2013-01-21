@@ -20,6 +20,11 @@ class Sinv extends Controller {
 			$this->db->simple_query('ALTER TABLE barraspos ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
 
+		if ( !$this->datasis->iscampo('formatos','tcpdf') ) {
+			$this->db->simple_query('ALTER TABLE formatos ADD COLUMN tcpdf TEXT NULL COMMENT "Formas TCPDF"');
+		};
+
+
 		if ( !$this->datasis->iscampo('sinv','url') ) {
 			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN url VARCHAR(200) NULL COMMENT "Pagina Web"');
 		};
