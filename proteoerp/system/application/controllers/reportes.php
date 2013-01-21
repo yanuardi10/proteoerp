@@ -12,10 +12,12 @@ class Reportes extends Controller
 	}
 
 	function index(){
-		$repo =$this->uri->segment(3);
-		$data['pre']=$repo;
-		$data['titu']="Listados $repo";
-		$data['repo']=$repo;
+		$repo = $this->uri->segment(3);
+		$data['pre']  = $repo;
+		$data['titu'] = "Listados $repo ".$this->session->userdata('usuario');
+		$data['repo'] = $repo;
+		if ( $this->session->userdata('usuario')=='' )
+		    redirect('/ajax/reccierraventana');
 		$this->load->view('view_repoframe',$data);
 	}
 	function ver(){
