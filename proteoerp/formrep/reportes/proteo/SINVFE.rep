@@ -3,34 +3,44 @@ $filter = new DataForm("");
 $filter->_process_uri = $this->rapyd->uri->add_clause($base_process_uri,"search");
 
 $filter->fechad = new dateonlyField("Fecha", "fechad",'d/m/Y');
-$filter->fechad->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), date("d")-30, date("Y")));
+$filter->fechad->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), 0, date("Y")));
 $filter->fechad->rule='required';
+
+$filter->agrupado = new checkboxField('Agrupado por producto','xubica','S','N');
 
 $filter->salformat = new radiogroupField("Formato de salida","salformat");
 $filter->salformat->options($this->opciones);
 $filter->salformat->insertValue ='PDF';
 $filter->salformat->clause = '';
 
-$filter->submit("btnsubmit",RAPYD_BUTTON_SEARCH);  
+$filter->submit("btnsubmit",RAPYD_BUTTON_SEARCH);
 $filter->build_form();
- 
+
 if($this->rapyd->uri->is_set("search")  AND $filter->is_valid()){
+	$xubica=$filter->agrupado->newValue;
+	$fecha =$filter->fechad->newValue;
 
-	$fecha=$filter->fechad->newValue;
+	$mSQL  =  "SELECT ";
+	if($xubica=='N'){
+		$mSQL .= "aa.codigo,aa.descrip,bb.salcant, bb.salcant*bb.promedio AS saldo, aa.fecha,aa.ubica ";
+	}else{
+		$mSQL .= "aa.codigo,aa.descrip,SUM(bb.salcant) AS salcant, SUM(bb.salcant*bb.promedio) AS saldo, MAX(aa.fecha) AS fecha ";
+	}
+	$mSQL .= "FROM ( SELECT a.codigo, b.descrip,  MAX(a.fecha) fecha, a.ubica, ";
+	$mSQL .= "(SELECT MAX(costoint.origen) FROM costos AS costoint ";
+	$mSQL .= "WHERE a.codigo=costoint.codigo AND MAX(a.fecha)=costoint.fecha ) origen ";
+	$mSQL .= "FROM costos AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo ";
+	$mSQL .= "WHERE a.fecha<=".$filter->fechad->newValue." AND SUBSTRING(b.tipo,1,1)='A' ";
+	$mSQL .= "GROUP BY a.codigo,a.ubica ) AS aa ";
+	$mSQL .= "JOIN costos AS bb ON aa.codigo = bb.codigo AND aa.fecha=bb.fecha AND aa.origen=bb.origen AND aa.ubica=bb.ubica AND bb.salcant!=0 ";
+	if($xubica=='N'){
+		$mSQL .= "ORDER BY bb.codigo, aa.ubica";
+	}else{
+		$mSQL .= "GROUP BY bb.codigo ";
+		$mSQL .= "ORDER BY bb.codigo";
+	}
 
-	$mSQL  =  "SELECT meco.codigo, meco.descrip, costos.salcant, costos.saldo, meco.origen, meco.fecha ";
-	$mSQL .=  "FROM ( SELECT a.codigo, b.descrip,  max(a.fecha) fecha, ";
-	$mSQL .=  "(SELECT costoint.origen FROM costos AS costoint WHERE a.codigo=costoint.codigo AND MAX(a.fecha)=costoint.fecha ORDER BY costoint.origen DESC LIMIT 1 ) origen ";
-	$mSQL .=  "FROM costos AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo ";
-	$mSQL .=  "WHERE a.fecha<=".$filter->fechad->newValue." AND SUBSTRING(b.tipo,1,1)='A'  ";
-	$mSQL .=  "GROUP BY a.codigo ) meco ";
-	$mSQL .=  "JOIN costos ON meco.codigo = costos.codigo AND meco.fecha=costos.fecha AND meco.origen=costos.origen ";
-	$mSQL .=  "ORDER BY meco.codigo ";
-
-	//echo $mSQL;
-	//$this->db->query($mSQL);
-
-	//$mSQL=$this->rapyd->db->_compile_select();
+	//echo $mSQL; exit();
 
 	$pdf = new PDFReporte($mSQL);
 	$pdf->setHeadValores('TITULO1');
@@ -39,11 +49,14 @@ if($this->rapyd->uri->is_set("search")  AND $filter->is_valid()){
 	$pdf->AddPage();
 	$pdf->setTableTitu(10,'Times');
 
-	$pdf->AddCol('codigo' ,30,'CÃ³digo'     ,'L',8);
-	$pdf->AddCol('descrip',80,'DescripciÃ³n','L',8);
-	$pdf->AddCol('fecha'  ,20,'Fecha','L',8); 
-	$pdf->AddCol('salcant',30,'Cantidad'   ,'R',8);
-	$pdf->AddCol('saldo'  ,30,'Costo Total','R',8);
+	$pdf->AddCol('codigo' ,25,'Código'     ,'L',8);
+	$pdf->AddCol('descrip',75,'Descripción','L',8);
+	$pdf->AddCol('fecha'  ,20,'Fecha','L',8);
+	$pdf->AddCol('salcant',25,'Cantidad'   ,'R',8);
+	$pdf->AddCol('saldo'  ,25,'Costo Total','R',8);
+	if($xubica=='N'){
+		$pdf->AddCol('ubica'  ,20,'Almacen'    ,'L',8);
+	}
 	$pdf->setTotalizar('saldo');
 	$pdf->Table();
 	$pdf->Output();
