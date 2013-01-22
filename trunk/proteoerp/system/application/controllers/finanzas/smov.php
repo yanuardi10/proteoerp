@@ -36,11 +36,13 @@ class Smov extends Controller {
 		<script type="text/javascript">
 		jQuery("#boton1").click( function(){
 			var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
+			if(id){
 				var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('formatos/ver/SMOV/').'\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-			});
+				window.open(\''.site_url('formatos/ver/CCLIAB').'/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
+			}
+		});
 		</script>
 		';
 
@@ -710,7 +712,7 @@ class Smov extends Controller {
 				});
 			}
 		');
-		
+
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
@@ -727,9 +729,8 @@ class Smov extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
-		$grid       = $this->jqdatagrid;
+	function getdata(){
+		$grid  = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('smov');
@@ -743,8 +744,7 @@ class Smov extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -782,7 +782,7 @@ class Smov extends Controller {
 
 	function tabla() {
 		$id = $this->uri->segment($this->uri->total_segments());
-		
+
 		$row = $this->datasis->damereg("SELECT cod_cli, tipo_doc, numero, estampa, transac FROM smov WHERE id=$id");
 
 		$transac  = $row['transac'];
@@ -851,7 +851,7 @@ class Smov extends Controller {
 			FROM itrivc a JOIN rivc b ON a.idrivc=b.id WHERE a.tipo_doc=IF('$tipo_doc'='FC','F','D') AND a.numero='$numero'
 			UNION ALL
 			SELECT b.periodo, b.nrocomp, a.reiva
-			FROM itrivc a JOIN rivc b ON a.idrivc=b.id WHERE a.transac='$transac'			
+			FROM itrivc a JOIN rivc b ON a.idrivc=b.id WHERE a.transac='$transac'
 			";
 		$query = $this->db->query($mSQL);
 		if ( $query->num_rows() > 0 ){
@@ -917,7 +917,7 @@ class Smov extends Controller {
 		}
 
 		// FORMA DE PAGO SFPA
-		$mSQL = "SELECT CONCAT(a.tipo,' ', b.nombre) tipo, a.num_ref, a.banco, a.monto 
+		$mSQL = "SELECT CONCAT(a.tipo,' ', b.nombre) tipo, a.num_ref, a.banco, a.monto
 			FROM sfpa a JOIN tarjeta b ON a.tipo=b.tipo WHERE a.transac='$transac' AND a.monto<>0";
 		$query = $this->db->query($mSQL);
 		$codcli = 'XXXXXXXXXXXXXXXX';
@@ -965,7 +965,7 @@ class Smov extends Controller {
 			SELECT b.tipo tipo, b.cliente codcp, MID(b.nomcli,1,25) nombre, a.onumero, a.monto, b.numero, b.fecha
 			FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
 			WHERE b.cliente='$cod_cli' AND b.transac='$transac' ORDER BY onumero
-			"; 
+			";
 		$query = $this->db->query($mSQL);
 		$saldo = 0;
 		if ( $query->num_rows() > 0 ){
