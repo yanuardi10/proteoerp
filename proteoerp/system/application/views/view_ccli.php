@@ -177,11 +177,11 @@ echo $title;
 ?>
 <table align='center' width="100%">
 	<tr>
-		<td colspan=3><?php echo $form->numero->value.$form->cod_cli->output ?>
+		<td colspan='3'><?php echo $form->numero->value.$form->cod_cli->output ?>
 		<?php if($form->getstatus()=='show'){ ?>
-			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/CCLIAB/<?php echo raencode($form->cod_cli->value).'/'.raencode($form->tipo_doc->value).'/'.raencode($form->numero->value).'/'.raencode($form->get_from_dataobjetct('fecha')) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/CCLIAB/<?php echo raencode($form->_dataobject->pk['id']) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 			<img src='<?php echo base_url() ?>images/html_logo.gif'></a>
-			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/ver/CCLIAB/<?php echo raencode($form->cod_cli->value).'/'.raencode($form->tipo_doc->value).'/'.raencode($form->numero->value).'/'.raencode($form->get_from_dataobjetct('fecha')) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/ver/CCLIAB/<?php echo raencode($form->_dataobject->pk['id']) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 			<img src='<?php echo base_url() ?>images/pdf_logo.gif'></a>
 		<?php } ?>
 		</td>
