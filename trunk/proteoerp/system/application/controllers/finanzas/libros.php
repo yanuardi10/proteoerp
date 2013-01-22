@@ -92,7 +92,13 @@ class Libros extends Controller {
 			//alert(param);
 		}
 		</script>';
-		$conf=anchor('finanzas/libros/configurar','Configurar');
+
+		if($this->secu->essuper()){
+			$conf=anchor('finanzas/libros/configurar','Configurar');
+		}else{
+			$conf='';
+		}
+
 		$form=  form_open('/finanzas/libros');
 		$data['content'] = $form.$gene->output.form_close().$desca->output.$conf;
 		$data['title']   = heading('Generar libros Contables');
