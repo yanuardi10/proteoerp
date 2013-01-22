@@ -141,6 +141,17 @@ class ccli extends Controller {
 		$edit->monto->maxlength =17;
 		$edit->monto->type='inputhidden';
 
+		$edit->observa1 = new  textareaField('Concepto:','observa1');
+		$edit->observa1->cols = 70;
+		$edit->observa1->rows = 2;
+		$edit->observa1->style='width:100%;';
+
+		$edit->observa2 = new  textareaField('','observa2');
+		$edit->observa2->cols = 70;
+		$edit->observa2->rows = 2;
+		$edit->observa2->style='width:100%;';
+		$edit->observa2->when=array('show');
+
 		$edit->usuario = new autoUpdateField('usuario' ,$this->secu->usuario(),$this->secu->usuario());
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->hora    = new autoUpdateField('hora'    ,date('H:i:s'), date('H:i:s'));
@@ -446,6 +457,7 @@ class ccli extends Controller {
 		$cod_cli = $do->get('cod_cli');
 		$tipo_doc= $do->get('tipo_doc');
 		$fecha   = $do->get('fecha');
+		$concepto= $do->get('observa1');
 		$itabono=$sfpamonto=$ppagomonto=0;
 
 		$rrow    = $this->datasis->damerow('SELECT nombre,rifci,dire11,dire12 FROM scli WHERE cliente='.$this->db->escape($cliente));
@@ -553,10 +565,16 @@ class ccli extends Controller {
 				$do->set_rel($rel, 'reteiva' , 0, $i);
 			}
 		}
-		if(count($observa)>0){
-			$observa='PAGA '.implode(',',$observa);
-			$do->set('observa1' , substr($observa,0,50));
-			if(strlen($observa)>50) $do->set('observa2' , substr($observa,50));
+
+		if(empty($concepto)){
+			if(count($observa)>0){
+				$observa='PAGA '.implode(',',$observa);
+				$do->set('observa1' , substr($observa,0,50));
+				if(strlen($observa)>50) $do->set('observa2' , substr($observa,50));
+			}
+		}else{
+			$do->set('observa1' , substr($concepto,0,50));
+			if(strlen($concepto)>50) $do->set('observa2' , substr($concepto,50));
 		}
 
 		$rel='sfpa';

@@ -276,6 +276,9 @@ echo $title;
 	<tr id='__UTPL__sfpa'>
 		<td colspan='9' class="littletableheaderdet">&nbsp;</td>
 	</tr>
+	<tr>
+		<td colspan='9' align='center'><b>Concepto:</b><br><?php echo $form->observa1->output.$form->observa2->output; ?></td>
+	</tr>
 </table>
 <?php echo $form_end; ?>
 
