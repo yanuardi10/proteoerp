@@ -1,7 +1,7 @@
 <?php
 class Lprod extends Controller {
 	var $mModulo = 'LPROD';
-	var $titp    = 'Conrol de producci&oacute;n';
+	var $titp    = 'Control de producci&oacute;n';
 	var $tits    = 'Control de producci&oacute;n';
 	var $url     = 'leche/lprod/';
 
@@ -40,7 +40,8 @@ class Lprod extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"imprime", "img"=>"assets/default/images/print.png","alt" => 'Reimprimir',"label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"bcierre", "img"=>"images/candado.png"             ,"alt" => 'Cierre'    ,"label"=>"Cierre"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -73,16 +74,17 @@ class Lprod extends Controller {
 	//Funciones de los Botones
 	//***************************
 	function bodyscript( $grid0, $grid1 ){
-		$bodyscript = '		<script type="text/javascript">';
+		$bodyscript = '<script type="text/javascript">';
 
 		$bodyscript .= '
 		function lprodadd() {
-			$.post("'.site_url('leche/lprod/dataedit/create').'",
+			$.post("'.site_url($this->url.'dataedit/create').'",
 			function(data){
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
-			})
+			});
 		};';
+
 
 		$bodyscript .= '
 		function lproddel() {
@@ -122,7 +124,7 @@ class Lprod extends Controller {
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
-				$.post("'.site_url('leche/lprod/dataedit/modify').'/"+id, function(data){
+				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
 					$("#fedita").html(data);
 					$("#fedita").dialog( "open" );
 				});
@@ -142,6 +144,22 @@ class Lprod extends Controller {
 			var tips = $( ".validateTips" );
 			s = grid.getGridParam(\'selarrrow\');
 			';
+
+		$bodyscript .= '
+		jQuery("#bcierre").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret   = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				$.post("'.site_url($this->url.'dataeditcierre/').'/"+ret.fecha+"/create",
+				function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+
+			} else {
+				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
+			}
+		});';
 
 		$bodyscript .= '
 		$("#fshow").dialog({
@@ -281,8 +299,8 @@ class Lprod extends Controller {
 		));
 
 
-		$grid->addField('estampa');
-		$grid->label('Estampa');
+		$grid->addField('fecha');
+		$grid->label('Fecha');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -521,6 +539,139 @@ class Lprod extends Controller {
 	// DataEdit
 	//***********************************
 
+	function dataeditcierre($urlfecha){
+		$semana=array('DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES');
+
+
+		if(preg_match('/(?P<anio>\d{4})\-(?P<mes>\d{2})\-(?P<dia>\d{2})/', $urlfecha, $matches)>0){
+			$fecha = date('Y-m-d', mktime(0, 0, 0, $matches['mes'], $matches['dia'], $matches['anio']));
+			$dia   = $semana[date('w', mktime(0, 0, 0, $matches['mes'], $matches['dia'], $matches['anio']))];
+		}else{
+			$fecha= '';
+			$dia  = '';
+		}
+
+		$this->rapyd->load('datadetails','dataobject');
+
+		$do = new DataObject('lcierre');
+		//$do->pointer('scli' ,'scli.cliente=rivc.cod_cli','sprv.tipo AS sprvtipo, sprv.reteiva AS sprvreteiva','left');
+		$do->rel_one_to_many('itlcierre' ,'itlcierre' ,array('id'=>'id_lcierre'));
+
+		$edit = new DataDetails($this->tits, $do);
+		$edit->on_save_redirect=false;
+
+		//$edit->post_process('insert','_post_insert');
+		//$edit->post_process('update','_post_update');
+		//$edit->post_process('delete','_post_delete');
+		$edit->pre_process('insert' ,'_pre_insert_lcierre');
+		//$edit->pre_process('update' ,'_pre_update_lcierre');
+		//$edit->pre_process('delete' ,'_pre_delete_lcierre');
+
+		$edit->requeson = new inputField('Requeson','requeson');
+		$edit->requeson->rule='required';
+		$edit->requeson->size =12;
+		$edit->requeson->maxlength =10;
+
+		$edit->dia = new inputField('D&iacute;a','dia');
+		$edit->dia->size =12;
+		$edit->dia->maxlength =10;
+		$edit->dia->type='inputhidden';
+		$edit->dia->insertValue=$dia;
+
+		$edit->fecha = new dateField('Fecha','fecha');
+		$edit->fecha->rule='chfecha|required';
+		$edit->fecha->size =10;
+		$edit->fecha->maxlength =8;
+		$edit->fecha->type='inputhidden';
+		$edit->fecha->insertValue=$fecha;
+		$edit->fecha->calendar=false;
+
+		$edit->usuario = new autoUpdateField('usuario', $this->secu->usuario(), $this->secu->usuario());
+
+		//Inicio del detalle
+		$i  =0;
+		$rel='itlcierre';
+		$sel=array('a.codigo','a.descrip');
+
+		$this->db->select($sel);
+		$this->db->from('lprod AS a');
+
+		$id = $edit->get_from_dataobjetct('id');
+		if($id){
+			$dbid=$this->db->escape($id);
+			$this->db->join('itlcierre AS b','b.id_lcierre='.$dbid,'left');
+		}
+		$this->db->where('a.fecha',$fecha);
+		$this->db->group_by('a.codigo');
+		$this->db->order_by('a.codigo');
+
+		$query = $this->db->get();
+		$edit->detail_expand_except($rel);
+		foreach ($query->result() as $row){
+			$obj='itcodigo_'.$i;
+			$edit->$obj = new inputField('Codigo',$obj);
+			$edit->$obj->db_name = 'codigo';
+			$edit->$obj->rule='max_length[15]|required';
+			$edit->$obj->size =7;
+			$edit->$obj->insertValue=$row->codigo;
+			$edit->$obj->type='inputhidden';
+			$edit->$obj->maxlength =4;
+			$edit->$obj->rel_id = $rel;
+			$edit->$obj->ind    = $i;
+
+			$obj='itdescrip_'.$i;
+			$edit->$obj = new inputField('',$obj);
+			$edit->$obj->db_name = 'descrip';
+			$edit->$obj->type='inputhidden';
+			$edit->$obj->insertValue=$row->descrip;
+			$edit->$obj->rel_id = $rel;
+			$edit->$obj->ind    = $i;
+
+			$obj='itcestas_'.$i;
+			$edit->$obj = new inputField('Cestas',$obj);
+			$edit->$obj->db_name = 'cestas';
+			$edit->$obj->rule='max_length[12]|numeric|required';
+			$edit->$obj->css_class='inputnum';
+			$edit->$obj->size =14;
+			$edit->$obj->maxlength =12;
+			$edit->$obj->onkeyup='totalizar();';
+			$edit->$obj->rel_id = $rel;
+			$edit->$obj->ind    = $i;
+
+			$obj='itunidades_'.$i;
+			$edit->$obj = new inputField('Unidades',$obj);
+			$edit->$obj->db_name = 'unidades';
+			$edit->$obj->rule='max_length[12]|numeric|required';
+			$edit->$obj->css_class='inputnum';
+			$edit->$obj->size =14;
+			$edit->$obj->maxlength =12;
+			$edit->$obj->onkeyup='totalizar();';
+			$edit->$obj->rel_id = $rel;
+			$edit->$obj->ind    = $i;
+
+			$i++;
+		}
+		$max_rel_count = $i;
+		//Fin del detalle
+
+		$edit->buttons('add_rel');
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+			echo json_encode($rt);
+		}else{
+			//echo $edit->output;
+			$conten['max_rel_count']=$max_rel_count;
+			$conten['form']  =& $edit;
+			$this->load->view('view_lcierre', $conten);
+		}
+	}
+
 	function dataedit(){
 		$this->rapyd->load('datadetails','dataobject');
 
@@ -549,6 +700,12 @@ class Lprod extends Controller {
 		$edit->descrip->size =12;
 		$edit->descrip->maxlength =10;
 
+		//$edit->fecha = new dateField('Fecha','fecha');
+		//$edit->fecha->rule='chfecha|required';
+		//$edit->fecha->size =10;
+		//$edit->fecha->maxlength =8;
+		//$edit->fecha->calendar=false;
+
 		$edit->inventario = new inputField('Leche de inventario','inventario');
 		$edit->inventario->rule='max_length[12]|numeric|required';
 		$edit->inventario->css_class='inputnum';
@@ -562,6 +719,13 @@ class Lprod extends Controller {
 		$edit->litros->type='inputhidden';
 		$edit->litros->size =14;
 		$edit->litros->maxlength =12;
+
+		$edit->peso = new inputField('Peso','peso');
+		$edit->peso->rule='max_length[12]|numeric';
+		$edit->peso->css_class='inputnum';
+		$edit->peso->type='inputhidden';
+		$edit->peso->size =14;
+		$edit->peso->maxlength =12;
 
 		//Inicio del detalle
 		$edit->itcodrut = new inputField('ruta','codrut_<#i#>');
@@ -607,7 +771,20 @@ class Lprod extends Controller {
 		}
 	}
 
+	function _pre_insert_lcierre($do){
+		$fecha  = $do->get('fecha');
+		$dbfecha= $this->db->escape($fecha);
+		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
+
+		if($cana>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya existe un cierre para el d&iacute;a '.dbdate_to_human($fecha).' no puede realizar otro.';
+			return false;
+		}
+		return true;
+	}
+
 	function _pre_insert($do){
+		$do->set('fecha',date('Y-m-d'));
 		return true;
 	}
 
@@ -635,13 +812,14 @@ class Lprod extends Controller {
 	}
 
 	function instalar(){
-
 		if(!$this->db->table_exists('lprod')){
 			$mSQL = "
 			CREATE TABLE `lprod` (
 				`id` INT(10) NOT NULL AUTO_INCREMENT,
 				`codigo` VARCHAR(15) NULL DEFAULT NULL,
 				`descrip` VARCHAR(45) NULL DEFAULT NULL,
+				`fecha` DATE NULL DEFAULT NULL,
+				`peso` DECIMAL(12,2) NULL DEFAULT NULL,
 				`litros` DECIMAL(12,2) NULL DEFAULT NULL,
 				`inventario` DECIMAL(12,2) NULL DEFAULT NULL,
 				`estampa` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
@@ -671,7 +849,41 @@ class Lprod extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
+		if(!$this->db->table_exists('lcierre')){
+			$mSQL = "CREATE TABLE `lcierre` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`fecha` DATE NULL DEFAULT NULL,
+				`dia` VARCHAR(50) NULL DEFAULT NULL,
+				`recepcion` DECIMAL(12,2) NULL DEFAULT NULL,
+				`enfriamiento` DECIMAL(12,2) NULL DEFAULT NULL,
+				`requeson` DECIMAL(12,2) NULL DEFAULT NULL,
+				`requesonteorico` DECIMAL(12,2) NULL DEFAULT NULL,
+				`requesonreal` DECIMAL(12,2) NULL DEFAULT NULL,
+				`usuario` VARCHAR(50) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			)
+			COMMENT='Cierre de produccion de lacteos'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM;";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->table_exists('itlcierre')){
+			$mSQL = "CREATE TABLE `itlcierre` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`id_lcierre` INT(10) NULL DEFAULT NULL,
+				`codigo` VARCHAR(15) NULL DEFAULT NULL,
+				`descrip` VARCHAR(45) NULL DEFAULT NULL,
+				`unidades` DECIMAL(10,2) NULL DEFAULT NULL,
+				`cestas` DECIMAL(10,2) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`),
+				INDEX `id_lcierre` (`id_lcierre`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM;";
+			$this->db->simple_query($mSQL);
+		}
+
 	}
 
 }
-?>

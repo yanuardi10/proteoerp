@@ -698,7 +698,7 @@ class DataDetails extends DataForm{
 				}
 			}
 		}
-		if($max_count==0)
+		if($max_count==0 && !in_array($property->rel_id,$this->_except))
 			$this->_dataobject->save_rel=false;
 		$this->details_expand=true;
 	}
