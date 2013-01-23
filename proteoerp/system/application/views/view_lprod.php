@@ -1,6 +1,7 @@
-<?php echo $form_scripts?>
-<?php echo $form_begin?>
-<?php
+<?php 
+echo $form_scripts;
+echo $form_begin;
+
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);

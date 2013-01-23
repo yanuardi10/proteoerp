@@ -32,6 +32,7 @@ class Smov extends Controller {
 
 		$readyLayout = $grid->readyLayout2( 212, 140, $param['grids'][0]['gridname']);
 
+/*
 		$bodyscript = '
 		<script type="text/javascript">
 		jQuery("#boton1").click( function(){
@@ -45,17 +46,27 @@ class Smov extends Controller {
 		});
 		</script>
 		';
+*/
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"cobro",  "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Cobro a Cliente"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'] );
-		$SouthPanel  = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
+
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Banco o Caja")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -74,8 +85,52 @@ class Smov extends Controller {
 	}
 
 	//***************************
-	//Definicion del Grid y la Forma
+	//Funciones de los Botones
+	//fuera del doc ready
 	//***************************
+	function bodyscript( $grid0 ){
+
+		$bodyscript  = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#boton1").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if(id){
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/CCLIAB').'/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
+			}
+		});
+		';
+
+
+		$bodyscript .= '
+		jQuery("#cobro").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if(id){
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				$.post("'.site_url('finanzas/ccli/dataedit').'/"+ret.cod_cli,
+					function(data){
+						$("#fedita").html(data);
+						$("#fedita").dialog( "open" );
+					})
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
+			}
+		});
+		';
+
+		$bodyscript .= "\n</script>\n";
+		return $bodyscript;
+	}
+
+
+	//************************************
+	//
+	//Definicion del Grid y la Forma
+	//
+	//************************************
 	function defgrid( $deployed = false ){
 		$i = 1;
 

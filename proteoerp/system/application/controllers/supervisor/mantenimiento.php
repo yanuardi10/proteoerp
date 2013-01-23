@@ -219,7 +219,7 @@ function bobo(url){'."
 		message: $('#displayBox'),
 		css: {
 		top:  ($(window).height() - 400) /2 + 'px',
-		left: ($(window).width() - 400) /2 + 'px',
+		left: ($(window).width() - 300) /2 + 'px',
 		width: '400px'
 		}".'
 	});

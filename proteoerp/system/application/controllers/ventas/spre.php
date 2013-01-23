@@ -816,10 +816,10 @@ class Spre extends Controller {
 		$grid->setToolbar('false', '"top"');
 
 		#show/hide navigations buttons
-		$grid->setAdd(false);
-		$grid->setEdit(false);
-		$grid->setDelete(false);
-		$grid->setSearch(true);
+		$grid->setAdd(    $this->datasis->sidapuede('SPRE','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('SPRE','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('SPRE','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('SPRE','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 

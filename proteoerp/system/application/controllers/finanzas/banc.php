@@ -1,5 +1,4 @@
-<?php require_once(BASEPATH.'application/controllers/validaciones.php');
-//class Banc extends Validaciones {
+<?php 
 class Banc extends Controller {
 	var $mModulo='BANC';
 	var $titp='Bancos y Cajas';
@@ -36,7 +35,7 @@ class Banc extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
+		$grid->wbotonadd(array("id"=>"recalban", "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Recalcular Saldo"));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
@@ -77,11 +76,12 @@ class Banc extends Controller {
 		$bodyscript = '		<script type="text/javascript">';
 
 		$bodyscript .= '
-		jQuery("#a1").click( function(){
+		jQuery("#recalban").click( function(){
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'. $grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.base_url().'formatos/ver/BANC/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+				$.blockUI({message: "<h1>Calculando Saldos.....</h1><img  src=\''.base_url().'images/doggydig.gif\' width=\'131px\' height=\'79px\'  /> "});
+				$.post("'.site_url('finanzas/banc/recalban').'/"+ret.codbanc, function(){ $.unblockUI(); })
 			} else { $.prompt("<h1>Por favor Seleccione un Banco</h1>");}
 		});
 		';
@@ -543,11 +543,25 @@ class Banc extends Controller {
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 680, height:420, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
+		$grid->setOnSelectRow('
+		function(id){
+			if (id){
+				var ret = jQuery(gridId1).jqGrid(\'getRowData\',id);
+				$.ajax({
+					url: "'.base_url().$this->url.'resumen/"+id,
+					success: function(msg){
+						$("#ladicional").html(msg);
+					}
+				});
+			}
+		}'
+		);
+
 		#show/hide navigations buttons
-		$grid->setAdd(true);
-		$grid->setEdit(true);
-		$grid->setDelete(true);
-		$grid->setSearch(true);
+		$grid->setAdd(    $this->datasis->sidapuede('BANC','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('BANC','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('BANC','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('BANC','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
@@ -626,6 +640,7 @@ class Banc extends Controller {
 			echo "Registro Desactivado/Avtivado";
 		};
 	}
+
 
 	//***************************************
 	//
@@ -957,188 +972,98 @@ class Banc extends Controller {
 		
 	}
 
+	//****************************
+	//
+	//Resumen rapido
+	//
+	function resumen( $id ) {
+		//$id = $this->uri->segment($this->uri->total_segments());
+		$row = $this->datasis->damereg("SELECT codbanc, saldo, activo FROM banc WHERE id=$id");
+		$codbanc  = $row['codbanc'];
+		$saldo    = $row['saldo'];
+		$activo   = $row['activo'];
+		
+		$mSQL = "SELECT saldo Inicial, saldo01 Ene, saldo02 Feb, saldo03 Mar, saldo04 Abr, saldo05 May, saldo06 Jun, saldo07 jul, saldo08 Ago, saldo09 Sep, saldo10 Oct, saldo11 Nov, saldo12 Dic  FROM bsal WHERE ano = YEAR(curdate()) AND codbanc=".$this->db->escape($codbanc);
+
+		$query = $this->db->query($mSQL);
+		$data = $query->row(); 
+		$salida = '';
+		$salida  .= '<table width="90%" border="1" align="center">';
+		if ( $activo == 'S') 
+			$salida  .= '<tr><th colspan="2" style="background:#A6FAA6;">Saldos por Mes</th></tr>';
+		else
+			$salida  .= '<tr><th colspan="2" style="background:#F97070;">Saldos por Mes</th></tr>';
+		
+		foreach( $data AS $mes=>$saldo ){
+			$salida .= "<tr><td>".$mes."</td><td align='right'>".$saldo."</td></tr>\n";	
+		}
+		$salida .= "</table>\n";
+		echo $salida;
+	}
+
 
 	//*****************************
 	//    RECALCULAR BSAL
 	//
-	function recalban($codbanc, $ano ){
+	function recalban($codbanc){
+
+		$ano = date('Y');
+
+		$mSQL = "INSERT IGNORE INTO bsal SET 
+		codbanc=".$this->db->escape($codbanc).", 
+		ano=$ano, saldo=0,   
+		saldo01=0, saldo02=0, saldo03=0, saldo04=0, 
+		saldo05=0, saldo06=0, saldo07=0, saldo08=0, 
+		saldo09=0, saldo10=0, saldo11=0, saldo12=0 ";
+		$this->db->query($mSQL);
 
 		$mSQL = "SELECT 
-		SUM( monto*(month(fecha)=1)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=1)*(tipo_op  IN ('CH','ND'))) saldo01,
-		SUM( monto*(month(fecha)=2)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=3)*(tipo_op  IN ('CH','ND'))) saldo02,
-		SUM( monto*(month(fecha)=3)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=3)*(tipo_op  IN ('CH','ND'))) saldo03,
-		SUM( monto*(month(fecha)=4)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=4)*(tipo_op  IN ('CH','ND'))) saldo04,
-		SUM( monto*(month(fecha)=5)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=5)*(tipo_op  IN ('CH','ND'))) saldo05,
-		SUM( monto*(month(fecha)=6)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=6)*(tipo_op  IN ('CH','ND'))) saldo06,
-		SUM( monto*(month(fecha)=7)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=7)*(tipo_op  IN ('CH','ND'))) saldo07,
-		SUM( monto*(month(fecha)=8)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=8)*(tipo_op  IN ('CH','ND'))) saldo08,
-		SUM( monto*(month(fecha)=9)*(tipo_op NOT IN ('CH','ND'))  - monto*(month(fecha)=9)*(tipo_op  IN ('CH','ND'))) saldo09,
+		SUM( monto*(month(fecha)= 1)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=1)*(tipo_op  IN ('CH','ND'))) saldo01,
+		SUM( monto*(month(fecha)= 2)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=3)*(tipo_op  IN ('CH','ND'))) saldo02,
+		SUM( monto*(month(fecha)= 3)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=3)*(tipo_op  IN ('CH','ND'))) saldo03,
+		SUM( monto*(month(fecha)= 4)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=4)*(tipo_op  IN ('CH','ND'))) saldo04,
+		SUM( monto*(month(fecha)= 5)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=5)*(tipo_op  IN ('CH','ND'))) saldo05,
+		SUM( monto*(month(fecha)= 6)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=6)*(tipo_op  IN ('CH','ND'))) saldo06,
+		SUM( monto*(month(fecha)= 7)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=7)*(tipo_op  IN ('CH','ND'))) saldo07,
+		SUM( monto*(month(fecha)= 8)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=8)*(tipo_op  IN ('CH','ND'))) saldo08,
+		SUM( monto*(month(fecha)= 9)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=9)*(tipo_op  IN ('CH','ND'))) saldo09,
 		SUM( monto*(month(fecha)=10)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=10)*(tipo_op IN ('CH','ND'))) saldo10,
 		SUM( monto*(month(fecha)=11)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=11)*(tipo_op IN ('CH','ND'))) saldo11,
 		SUM( monto*(month(fecha)=12)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=12)*(tipo_op IN ('CH','ND'))) saldo12
-		FROM bmov WHERE year(fecha)=$ano AND codbanc='$codbanc' 
-		GROUP BY codbanc, year(fecha)";
-
+		FROM bmov WHERE year(fecha)=$ano AND codbanc=".$this->db->escape($codbanc)." 
+		GROUP BY codbanc, YEAR(fecha)";
+		//memowrite($mSQL);
+		
 		$query = $this->db->query($mSQL);
 		$data = $query->row(); 
 
-		$this->db->where('codbanc', $codbanc);
-		$this->db->where('ano',     $ano);
-		$this->db->update('bsal',   $data); 
+		if ( count($data) == 1 ){
+			$this->db->where('codbanc', $codbanc);
+			$this->db->where('ano',     $ano);
+			$this->db->update('bsal',   $data); 
+		} else {
+			//Coloca todo en 0
+			$data = array(
+			"saldo01"=>0, "saldo02"=>0, "saldo03"=>0, "saldo04"=>0, 
+			"saldo05"=>0, "saldo06"=>0, "saldo07"=>0, "saldo08"=>0, 
+			"saldo09"=>0, "saldo10"=>0, "saldo11"=>0, "saldo12"=>0 );
+			$this->db->where('codbanc', $codbanc);
+			$this->db->where('ano',     $ano);
+			$this->db->update('bsal',   $data); 
+		}
 
+		$anoactual = date('Y');
 		//Actualiza Banc
-		
-		$mSQL = "SELECT saldo+saldo01+saldo02+saldo03+saldo04+saldo05+saldo06+
+		$mSQL = 'SELECT saldo+saldo01+saldo02+saldo03+saldo04+saldo05+saldo06+
 			saldo07+saldo08+saldo09+saldo10+saldo11+saldo12 FROM bsal 
-			WHERE codbanc='$codbanc' AND ano=$ano ";
+			WHERE codbanc='.$this->db->escape($codbanc).' AND ano='.$anoactual;
+		$saldo = $this->datasis->dameval($mSQL)+0;
+		
+		$mSQL = 'UPDATE banc SET saldo='.$saldo.' WHERE codbanc='.$this->db->escape($codbanc);
+		$this->db->query($mSQL);
 
-
-
-/*
-FUNCTION RECALBAN()
-LOCAL mAREA := ALIAS(), mSALVI := 0, mMONTO := 0, mFECHA, mCODBANC := '  '
-LOCAL mREGISTRO := 0, mSALDO := 0, mPA := '', GETLIST := {}, mANOMES := ''
-LOCAL mANO:=YEAR(DATE()), mMES := MONTH(DATE())
-LOCAL mSQL, mREG, mC, mSALDOU := 0, mTIPO := 'I'
-
-PRIVATE mSALDOI := 0, mSALDOF := 0, mCREDITO := 0, mDEBITO := 0
-
-mREGISTRO := 0   //RECNO()
-mANOMES := SUBSTR(DTOS(DATE()),1,6)
-
-mPA := RECUADRO(7,10,19,70)
-mTIPO := "I"
-@  9,15 SAY 'C¢digo del Banco ' GET mCODBANC VALID BANCBUSCA(mCODBANC)
-@ 10,15 SAY 'A¤o a Recalcular ' GET mANO  PICT "9999"
-@ 11,15 SAY 'Saldo Inici/Final' GET mTIPO PICT "!" 
-@ 12,15 SAY 'Forzar Saldo a   ' GET mSALDOU PICT "9999999999999.99"
-READ
-IF mTIPO='I'
-	IF SINO("Buscar Saldo automaticamente? ",1) = 1
-		mSQL := "SELECT COUNT(*) FROM bsal WHERE codbanc='"+mCODBANC+"' "
-		mSQL += "AND ano="+ALLTRIM(STR(mANO))
-		IF DAMEVAL(mSQL,,'N') = 0
-			mSQL := "SELECT COUNT(*) FROM bsal WHERE codbanc='"+mCODBANC+"' "
-			mSQL += "AND ano<"+ALLTRIM(STR(mANO))
-			IF DAMEVAL(mSQL,,'N') = 0
-				mSQL := "SELECT saldo+saldo01+saldo02+saldo03+saldo04+saldo05"
-				mSQL += "+saldo06+saldo07+saldo08+saldo09+saldo10+saldo11+saldo12 "
-				mSQL += "FROM bsal WHERE codbanc='"+mCODBANC+"' "
-				mSQL += "AND ano<"+STR(mANO,4)+" ORDER BY ano DESC LIMIT 1 "
-				mSALDOU := DAMEVAL(mSQL,,'N')
-			ENDIF
-		ELSE
-			mSQL := "SELECT saldo FROM bsal WHERE codbanc='"+mCODBANC+"' "
-			mSQL += "AND ano="+STR(mANO,4)
-			mSALDOU := DAMEVAL(mSQL,,'N')
-		ENDIF
-	ENDIF
-ENDIF
-
-IF LASTKEY() = 27
-	RESTSCREEN( 7, 10, 19, 70, mPA)
-	RETURN .T.
-ENDIF
-mANOMES := STRZERO(mANO,4)+STRZERO(mMES,2)
-// VERIFICA SI EXISTEN EN BSAL
-mSQL := "SELECT count(*) FROM bsal WHERE codbanc='"+mCODBANC+"' "
-mSQL += "AND ano='"+STR(mANO,4)+"' "
-IF DAMEVAL(mSQL,,'N')=0
-	mSQL := "INSERT INTO bsal SET codbanc=?, ano=?"
-	EJECUTASQL(mSQL, { mCODBANC, STR(mANO,4) })
-ENDIF
-mSQL := "UPDATE bsal SET saldo=0,saldo01=0,saldo02=0,saldo03=0,saldo04=0,"
-mSQL += "saldo05=0, saldo06=0,saldo07=0,saldo08=0,saldo09=0,saldo10=0,"
-mSQL += "saldo11=0,saldo12=0 "
-mSQL += "WHERE codbanc='"+mCODBANC+"' AND ano='"+STR(mANO,4)+"' "
-EJECUTASQL(mSQL)
-// CALCULA MES POR MES
-
-mSQL := "SELECT "
-FOR i := 1 TO 12
-	mSQL += "SUM((monto*(tipo_op NOT IN ('CH','ND')) - monto*(tipo_op IN ('CH','ND')))*"
-	mSQL += "(EXTRACT(YEAR_MONTH FROM fecha)="+STR(mANO,4)+STRZERO(i,2)+"))"
-	IF i < 12
-		mSQL +=", "
-	ENDIF
-NEXT
-mSQL += " FROM bmov "
-mSQL += "WHERE codbanc='"+mCODBANC+"' AND anulado<>'S' AND "
-mSQL += "EXTRACT(YEAR FROM fecha)="+STR(mANO,4)+" "
-mSQL += "GROUP BY codbanc"
-MEMOWRIT("BMOV.SQL",mSQL)
-mREG := DAMEREG(mSQL)
-
-IF SUBSTR(mTIPO,1,1) = 'I'
-	mSALDO := mSALDOU
-ELSE
-	mSALDO := mSALDOU
-	FOR i = 1 TO 12
-		mSALDO -= mREG[i]
-	NEXT
-ENDIF
-
-// ACTUALIZA BSAL
-mSQL := "UPDATE bsal SET saldo="+ALLTRIM(STR(mSALDO))+", "
-mSQL += "saldo01=?, saldo02=?, saldo03=?, saldo04=?, saldo05=?, saldo06=?,"
-mSQL += "saldo07=?, saldo08=?, saldo09=?, saldo10=?, saldo11=?, saldo12=? "
-mSQL += "WHERE codbanc='"+mCODBANC+"' AND ano='"+STR(mANO,4)+"' "
-EJECUTASQL(mSQL,mREG)
-
-// calcular saldo actual en bancos
-
-mSQL := "SELECT saldo+saldo01+saldo02+saldo03+saldo04+saldo05+saldo06+"
-mSQL += "saldo07+saldo08+saldo09+saldo10+saldo11+saldo12 FROM bsal "
-mSQL += "WHERE codbanc='"+mCODBANC+"' AND ano='"+STR(mANO,4)+"' "
-mSALDO := DAMEVAL(mSQL,,'N')
-
-mSQL := "INSERT IGNORE INTO bsal SET codbanc=?, ano=?"
-EJECUTASQL(mSQL, { mCODBANC, STR(mANO+1,4) })
-
-mSQL := "UPDATE bsal SET saldo=? WHERE codbanc=? AND ano=?"
-EJECUTASQL(mSQL, { mSALDO, mCODBANC, STR(mANO+1,4) })
-
-mSQL := "SELECT saldo+saldo01+saldo02+saldo03+saldo04+saldo05+saldo06+"
-mSQL += "saldo07+saldo08+saldo09+saldo10+saldo11+saldo12 FROM bsal "
-mSQL += "WHERE codbanc='"+mCODBANC+"' AND ano='"+STR(mANO+1,4)+"' "
-mSALDO := DAMEVAL(mSQL,,'N')
-
-i := 2
-DO WHILE .T.
-	mSQL := "SELECT count(*) FROM bsal WHERE codbanc='"+mCODBANC+"' "
-	mSQL += "AND ano='"+STR(mANO+i,4)+"' "
-
-	IF DAMEVAL(mSQL,,'N') = 0
-		EXIT
-	ENDIF
-
-	mSQL := "UPDATE bsal SET saldo=? WHERE codbanc=? AND ano=?"
-
-	EJECUTASQL(mSQL, { mSALDO, mCODBANC, STR(mANO+i,4) })
-	CMNJ("antes  Saldo en banco "+STR(mSALDO)+' '+STR(mANO+i,4))
-
-	mSQL := "SELECT saldo+saldo01+saldo02+saldo03+saldo04+saldo05+saldo06+"
-	mSQL += "saldo07+saldo08+saldo09+saldo10+saldo11+saldo12 FROM bsal "
-	mSQL += "WHERE codbanc='"+mCODBANC+"' AND ano='"+STR(mANO+i,4)+"' "
-	mSALDO := DAMEVAL(mSQL,,'N')
-
-	CMNJ("WHERE codbanc='"+mCODBANC+"' AND ano='"+STR(mANO+i,4)+"' ")
-	CMNJ("despues "+STR(mSALDO)+' '+mCODBANC+' '+STR(mANO+i,4))
-
-	i++
-ENDDO
-
-// CALCULA SALDO FINAL DESDE EL ANO DADO
-
-mSQL := "UPDATE banc SET saldo=? WHERE codbanc=?"
-EJECUTASQL(mSQL, { mSALDO, mCODBANC })
-CMNJ(" Saldo en banco "+mCODBANC+' '+STR(mSALDO))
-
-CMNJ("Saldos Recalculados")
-RETURN(.T.)
-
-*/
 	}
 
 
 }
+?>

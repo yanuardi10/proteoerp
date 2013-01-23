@@ -305,7 +305,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 	//Funciones de los Botones
 	//***************************
 	function bodyscript( $grid0 ){
-		$bodyscript = '		<script type="text/javascript">';
+		$bodyscript = '<script type="text/javascript">';
 
 		$bodyscript .= '
 		jQuery("#edocta").click( function(){
@@ -393,6 +393,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 							$("#fedita").html(r);
 						}
 					}
+
 			})},
 			"Cancelar": function() { $( this ).dialog( "close" ); },
 			"SENIAT":   function() { consulrif("rifci"); },
