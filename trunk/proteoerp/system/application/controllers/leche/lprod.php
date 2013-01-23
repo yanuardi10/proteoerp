@@ -876,6 +876,7 @@ class Lprod extends Controller {
 				`descrip` VARCHAR(45) NULL DEFAULT NULL,
 				`unidades` DECIMAL(10,2) NULL DEFAULT NULL,
 				`cestas` DECIMAL(10,2) NULL DEFAULT NULL,
+				`peso` DECIMAL(10,2) NULL DEFAULT NULL,
 				PRIMARY KEY (`id`),
 				INDEX `id_lcierre` (`id_lcierre`)
 			)
