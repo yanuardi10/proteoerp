@@ -63,11 +63,10 @@ class Sinv extends Controller {
 
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
+
 		$readyLayout = $grid->readyLayout2( 216	, 135, $param['grids'][0]['gridname']);
 
 		//Botones Panel Izq
-		//$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/tux1.png",      "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
-		//$grid->wbotonadd(array("id"=>"gunidad",  "img"=>"images/unidad.gif",    "alt" => 'Unidades de Medida',       "label"=>"Crear Unidades"));
 		if ( $this->datasis->traevalor('SUNDECOP') == 'S')
 			$grid->wbotonadd(array("id"=>"sundecop", "img"=>"images/sundecop.jpeg", "alt" => 'Oculta/Muestra Inactivos', "label"=>"SUNDECOP"));
 		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png",   "alt" => 'Oculta/Muestra Inactivos', "label"=>"Mostrar Inactivos"));

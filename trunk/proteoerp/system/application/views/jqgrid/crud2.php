@@ -336,6 +336,5 @@ if(isset($centerpanel) == true) {
 <?php if(isset($bodyscript)) echo $bodyscript; ?>
 
 <div id="displayBox" style="display:none" ><p>Disculpe por la espere.....</p><img  src="<?php echo base_url() ?>images/doggydig.gif" width="131px" height="79px"/></div>
-
 </body>
 </html>

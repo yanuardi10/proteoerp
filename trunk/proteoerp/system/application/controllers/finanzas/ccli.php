@@ -317,7 +317,7 @@ class ccli extends Controller {
 		// Fin detalle 2 (sfpa)
 		//************************************************
 
-		$edit->buttons('save','undo','back','add_rel','add');
+		//$edit->buttons('save','undo','back','add_rel','add');
 		$edit->build();
 
 		$conten['cana']  = $i;
@@ -326,13 +326,16 @@ class ccli extends Controller {
 
 		$data['head']    = style('estilo.css');
 		$data['head']   .= $this->rapyd->get_head();
+		$data['head']    = '';
+
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= phpscript('nformat.js');
-		$data['content'] = $this->load->view('view_ccli.php', $conten,true);
-		$data['title']   = '';
-		$this->load->view('view_ventanas', $data);
+		$data['script']  = '';
+		$data['content'] = $this->load->view('view_ccli.php', $conten,false);
+		//$data['title']   = '';
+		//$this->load->view('view_ventanas', $data);
 	}
 
 	function chsfpatipo($val){
