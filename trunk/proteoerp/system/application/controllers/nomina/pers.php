@@ -1078,6 +1078,11 @@ class Pers extends Controller {
 		$edit->nacional->option("V","Venezolano");
 		$edit->nacional->option("E","Extranjero");
 		$edit->nacional->group = "Datos del Trabajador";
+
+		$edit->tipo = new dropdownField("Frecuencia","tipo");
+		$edit->tipo->options(array("Q"=> "Quincenal","M"=>"Mensual","S"=>"Semanal","B"=>"BiSemanal"));
+		$edit->tipo->group = "Relaci&oacute;n Laboral";
+		$edit->tipo->style = "width:90px;";
 		 
 		$edit->cedula =  new inputField("", "cedula");
 		$edit->cedula->size = 9;
@@ -1086,14 +1091,15 @@ class Pers extends Controller {
 		$edit->cedula->rule="trim|required";
 		$edit->cedula->css_class='inputnum';
 			
-		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">SENIAT</a>';
-		$edit->rif =  new inputField("RIF", "rif");
+		//$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">SENIAT</a>';
 		//$edit->rif->mode="autohide";
-		$edit->rif->rule = "trim|strtoupper|callback_chrif";
-		$edit->rif->append($lriffis);
-		$edit->rif->maxlength=10;
-		$edit->rif->size = 10;
-		$edit->rif->group = "Datos del Trabajador";
+		//$edit->rif->append($lriffis);
+
+		$edit->rif =  new inputField("RIF", "rif");
+		$edit->rif->rule      = "trim|strtoupper|callback_chrif";
+		$edit->rif->maxlength = 13;
+		$edit->rif->size      = 12;
+		$edit->rif->group     = "Datos del Trabajador";
 		
 		$edit->nombre =  new inputField("Nombre", "nombre");
 		$edit->nombre->group = "Datos del Trabajador";
@@ -1221,13 +1227,13 @@ class Pers extends Controller {
 		$edit->depa->group = "Relaci&oacute;n Laboral";	
 		
 		$edit->contrato = new dropdownField("Contrato","contrato");
-		$edit->contrato->style ="width:200px;";
+		$edit->contrato->style ="width:350px;";
 		$edit->contrato->option("","");
 		$edit->contrato->options("SELECT codigo,CONCAT('',codigo,nombre)as nombre FROM noco ORDER BY codigo");
-		$edit->contrato->group = "Relaci&oacute;n Laboral";
+		//$edit->contrato->group = "Relaci&oacute;n Laboral";
 		
 		$edit->vencimiento = new DateonlyField("Vencimiento", "vence","d/m/Y");
-		$edit->vencimiento->size = 12;
+		$edit->vencimiento->size = 10;
 		$edit->vencimiento->group = "Relaci&oacute;n Laboral";
 		$edit->vencimiento->rule="trim|chfecha";
 		$edit->vencimiento->calendar = false;
@@ -1258,7 +1264,7 @@ class Pers extends Controller {
 		$edit->observa->group = "Relaci&oacute;n Laboral"; 
 		
 		$edit->ingreso = new DateonlyField("Fecha de Ingreso", "ingreso","d/m/Y");
-		$edit->ingreso->size = 12;
+		$edit->ingreso->size = 10;
 		$edit->ingreso->group = "Relaci&oacute;n Laboral";
 		$edit->ingreso->rule="trim|chfecha";
 		$edit->ingreso->calendar = false;
@@ -1267,7 +1273,7 @@ class Pers extends Controller {
 		$edit->label2->in = "ingreso";
 		
 		$edit->retiro =  new DateonlyField("Fecha de Retiro", "retiro","d/m/Y");    
-		$edit->retiro->size = 12;
+		$edit->retiro->size = 10;
 		$edit->retiro->in = "ingreso";
 		$edit->retiro->rule="trim|chfecha";
 		$edit->retiro->calendar = false;
@@ -1277,12 +1283,6 @@ class Pers extends Controller {
 		//$edit->trabaja->options("SELECT codigo,tipo  FROM tipot ORDER BY codigo");
 		//$edit->trabaja->group = "Relaci&oacute;n Laboral";
 		//$edit->trabaja->style = "width:200px;";
-		
-		$edit->tipo = new dropdownField("Tipo de N&oacute;mina","tipo");
-		//$edit->tipo->option("","");
-		$edit->tipo->options(array("Q"=> "Quincenal","M"=>"Mensual","S"=>"Semanal","B"=>"BiSemanal"));
-		$edit->tipo->group = "Relaci&oacute;n Laboral";
-		$edit->tipo->style = "width:100px;";
 		
 		$edit->dialib = new inputField("Dias libres", "dialib");
 		$edit->dialib->group = "Relaci&oacute;n Laboral";
@@ -1379,41 +1379,41 @@ class Pers extends Controller {
 		
 		$edit->vari1 = new inputField($vari1, "vari1");
 		$edit->vari1->group = "Variables";
-		$edit->vari1->size =8;
+		$edit->vari1->size =10;
 		$edit->vari1->maxlength=14;
 		$edit->vari1->rule="trim|numeric";
 		$edit->vari1->css_class='inputnum';
 		
 		$edit->vari2 = new inputField($vari2, "vari2");
 		$edit->vari2->group = "Variables";
-		$edit->vari2->size =8;
+		$edit->vari2->size =10;
 		$edit->vari2->maxlength=14;
 		$edit->vari2->rule="trim|numeric";
 		$edit->vari2->css_class='inputnum';
 		
 		$edit->vari3 = new inputField($vari3, "vari3");
 		$edit->vari3->group = "Variables";
-		$edit->vari3->size =8;
+		$edit->vari3->size =10;
 		$edit->vari3->maxlength=14;
 		$edit->vari3->rule="trim|numeric";
 		$edit->vari3->css_class='inputnum';
 		        
 		$edit->vari4 = new inputField($vari4, "vari4");
 		$edit->vari4->group = "Variables";
-		$edit->vari4->size =8;
+		$edit->vari4->size =10;
 		$edit->vari4->maxlength=11;
 		$edit->vari4->rule="trim|numeric";
 		$edit->vari4->css_class='inputnum';
 		      
 		$edit->vari5 = new DateField($vari5, "vari5");
 		$edit->vari5->group = "Variables";
-		$edit->vari5->size =8;
+		$edit->vari5->size =10;
 		$edit->vari5->maxlength=12;
 		$edit->vari5->rule="trim|chfecha";
 		
 		$edit->vari6 = new inputField($vari6, "vari6");
 		$edit->vari6->group = "Variables";
-		$edit->vari6->size =8;
+		$edit->vari6->size =10;
 		$edit->vari6->maxlength=14;
 		$edit->vari6->rule="trim|numeric";
 		$edit->vari6->css_class='inputnum';
