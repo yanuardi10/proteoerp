@@ -41,30 +41,40 @@ echo $form_begin
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->codigo->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->codigo->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->tipo->label .' '.$form->tipo->output  ?></td>
 				<td class="littletableheaderc"><?php echo $form->nombre->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->nombre->output ?></td>
 			</tr>
 			<tr>
-				<td class="littletableheaderc"><?php echo $form->nacional->label   ?></td>
-				<td class="littletablerow"    ><?php echo $form->nacional->output.' '.$form->cedula->output ?></td>
+				<td class="littletableheaderc"><?php echo $form->nacional->label; ?></td>
+				<td class="littletablerow"    ><?php echo $form->nacional->output ?></td>
+				<td class="littletablerow"    ><?php echo $form->cedula->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->apellido->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->apellido->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->rif->label   ?></td>
 				<td class="littletablerow"    ><?php echo $form->rif->output  ?></td>
+				<td><a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a></td>
 				<td class="littletableheaderc"><?php echo $form->telefono->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->telefono->output ?></td>
 			</tr>
+		</table>
+		</fieldset>
+
+		<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
+		<table width='100%'  border='0'>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->contrato->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->contrato->output ?></td>
+				<td colspan='3' class="littletablerow"    ><?php echo $form->contrato->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->vencimiento->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->vencimiento->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->tipo->label    ?></td>
 				<td class="littletablerow"    ><?php echo $form->tipo->output   ?></td>
+				<td class="littletableheaderc"><?php echo $form->cargo->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->cargo->output ?></td>
 				<td class="littletableheaderc"><?php echo $form->sueldo->label  ?></td>
 				<td class="littletablerow"    ><?php echo $form->sueldo->output ?></td>
 			</tr>
@@ -75,8 +85,8 @@ echo $form_begin
 	<ul>
 		<li><a href="#tab1">Relaci&oacute;n Laboral</a></li>
 		<li><a href="#tab2">Valores</a></li>
-		<li><a href="#tab3">Horarios</a></li>
-		<li><a href="#tab4">Variables</a></li>
+		<li><a href="#tab3">Variables</a></li>
+		<li><a href="#tab4">Horarios</a></li>
 	</ul>
 	<div id="tab1" style='background:#EEFFFF'>
 		
@@ -115,8 +125,8 @@ echo $form_begin
 			<tr>
 				<td class="littletableheaderc"><?php echo $form->depa->label   ?></td>
 				<td class="littletablerow" id='td_depto'><?php echo $form->depa->output ?></td>
-				<td class="littletableheaderc"><?php echo $form->cargo->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->cargo->output ?></td>
+				<td class="littletableheaderc"></td>
+				<td class="littletablerow"    ></td>
 			</tr>
 		</table>
 		</fieldset>
@@ -158,35 +168,9 @@ echo $form_begin
 		</table>
 		</fieldset>
 	</div>
+
+
 	<div id="tab3" style='background:#EEFFFF'>
-
-
-		<fieldset style='border: 1px outset #8A0808;'>
-		<table width='100%' border='0' >
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->turno->label  ?></td>
-				<td class="littletablerow"    ><?php echo $form->turno->output ?></td>
-				<td class="littletableheaderc">&nbsp;</td>
-				<td class="littletablerow"    >&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->horame->label.' Desde'  ?></td>
-				<td class="littletablerow"    ><?php echo $form->horame->output ?></td>
-				<td class="littletableheaderc"><?php echo 'Hasta'  ?></td>
-				<td class="littletablerow"    ><?php echo $form->horams->output ?></td>
-			</tr>
-			<tr>
-				<td class="littletableheaderc"><?php echo $form->horate->label.' Desde'  ?></td>
-				<td class="littletablerow"    ><?php echo $form->horate->output ?></td>
-				<td class="littletableheaderc"><?php echo 'Hasta' ?></td>
-				<td class="littletablerow"    ><?php echo $form->horats->output ?></td>
-			</tr>
-		</table>
-		</fieldset>
-
-	</div>
-	<div id="tab4" style='background:#EEFFFF'>
-
 		<fieldset style='border: 1px outset #8A0808;'>
 		<table width='100%' border='0' >
 			<tr>
@@ -210,6 +194,32 @@ echo $form_begin
 		</table>
 		</fieldset>
 	</div>
+
+	<div id="tab4" style='background:#EEFFFF'>
+		<fieldset style='border: 1px outset #8A0808;'>
+		<table width='100%' border='0' >
+			<tr>
+				<td class="littletableheaderc"><?php echo $form->turno->label  ?></td>
+				<td class="littletablerow"    ><?php echo $form->turno->output ?></td>
+				<td class="littletableheaderc">&nbsp;</td>
+				<td class="littletablerow"    >&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="littletableheaderc"><?php echo $form->horame->label.' Desde'  ?></td>
+				<td class="littletablerow"    ><?php echo $form->horame->output ?></td>
+				<td class="littletableheaderc"><?php echo 'Hasta'  ?></td>
+				<td class="littletablerow"    ><?php echo $form->horams->output ?></td>
+			</tr>
+			<tr>
+				<td class="littletableheaderc"><?php echo $form->horate->label.' Desde'  ?></td>
+				<td class="littletablerow"    ><?php echo $form->horate->output ?></td>
+				<td class="littletableheaderc"><?php echo 'Hasta' ?></td>
+				<td class="littletablerow"    ><?php echo $form->horats->output ?></td>
+			</tr>
+		</table>
+		</fieldset>
+	</div>
+
 </div>
 <?php echo $form_end?>
 <?php echo $container_bl ?>
