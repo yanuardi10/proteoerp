@@ -1595,7 +1595,6 @@ class Lrece extends Controller {
 			echo 'Ruta no tiene vaqueras';
 		}
 
-
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Modifico Apertura $this->tits $primary ");
 	}
@@ -1604,13 +1603,41 @@ class Lrece extends Controller {
 		logusu($do->table,"Elimino recepcion $this->tits $primary ");
 	}
 	function _pre_apertura_update($do){
+		$fecha  = $do->get('fecha');
+		$dbfecha= $this->db->escape($fecha);
+		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
+
+		if($cana>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
+			return false;
+		}
+
 		return true;
 	}
 	function _pre_apertura_delete($do){
+		$fecha  = $do->get('fecha');
+		$dbfecha= $this->db->escape($fecha);
+		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
+
+		if($cana>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
+			return false;
+		}
+
 		return true;
 	}
 	function _pre_apertura_insert($do){
 		$do->set('fecha',date('Y-m-d'));
+
+		$fecha  = $do->get('fecha');
+		$dbfecha= $this->db->escape($fecha);
+		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
+
+		if($cana>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
+			return false;
+		}
+
 		return true;
 	}
 
@@ -1626,6 +1653,15 @@ class Lrece extends Controller {
 		return false;
 	}
 	function _pre_analisis_update($do){
+		$fecha  = $do->get('fecha');
+		$dbfecha= $this->db->escape($fecha);
+		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
+
+		if($cana>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
+			return false;
+		}
+
 		$densidad= $do->get('densidad');
 		$lleno   = $do->get('lleno');
 		$vacio   = $do->get('vacio');
@@ -1658,6 +1694,15 @@ class Lrece extends Controller {
 		return false;
 	}
 	function _pre_vaqueras_update($do){
+		$fecha  = $do->get('fecha');
+		$dbfecha= $this->db->escape($fecha);
+		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
+
+		if($cana>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
+			return false;
+		}
+
 		$lista=0;
 		$rel='itlrece';
 		$cana = $do->count_rel($rel);
