@@ -41,7 +41,7 @@ class Lprod extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprime", "img"=>"assets/default/images/print.png","alt" => 'Reimprimir',"label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"bcierre", "img"=>"images/candado.png"             ,"alt" => 'Cierre'    ,"label"=>"Cierre"));
+		$grid->wbotonadd(array("id"=>"bcierre", "img"=>"images/candado.png"             ,"alt" => 'Cierre Producci&oacute;n',"label"=>"Cierre Producci&oacute;n"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -149,12 +149,33 @@ class Lprod extends Controller {
 		jQuery("#bcierre").click( function(){
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
-				var ret   = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				$.post("'.site_url($this->url.'dataeditcierre/').'/"+ret.fecha+"/create",
-				function(data){
-					$("#fedita").html(data);
-					$("#fedita").dialog( "open" );
-				});
+				var ret      = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				var idcierre = $.ajax({ type: "POST", url: "'.site_url($this->url.'getcierre').'/"+ret.fecha, async: false }).responseText;
+
+				if(idcierre == "0"){
+					$.post("'.site_url($this->url.'dataeditcierre/').'/"+ret.fecha+"/create",
+					function(data){
+						$("#fedita").html(data);
+						$("#fedita").dialog( "open" );
+					});
+				}else{
+					var status = $.ajax({ type: "POST", url: "'.site_url($this->url.'getstatus').'/"+ret.fecha, async: false }).responseText;
+
+					if(status=="A"){
+						$.post("'.site_url($this->url.'dataeditcierre/').'/"+ret.fecha+"/modify/"+idcierre,
+						function(data){
+							$("#fedita").html(data);
+							$("#fedita").dialog( "open" );
+						});
+					}else{
+						$.post("'.site_url($this->url.'dataeditcierre/').'/show/"+idcierre,
+						function(data){
+							$("#fshow").html(data);
+							$("#fshow").dialog( "open" );
+						});
+					}
+				}
+
 
 			} else {
 				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
@@ -166,6 +187,7 @@ class Lprod extends Controller {
 			autoOpen: false, height: 500, width: 700, modal: true,
 			buttons: {
 				"Aceptar": function() {
+					$("#fshow").html("");
 					$( this ).dialog( "close" );
 				},
 			},
@@ -204,8 +226,11 @@ class Lprod extends Controller {
 							$("#fedita").html(r);
 						}
 					}
-			})},
-			"Cancelar": function() { $("#fedita").html(""); $( this ).dialog( "close" ); }
+				})
+			},
+			"Cancelar": function() {
+					$("#fedita").html(""); $( this ).dialog( "close" );
+				}
 			},
 			close: function() { $("#fedita").html(""); allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
@@ -542,7 +567,6 @@ class Lprod extends Controller {
 	function dataeditcierre($urlfecha){
 		$semana=array('DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES');
 
-
 		if(preg_match('/(?P<anio>\d{4})\-(?P<mes>\d{2})\-(?P<dia>\d{2})/', $urlfecha, $matches)>0){
 			$fecha = date('Y-m-d', mktime(0, 0, 0, $matches['mes'], $matches['dia'], $matches['anio']));
 			$dia   = $semana[date('w', mktime(0, 0, 0, $matches['mes'], $matches['dia'], $matches['anio']))];
@@ -556,6 +580,7 @@ class Lprod extends Controller {
 		$do = new DataObject('lcierre');
 		//$do->pointer('scli' ,'scli.cliente=rivc.cod_cli','sprv.tipo AS sprvtipo, sprv.reteiva AS sprvreteiva','left');
 		$do->rel_one_to_many('itlcierre' ,'itlcierre' ,array('id'=>'id_lcierre'));
+		$do->order_rel_one_to_many('itlcierre','codigo');
 
 		$edit = new DataDetails($this->tits, $do);
 		$edit->on_save_redirect=false;
@@ -589,21 +614,24 @@ class Lprod extends Controller {
 		$edit->usuario = new autoUpdateField('usuario', $this->secu->usuario(), $this->secu->usuario());
 
 		//Inicio del detalle
-		$i  =0;
-		$rel='itlcierre';
-		$sel=array('a.codigo','a.descrip');
-
-		$this->db->select($sel);
-		$this->db->from('lprod AS a');
-
+		$i  = 0;
+		$rel= 'itlcierre';
 		$id = $edit->get_from_dataobjetct('id');
+
 		if($id){
-			$dbid=$this->db->escape($id);
-			$this->db->join('itlcierre AS b','b.id_lcierre='.$dbid,'left');
+			$sel=array('a.codigo','a.descrip');
+			$this->db->select($sel);
+			$this->db->from('itlcierre AS a');
+			$this->db->where('a.id_lcierre',$id);
+			$this->db->order_by('a.codigo');
+		}else{
+			$sel=array('a.codigo','a.descrip');
+			$this->db->select($sel);
+			$this->db->from('lprod AS a');
+			$this->db->where('a.fecha',$fecha);
+			$this->db->group_by('a.codigo');
+			$this->db->order_by('a.codigo');
 		}
-		$this->db->where('a.fecha',$fecha);
-		$this->db->group_by('a.codigo');
-		$this->db->order_by('a.codigo');
 
 		$query = $this->db->get();
 		$edit->detail_expand_except($rel);
@@ -648,6 +676,17 @@ class Lprod extends Controller {
 			$edit->$obj->onkeyup='totalizar();';
 			$edit->$obj->rel_id = $rel;
 			$edit->$obj->ind    = $i;
+
+			$obj='itpeso_'.$i;
+			$edit->$obj = new inputField('Producido (Peso)',$obj);
+			$edit->$obj->db_name = 'peso';
+			$edit->$obj->rule='max_length[12]|numeric';
+			$edit->$obj->css_class='inputnum';
+			$edit->$obj->size =14;
+			$edit->$obj->maxlength =12;
+			$edit->$obj->rel_id = $rel;
+			$edit->$obj->ind    = $i;
+			$edit->$obj->when   = array('modify','show');
 
 			$i++;
 		}
@@ -728,6 +767,11 @@ class Lprod extends Controller {
 		$edit->peso->maxlength =12;
 
 		//Inicio del detalle
+		$edit->itid = new inputField('','itid_<#i#>');
+		$edit->itid->db_name = 'id';
+		$edit->itid->type    ='inputhidden';
+		$edit->itid->rel_id  ='itlprod';
+
 		$edit->itcodrut = new inputField('ruta','codrut_<#i#>');
 		$edit->itcodrut->db_name = 'codrut';
 		$edit->itcodrut->rule='max_length[4]|required';
@@ -744,7 +788,7 @@ class Lprod extends Controller {
 
 		$edit->itlitros = new inputField('litros','itlitros_<#i#>');
 		$edit->itlitros->db_name = 'litros';
-		$edit->itlitros->rule='max_length[12]|numeric|required|mayorcero';
+		$edit->itlitros->rule='max_length[12]|numeric|required|mayorcero|callback_chlitros[<#i#>]';
 		$edit->itlitros->css_class='inputnum';
 		$edit->itlitros->size =14;
 		$edit->itlitros->maxlength =12;
@@ -771,6 +815,54 @@ class Lprod extends Controller {
 		}
 	}
 
+	function chlitros($litros,$ind){
+		$litros = round($litros,2);
+		$ruta   = $this->input->post('codrut_'.$ind);
+		$fecha  = date('Y-m-d');
+		$id     = $this->input->post('itid_'.$ind);
+		if(!empty($id)){
+			$ww='AND a.id <> '.$this->db->escape($id);
+		}else{
+			$ww='';
+		}
+
+		$dbfecha= $this->db->escape($fecha);
+		$dbruta = $this->db->escape($ruta);
+
+		$usados = round($this->datasis->dameval("SELECT SUM(a.litros) FROM itlprod AS a JOIN lprod AS b ON a.id_lprod=b.id WHERE a.codrut=$dbruta AND b.fecha=$dbfecha $ww"),2);
+		$recibi = round($this->datasis->dameval("SELECT SUM(litros) FROM lrece   WHERE ruta=$dbruta AND fecha=$dbfecha"),2);
+
+		$disponible = $recibi-$usados-$litros;
+		if ($disponible < 0){
+			if($recibi-$usados < 0) $disponible = 0; else $disponible = $recibi-$usados ;
+
+			$this->validation->set_message('chlitros',"No hay suficiente leche recibida de la ruta $ruta para producir, disponible: ".nformat(abs($disponible)));
+			return false;
+		}else{
+			return true;
+		}
+	}
+
+	function getcierre($fecha){
+		$dbfecha = $this->db->escape($fecha);
+		$cierre  = $this->datasis->dameval("SELECT id FROM lcierre WHERE fecha=$dbfecha");
+		if(empty($cierre)){
+			echo '0';
+		}else{
+			echo $cierre;
+		}
+	}
+
+	function getstatus($fecha){
+		$dbfecha = $this->db->escape($fecha);
+		$status = $this->datasis->dameval("SELECT status FROM lcierre WHERE fecha=$dbfecha");
+		if($status=='A'){
+			echo 'A';
+		}else{
+			echo 'C';
+		}
+	}
+
 	function _pre_insert_lcierre($do){
 		$fecha  = $do->get('fecha');
 		$dbfecha= $this->db->escape($fecha);
@@ -785,6 +877,16 @@ class Lprod extends Controller {
 
 	function _pre_insert($do){
 		$do->set('fecha',date('Y-m-d'));
+
+		$fecha  = $do->get('fecha');
+		$dbfecha= $this->db->escape($fecha);
+		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
+
+		if($cana>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
+			return false;
+		}
+
 		return true;
 	}
 
@@ -884,7 +986,5 @@ class Lprod extends Controller {
 			ENGINE=MyISAM;";
 			$this->db->simple_query($mSQL);
 		}
-
 	}
-
 }

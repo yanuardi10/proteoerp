@@ -182,12 +182,13 @@ function autocod(id){
 
 <?php
 	for($i=0;$i<$form->max_rel_count['itlprod'];$i++) {
+		$it_id      = "itid_${i}";
 		$it_codrut  = "itcodrut_${i}";
 		$it_nombre  = "itnombre_${i}";
 		$it_litros  = "itlitros_${i}";
 ?>
 	<tr id='tr_itlprod_<?php echo $i; ?>'>
-		<td class="littletablerow" align="center"><?php echo $form->$it_codrut->output;  ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_codrut->output.$form->$it_id->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_nombre->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_litros->output;  ?></td>
 		<?php if($form->_status!='show') {
