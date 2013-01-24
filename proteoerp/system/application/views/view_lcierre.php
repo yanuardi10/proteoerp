@@ -57,6 +57,10 @@ function totalizar(){
 		<th align="center">Descripci&oacute;n</th>
 		<th align="center">Unidades</th>
 		<th align="center">Cestas</th>
+		<th align="center"><?php
+			$it_peso = 'itpeso_0';
+			echo $form->$it_peso->label;
+		?></th>
 	</tr>
 
 <?php
@@ -65,18 +69,20 @@ function totalizar(){
 		$it_descrip  ='itdescrip_'.$i;
 		$it_cestas   ='itcestas_'.$i;
 		$it_unidades ='itunidades_'.$i;
+		$it_peso     ='itpeso_'.$i;
 ?>
 	<tr id='tr_itlprod_<?php echo $i; ?>'>
 		<td class="littletablerow" align="center"><?php echo $form->$it_codigo->output;    ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_descrip->output;   ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_unidades->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_cestas->output;    ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_peso->output;      ?></td>
 	</tr>
 	<?php
 	$mod=!$mod;
 	} ?>
 	<tr id='__UTPL__lcierre'>
-		<td colspan='4' class="littletableheaderdet">&nbsp;</td>
+		<td colspan='5' class="littletableheaderdet">&nbsp;</td>
 	</tr>
 </table>
 </div>
