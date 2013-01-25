@@ -11,6 +11,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 ?>
 <script type="text/javascript">
 $(function(){
+	$('.inputnum').numeric('.');
 	calconeto();
 	calcolitro();
 });
@@ -73,6 +74,7 @@ function calconeto(){
 		<td class="littletableheaderc"><?php echo $form->flete->label;    ?></td>
 		<td class="littletablerow"    ><?php echo $form->flete->output;   ?></td>
 	</tr>
+
 </table>
 <br />
 <fieldset style='border: 1px outset #407E13;background: #FAFAFA;'>
@@ -98,6 +100,10 @@ function calconeto(){
 	<tr >
 		<td style='font-size: 14pt;font-weight:bold;' class="littletableheaderc">Total Litros: </td>
 		<td style='font-size: 14pt;font-weight:bold;' class="littletablerow"><?php echo $form->litros->output;  ?></td>
+	</tr>
+	<tr>
+		<td class="littletablerow"><?php echo $form->transporte->label;?></td>
+		<td class="littletablerow"><?php echo $form->transporte->output;?></td>
 	</tr>
 </table>
 </fieldset>
