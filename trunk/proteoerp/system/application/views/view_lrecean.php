@@ -11,67 +11,21 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 ?>
 <script type="text/javascript">
 $(function(){
-	calconeto();
-	calcolitro();
 	descuagua()
 });
 
-function calcolitro(){
-	var lleno=<?php echo $form->lleno->value ?>;
-	var densidad=Number($("#densidad").val());
-	var neto    =Number($("#neto").val());
-	var vacio=Number($("#vacio").val());
-
-	if ( densidad == '' ) {
-		densidad = 1.016;
-		$('#densidad').val(1.016);
-		$('#densidad_val').val(1.016);
-	}
-
-	if ( vacio == 0 ) {
-		$('#litros').val(neto);
-		$('#litros_val').text(nformat(neto,2));
-	} else {
-		$('#litros').val(neto/densidad);
-		$('#litros_val').text(nformat(neto/densidad,2));
-	}
-}
-
-function calconeto(){
-	var lleno=<?php echo $form->lleno->value ?>;
-	var vacio=Number($("#vacio").val());
-	var densidad=Number($("#densidad").val());
-	var neto = 0;
-	
-	neto = lleno-vacio;
-
-	if ( densidad == '' ) densidad = 1.016;
-
-	$('#neto').val(lleno-vacio);
-	$('#neto_val').text(nformat(lleno-vacio,2));
-
-	if ( vacio == 0 ) {
-		$('#litros').val(neto);
-		$('#litros_val').text(nformat(neto,2));
-	} else {
-		$('#litros').val(neto/densidad);
-		$('#litros_val').text(nformat(neto/densidad,2));
-	}
-}
-
 function descuagua(){
 	var h2o  = Number($("#h2o").val());
-	var neto = Number($("#neto").val());
-
+	var neto = Number($("#litros").val());
 	if ( h2o == '' ){
 		h2o = 0;
 	}
-
-	$('#dtoagua').val(neto*h2o/100);
-	$('#dtoagua_val').text(nformat(neto*h2o/100,2));
-
+	$('#dtoagua').val(roundNumber(neto*h2o/100,2));
+	$('#dtoagua_val').text(roundNumber(neto*h2o/100,2));
 }
 </script>
+<?php
+/*
 <table width='100%' style='font-size:11pt;background:#F2E69D;'>
 	<tr>
 		<td                           width='60'>Numero:</td>
@@ -85,34 +39,30 @@ function descuagua(){
 		<span style='font-weight:bold;'><?php echo $this->datasis->dameval("SELECT nombre FROM lruta WHERE codigo='".$form->ruta->value."'");  ?></span></td>
 	</tr>
 </table>
+*/
+?>
+
+<span style='text-align:center;font-size:14pt;'>
+    <?php echo img(array('src' =>"images/lab.png",  'height' => 18, 'alt' => 'Laboratorio',    'title' => 'Laboratorio', 'border'=>'0'));	?>
+	Analisis de Laboratorio
+</span>
 <br />
-<fieldset style='border: 1px outset #407E13;background: #FAFAFA;'>
-<legend class='subtitulotabla'>Pesadas del Transporte</legend>
-<table width='100%' >
+<div style='border: 1px solid #9AC8DA;background: #FAFAFA'>
+<table width='100%' style='font-size:11pt;background:#FAFAFA;'>
 	<tr>
-		<td class="littletableheaderc">Lleno</td>
-		<td class="littletableheaderc">Vacio</td>
-		<td class="littletableheaderc">Neto</td>
-		<td class="littletableheaderc">Densidad</td>
-		<td class="littletableheaderc">Litros</td>
-	</tr>
-	<tr>
-		<td class="littletablerow"><?php echo $form->lleno->output;?></td>
-		<td class="littletablerow"><?php echo $form->vacio->output;?></td>
-		<td class="littletablerow"><?php echo $form->neto->output; ?></td>
-		<td class="littletablerow"><?php echo $form->densidad->output;?></td>
-		<td class="littletablerow"><?php echo $form->litros->output;  ?></td>
+		<td class="littletableheaderc"><?php echo $form->observa->label;    ?></td>
+		<td class="littletablerow"    ><?php echo $form->observa->output;   ?></td>
 	</tr>
 </table>
-</fieldset>
+</div>
 
 <div style='border: 1px solid #9AC8DA;background: #FAFAFA'>
 <table width='100%' align='center'>
 	<tr>
+		<td class="littletableheaderc">Litros</td>
+		<td class="littletablerow"><?php echo $form->litros->output;  ?></td>
 		<td class="littletableheaderc"><?php echo $form->temp->label;    ?></td>
 		<td class="littletablerow"    ><?php echo $form->temp->output;   ?></td>
-		<td class="littletableheaderc"></td>
-		<td class="littletablerow"    ></td>
 	</tr>
 	<tr>
 		<td class="littletableheaderc"><?php echo $form->animal->label;  ?></td>
@@ -135,8 +85,15 @@ function descuagua(){
 		<td class="littletableheaderc"><?php echo $form->dtoagua->label; ?></td>
 		<td class="littletablerow"    ><?php echo $form->dtoagua->output;?></td>
 	</tr>
+	
 </table>
 </div>
+
+<?php 
+echo $form->id_lrece->label; 
+echo $form->id_lrece->output;
+?>
+
 
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end; ?>
