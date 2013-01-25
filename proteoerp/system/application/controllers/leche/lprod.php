@@ -15,7 +15,7 @@ class Lprod extends Controller {
 	function index(){
 		$this->instalar();
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
-		$this->datasis->creaintramenu( $data = array('modulo'=>'223','titulo'=>'Control de Produccion','mensaje'=>'Control de Produccion','panel'=>'LECHE','ejecutar'=>'leche/lprod','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
+		$this->datasis->creaintramenu(array('modulo'=>'223','titulo'=>'Control de Producción','mensaje'=>'Control de Producción','panel'=>'LECHE','ejecutar'=>'leche/lprod','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
 	}
 
