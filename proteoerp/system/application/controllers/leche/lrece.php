@@ -1,8 +1,4 @@
 <?php
-//1- Ruta, lleno (peso),chofer
-//2- llenar vaqueras
-//3- Valores de las analisis
-//4- Peso Vacio
 class Lrece extends Controller {
 	var $mModulo = 'LRECE';
 	var $titp    = 'Recepci&oacute;n de Leche';
@@ -54,7 +50,7 @@ class Lrece extends Controller {
 				</tr>
 				<tr>
 					<td style='vertical-align:center;border:1px solid #AFAFAF;'><div class='botones'>".img(array('src' =>"images/lab.png",  'height' => 18, 'alt' => 'Imprimir',    'title' => 'Imprimir', 'border'=>'0'))."</div></td>
-					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:70px;text-align:left;vertical-align:top;' href='#' id='banalisis'>Ruta</a></div></td>
+					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:70px;text-align:left;vertical-align:top;' href='#' id='banalisis'>Analisis</a></div></td>
 					<td style='vertical-align:top;'><div class='botones'><a style='width:80px;text-align:left;vertical-align:top;' href='#' id='bvaqueras'>Vaqueras</a></div></td>
 				</tr>
 			</table>
@@ -64,11 +60,8 @@ class Lrece extends Controller {
 
 		$grid->setWpAdicional($WpAdic);
 
-
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
-		//$grid->wbotonadd(array("id"=>"bvaqueras", "img"=>"images/lab.png","alt" => 'Vaqueras', "label"=>"Vaqueras"));
-		//$grid->wbotonadd(array("id"=>"banalisis", "img"=>"images/lab.png","alt" => 'Analisis', "label"=>"Analisis"));
 		$grid->wbotonadd(array("id"=>"bcierre"  , "img"=>"images/candado.png","alt" => 'Cierre'  , "label"=>"Cierre"  ));
 		$WestPanel = $grid->deploywestp();
 
@@ -107,10 +100,26 @@ class Lrece extends Controller {
 			$.post("'.site_url($this->url.'apertura/create').'",
 			function(data){
 				$("#fedita").html(data);
-				$("#fedita").dialog({height: 230, width: 500, title: "Agregar Recepcion de Leche"});
+				$("#fedita").dialog({height: 300, width: 550, title: "Agregar Recepcion de Leche"});
 				$("#fedita").dialog( "open" );
 			});
 		};';
+
+		$bodyscript .= '
+		function modanal(id) {
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				$.post("'.site_url('leche/lrece/analisis/modify').'/"+id,
+				function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog({height: 380, width: 500, title: "Analisis la Recepcion "+id+" Ruta "+ret.ruta+" Nombre "+ret.nombre});
+					$("#fedita").dialog( "open" );
+				});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		};';
+
 
 		$bodyscript .= '
 		function lreceedit() {
@@ -120,7 +129,7 @@ class Lrece extends Controller {
 				mId = id;
 				$.post("'.site_url($this->url.'apertura/modify').'/"+id, function(data){
 					$("#fedita").html(data);
-					$("#fedita").dialog({height: 240, width: 500, title: "Editar Recepcion Nro. "+id+" Ruta "+ret.ruta })
+					$("#fedita").dialog({height: 300, width: 550, title: "Editar Recepcion Nro. "+id+" Ruta "+ret.ruta })
 					$("#fedita").dialog( "open" );
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
@@ -172,7 +181,7 @@ class Lrece extends Controller {
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				$.post("'.site_url('leche/lrece/analisis/modify').'/"+id,
+				$.post("'.site_url('leche/lrece/analisis').'/"+id+"/create",
 				function(data){
 					$("#fedita").html(data);
 					$("#fedita").dialog({height: 380, width: 500, title: "Analisis la Recepcion "+id+" Ruta "+ret.ruta+" Nombre "+ret.nombre});
@@ -286,9 +295,9 @@ class Lrece extends Controller {
 			'editoptions'   => '{ size:4, maxlength: 4 }',
 		));
 
-/*
-		$grid->addField('chofer');
-		$grid->label('Chofer');
+
+		$grid->addField('flete');
+		$grid->label('Flete');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -297,7 +306,7 @@ class Lrece extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:5, maxlength: 5 }',
 		));
-*/
+
 
 
 		$grid->addField('nombre');
@@ -548,8 +557,16 @@ class Lrece extends Controller {
 		$grid->setOnSelectRow('
 			function(id){
 				if (id){
+					var ret = jQuery(gridId1).jqGrid(\'getRowData\',id);
 					jQuery(gridId2).jqGrid("setGridParam",{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
 					jQuery(gridId2).trigger("reloadGrid");
+
+					$.ajax({
+						url: "'.base_url().$this->url.'resumen/"+id,
+						success: function(msg){
+							$("#ladicional").html(msg);
+						}
+					});
 				}
 			}'
 		);
@@ -578,6 +595,28 @@ class Lrece extends Controller {
 		} else {
 			return $grid;
 		}
+	}
+
+
+	//***************************************
+	//  Detalle de Analisis
+	//
+	//***************************************
+	function resumen($id){
+		$salida = '';
+		$nombre = $this->datasis->dameval("SELECT b.nombre FROM lrece a JOIN lruta b ON a.ruta=b.codigo WHERE a.id=$id");
+		$query = $this->db->query("SELECT id, observa, round(litros,1) litros FROM lanal WHERE id_lrece=$id");
+		if ($query->num_rows() > 0){
+			$salida = '<table width="90%" align="center" border="1" cellspacing="0" cellpadding="0" >';
+			$salida .= '<tr style="background:#A1AFAF"><th>Analisis</th><th>Litros</th></tr>';
+			foreach ($query->result() as $row){
+				$salida .= '<tr><td>';
+				$salida .= "<a href='#' onclick= 'modanal(".$row->id.")'>";
+				$salida .= $row->observa.'</a></td><td align="right">'.$row->litros.'</td></tr>';
+			}
+			$salida .= '</table>';
+		}
+		echo '<center>'.$nombre.'</centercenter><br>'. $salida;
 	}
 
 	/**
@@ -652,9 +691,11 @@ class Lrece extends Controller {
 		//};
 	}
 
-	//***************************
+	//************************************
+	//
 	//Definicion del Grid y la Forma
-	//***************************
+	//
+	//************************************
 	function defgridit( $deployed = false ){
 		$i      = 1;
 		$editar = "false";
@@ -955,21 +996,58 @@ class Lrece extends Controller {
 		$this->rapyd->load('dataedit');
 
 		$script='
-		$(function(){
-			$(".inputnum").numeric(".");
-		});
-		';
+		$(document).ready(function() {
+			$("#flete").autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url:  "'.site_url('ajax/buscasprv').'",
+						type: "POST",
+						dataType: "json",
+						data: "q="+req.term,
+						success:
+							function(data){
+								var sugiere = [];
+								if(data.length==0){
+									$("#proveed").val("");
+									$("#proveed_val").text("");
+									$("#flete").val("");
+								}else{
+									$.each(data,
+										function(i, val){
+											sugiere.push( val );
+										}
+									);
+								}
+								add(sugiere);
+							},
+					})
+				},
+				minLength: 2,
+				select: function( event, ui ) {
+					$("#flete").attr("readonly", "readonly");
+					$("#proveed").val(ui.item.nombre);
+					$("#proveed_val").text(ui.item.nombre);
+					$("#flete").val(ui.item.proveed);
+					setTimeout(function(){ $("#flete").removeAttr("readonly"); }, 1500);
+				}
+			});
+		});';
+
+
+		$do = new DataObject('lrece');
+		$do->pointer('sprv' ,'sprv.proveed=lrece.flete','sprv.nombre AS sprvnombre','left');
 
 		$edit = new DataEdit('', 'lrece');
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
+
 		$edit->on_save_redirect=false;
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
-		$edit->post_process('insert','_post_apertura_insert');
-		$edit->post_process('update','_post_apertura_update');
+		$edit->post_process('insert', '_post_apertura_insert');
+		$edit->post_process('update', '_post_apertura_update');
 
-		$edit->post_process('delete','_post_apertura_delete');
+		$edit->post_process('delete', '_post_apertura_delete');
 		$edit->pre_process( 'insert', '_pre_apertura_insert');
 		$edit->pre_process( 'update', '_pre_apertura_update');
 		$edit->pre_process( 'delete', '_pre_apertura_delete');
@@ -981,20 +1059,65 @@ class Lrece extends Controller {
 		$edit->ruta->rule = 'trim|max_length[4]|required';
 		$edit->ruta->option('','Seleccionar');
 		$edit->ruta->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM lruta ORDER BY nombre');
-		$edit->ruta->style = 'width:166px';
+		$edit->ruta->style = 'width:300px';
 
 		$edit->lleno = new inputField('Peso lleno','lleno');
-		$edit->lleno->rule='max_length[16]|numeric|required';
-		$edit->lleno->css_class='inputnum';
-		$edit->lleno->size =12;
-		$edit->lleno->mode='autohide';
-		$edit->lleno->maxlength =16;
-		$edit->lleno->showformat   = 'decimal';
+		$edit->lleno->rule       = 'numeric|required';
+		$edit->lleno->css_class  = 'inputnum';
+		$edit->lleno->insertValue= '0';
+		$edit->lleno->size       =  7;
+		$edit->lleno->maxlength  = 16;
+		$edit->lleno->showformat = 'decimal';
+		//$edit->lleno->mode='autohide';
 
-		$edit->nombre = new inputField('Nombre del chofer','nombre');
+		$edit->nombre = new inputField('Chofer','nombre');
 		$edit->nombre->rule='max_length[45]|strtoupper|required';
 		$edit->nombre->size =40;
 		$edit->nombre->maxlength =45;
+
+		$edit->flete = new inputField('Flete','flete');
+		$edit->flete->rule='max_length[5]';
+		$edit->flete->size =6;
+		$edit->flete->maxlength =5;
+
+		$edit->proveed = new inputField('Proveedor','proveed');
+		$edit->proveed->pointer = true;
+		$edit->proveed->size =40;
+		$edit->proveed->type='inputhidden';
+		$edit->proveed->maxlength =45;
+		$edit->proveed->in ='flete';
+
+		$edit->vacio = new inputField('Peso vac&iacute;o','vacio');
+		$edit->vacio->rule='max_length[16]|numeric|required';
+		$edit->vacio->css_class='inputnum';
+		$edit->vacio->size =7;
+		$edit->vacio->insertValue= "0";
+		$edit->vacio->maxlength =16;
+		$edit->vacio->onkeyup = 'calconeto()';
+		$edit->vacio->showformat   = 'decimal';
+
+		$edit->neto = new inputField('Peso Neto','neto');
+		$edit->neto->rule='numeric';
+		$edit->neto->css_class='inputnum';
+		$edit->neto->type = 'inputhidden';
+		$edit->neto->size=7;
+		$edit->neto->maxlength=7;
+		$edit->neto->showformat   = 'decimal';
+
+		$edit->densidad = new inputField('Densidad','densidad');
+		$edit->densidad->rule='numeric|required';
+		$edit->densidad->css_class='inputnum';
+		$edit->densidad->size =5;
+		$edit->densidad->maxlength =10;
+		$edit->densidad->onkeyup = 'calcolitro()';
+
+		$edit->litros = new inputField('Litros','litros');
+		$edit->litros->rule='numeric';
+		$edit->litros->css_class='inputnum';
+		$edit->litros->size =7;
+		$edit->litros->maxlength =16;
+		$edit->litros->type = 'inputhidden';
+
 		$edit->build();
 
 		if($edit->on_success()){
@@ -1005,7 +1128,8 @@ class Lrece extends Controller {
 			);
 			echo json_encode($rt);
 		}else{
-			echo $edit->output;
+			$conten['form'] =&  $edit;
+			$this->load->view('view_lreceap', $conten);
 		}
 	}
 
@@ -1023,8 +1147,7 @@ class Lrece extends Controller {
 
 		$script= '';
 
-
-		$edit = new DataEdit('', 'lrece');
+		$edit = new DataEdit('', 'lanal');
 
 		$edit->script($script,'modify');
 		$edit->script($script,'create');
@@ -1037,30 +1160,31 @@ class Lrece extends Controller {
 		$edit->pre_process( 'update', '_pre_analisis_update');
 		$edit->pre_process( 'delete', '_pre_analisis_delete');
 
+
 		$edit->numero = new inputField('N&uacute;mero','id');
 		$edit->numero->rule='max_length[8]';
 		$edit->numero->size =9;
 		$edit->numero->mode='autohide';
 		$edit->numero->maxlength =8;
 
+
 		$edit->fecha = new dateField('Fecha','fecha');
 		$edit->fecha->rule='chfecha';
 		$edit->fecha->mode='autohide';
 		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
-
+/*
 		$edit->ruta = new inputField('Ruta','ruta');
 		$edit->ruta->rule='max_length[4]';
 		$edit->ruta->mode='autohide';
 		$edit->ruta->size =6;
 		$edit->ruta->maxlength =4;
-
-		$edit->nombre = new inputField('Nombre del chofer','nombre');
-		$edit->nombre->rule='max_length[45]';
-		$edit->nombre->mode='autohide';
-		$edit->nombre->size =40;
-		$edit->nombre->maxlength =45;
-
+*/
+		$edit->observa = new inputField('Observaciones','observa');
+		//$edit->observa->mode='autohide';
+		$edit->observa->size =40;
+		$edit->observa->maxlength =45;
+/*
 		$edit->lleno = new inputField('Peso lleno','lleno');
 		$edit->lleno->rule='max_length[16]|numeric|required';
 		$edit->lleno->css_class='inputnum';
@@ -1091,20 +1215,20 @@ class Lrece extends Controller {
 		$edit->densidad->size =5;
 		$edit->densidad->maxlength =10;
 		$edit->densidad->onkeyup = 'calcolitro()';
-
+*/
 		$edit->litros = new inputField('Litros','litros');
 		$edit->litros->rule='numeric';
 		$edit->litros->css_class='inputnum';
 		$edit->litros->size =7;
 		$edit->litros->maxlength =16;
-		$edit->litros->type = 'inputhidden';
-
+		//$edit->litros->type = 'inputhidden';
+/*
 		$edit->lista = new inputField('Litros lista','lista');
 		$edit->lista->rule='max_length[16]|numeric';
 		$edit->lista->css_class='inputnum';
 		$edit->lista->size =12;
 		$edit->lista->maxlength =16;
-
+*/
 		$edit->animal = new  dropdownField ('Animal', 'animal');
 		$edit->animal->option('M' ,'Mezcla');
 		$edit->animal->option('V' ,'Vaca');
@@ -1160,6 +1284,17 @@ class Lrece extends Controller {
 		$edit->dtoagua->css_class='inputnum';
 		$edit->dtoagua->size =7;
 		$edit->dtoagua->maxlength =10;
+
+//		$edit->id_lrece = new inputField('id_lrece','id_lrece');
+//		$edit->id_lrece->rule        = 'numeric|required';
+//		$edit->id_lrece->insertValue = $this->uri->segment(5);
+//		$edit->id_lrece->css_class   = 'inputnum';
+//		$edit->id_lrece->size        =  7;
+//		$edit->id_lrece->maxlength   = 10;
+//		$edit->id_lrece->
+
+		$edit->id_lrece  = new autoUpdateField('id_lrece',$this->uri->segment(4), $this->uri->segment(4) );
+
 
 		$edit->build();
 
@@ -1227,7 +1362,8 @@ class Lrece extends Controller {
 
 		$do = new DataObject('lrece');
 		$do->rel_one_to_many('itlrece', 'itlrece', array('id'=>'id_lrece'));
-		$do->pointer('sprv' ,'sprv.proveed=lrece.chofer','sprv.nombre AS sprvnombre','left');
+
+		$do->pointer('sprv' ,'sprv.proveed=lrece.flete','sprv.nombre AS sprvnombre','left');
 		$do->rel_pointer('itlrece','lvaca','lvaca.id=itlrece.id_lvaca','lvaca.nombre AS lvacadescrip,lvaca.codigo AS lvacacodigo','left');
 		$do->order_rel_one_to_many('itlrece','id');
 
@@ -1262,11 +1398,11 @@ class Lrece extends Controller {
 		$edit->ruta->size =6;
 		$edit->ruta->maxlength =4;
 
-		$edit->chofer = new inputField('Chofer','chofer');
-		$edit->chofer->rule='max_length[5]';
-		$edit->chofer->mode = 'autohide';
-		$edit->chofer->size =6;
-		$edit->chofer->maxlength =5;
+		$edit->flete = new inputField('Flete','flete');
+		$edit->flete->rule='max_length[5]';
+		//$edit->chofer->mode = 'autohide';
+		$edit->flete->size =6;
+		$edit->flete->maxlength =5;
 
 		$edit->nombre = new inputField('Nombre','nombre');
 		$edit->nombre->rule='max_length[45]';
@@ -1647,7 +1783,7 @@ class Lrece extends Controller {
 		logusu($do->table,"Modifico Analisis $this->tits $primary ");
 	}
 	function _pre_analisis_insert($do){
-		return false;
+		return true;
 	}
 	function _pre_analisis_delete($do){
 		return false;
