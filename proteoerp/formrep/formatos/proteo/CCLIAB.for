@@ -1,24 +1,23 @@
-<?php if(count($parametros) < 4) show_error('Faltan parametros');
-$cliente = $parametros[0];
-$tipo_doc= $parametros[1];
-$numero  = $parametros[2];
-$fecha   = $parametros[3];
+<?php if(count($parametros) < 0) show_error('Faltan parametros');
+$id=$parametros[0];
 
-$sel=array('a.tipo_doc','a.numero','a.fecha','a.monto','a.abonos'
+$sel=array('a.tipo_doc','a.numero','a.cod_cli','a.fecha','a.monto','a.abonos','a.tipo_doc'
 ,'b.nombre','CONCAT_WS(\' \',dire1,dire2) AS direc','b.rifci'
 ,'CONCAT_WS(\' \',observa1,observa2) AS observa','b.rifci','a.transac');
 $this->db->select($sel);
 $this->db->from('smov AS a');
 $this->db->join('scli AS b'  ,'a.cod_cli=b.cliente');
-$this->db->where('a.cod_cli' , $cliente);
-$this->db->where('a.tipo_doc', $tipo_doc);
-$this->db->where('a.numero'  , $numero);
-$this->db->where('a.fecha'   , $fecha);
+
+$this->db->where('a.id'   , $id);
+
 $mSQL_1 = $this->db->get();
 
 $row = $mSQL_1->row();
 $tipo_doc = $row->tipo_doc;
 $numero   = $row->numero;
+$cliente  = $row->cod_cli;
+$tipo_doc = $row->tipo_doc;
+$fecha    = $row->fecha;
 $hfecha   = dbdate_to_human($row->fecha);
 $monto    = $row->monto;
 $montole  = numletra($row->monto);
