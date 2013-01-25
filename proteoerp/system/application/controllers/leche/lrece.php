@@ -63,6 +63,7 @@ class Lrece extends Controller {
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"bcierre"  , "img"=>"images/candado.png","alt" => 'Cierre'  , "label"=>"Cierre"  ));
+		$grid->wbotonadd(array("id"=>"bagrega"  , "img"=>"images/candado.png","alt" => 'Agrega'  , "label"=>'Agrega'  ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -161,6 +162,22 @@ class Lrece extends Controller {
 		});';
 
 		$bodyscript .= '
+		jQuery("#bagrega").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+
+
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url($this->url.'itvaqueras').'/"+id+"/create", function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog({height: 300, width: 550, title: "Editar Recepcion Nro. "+id+" Ruta "+ret.ruta })
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		});';
+
+		$bodyscript .= '
 		jQuery("#bvaqueras").click( function(){
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
@@ -194,7 +211,7 @@ class Lrece extends Controller {
 
 		$bodyscript .= '
 		jQuery("#bcierre").click( function(){
-			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			var id = c
 			if (id)	{
 				$.post("'.site_url('leche/lrece/cierre/update').'",
 				function(data){
@@ -225,6 +242,7 @@ class Lrece extends Controller {
 								apprise("Registro Guardado");
 								$( "#fedita" ).dialog( "close" );
 								grid.trigger("reloadGrid");
+								jQuery("#newapi'. $grid1.'").trigger("reloadGrid");
 								//'.$this->datasis->jwinopen(site_url('formatos/ver/LRECE').'/\'+res.id+\'/id\'').';
 								return true;
 							} else {
@@ -1653,6 +1671,98 @@ class Lrece extends Controller {
 		}
 	}
 
+	function itvaqueras($id_lrece){
+
+		$this->rapyd->load('dataedit');
+
+		$script= "
+		$(document).ready(function() {
+			$('.inputnum').numeric('.');
+
+			$('#vaquera').autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url:  '".site_url('ajax/buscalvaca')."',
+						type: 'POST',
+						dataType: 'json',
+						data: 'q='+req.term,
+						success:
+							function(data){
+								var sugiere = [];
+								if(data.length==0){
+									$('#vaquera').val('')
+									$('#nombre').val('');
+									$('#nombre_val').text('');
+									$('#id_lvaca').val('');
+								}else{
+									$.each(data,
+										function(i, val){
+											sugiere.push( val );
+										}
+									);
+									add(sugiere);
+								}
+							},
+					})
+				},
+				minLength: 2,
+				select: function( event, ui ) {
+					$('#vaquera').attr('readonly', 'readonly');
+
+					$('#vaquera').val(ui.item.vaquera);
+					$('#nombre').val(ui.item.nombre);
+					$('#nombre_val').text(ui.item.nombre);
+					$('#id_lvaca').val(ui.item.id_lvaca);
+
+					setTimeout(function() {  $('#vaquera').removeAttr('readonly'); }, 1500);
+				}
+			});
+
+		});";
+
+		$edit = new DataEdit('Recepci&oacute;n de leche','itlrece');
+		$edit->on_save_redirect=false;
+		$edit->script($script,'modify');
+		$edit->script($script,'create');
+
+		//$edit->post_process('update','_post_vaqueras_update');
+		$edit->pre_process( 'insert', '_pre_itvaqueras_insert');
+		//$edit->pre_process( 'update', '_pre_vaqueras_update');
+		//$edit->pre_process( 'delete', '_pre_vaqueras_delete');
+
+		$edit->vaquera = new inputField('Vaquera','vaquera');
+		$edit->vaquera->db_name  = 'vaquera';
+		$edit->vaquera->size =8;
+		$edit->vaquera->maxlength=5;
+		$edit->vaquera->rule = 'required|trim';
+
+		$edit->itid_lvaca = new hiddenField('','id_lvaca');
+		$edit->itid_lvaca->db_name  = 'id_lvaca';
+		$edit->itid_lvaca->in ='vaquera';
+
+		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre->db_name  = 'nombre';
+		$edit->nombre->size =50;
+		$edit->nombre->type='inputhidden';
+		$edit->nombre->maxlength=45;
+		$edit->nombre->rule = 'required|trim';
+
+		$edit->id_lrece   = new autoUpdateField('id_lrece',$id_lrece,$id_lrece);
+
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+			echo json_encode($rt);
+		}else{
+			echo $edit->output;
+		}
+	}
+
 
 	function cierre(){
 		echo 'En construcci&oacute;n';
@@ -1660,6 +1770,13 @@ class Lrece extends Controller {
 
 
 	//Pre y Pos para la apertura
+	function _pre_itvaqueras_insert($do){
+		$dbcodigo = $this->db->escape($do->get('vaquera'));
+		$id=$this->datasis->dameval('SELECT id FROM lvaca WHERE codigo='.$dbcodigo);
+
+		$do->set('id_lvaca',$id);
+	}
+
 	function _post_apertura_insert($do){
 		$primary = implode(',',$do->pk);
 		// Crea los itrece
