@@ -76,7 +76,7 @@ function totalizar(){
 		<td class="littletablerow" align="center"><?php echo $form->$it_descrip->output;   ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_unidades->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_cestas->output;    ?></td>
-		<td class="littletablerow" align="center"><?php echo $form->$it_peso->output;      ?></td>
+		<td class="littletablerow" align="center"><?php if(isset($form->$it_peso)) echo $form->$it_peso->output;      ?></td>
 	</tr>
 	<?php
 	$mod=!$mod;

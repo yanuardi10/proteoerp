@@ -303,6 +303,42 @@ class Ajax extends Controller {
 
 	/**************************************************************
 	 *
+	 *  BUSCA LAS VAQUERAS
+	 *
+	*/
+	function buscalvaca(){
+		$mid  = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
+		$qmid = $this->db->escape($mid);
+		$qdb  = $this->db->escape('%'.$mid.'%');
+
+		$data = '[ ]';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL="SELECT a.id,TRIM(a.codigo) AS codigo, TRIM(a.nombre) AS nombre
+				FROM lvaca AS a
+				WHERE (a.codigo LIKE ${qdb} OR a.nombre LIKE ${qdb})
+				ORDER BY a.nombre LIMIT ".$this->autolimit;
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']    = utf8_encode($row['codigo']);
+					$retArray['label']    = utf8_encode('('.$row['codigo'].') '.$row['nombre']);
+					$retArray['nombre']   = utf8_encode($row['nombre']);
+					$retArray['id']       = $row['id'];
+					array_push($retorno, $retArray);
+				}
+			}
+			if(count($data)>0)
+				$data = json_encode($retorno);
+		}
+		echo $data;
+		return true;
+	}
+
+	/**************************************************************
+	 *
 	 *  BUSCA LOS INVENTARIO
 	 *
 	*/
