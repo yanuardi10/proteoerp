@@ -181,7 +181,7 @@ echo $title;
 		<?php if($form->getstatus()=='show'){ ?>
 			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/CCLIAB/<?php echo raencode($form->_dataobject->pk['id']) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 			<img src='<?php echo base_url() ?>images/html_logo.gif'></a>
-			<a href="#" onclick="window.open('<?php echo base_url() ?>descargar/ver/CCLIAB/<?php echo raencode($form->_dataobject->pk['id']) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+			<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/descargar/CCLIAB/<?php echo raencode($form->_dataobject->pk['id']) ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 			<img src='<?php echo base_url() ?>images/pdf_logo.gif'></a>
 		<?php } ?>
 		</td>
