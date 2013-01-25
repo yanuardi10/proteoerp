@@ -565,6 +565,20 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
+		$grid->addField('transporte');
+		$grid->label('Transp.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('290');
@@ -1080,13 +1094,19 @@ class Lrece extends Controller {
 		$edit->ruta->style = 'width:300px';
 
 		$edit->lleno = new inputField('Peso lleno','lleno');
-		$edit->lleno->rule       = 'numeric|required';
+		$edit->lleno->rule       = 'numeric|required|callback_chlleno';
 		$edit->lleno->css_class  = 'inputnum';
 		$edit->lleno->insertValue= '0';
 		$edit->lleno->size       =  7;
 		$edit->lleno->maxlength  = 16;
 		$edit->lleno->showformat = 'decimal';
 		//$edit->lleno->mode='autohide';
+
+		$edit->transporte = new dropdownField('Transporte', 'transporte');
+		$edit->transporte->option('','Seleccionar');
+		$edit->transporte->options("SELECT id,nombre FROM lrece WHERE fecha=CURDATE() AND MID(ruta,1,1)='G' ORDER BY nombre");
+		$edit->transporte->rule ='condi_required|callback_chtransporte';
+		$edit->transporte->style='width:140px;';
 
 		$edit->nombre = new inputField('Chofer','nombre');
 		$edit->nombre->rule='max_length[45]|strtoupper|required';
@@ -1149,6 +1169,30 @@ class Lrece extends Controller {
 			$conten['form'] =&  $edit;
 			$this->load->view('view_lreceap', $conten);
 		}
+	}
+
+	function chlleno($val){
+		$val=floatval($val);
+		$ruta=$this->input->post('ruta');
+		if(substr($ruta,0,1)=='G' && $val<=0){
+			$this->validation->set_message('chlleno', 'El campo %s es obligatorio para la ruta '.$ruta);
+			return false;
+		}
+		return true;
+	}
+
+	function chtransporte($val){
+		$lleno=$this->input->post('lleno');
+		$ruta =$this->input->post('ruta');
+		if(substr($ruta,0,1)=='R' && empty($val)){
+			$this->validation->set_message('chtransporte', 'El campo %s es obligatorio para la ruta '.$ruta);
+			return false;
+		}
+		if(empty($lleno) && empty($val)){
+			$this->validation->set_message('chtransporte', 'El campo %s es obligatorio cuando no hay lleno');
+			return false;
+		}
+		return true;
 	}
 
 	//****************************************
@@ -1891,6 +1935,9 @@ class Lrece extends Controller {
 			return false;
 		}
 
+		$lleno = floatval($do->get('lleno'));
+		if($lleno>0) $do->set('transporte','');
+
 		return true;
 	}
 
@@ -1973,30 +2020,42 @@ class Lrece extends Controller {
 	function instalar(){
 		if(!$this->db->table_exists('lrece')){
 			$mSQL="CREATE TABLE `lrece` (
-			`fecha`    date DEFAULT NULL,
-			`ruta`     char(4) DEFAULT NULL COMMENT 'Ruta Grupo de Proveedor',
-			`chofer`   char(5) DEFAULT NULL COMMENT 'Chofer',
-			`nombre`   char(45) DEFAULT NULL COMMENT 'Nombre Chofer ',
-			`lleno`    decimal(16,3) DEFAULT  0 COMMENT 'Peso de la Unidad llena',
-			`vacio`    decimal(16,3) DEFAULT  0 COMMENT 'Peso de la Unidad Vacia',
-			`neto`     decimal(16,3) DEFAULT  0 COMMENT 'Neto lleno-vacio',
-			`densidad` decimal(10,5) DEFAULT 1.032 COMMENT 'Densidad',
-			`litros`   decimal(16,3) DEFAULT  0 COMMENT 'Total Litros neto*densidad',
-			`lista`    decimal(16,3) DEFAULT  0 COMMENT 'Segun Lista',
-			`diferen`  decimal(16,3) DEFAULT  0 COMMENT 'Diferencia Neto/Lista',
-			`animal`   char(1)       DEFAULT 'V' COMMENT 'Vaca o Bufala',
-			`crios`    decimal(10,3) DEFAULT  0 COMMENT 'Crioscopia',
-			`h2o`      decimal(10,3) DEFAULT  0 COMMENT '% de Agua',
-			`temp`     decimal(10,3) DEFAULT 10 COMMENT 'Temperatura',
-			`brix`     decimal(10,3) DEFAULT  0 COMMENT 'Grados Brix',
-			`grasa`    decimal(10,3) DEFAULT  0 COMMENT '% Grasa',
-			`acidez`   decimal(10,3) DEFAULT  0 COMMENT 'Acidez',
-			`cloruros` decimal(10,3) DEFAULT  0 COMMENT 'Cloruros',
-			`dtoagua`  decimal(10,3) DEFAULT  0 COMMENT 'Dto. Agua',
-			`id` int(11) NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`),
-			KEY `fecha` (`fecha`)
-			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Recepcion de Leche'";
+				`numero` CHAR(8) NULL DEFAULT NULL,
+				`fecha` DATE NULL DEFAULT NULL,
+				`transporte` INT(11) NULL DEFAULT NULL COMMENT 'Transporte',
+				`ruta` CHAR(4) NULL DEFAULT NULL COMMENT 'Ruta Grupo de Proveedor',
+				`flete` CHAR(5) NULL DEFAULT NULL COMMENT 'Proveedor Flete',
+				`nombre` CHAR(45) NULL DEFAULT NULL COMMENT 'Nombre Chofer ',
+				`lleno` DECIMAL(16,3) NULL DEFAULT NULL COMMENT 'Peso de la Unidad llena',
+				`vacio` DECIMAL(16,3) NULL DEFAULT NULL COMMENT 'Peso de la Unidad Vacia',
+				`neto` DECIMAL(16,3) NULL DEFAULT NULL COMMENT 'Neto lleno-vacio',
+				`densidad` DECIMAL(10,5) NULL DEFAULT NULL COMMENT 'Densidad',
+				`litros` DECIMAL(16,3) NULL DEFAULT NULL COMMENT 'Total Litros neto*densidad',
+				`lista` DECIMAL(16,3) NULL DEFAULT NULL COMMENT 'Segun Lista',
+				`diferen` DECIMAL(16,3) NULL DEFAULT NULL COMMENT 'Diferencia Neto/Lista',
+				`animal` CHAR(1) NULL DEFAULT NULL COMMENT 'Vaca o Bufala',
+				`crios` DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Crioscopia',
+				`h2o` DECIMAL(10,3) NULL DEFAULT NULL COMMENT '% de Agua',
+				`temp` DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Temperatura',
+				`brix` DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Grados Brix',
+				`grasa` DECIMAL(10,3) NULL DEFAULT NULL COMMENT '% Grasa',
+				`acidez` DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Acidez',
+				`cloruros` DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Cloruros',
+				`dtoagua` DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Dto. Agua',
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				UNIQUE INDEX `numero` (`numero`),
+				INDEX `fecha` (`fecha`),
+				INDEX `transporte` (`transporte`)
+			)
+			COMMENT='Recepcion de Leche'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('transporte', 'lrece')){
+			$mSQL="ALTER TABLE `lrece` ADD COLUMN `transporte` INT(11) NULL DEFAULT NULL COMMENT 'Transporte' AFTER `fecha`, ADD INDEX `transporte` (`transporte`)";
 			$this->db->simple_query($mSQL);
 		}
 
