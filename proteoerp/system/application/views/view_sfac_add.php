@@ -312,7 +312,7 @@ function totalizar(){
 			importe = Number(this.value);
 
 			peso    = peso+(itpeso*cana);
-			iva     = iva+importe*(itiva/100);
+			iva     = iva+roundNumber(importe*(itiva/100),2);
 			totals  = totals+importe;
 		}
 	});
@@ -618,14 +618,6 @@ function sfpatipo(id){
 <?php } ?>
 <table align='center' width="95%">
 	<tr>
-<?php if ($form->_status=='show') {
-	$id=$form->get_from_dataobjetct('id');
-?>
-		<td>
-		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/FACTURA/<?php echo $id ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
-		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
-		</td>
-<?php } ?>
 		<td align=right><?php echo $container_tr; ?><?php echo $form->pfac->output; ?></td>
 	</tr>
 </table>
@@ -659,7 +651,9 @@ function sfpatipo(id){
 			<table style="margin: 0;width:100%">
 			<tr>
 				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*
+				<?php if($form->_status!='show'){ ?>
 				<a href="<?php echo site_url('ventas/scli/dataeditexpress/create'); ?>" target="_blank" onClick="window.open(this.href, this.target, 'width=300,height=400,screenx='+((screen.availWidth/2)-200)+',screeny='+((screen.availHeight/2)-150)); return false;"><?php echo image('add1-.png'); ?></a></td>
+				<?php } ?>
 				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output.$form->upago->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <b id='rifci_val'><?php echo $form->rifci->value; ?></b><?php echo $form->rifci->output;   ?>&nbsp;</td>
 			</tr><tr>
@@ -798,17 +792,19 @@ function sfpatipo(id){
 </table>
 <?php echo $form_end; ?>
 
-<?php if($form->_status=='show'){ ?>
+<?php
+if($form->_status=='show'){
+	$transac=$form->get_from_dataobjetct('transac');
+	$canasmov = $this->datasis->dameval('SELECT COUNT(*) FROM smov WHERE transac='.$this->db->escape($transac));
+	if($canasmov>0){
+?>
 <br>
 <table  width="100%" style="margin:0;width:100%;" >
 	<tr>
 		<td colspan=10 class="littletableheader">Movimientos relacionados</td>
 	</tr>
 	<?php
-	$transac=$form->get_from_dataobjetct('transac');
-
 	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
-
 	foreach($sql as $mSQL){
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
@@ -827,6 +823,9 @@ function sfpatipo(id){
 	}?>
 
 </table>
-<?php  } ?>
+<?php
+	}
+}
+?>
 
 <?php endif; ?>
