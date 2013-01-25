@@ -312,7 +312,7 @@ function totalizar(){
 			importe = Number(this.value);
 
 			peso    = peso+(itpeso*cana);
-			iva     = iva+roundNumber(importe*(itiva/100),2);
+			iva     = iva+importe*(itiva/100);
 			totals  = totals+importe;
 		}
 	});
