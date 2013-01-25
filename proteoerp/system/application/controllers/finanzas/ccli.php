@@ -331,7 +331,7 @@ class ccli extends Controller {
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= phpscript('nformat.js');
-		$data['script']  = '';
+
 		$data['content'] = $this->load->view('view_ccli.php', $conten,true);
 		$data['title']   = '';
 		$this->load->view('view_ventanas', $data);
