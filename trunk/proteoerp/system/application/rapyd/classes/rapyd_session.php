@@ -48,11 +48,10 @@ class rapyd_session {
 	var $persistence_limit = 1; //max page-status stored for each URI (olders are shifted out)
 
 	// constructor
-	function rapyd_session($duration=null,$limit=null)
-	{
-			if (session_id() == '') session_start();
-			if(isset($duration))$this->persistence_duration = $duration; //max seconds before persistence expire
-			if(isset($limit))$this->persistence_limit = $limit; //max page-status stored for each URI (olders are shifted out)
+	function rapyd_session($duration=null,$limit=null){
+		if (session_id() == '') session_start();
+		if(isset($duration))$this->persistence_duration = $duration; //max seconds before persistence expire
+		if(isset($limit))$this->persistence_limit = $limit; //max page-status stored for each URI (olders are shifted out)
 	}
 
 	function save($var, $val, $namespace = 'rapyd'){

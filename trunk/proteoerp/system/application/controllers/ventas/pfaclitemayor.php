@@ -98,6 +98,10 @@ class pfaclitemayor extends validaciones{
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
+		//$data['head']   .= script('jquery-min.js');
+		//$data['head']   .= script('nformat.js');
+		//$data['head']   .= script('jquery-ui.custom.min.js');
+
 		$data['title']   = heading('Pedidos Clientes');
 		$this->load->view('view_ventanas', $data);
 	}

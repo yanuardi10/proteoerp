@@ -50,7 +50,8 @@ class Sfac extends Controller {
 
 		$adic = array(
 			array("id"=>"fedita" , "title"=>"Agregar/Editar Registro"),
-			array('id'=>'scliexp', 'title'=>'Ficha de Cliente' )
+			array('id'=>'scliexp', 'title'=>'Ficha de Cliente' ),
+			array("id"=>"fshow"  , "title"=>"Mostrar registro")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -140,18 +141,7 @@ class Sfac extends Controller {
 	//Funciones de los Botones
 	//
 	function bodyscript( $grid0, $grid1 ){
-		$bodyscript = '<script type="text/javascript">
-		';
-
-		$bodyscript .= '
-		jQuery("#boton1").click( function(){
-			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				//alert(Math.ceil((screen.availHeight))+\'x\'+Math.ceil((screen.availWidth)));
-				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('ventas/sfac/dataprint/modify').'/\'+id, \'_blank\', \'width=400,height=420,scrollbars=yes,status=yes,resizable=yes\');
-			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
-		});';
+		$bodyscript = '<script type="text/javascript">';
 
 		$bodyscript .= '
 		function sfacadd() {
@@ -161,6 +151,20 @@ class Sfac extends Controller {
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
 			})
+		};';
+
+		$bodyscript .= '
+		function sfacshow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
 		};';
 
 		$bodyscript .= '
@@ -200,10 +204,22 @@ class Sfac extends Controller {
 			}
 		};';
 
+		$bodyscript .= '$(function() { ';
+
 		$bodyscript .= '
-		jQuery("#boton2").click( function(){
-			window.open(\''.site_url('ventas/sfac/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
-		});';
+			jQuery("#boton1").click( function(){
+				var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					//alert(Math.ceil((screen.availHeight))+\'x\'+Math.ceil((screen.availWidth)));
+					var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+					window.open(\''.site_url('ventas/sfac/dataprint/modify').'/\'+id, \'_blank\', \'width=400,height=420,scrollbars=yes,status=yes,resizable=yes\');
+				} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
+			});';
+
+		$bodyscript .= '
+			jQuery("#boton2").click( function(){
+				window.open(\''.site_url('ventas/sfac/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			});';
 
 		$fiscal=$this->datasis->traevalor('IMPFISCAL','Indica si se usa o no impresoras fiscales, esto activa opcion para cierre X y Z');
 		if($fiscal=='S'){
@@ -220,10 +236,10 @@ class Sfac extends Controller {
 
 		//Precierre
 		$bodyscript .= '
-		jQuery("#precierre").click( function(){
-			//$.prompt("<h1>Seguro que desea hacer cierre?</h1>")
-			window.open(\''.site_url('ventas/rcaj/precierre/99/').'/'.$this->secu->getcajero().'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
-		});';
+			jQuery("#precierre").click( function(){
+				//$.prompt("<h1>Seguro que desea hacer cierre?</h1>")
+				window.open(\''.site_url('ventas/rcaj/precierre/99/').'/'.$this->secu->getcajero().'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			});';
 
 		//Prepara Pago o Abono
 		$bodyscript .= '
@@ -232,8 +248,9 @@ class Sfac extends Controller {
 					$("#fcobroser").html(data);
 				});
 				$( "#fcobroser" ).dialog( "open" );
-			});
+			});';
 
+		$bodyscript .= '
 			$("#imptxt").click(function(){
 				var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 				if (id)	{
@@ -244,8 +261,9 @@ class Sfac extends Controller {
 				}else{
 					$.prompt("<h1>Por favor Seleccione un Registro</h1>");
 				}
-			});
+			});';
 
+		$bodyscript .= '
 			$("#fimpser").dialog({
 				autoOpen: false, height: 420, width: 400, modal: true,
 				buttons: {
@@ -278,12 +296,26 @@ class Sfac extends Controller {
 							location.href="'.site_url('formatos/descargartxt/FACTSER').'/"+id;
 					},
 					"Cancelar": function() {
-						$( this ).dialog( "close" );
 						$("#fimpser").html("");
+						$( this ).dialog( "close" );
 					}
 				},
 				close: function() {
 					$("#fimpser").html("");
+				}
+			});';
+
+		$bodyscript .= '
+			$("#fshow").dialog({
+				autoOpen: false, height: 500, width: 700, modal: true,
+				buttons: {
+					"Aceptar": function() {
+						$("#fshow").html("");
+						$( this ).dialog( "close" );
+					},
+				},
+				close: function() {
+					$("#fshow").html("");
 				}
 			});';
 
@@ -320,16 +352,17 @@ class Sfac extends Controller {
 						})
 					},
 					"Cancelar": function() {
-						$( this ).dialog( "close" );
 						$("#fedita").html("");
+						$( this ).dialog( "close" );
 					}
 				},
 				close: function() {
 					$("#fedita").html("");
 				}
-			});
+			});';
 
-			$( "#fcobroser" ).dialog({
+		$bodyscript .= '
+			$("#fcobroser" ).dialog({
 				autoOpen: false, height: 430, width: 540, modal: true,
 				buttons: {
 					"Guardar": function() {
@@ -352,15 +385,17 @@ class Sfac extends Controller {
 						);
 					},
 					Cancel: function() {
-						$( this ).dialog( "close" );
 						$("#fcobroser").html("");
+						$( this ).dialog( "close" );
 					}
 				},
 				close: function() {
 					$("#fcobroser").html("");
 				}
-			});
-		';
+			});';
+
+		$bodyscript .= '});';
+
 		$bodyscript .= "\n</script>\n";
 
 		return $bodyscript;
@@ -1280,7 +1315,7 @@ class Sfac extends Controller {
 		$grid->setSearch($this->datasis->sidapuede('SFAC','BUSQUEDA%'));
 
 		$grid->setRowNum(30);
-		$grid->setBarOptions("addfunc: sfacadd, editfunc: sfacedit, delfunc: sfacdel");
+		$grid->setBarOptions("addfunc: sfacadd, editfunc: sfacedit, delfunc: sfacdel, viewfunc: sfacshow");
 		$grid->setShrinkToFit('false');
 
 		#Set url
@@ -2858,18 +2893,31 @@ class Sfac extends Controller {
 		$edit->estampa   = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->hora      = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 
-		$edit->buttons('add_rel','add');
+		$edit->buttons('add_rel');
 
 		$edit->build();
 
 		if($edit->on_success()){
-			$rt=array(
-				'status' =>'A',
-				'mensaje'=>'Registro guardado',
-				'pk'     =>$edit->_dataobject->pk
-			);
+			if(isset($this->_sfacmaestra)){
+				$numero = $edit->_dataobject->get('numero');
+				if($numero==$this->_sfacmaestra){
+					$rt=array(
+						'status' =>'A',
+						'mensaje'=>'Registro guardado',
+						'pk'     =>$edit->_dataobject->pk
+					);
 
-			echo json_encode($rt);
+					echo json_encode($rt);
+				}
+			}else{
+				$rt=array(
+					'status' =>'A',
+					'mensaje'=>'Registro guardado',
+					'pk'     =>$edit->_dataobject->pk
+				);
+
+				echo json_encode($rt);
+			}
 		}else{
 			if($this->genesal){
 				$conten['form']  =& $edit;
@@ -2982,7 +3030,6 @@ class Sfac extends Controller {
 		}
 	}
 
-
 	function dataprint($st,$uid){
 		$this->rapyd->load('dataedit');
 
@@ -3077,6 +3124,30 @@ class Sfac extends Controller {
 
 		$total   = $edit->get_from_dataobjetct('totalg');
 		$edit->totalg = new freeField('<b>Monto a pagar</b>','monto','<b id="vh_monto" style="font-size:2em">'.nformat($total).'</b>');
+
+		$tipo_doc = $edit->get_from_dataobjetct('tipo_doc');
+		if($tipo_doc=='F'){
+			$maestra  = $edit->get_from_dataobjetct('maestra');
+			$numero   = $edit->get_from_dataobjetct('numero');
+			$dbnumero = $this->db->escape($numero);
+			$dbmaestra= $this->db->escape($maestra );
+			if(!empty($maestra) && $maestra!=$numero){
+				$ww= "numero=$dbmaestra OR maestra=$dbmaestra";
+			}else{
+				$ww= "maestra=$dbnumero";
+			}
+
+			$mSQL="SELECT id,numero FROM sfac WHERE ${ww} ORDER BY numero LIMIT 100";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				$cont='';
+				foreach ($query->result() as $row){
+					if($row->numero==$numero) continue;
+					$cont.= ' '.anchor($this->url.'dataprint/modify/'.$row->id,$row->numero).br();
+				}
+				$edit->free = new freeField('Facturas relacionadas','maestro',$cont);
+			}
+		}
 
 		$edit->buttons('save', 'undo','back');
 		$edit->build();
@@ -3224,23 +3295,54 @@ class Sfac extends Controller {
 			return false;
 		}
 
-		//Validaciones del pago
 		//Totaliza los pagos
-		$sfpa=$credito=0;
+		$sfpa=0;
 		$cana=$do->count_rel('sfpa');
 		for($i=0;$i<$cana;$i++){
 			$sfpa_tipo = $do->get_rel('sfpa','tipo',$i);
 			$sfpa_monto= $do->get_rel('sfpa','monto',$i);
 			$sfpa+=$sfpa_monto;
-			if(empty($sfpa_tipo)) $credito+=$sfpa_monto;
 		}
 		$sfpa=round($sfpa,2);
+		//Fin de la totalizacion del pago
 
 		//Totaliza la factura
 		$totalg=0;
-		$tasa=$montasa=$reducida=$monredu=$sobretasa=$monadic=$exento=0;
+		$maxlin=intval($this->datasis->traevalor('MAXLIN'));
 		$cana=$do->count_rel('sitems');
 		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('sitems','cana' ,$i);
+			$itpreca   = $do->get_rel('sitems','preca',$i);
+			$itiva     = $do->get_rel('sitems','iva'  ,$i);
+			$itimporte = $itpreca*$itcana;
+			$iva       = $itimporte*($itiva/100);
+
+			$totalg   += $itimporte+$iva;
+		}
+		$totalg = round($totalg,2);
+		//Fin de la totalizacion de facturas
+
+		//Validaciones del pago
+		if(abs($sfpa-$totalg)>0.02){
+			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura (Pago:'.$sfpa.', Factura:'.$totalg.')';
+			return false;
+		}
+		//Fin de la validacion de pago
+
+		//Calcula totalizacion y corte por maxlin
+		$this->_creanfac=false;
+		$tasa=$montasa=$reducida=$monredu=$sobretasa=$monadic=$exento=$totalg=0;
+		$cana=$do->count_rel('sitems');
+		for($i=0;$i<$cana;$i++){
+
+			//Aplica el corte segun maxlin
+			if($i>=$maxlin){
+				$this->_creanfac=true;
+				$do->rel_rm('sitems',$i);
+				continue;
+			}
+			//fin del corte por maxlin
+
 			$itcana    = $do->get_rel('sitems','cana' ,$i);
 			$itpreca   = $do->get_rel('sitems','preca',$i);
 			$itiva     = $do->get_rel('sitems','iva'  ,$i);
@@ -3263,10 +3365,41 @@ class Sfac extends Controller {
 			$totalg    +=$itimporte+$iva;
 		}
 		$totalg = round($totalg,2);
-		if(abs($sfpa-$totalg)>0.01){
-			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura';
-			return false;
+		//Fin de la totalizacion de los montos
+
+		//Ajusta la forma de pago en caso de limitar las facturas
+		if($this->_creanfac){
+			$sfpa=0;
+			$laid=0;
+			$cana=$do->count_rel('sfpa');
+			for($i=0;$i<$cana;$i++){
+				if($sfpa>=$totalg){
+					$do->rel_rm('sfpa',$i);
+					continue;
+				}
+				$sfpa_tipo = $do->get_rel('sfpa','tipo',$i);
+				$sfpa_monto= $do->get_rel('sfpa','monto',$i);
+				$sfpa+=$sfpa_monto;
+				$laid=$i;
+			}
+
+			if($sfpa>$totalg){
+				$ult = $do->get_rel('sfpa','monto',$laid);
+				$do->set_rel('sfpa','monto',$ult-($sfpa-$totalg),$laid);
+
+			}
+			$sfpa=round($sfpa,2);
 		}
+
+		//Calcula el credito
+		$cana=$do->count_rel('sfpa');
+		$credito=0;
+		for($i=0;$i<$cana;$i++){
+			$sfpa_tipo = $do->get_rel('sfpa','tipo',$i);
+			$sfpa_monto= $do->get_rel('sfpa','monto',$i);
+			if(empty($sfpa_tipo)) $credito+=$sfpa_monto;
+		}
+		//Fin del calculo a credito
 
 		$do->set('exento'   ,$exento   );
 		$do->set('tasa'     ,$tasa     );
@@ -3385,9 +3518,9 @@ class Sfac extends Controller {
 		}
 
 		if($tipoa=='F'){
-			$numero  = $this->datasis->fprox_numero('nsfac');
+			$numero = $this->datasis->fprox_numero('nsfac');
 		}else{
-			$numero  = $this->datasis->fprox_numero('nccli');
+			$numero = $this->datasis->fprox_numero('nccli');
 		}
 		$transac = $this->datasis->fprox_numero('ntransa');
 		$do->set('numero' ,$numero);
@@ -3462,11 +3595,15 @@ class Sfac extends Controller {
 		$this->pfac = $_POST['pfac'];
 		$do->rm_get('pfac');
 
+		if(isset($this->_sfacmaestra)){
+			$do->set('maestra',$this->_sfacmaestra);
+		}
+
 		return true;
 	}
 
 	function _pre_update($do){
-		$do->error_message_ar['pre_upd']='No se pueden modificar facturas';
+		$do->error_message_ar['pre_upd']='No se pueden modificar facturas guardadas';
 		return false;
 	}
 
@@ -3794,6 +3931,80 @@ class Sfac extends Controller {
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits ${tipo_doc}${numero}");
+
+		if($this->_creanfac){
+			//Realiza el corte por maxlin
+			$maxlin=intval($this->datasis->traevalor('MAXLIN'));
+			for($i=0;$i<$maxlin;$i++){
+				unset($_POST["codigoa_$i"]);
+				unset($_POST["desca_$i"]);
+				unset($_POST["cana_$i"]);
+				unset($_POST["preca_$i"]);
+				unset($_POST["detalle_$i"]);
+				unset($_POST["tota_$i"]);
+				unset($_POST["precio1_$i"]);
+				unset($_POST["precio2_$i"]);
+				unset($_POST["precio3_$i"]);
+				unset($_POST["precio4_$i"]);
+				unset($_POST["itiva_$i"]);
+				unset($_POST["sinvpeso_$i"]);
+				unset($_POST["sinvtipo_$i"]);
+			}
+			//Fin del corte por maxlin
+
+			//Realiza el corte de pago por maxlin
+			$cana = $do->count_rel('sfpa');
+
+			$lasid= ($cana>0)? $cana-1 : 0;
+
+			$monto  = floatval($_POST["monto_${lasid}"]);
+			$ajmonto= floatval($do->get_rel('sfpa','monto',$lasid));
+
+			if($cana>0){
+				if($monto>$ajmonto){
+					$_POST["monto_${lasid}"]=$monto-$ajmonto;
+				}else{
+					unset($_POST["tipo_${lasid}"]);
+					unset($_POST["sfpafecha_${lasid}"]);
+					unset($_POST["num_ref_${lasid}"]);
+					unset($_POST["banco_${lasid}"]);
+					unset($_POST["monto_${lasid}"]);
+				}
+			}else{
+				//$_POST["tipo_${lasid}"]      ='';
+				//$_POST["sfpafecha_${lasid}"] ='';
+				//$_POST["num_ref_${lasid}"]   ='';
+				//$_POST["banco_${lasid}"]     ='';
+				$_POST["monto_${lasid}"]     =$_POST['totalg']-$do->get('totalg');
+			}
+
+			if($lasid>0){
+				for($i=0;$i<$lasid;$i++){
+					unset($_POST["tipo_${i}"]);
+					unset($_POST["sfpafecha_${i}"]);
+					unset($_POST["num_ref_${i}"]);
+					unset($_POST["banco_${i}"]);
+					unset($_POST["monto_${i}"]);
+				}
+			}
+			$_POST['totals']=$_POST['totals']-$do->get('totals');
+			$_POST['totalg']=$_POST['totalg']-$do->get('totalg');
+			$_POST['iva']   =$_POST['iva']-$do->get('iva');
+			//Fin del corte de pago por maxlin
+
+			//Limpia las validaciones
+			$this->validation->_error_array    = array();
+			$this->validation->_rules          = array();
+			$this->validation->_fields         = array();
+			$this->validation->_error_messages = array();
+			//Fin de la limpieza de validaciones
+
+			if(!isset($this->_sfacmaestra)){
+				$this->_sfacmaestra=$do->get('numero');
+			}
+
+			$this->dataedit();
+		}
 	}
 
 	function _post_update($do){
