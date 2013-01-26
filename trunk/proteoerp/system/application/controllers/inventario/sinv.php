@@ -1631,7 +1631,7 @@ class Sinv extends Controller {
 			'editoptions'   => '{ size:1, maxlength: 1 }',
 		));
 
-/*
+
 		$grid->addField('dolar');
 		$grid->label('Dolar');
 		$grid->params(array(
@@ -1645,7 +1645,7 @@ class Sinv extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-*/
+
 
 		$grid->addField('redecen');
 		$grid->label('Redondeo');
@@ -2656,7 +2656,6 @@ class Sinv extends Controller {
 		$edit->enlace ->size=15;
 		$edit->enlace->maxlength=15;
 		$edit->enlace->rule = 'trim';
-		//$edit->enlace->append('Solo si es fracci&oacute;n');
 
 		$edit->cdescrip = new inputField('', 'cdescrip');
 		$edit->cdescrip->pointer=true;
@@ -2669,7 +2668,7 @@ class Sinv extends Controller {
 		$edit->aumento->maxlength=6;
 		$edit->aumento->rule='numeric|callback_chfraccion';
 		$edit->aumento->autocomplete = false;
-		$edit->aumento->append('Solo si es fracci&oacute;n');
+		//$edit->aumento->append('Solo si es fracci&oacute;n');
 
 		$edit->barras = new inputField('C&oacute;digo Barras', 'barras');
 		$edit->barras->size=15;
@@ -2685,7 +2684,6 @@ class Sinv extends Controller {
 		$edit->tipo->option('Lote'     ,'Lote');
 		$edit->tipo->option('Combo'    ,'Combo');
 		$edit->tipo->rule='callback_chtipo';
-		//$edit->tipo->option('Consumo','Consumo');
 
 		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->unidad = new dropdownField('Unidad','unidad');
@@ -2710,7 +2708,6 @@ class Sinv extends Controller {
 		$edit->depto->style='width:300px;white-space:nowrap;';
 		$edit->depto->option('','Seleccione un Departamento');
 		$edit->depto->options('SELECT depto, CONCAT(depto,\'-\',descrip) descrip FROM dpto WHERE tipo=\'I\' ORDER BY depto');
-		//$edit->depto->append($AddDepto);
 		$edit->depto->db_name='dptodepto';
 		$edit->depto->pointer=true;
 
@@ -2718,7 +2715,6 @@ class Sinv extends Controller {
 		$edit->linea = new dropdownField('L&iacute;nea','linea');
 		$edit->linea->rule ='required';
 		$edit->linea->style='width:300px;';
-		//$edit->linea->append($AddLinea);
 		$edit->linea->db_name='linelinea';
 		$edit->linea->pointer=true;
 		$depto=$edit->getval('depto');
@@ -2733,7 +2729,6 @@ class Sinv extends Controller {
 		$edit->grupo = new dropdownField('Grupo', 'grupo');
 		$edit->grupo->rule ='required';
 		$edit->grupo->style='width:300px;';
-		//$edit->grupo->append($AddGrupo);
 
 		$linea=$edit->getval('linea');
 		if($linea!==FALSE){
@@ -2828,13 +2823,11 @@ class Sinv extends Controller {
 		$edit->garantia->css_class='inputonlynum';
 		$edit->garantia->rule='numeric|callback_positivo|trim';
 
-		//$AddMarca='<a href="javascript:add_marca();" title="Haz clic para Agregar una marca nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->marca = new dropdownField('Marca', 'marca');
 		$edit->marca->rule = 'required';
 		$edit->marca->style='width:180px;';
 		$edit->marca->option('','Seleccionar');
 		$edit->marca->options('SELECT marca AS codigo, marca FROM marc ORDER BY marca');
-		//$edit->marca->append($AddMarca);
 
 		$edit->modelo  = new inputField('Modelo', 'modelo');
 		$edit->modelo->size=20;
@@ -2862,20 +2855,24 @@ class Sinv extends Controller {
 		$edit->exento->option('N','No' );
 		$edit->exento->option('E','Si' );
 
+		$edit->dolar = new inputField('Precio en $', 'dolar');
+		$edit->dolar->css_class    = 'inputnum';
+		$edit->dolar->size         = 10;
+		$edit->dolar->maxlength    = 13;
+		$edit->dolar->autocomplete = false;
+
 		$edit->ultimo = new inputField('Ultimo', 'ultimo');
-		$edit->ultimo->css_class='inputnum';
-		$edit->ultimo->size=10;
-		//$edit->ultimo->insertValue='100';
-		$edit->ultimo->maxlength=13;
-		$edit->ultimo->onkeyup = 'calculos(\'S\');';
-		$edit->ultimo->rule='required|mayorcero';
+		$edit->ultimo->css_class    = 'inputnum';
+		$edit->ultimo->size         = 10;
+		$edit->ultimo->maxlength    = 13;
+		$edit->ultimo->onkeyup      = 'calculos(\'S\');';
+		$edit->ultimo->rule         = 'required|mayorcero';
 		$edit->ultimo->autocomplete = false;
 
 		$edit->pond = new inputField('Promedio', 'pond');
 		$edit->pond->css_class='inputnum';
 		$edit->pond->size=10;
 		$edit->pond->maxlength=13;
-		//$edit->pond->insertValue='100';
 		$edit->pond->onkeyup = 'calculos(\'S\');';
 		$edit->pond->rule='required|mayorcero';
 		$edit->pond->autocomplete = false;

@@ -1226,9 +1226,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<li><a href="#tab8">Ingredientes</a></li>
 		<li><a href="#tab9">Labores     </a></li>
 		<?php } ?>
-
 		<li><a href="#tab10">Ficha Tec.</a></li>
-
 	</ul>
 	<div id="tab1" style='background:#EFEFFF'>
 	<table width="100%" border='0'>
@@ -1339,27 +1337,27 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			<table width='100%' border="0">
 				<tr>
 					<td class="littletableheaderc"><?php echo $form->ultimo->label   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->ultimo->output.$form->cultimo->output ?></td>
+					<td class="littletablerow"    ><?php echo $form->ultimo->output.$form->cultimo->output ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?php echo $form->pond->label    ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->pond->output.$form->cpond->output   ?></td>
+					<td class="littletablerow"    ><?php echo $form->pond->output.$form->cpond->output   ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?php echo $form->standard->label    ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->standard->output   ?></td>
+					<td class="littletablerow"    ><?php echo $form->standard->output   ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?php echo $form->formcal->label ?></td>
-					<td class="littletablerow"><?php echo $form->formcal->output.$form->cformcal->output ?></td>
+					<td class="littletablerow"    ><?php echo $form->formcal->output.$form->cformcal->output ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?php echo $form->redecen->label ?></td>
-					<td class="littletablerow"><?php echo $form->redecen->output?></td>
+					<td class="littletablerow"    ><?php echo $form->redecen->output?></td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?php echo $form->aumento->label;  ?></td>
-					<td class="littletablerow">    <?php echo $form->aumento->output; ?></td>
+					<td class='littletableheaderc'><?php echo $form->dolar->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->dolar->output; ?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -1369,42 +1367,43 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			<legend class="titulofieldset" style='font-size:16' >Precios</legend>
 			<table width='100%' cellspacing='0'>
 				<tr>
-					<td class="littletableheader" style='background: #3B240B;color: #FFEEFF;font-weight: bold'>Precio</td>
-					<td class="littletableheader" style='background: #3B240B;color: #FFEEFF;font-weight: bold'>Margen</td>
-					<td class="littletableheader" style='background: #3B240B;color: #FFEEFF;font-weight: bold'>Base  </td>
-					<td class="littletableheader" style='background: #3B240B;color: #FFEEFF;font-weight: bold'>Precio</td>
+					<td class="littletableheader" style='background: #3B240B;color: #FFEEFF;font-weight: bold;text-align:center;'>&nbsp;</td>
+					<td class="littletableheader" style='background: #3B240B;color: #FFEEFF;font-weight: bold;text-align:center;'>Margen</td>
+					<td class="littletableheader" style='background: #3B240B;color: #FFEEFF;font-weight: bold;text-align:center;'>Base  </td>
+					<td class="littletableheader" style='background: #3B240B;color: #FFEEFF;font-weight: bold;text-align:center;'>Precio</td>
 				</tr>
 			  	<tr>
-					<td class="littletableheaderc">1</td>
-					<td class="littletablerow" align='right'><?php echo $form->margen1->output ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->base1->output   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->precio1->output.$form->cbase1->output; ?></td>
+					<td class="littletableheaderc" align="center">1</td>
+					<td class="littletablerow" align='center'><?php echo $form->margen1->output ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->base1->output   ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->precio1->output.$form->cbase1->output; ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">2</td>
-					<td class="littletablerow" align='right'><?php echo $form->margen2->output ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->base2->output   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->precio2->output.$form->cbase2->output; ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->margen2->output ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->base2->output   ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->precio2->output.$form->cbase2->output; ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">3</td>
-					<td class="littletablerow" align='right'><?php echo $form->margen3->output ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->base3->output   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->precio3->output.$form->cbase3->output; ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->margen3->output ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->base3->output   ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->precio3->output.$form->cbase3->output; ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">4</td>
-					<td class="littletablerow" align='right'><?php echo $form->margen4->output ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->base4->output   ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->precio4->output.$form->cbase4->output; ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->margen4->output ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->base4->output   ?></td>
+					<td class="littletablerow" align='center'><?php echo $form->precio4->output.$form->cbase4->output; ?></td>
 				</tr>
+			</table>
+			</fieldset>
+			<br />
+			<fieldset style='border: 1px outset #B45F04;background: #FFEFFF;'>
+			<table width='100%' cellspacing='0'>
 				<tr>
-					<td colspan="2" class="littletablerow" align='right'><?php echo $form->pm->label  ?>%</td>
-					<td colspan="2" class="littletablerow" align='left'><?php echo $form->pm->output ?></td>
-				</tr>
-				<tr>
-					<td colspan="2" class="littletablerow" align='right'><?php echo $form->mmargen->label  ?>%</td>
-					<td colspan="2" class="littletablerow" align='left'><?php echo $form->mmargen->output ?></td>
+					<td class='littletableheaderc' align="right">Aumento (%) si se vende detallado</td>
+					<td class="littletablerow"                  ><?php echo $form->aumento->output; ?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -1599,26 +1598,26 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 				<tr>
 					<td class="littletableheader" ><?php echo $form->mpps->label;  ?></td>
 					<td class="littletablerow"    ><?php echo $form->mpps->output; ?></td>
-					<td class="littletableheader" ><?php echo $form->rubro->label;  ?></td>
-					<td class="littletablerow"    ><?php echo $form->rubro->output; ?></td>
+					<td class="littletableheader" ><?php echo $form->rubro->label; ?></td>
+					<td class="littletablerow"    ><?php echo $form->rubro->output;?></td>
 				</tr>
 				<tr>
-					<td class="littletableheader" ><?php echo $form->cpe->label;  ?></td>
-					<td class="littletablerow"    ><?php echo $form->cpe->output; ?></td>
+					<td class="littletableheader" ><?php echo $form->cpe->label;       ?></td>
+					<td class="littletablerow"    ><?php echo $form->cpe->output;      ?></td>
 					<td class="littletableheader" ><?php echo $form->subrubro->label;  ?></td>
 					<td class="littletablerow"    ><?php echo $form->subrubro->output; ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheader" ><?php echo $form->cunidad->label;  ?></td>
 					<td class="littletablerow"    ><?php echo $form->cunidad->output; ?></td>
-					<td class="littletableheader" ><?php echo $form->cmarca->label;  ?></td>
-					<td class="littletablerow"    ><?php echo $form->cmarca->output; ?></td>
+					<td class="littletableheader" ><?php echo $form->cmarca->label;   ?></td>
+					<td class="littletablerow"    ><?php echo $form->cmarca->output;  ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheader" ><?php echo $form->cmaterial->label;  ?></td>
 					<td class="littletablerow"    ><?php echo $form->cmaterial->output; ?></td>
-					<td class="littletableheader" ><?php echo $form->cforma->label;  ?></td>
-					<td class="littletablerow"    ><?php echo $form->cforma->output; ?></td>
+					<td class="littletableheader" ><?php echo $form->cforma->label;     ?></td>
+					<td class="littletablerow"    ><?php echo $form->cforma->output;    ?></td>
 				</tr>
 
 			</table>
@@ -1627,112 +1626,6 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</tr>
 	</table>
 
-
-
-<?php /*
-	<table width='100%'>
-	<tr>
-		<td valign='top'>
-			<fieldset  style='border: 2px outset #FEB404;background: #FFFCE8;'>
-			<legend class="titulofieldset" >Ventas</legend>
-			<table width='100%' >
-				<tr>
-					<td class="littletableheader" ><?php echo $form->fechav->label?></td>
-				</tr>
-				<tr>
-					<td class="littletablerow"><?php echo $form->fechav->output   ?></td>
-				</tr>
-			</table>
-			</fieldset>
-		</td>
-		<td valign='top'>
-			<fieldset  style='border: 2px outset #FEB404;background: #FFFCE8;'>
-			<legend class="titulofieldset" >&Uacute;ltimos Movimientos</legend>
-			<table width='100%' >
-				<tr>
-					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Fecha</td>
-					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Codigo</td>
-					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Proveedor</td>
-					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Precio</td>
-				</tr>
-				<tr>
-					<td class="littletablerow" style='font-size:10px'><?php echo $form->pfecha1->output?></td>
-					<td class="littletablerow" style='font-size:10px'>
-					<?php
-						$mID = $this->datasis->dameval("SELECT id FROM sprv WHERE proveed='".addslashes(trim($form->prov1->output))."'");
-						echo "<a href=\"javascript:void(0);\" onclick=\"window.open('".base_url();
-						echo "compras/sprv/dataedit/show/$mID', '_blank', 'width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');\" heigth=\"600\">";
-						echo $form->prov1->output;
-						echo "</a>";
-					?>
-					</td>
-					<td class="littletablerow" style='font-size:10px'><?php echo $form->proveed1->output?></td>
-					<td class="littletablerow" style='font-size:10px' align='right'><?php echo $form->prepro1->output?></td>
-				</tr>
-				<tr>
-					<td class="littletablerow" style='font-size:10px'><?php echo $form->pfecha2->output?></td>
-					<td class="littletablerow" style='font-size:10px'>
-					<?php
-						$mID = $this->datasis->dameval("SELECT id FROM sprv WHERE proveed='".addslashes(trim($form->prov2->output))."'");
-						echo "<a href=\"javascript:void(0);\" onclick=\"window.open('".base_url();
-						echo "compras/sprv/dataedit/show/$mID', '_blank', 'width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');\" heigth=\"600\">";
-						echo $form->prov2->output;
-						echo "</a>";
-					?>
-					</td>
-					<td class="littletablerow" style='font-size:10px'><?php echo $form->proveed2->output?></td>
-					<td class="littletablerow" style='font-size:10px' align='right'><?php echo $form->prepro2->output?></td>
-				</tr>
-				<tr>
-					<td class="littletablerow" style='font-size:10px;'><?php echo $form->pfecha3->output?></td>
-					<td class="littletablerow" style='font-size:10px'>
-					<?php
-						$mID = $this->datasis->dameval("SELECT id FROM sprv WHERE proveed='".addslashes(trim($form->prov3->output))."'");
-						echo "<a href=\"javascript:void(0);\" onclick=\"window.open('".base_url();
-						echo "compras/sprv/dataedit/show/$mID', '_blank', 'width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');\" heigth=\"600\">";
-						echo $form->prov3->output;
-						echo "</a>";
-					?>
-					</td>
-					<td class="littletablerow" style='font-size:10px;'><?php echo $form->proveed3->output?></td>
-					<td class="littletablerow" style='font-size:10px;' align='right'><?php echo $form->prepro3->output?></td>
-				</tr>
-			</table>
-			</fieldset>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<?php
-			$query = $this->db->query("SELECT a.proveed, MID(b.nombre,1,25) nombre, a.codigop FROM sinvprov a JOIN sprv b ON a.proveed=b.proveed WHERE a.codigo='".addslashes($form->_dataobject->get('codigo'))."'");
-			if ($query->num_rows()>0 ) {
-			?>
-				<fieldset style='border: 2px outset #FEB404;background: #FFFCE8;'>
-				<legend class="titulofieldset" >Codigo del proveedor</legend>
-				<table width='50%' border='0'>
-					<?php
-						foreach($query->result() as $row ){
-							echo "
-							<tr>
-								<td style='font-size: 12px;font-weight: normal'>".$row->proveed."</td>
-								<td style='font-size: 12px;font-weight: normal'>".$row->nombre."</td>
-								<td style='font-size: 12px;font-weight: bold'>".$row->codigop."</td>
-								<td valign='top' style='height: 18px;'>
-									<a href='javascript:sinvborraprv(\"$row->proveed\",\"$row->codigop\")'>
-									".img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar', 'title' => 'Eliminar','border'=>'0','height'=>'16'))."
-									</a>
-								</td>
-							</tr>";
-						}
-						echo "</table>";
-						?>
-				</fieldset>
-			<?php }  // rows>0 ?>
-		</td>
-	</tr>
-	</table>
-	*/
-?>
 </div>
 <?php } ?>
 
@@ -1775,43 +1668,6 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</table>
 	<br/>
 <?php
-/*
-$query = $this->db->query("SELECT suplemen FROM barraspos WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
-if ($query->num_rows()>0 ) {
-?>
-
-	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
-	<legend class="titulofieldset" >Codigos de Barras Asociados</legend>
-	<table width='100%' border=0>
-		<?php
-			$m = 1;
-			foreach($query->result() as $row ){
-				if ( $m > 3 ) { ?>
-	<tr>
-				<?php	$m = 1;
-				}
-				echo "
-		<td style='font-size: 16px;font-weight: bold'>
-			<table cellpadding='0' cellspacing='0'><tr>
-				<td style='height: 18px;'>
-					".$row->suplemen."
-				</td><td valign='top' style='height: 18px;'>
-					<a href='javascript:sinvborrasuple(\"$row->suplemen\")'>
-					".img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar', 'title' => 'Eliminar','border'=>'0','height'=>'16'))."
-					</a>
-				</td>
-			</tr></table>
-		</td>";
-
-				$m += 1;
-			}
-			?>
-	</tr>
-	</table>
-	</fieldset>
-<?php }  // rows>0 */ ?>
-
-<?php
 $query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto, id FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".addslashes($form->_dataobject->get('codigo'))."'");
 if ($query->num_rows()>0 ) {
 ?>
@@ -1835,11 +1691,26 @@ if ($query->num_rows()>0 ) {
 	</tr>
 	</table>
 	</fieldset>
-<?php }  // rows>0  </div> ?>
+<?php }  // rows>0  ?>
 </div>
 
 <div id="tab6" style='background:#EFEFFF'>
 	<table width='100%'>
+		<tr>
+			<td colspan="2">
+				<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
+				<legend class="titulofieldset" >Descuentos al Mayor</legend>
+				<table width='100%'>
+				<tr>
+					<td colspan="2" class="littletablerow" align='right'><?php echo $form->pm->label  ?>%</td>
+					<td colspan="2" class="littletablerow" align='left'><?php echo $form->pm->output ?></td>
+					<td colspan="2" class="littletablerow" align='right'><?php echo $form->mmargen->label  ?>%</td>
+					<td colspan="2" class="littletablerow" align='left'><?php echo $form->mmargen->output ?></td>
+				</tr>
+				</table>
+				</fieldset>
+			</td>
+		</tr>
 		<tr>
 			<td>
 				<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
