@@ -101,6 +101,10 @@ function calconeto(){
 		<td style='font-size: 14pt;font-weight:bold;' class="littletableheaderc">Total Litros: </td>
 		<td style='font-size: 14pt;font-weight:bold;' class="littletablerow"><?php echo $form->litros->output;  ?></td>
 	</tr>
+</table>
+</fieldset>
+<fieldset style='border: 1px outset #407E13;background: #FAFAFA;'>
+<table align='center' >
 	<tr>
 		<td class="littletablerow"><?php echo $form->transporte->label;?></td>
 		<td class="littletablerow"><?php echo $form->transporte->output;?></td>

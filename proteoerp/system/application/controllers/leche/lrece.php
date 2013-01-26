@@ -27,15 +27,15 @@ class Lrece extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$grid->setHeight('140');
+		$grid->setHeight('120');
 		$param['grids'][] = $grid->deploy();
 
 		$grid1   = $this->defgridit();
-		$grid1->setHeight('190');
+		$grid1->setHeight('180');
 		$param['grids'][] = $grid1->deploy();
 
 		// Configura los Paneles
-		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+		$readyLayout = $grid->readyLayout2( 212, 210, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
 
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
@@ -63,7 +63,7 @@ class Lrece extends Controller {
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"bcierre"  , "img"=>"images/candado.png","alt" => 'Cierre'  , "label"=>"Cierre"  ));
-		$grid->wbotonadd(array("id"=>"bagrega"  , "img"=>"images/candado.png","alt" => 'Agrega'  , "label"=>'Agrega'  ));
+		$grid->wbotonadd(array("id"=>"bagrega"  , "img"=>"images/candado.png","alt" => 'Agrega'  , "label"=>'Agregar Vaquera'  ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -101,7 +101,7 @@ class Lrece extends Controller {
 			$.post("'.site_url($this->url.'apertura/create').'",
 			function(data){
 				$("#fedita").html(data);
-				$("#fedita").dialog({height: 300, width: 550, title: "Agregar Recepcion de Leche"});
+				$("#fedita").dialog({height: 350, width: 550, title: "Agregar Recepcion de Leche"});
 				$("#fedita").dialog( "open" );
 			});
 		};';
@@ -130,7 +130,7 @@ class Lrece extends Controller {
 				mId = id;
 				$.post("'.site_url($this->url.'apertura/modify').'/"+id, function(data){
 					$("#fedita").html(data);
-					$("#fedita").dialog({height: 300, width: 550, title: "Editar Recepcion Nro. "+id+" Ruta "+ret.ruta })
+					$("#fedita").dialog({height: 350, width: 550, title: "Editar Recepcion Nro. "+id+" Ruta "+ret.ruta })
 					$("#fedita").dialog( "open" );
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
@@ -1047,8 +1047,7 @@ class Lrece extends Controller {
 									$.each(data,
 										function(i, val){
 											sugiere.push( val );
-										}
-									);
+										});
 								}
 								add(sugiere);
 							},
@@ -1088,73 +1087,71 @@ class Lrece extends Controller {
 		$edit->container->when = array('modify');
 
 		$edit->ruta = new dropdownField('Ruta', 'ruta');
-		$edit->ruta->rule = 'trim|max_length[4]|required';
 		$edit->ruta->option('','Seleccionar');
 		$edit->ruta->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM lruta ORDER BY nombre');
-		$edit->ruta->style = 'width:300px';
+		$edit->ruta->rule   = 'trim|required';
+		$edit->ruta->style  = 'width:300px';
 
 		$edit->lleno = new inputField('Peso lleno','lleno');
 		$edit->lleno->rule       = 'numeric|required|callback_chlleno';
 		$edit->lleno->css_class  = 'inputnum';
 		$edit->lleno->insertValue= '0';
-		$edit->lleno->size       =  7;
+		$edit->lleno->size       =  9;
 		$edit->lleno->maxlength  = 16;
 		$edit->lleno->showformat = 'decimal';
-		//$edit->lleno->mode='autohide';
 
 		$edit->transporte = new dropdownField('Transporte', 'transporte');
 		$edit->transporte->option('','Seleccionar');
-		$edit->transporte->options("SELECT id,nombre FROM lrece WHERE fecha=CURDATE() AND MID(ruta,1,1)='G' ORDER BY nombre");
-		$edit->transporte->rule ='condi_required|callback_chtransporte';
-		$edit->transporte->style='width:140px;';
+		$edit->transporte->options("SELECT id, CONCAT( RUTA, ' ', nombre) FROM lrece WHERE fecha=CURDATE() AND MID(ruta,1,1)='G' ORDER BY nombre");
+		$edit->transporte->rule  ='condi_required|callback_chtransporte';
+		$edit->transporte->style ='width:240px;';
 
 		$edit->nombre = new inputField('Chofer','nombre');
-		$edit->nombre->rule='max_length[45]|strtoupper|required';
-		$edit->nombre->size =40;
-		$edit->nombre->maxlength =45;
+		$edit->nombre->rule      = 'strtoupper|required';
+		$edit->nombre->size      = 40;
+		$edit->nombre->maxlength = 45;
 
 		$edit->flete = new inputField('Flete','flete');
-		$edit->flete->rule='max_length[5]';
-		$edit->flete->size =6;
-		$edit->flete->maxlength =5;
+		$edit->flete->size      = 6;
+		$edit->flete->maxlength = 5;
 
 		$edit->proveed = new inputField('Proveedor','proveed');
-		$edit->proveed->pointer = true;
-		$edit->proveed->size =40;
-		$edit->proveed->type='inputhidden';
-		$edit->proveed->maxlength =45;
-		$edit->proveed->in ='flete';
+		$edit->proveed->pointer   = true;
+		$edit->proveed->size      = 40;
+		$edit->proveed->type      = 'inputhidden';
+		$edit->proveed->maxlength = 45;
+		$edit->proveed->in        = 'flete';
 
 		$edit->vacio = new inputField('Peso vac&iacute;o','vacio');
-		$edit->vacio->rule='max_length[16]|numeric|required';
-		$edit->vacio->css_class='inputnum';
-		$edit->vacio->size =7;
+		$edit->vacio->rule       = 'numeric|required';
+		$edit->vacio->css_class  = 'inputnum';
+		$edit->vacio->size       = 9;
 		$edit->vacio->insertValue= "0";
-		$edit->vacio->maxlength =16;
-		$edit->vacio->onkeyup = 'calconeto()';
-		$edit->vacio->showformat   = 'decimal';
+		$edit->vacio->maxlength  = 16;
+		$edit->vacio->onkeyup    = 'calconeto()';
+		$edit->vacio->showformat = 'decimal';
 
 		$edit->neto = new inputField('Peso Neto','neto');
-		$edit->neto->rule='numeric';
-		$edit->neto->css_class='inputnum';
-		$edit->neto->type = 'inputhidden';
-		$edit->neto->size=7;
-		$edit->neto->maxlength=7;
-		$edit->neto->showformat   = 'decimal';
+		$edit->neto->rule       = 'numeric';
+		$edit->neto->css_class  = 'inputnum';
+		$edit->neto->type       = 'inputhidden';
+		$edit->neto->size       = 9;
+		$edit->neto->maxlength  = 7;
+		$edit->neto->showformat = 'decimal';
 
 		$edit->densidad = new inputField('Densidad','densidad');
-		$edit->densidad->rule='numeric|required';
-		$edit->densidad->css_class='inputnum';
-		$edit->densidad->size =5;
-		$edit->densidad->maxlength =10;
-		$edit->densidad->onkeyup = 'calcolitro()';
+		$edit->densidad->rule      = 'numeric|required';
+		$edit->densidad->css_class = 'inputnum';
+		$edit->densidad->size      = 7;
+		$edit->densidad->maxlength = 10;
+		$edit->densidad->onkeyup   = 'calcolitro()';
 
 		$edit->litros = new inputField('Litros','litros');
-		$edit->litros->rule='numeric';
-		$edit->litros->css_class='inputnum';
-		$edit->litros->size =7;
-		$edit->litros->maxlength =16;
-		$edit->litros->type = 'inputhidden';
+		$edit->litros->rule       = 'numeric';
+		$edit->litros->css_class  = 'inputnum';
+		$edit->litros->size       =  9;
+		$edit->litros->maxlength  = 16;
+		$edit->litros->type       = 'inputhidden';
 
 		$edit->build();
 
