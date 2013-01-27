@@ -1,4 +1,5 @@
-<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+<?php 
+if (!defined('BASEPATH')) exit('No direct script access allowed');
 /**
  * DataSIS Components
  *
@@ -1522,6 +1523,18 @@ class Datasis {
 			WHERE formcal='M' ;";
 			$CI->db->simple_query($mSQL);
 
+			$mSQL = "
+			UPDATE sinv SET
+				precio1=ROUND(standard*(100+iva)/(100-margen1),2),
+				precio2=ROUND(standard*(100+iva)/(100-margen2),2),
+				precio3=ROUND(standard*(100+iva)/(100-margen3),2),
+				precio4=ROUND(standard*(100+iva)/(100-margen4),2),
+				base1=ROUND(standard*100/(100-margen1),2),
+				base2=ROUND(standard*100/(100-margen2),2),
+				base3=ROUND(standard*100/(100-margen3),2),
+				base4=ROUND(standard*100/(100-margen4),2)
+			WHERE formcal='S' ;";
+			$CI->db->simple_query($mSQL);
 
 		} else if ($mTIPO == 'M') {
 
@@ -1550,6 +1563,15 @@ class Datasis {
 				margen3=100-ROUND(GREATEST(ultimo,pond)*100/base3,2),
 				margen4=100-ROUND(GREATEST(ultimo,pond)*100/base4,2)
 			WHERE formcal='M' ;";
+			$CI->db->simple_query($mSQL);
+
+			$mSQL = "
+			UPDATE sinv SET
+				margen1=100-ROUND(standard*100/base1,2),
+				margen2=100-ROUND(standard*100/base2,2),
+				margen3=100-ROUND(standard*100/base3,2),
+				margen4=100-ROUND(standard*100/base4,2)
+			WHERE formcal='S' ;";
 			$CI->db->simple_query($mSQL);
 
 		}
@@ -1629,8 +1651,17 @@ class Datasis {
 			margen3=100-ROUND(GREATEST(ultimo,pond)*100/base3,2),
 			margen4=100-ROUND(GREATEST(ultimo,pond)*100/base4,2)
 		WHERE formcal='M' ;";
-
 		$CI->db->simple_query($mSQL);
+
+		$mSQL = "
+		UPDATE sinv SET
+			margen1=100-ROUND(standard*100/base1,2),
+			margen2=100-ROUND(standard*100/base2,2),
+			margen3=100-ROUND(standard*100/base3,2),
+			margen4=100-ROUND(standard*100/base4,2)
+		WHERE formcal='S' ;";
+		$CI->db->simple_query($mSQL);
+
 
 	}
 
