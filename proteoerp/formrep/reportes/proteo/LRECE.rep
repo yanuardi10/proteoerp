@@ -1,0 +1,67 @@
+
+$filter = new DataFilter("Filtro del Reporte");
+$filter->attributes=array('onsubmit'=>'is_loaded()');
+$sel=array('a.*',
+'IF(a.diferen>0,a.diferen,0) AS falto','IF(a.diferen>0,0,a.diferen) AS sobro'
+);
+
+$filter->db->select($sel);
+$filter->db->from('lrece   AS a');
+//$filter->db->join('itlrece AS b','a.id=b.id_lrece');
+$filter->db->orderby('a.fecha');
+
+$filter->fecha = new dateonlyField("Fecha", "fecha",'d/m/Y');
+$filter->fecha->db_name ='a.fecha';
+$filter->fecha->clause ='where';
+$filter->fecha->insertValue = date('Y-m-d');
+$filter->fecha->operator='=';
+
+$filter->salformat = new radiogroupField("Formato de salida","salformat");
+$filter->salformat->options($this->opciones);
+$filter->salformat->insertValue ='PDF';
+$filter->salformat->clause = '';
+
+$filter->buttons("search");
+$filter->build();
+
+if($this->rapyd->uri->is_set("search")){
+
+	$mSQL=$this->rapyd->db->_compile_select();
+
+	$pdf = new PDFReporte($mSQL,'L');
+	$pdf->setHeadValores('TITULO1');
+	$pdf->setSubHeadValores('TITULO2','TITULO3');
+	$pdf->setTitulo("Recepcion por Fecha ".$_POST['fecha']);
+	//$pdf->setSubTitulo("Desde la fecha: ".$_POST['fecha']." Hasta ".$_POST['fecha']);
+	$pdf->AddPage();
+	$pdf->setTableTitu(8,'Times');
+
+	$pdf->AddCol('ruta'    ,15,'Ruta'       ,'L',8);
+	$pdf->AddCol('nombre'  ,25,'Chofer'     ,'L',8);
+	$pdf->AddCol('lista'   ,15,'Lista'      ,'L',8);
+	$pdf->AddCol('litros'  ,15,'Romana'     ,'R',8);
+	$pdf->AddCol('falto'   ,15,'Falto'      ,'R',8);
+	$pdf->AddCol('sobro'   ,15,'Sobro'      ,'R',8);
+	$pdf->AddCol('crios'   ,15,'Crioscop'   ,'R',8);
+	$pdf->AddCol('h2o'     ,15,'%Agua'      ,'R',8);
+	$pdf->AddCol('temp'    ,15,'Temp.'      ,'R',8);
+	$pdf->AddCol('brix'    ,15,'BRIX'       ,'R',8);
+	$pdf->AddCol('grasa'   ,15,'%Grasa'     ,'R',8);
+	$pdf->AddCol('acidez'  ,15,'Acidez'     ,'R',8);
+	$pdf->AddCol('cloruros',15,'Cloruros'   ,'R',8);
+	$pdf->AddCol('dtoagua' ,15,'Dto.Agua'   ,'R',8);
+	$pdf->AddCol('vaca'    ,25,'Vaca'       ,'R',8);
+	$pdf->AddCol('bufala'  ,25,'Bufala'     ,'R',8);
+
+	//$pdf->setGrupoLabel('Fecha <#fecha#> Chofer <#nombre#> Litros: <#litros#> ');
+	//$pdf->setGrupo('comprob');
+	$pdf->setTotalizar('lista','litros','falto','sobro');
+	$pdf->Table();
+	$pdf->Output();
+
+}else{
+	$data["filtro"] = $filter->output;
+	$data["titulo"] = '<h2 class="mainheader">Recepci&oacute;n de leche</h2>';
+	$data["head"] = $this->rapyd->get_head();
+	$this->load->view('view_freportes', $data);
+}
