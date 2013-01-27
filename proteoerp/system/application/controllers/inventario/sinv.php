@@ -10,7 +10,7 @@ class Sinv extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		//$this->datasis->modulo_nombre( 'SINV', $ventana=0 );
+		$this->datasis->modulo_nombre( 'SINV', $ventana=0 );
 	}
 
 	function index(){
@@ -24,7 +24,6 @@ class Sinv extends Controller {
 			$this->db->simple_query('ALTER TABLE formatos ADD COLUMN tcpdf TEXT NULL COMMENT "Formas TCPDF"');
 		};
 
-
 		if ( !$this->datasis->iscampo('sinv','url') ) {
 			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN url VARCHAR(200) NULL COMMENT "Pagina Web"');
 		};
@@ -32,7 +31,6 @@ class Sinv extends Controller {
 		if ( !$this->datasis->iscampo('sinv','ficha') ) {
 			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN ficha TEXT NULL COMMENT "Ficha Tecnica"');
 		};
-
 
 		if ( $this->datasis->traevalor('SUNDECOP') == 'S') {
 			$campos = $this->db->list_fields('sinv');
@@ -47,6 +45,17 @@ class Sinv extends Controller {
 			if (!in_array('cpresenta',  $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cforma`      INT(6)     NULL  COMMENT 'Forma o Presentacion'");
 			if (!in_array('cpactivo',   $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpactivo`    INT(6)     NULL  COMMENT 'Principio Activo'");
 		}
+
+		// Arregla Otros Menus
+		$this->db->query("UPDATE tmenus SET proteo='consulta'    WHERE modulo='SINVOTR' AND ejecutar LIKE 'SINVANAL%' ");
+		$this->db->query("UPDATE tmenus SET proteo='recalcular'  WHERE modulo='SINVOTR' AND ejecutar LIKE 'RECALCU%' ");
+		$this->db->query("UPDATE tmenus SET proteo='redondear'   WHERE modulo='SINVOTR' AND ejecutar LIKE 'REDOPRES%' ");
+		$this->db->query("UPDATE tmenus SET proteo='sinvcodigo'  WHERE modulo='SINVOTR' AND ejecutar LIKE 'SINVCODIGO%' ");
+		$this->db->query("UPDATE tmenus SET proteo='cambiaubica' WHERE modulo='SINVOTR' AND ejecutar LIKE 'CAMBIAUBICA%' ");
+		$this->db->query("UPDATE tmenus SET proteo='auprec'      WHERE modulo='SINVOTR' AND ejecutar LIKE 'AUPREC%' ");
+		$this->db->query("UPDATE tmenus SET proteo='verfotos'    WHERE modulo='SINVOTR' AND ejecutar LIKE 'SINVFOTO%' ");
+		$this->db->query("UPDATE tmenus SET proteo='etiquetas'   WHERE modulo='SINVOTR' AND ejecutar LIKE 'SINVETIQ%' ");
+
 		$this->datasis->modintramenu( 950, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -82,9 +91,7 @@ class Sinv extends Controller {
 			</table>
 			</div>
 		</td></tr>\n
-
 		";
-
 
 		$grid->setWpAdicional($WpAdic);
 
@@ -385,8 +392,8 @@ class Sinv extends Controller {
 		};
 		';
 
-		// Busca si estan la pciones en tmenus
-		$mSQL = "SELECT COUNT(*) FROM tmenus WHERE proteo='cambiamarca'";
+		// Busca si estan la opcion en tmenus
+		$mSQL = "SELECT COUNT(*) FROM tmenus WHERE modulo='SINVOTR' AND proteo='cambiamarca'";
 		if ( $this->datasis->dameval($mSQL) == 0 )
 			$this->db->query("INSERT INTO tmenus SET modulo='SINVOTR', secu=14, titulo='Cambiar Marcas', mensaje='Cambia las Marcas de los productos seleccionados', proteo='cambiamarca'");
 
@@ -432,10 +439,11 @@ class Sinv extends Controller {
 		};
 		';
 
-		// Busca si estan la pciones en tmenus
-		$mSQL = "SELECT COUNT(*) FROM tmenus WHERE proteo='cambiagrupo'";
+		// Busca si estan la opcion en tmenus
+		$mSQL = "SELECT COUNT(*) FROM tmenus WHERE modulo='SINVOTR' AND proteo='cambiagrupo'";
 		if ( $this->datasis->dameval($mSQL) == 0 )
 			$this->db->query("INSERT INTO tmenus SET modulo='SINVOTR', secu=15, titulo='Cambiar Grupos', mensaje='Cambia el Grupo de los productos seleccionados', proteo='cambiagrupo'");
+
 
 		// Cambia los grupos de los productos seleccionados
 		$mSQL   = "SELECT grupo, CONCAT(grupo,' ', nom_grup) nombre FROM grup WHERE tipo='I' ORDER BY grupo";
@@ -445,7 +453,7 @@ class Sinv extends Controller {
 		function cambiagrupo(){
 			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
 			if ( s.length == 0 ){
-				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
+				$.prompt("<h1>Debe seleccionar al menos un Producto</h1>");
 			} else {
 				$.prompt( "<h1>Cambiar Grupo de los productos seleccionados:</h1><br/><center>'.$mgrupo.'</center><br/>",
 				{
@@ -478,6 +486,47 @@ class Sinv extends Controller {
 			}
 		};
 		';
+
+
+		// Busca si estan la opcion en tmenus
+		$mSQL = "SELECT COUNT(*) FROM tmenus WHERE modulo='SINVOTR' AND proteo='recaldolar'";
+		if ( $this->datasis->dameval($mSQL) == 0 )
+			$this->db->query("INSERT INTO tmenus SET modulo='SINVOTR', secu=16, titulo='Recalcular $', mensaje='Recalcular precios segun cambio de dolar a los productos seleccionados', proteo='recaldolar'");
+
+		// Cambia los precios segun el valor del dolar
+		$funciones .= '
+		function recaldolar(){
+			$.prompt( "<h1>Modificar precios segun nueva tasa de Cambio:</h1><br/><center><input class=\'inputnum\' type=\'text\' id=\'mcambio\' name=\'mcambio\' value=\'1\' maxlengh=\'10\' size=\'15\' ></center><br/>",
+			{
+				buttons: { Aplicar: true, Cancelar: false },
+				submit: function(e,v,m,f){
+					if (v) {
+						if( f.mcambio==1 ){
+							apprise("Para una tasa de 1 no es necesario hacer nada!!");
+						} else if( f.mcambio == 0 ) {
+							apprise("<h1>Cancelado</h1>Tasa = 0 ");
+						} else {
+							$.ajax({
+								url: "'.site_url("inventario/sinv/recaldolar/").'",
+								global: false,
+								type: "POST",
+								data: ({ cambio : encodeURIComponent(f.mcambio) }),
+								dataType: "text",
+								async: false,
+								success: function(sino) {
+									alert("Informacion: "+sino);
+									$("#newapi'.$grid0.'").trigger("reloadGrid");
+								},
+								error: function(h,t,e)  { apprise("Error..grupo="+f.mgrupo+" ",e) }
+							});
+						}
+					}
+				}
+			});
+		};
+		';
+
+
 
 		return $funciones;
 
@@ -597,57 +646,6 @@ class Sinv extends Controller {
 
 
 
-/*
-		$bodyscript .= '
-		$("#fedita").dialog({
-			autoOpen: false, height: 550, width: 800, modal: true,
-
-			buttons: {
-			"Guardar y Cerrar": function() {
-				var bValid = true;
-				var murl = $("#df1").attr("action");
-				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST", dataType: "html", async: false,
-					url: murl,
-					data: $("#df1").serialize(),
-					success: function(r,s,x){
-						if ( r.length == 0 ) {
-							//apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
-							return true;
-						} else {
-							$("#fedita").html(r);
-						}
-					}
-			})},
-			"Guardar y Seguir": function() {
-				var bValid = true;
-				var murl = $("#df1").attr("action");
-				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST", dataType: "html", async: false,
-					url: murl,
-					data: $("#df1").serialize(),
-					success: function(r,s,x){
-						if ( r.length == 0 ) {
-							apprise("Registro Guardado");
-							//$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
-							return true;
-						} else {
-							$("#fedita").html(r);
-						}
-					}
-			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
-			},
-			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
-		});';
-*/
-
-
 		// Fotos
 		$bodyscript .= '
 		function verfotos(){
@@ -729,9 +727,7 @@ class Sinv extends Controller {
 				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
 			}
 		});
-
 		$("#sundecop").click( function(){ sundecop();});
-
 ';
 
 
@@ -2405,12 +2401,6 @@ class Sinv extends Controller {
 						function(data){
 							$("#itsinv").html(data);
 					});
-'.
-//					$.get(\''.site_url("inventario/fotos/comenta").'/\'+id,
-//						function(data){
-//							$("#textofoto").html(data);
-//					});
-'
 					jQuery("#bpos1").jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'bpos1/').'/"+id+"/", page:1});
 					jQuery("#bpos1").trigger("reloadGrid");
 
@@ -2888,7 +2878,6 @@ class Sinv extends Controller {
 		$edit->standard = new inputField('Standard', 'standard');
 		$edit->standard->css_class='inputnum';
 		$edit->standard->size=10;
-		//$edit->standard->insertValue='100';
 		$edit->standard->maxlength=13;
 		$edit->standard->insertValue=0;
 		$edit->standard->autocomplete = false;
@@ -2899,6 +2888,7 @@ class Sinv extends Controller {
 		$edit->formcal->option('U','Ultimo');
 		$edit->formcal->option('P','Promedio');
 		$edit->formcal->option('M','Mayor');
+		$edit->formcal->option('S','Standard');
 		$edit->formcal->insertValue='U';
 		$edit->formcal->onchange = 'requeridos();calculos(\'S\');';
 
@@ -3525,11 +3515,10 @@ class Sinv extends Controller {
 	//  -- Aumento de Precios al Mayor --  //
 	//
 	// **************************************
-	function auprecm($porcent= 0) {
+	function auprecm($porcent = 0) {
 		$data = $this->datasis->damesesion();
 		$where = $data['data1'];
 		if ( $porcent > 0 ){
-			//$mSQL = "SET mmargen=mmargen+$porcent ";
 			$mSQL = "SET mmargen=round(round(ultimo*(100+mmargen)/100,2)*100/(100-$porcent),2)*100/ultimo -100 ";
 			$this->db->simple_query("UPDATE sinv a ".$mSQL." ".$where);
 			echo " Aumento Concluido";
@@ -3581,6 +3570,40 @@ class Sinv extends Controller {
 			echo "Cambiado a Depto $depto, linea $linea, grupo $mgrupo Exitosamente";
 		}
 	}
+
+
+	//*****************************
+	//
+	//  Recalcula segun dolares
+	//
+	function recaldolar( $cambio = 0  ) {
+		$cambio  = rawurldecode($this->input->post('cambio'));
+		$data = $this->datasis->damesesion();
+		if ( isset($data['data1']) ){
+			$where = $data['data1'];
+			if (!empty($where)){ 
+				if ( $cambio > 0 ){ 
+					$mSQL = "UPDATE sinv SET standard=ultimo WHERE dolar>0 AND formcal='S'";
+					$this->db->query($mSQL);
+			
+					$mSQL = "SET 
+					precio1=ROUND((dolar*$cambio)*(100+iva)/(100-margen1),2),
+					precio2=ROUND((dolar*$cambio)*(100+iva)/(100-margen2),2),
+					precio3=ROUND((dolar*$cambio)*(100+iva)/(100-margen3),2),
+					precio4=ROUND((dolar*$cambio)*(100+iva)/(100-margen4),2),
+					standard=ROUND(dolar*$cambio,2) ";
+					$this->db->simple_query("UPDATE sinv a ".$mSQL." ".$where." AND dolar > 0 AND formcal='S'");
+					$this->datasis->sinvrecalcular("M");
+					$this->datasis->sinvredondear();
+					echo " Cambio Concluido ";
+				} else 
+					echo " Cambio debe ser mayor que 0 ";
+			} else 
+				echo " Debe filtrar los productos!  ";
+		} else 
+			echo " Debe filtrar los productos!  ";
+	}
+
 
 	//*****************************
 	//
