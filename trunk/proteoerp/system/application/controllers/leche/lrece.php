@@ -1179,9 +1179,9 @@ class Lrece extends Controller {
 	}
 
 	function chtransporte($val){
-		$lleno=$this->input->post('lleno');
+		$lleno=floatval($this->input->post('lleno'));
 		$ruta =$this->input->post('ruta');
-		if(substr($ruta,0,1)=='R' && empty($val)){
+		if(substr($ruta,0,1)=='R' && $lleno==0.00 && empty($val)){
 			$this->validation->set_message('chtransporte', 'El campo %s es obligatorio para la ruta '.$ruta);
 			return false;
 		}

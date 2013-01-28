@@ -3034,7 +3034,7 @@ class Sfac extends Controller {
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('Imprimir factura', 'sfac');
-		$id=$edit->get_from_dataobjetct('id');
+		//$id=$edit->get_from_dataobjetct('id');
 
 		$sfacforma=$this->datasis->traevalor('FORMATOSFAC','Especifica el metodo a ejecutar para descarga de formato de factura en Proteo Ej. descargartxt...');
 		if(empty($sfacforma)) $sfacforma='descargar';
@@ -3042,7 +3042,7 @@ class Sfac extends Controller {
 		if(isset($this->back_url))
 			$edit->back_url = site_url($this->back_url);
 		else
-			$edit->back_url = site_url('ajax/reccierraventana');
+			$edit->back_url = site_url('ajax/reccierraventana/N');
 
 		$edit->back_save   = true;
 		$edit->back_delete = true;
@@ -3125,6 +3125,9 @@ class Sfac extends Controller {
 		$total   = $edit->get_from_dataobjetct('totalg');
 		$edit->totalg = new freeField('<b>Monto a pagar</b>','monto','<b id="vh_monto" style="font-size:2em">'.nformat($total).'</b>');
 
+		$edit->buttons('save', 'undo');
+		$edit->build();
+
 		$tipo_doc = $edit->get_from_dataobjetct('tipo_doc');
 		if($tipo_doc=='F'){
 			$maestra  = $edit->get_from_dataobjetct('maestra');
@@ -3137,20 +3140,29 @@ class Sfac extends Controller {
 				$ww= "maestra=$dbnumero";
 			}
 
-			$mSQL="SELECT id,numero FROM sfac WHERE ${ww} ORDER BY numero LIMIT 100";
+			$mSQL="SELECT id,numero,nfiscal FROM sfac WHERE ${ww} ORDER BY numero LIMIT 100";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				$cont='';
+				$ft  =true;
 				foreach ($query->result() as $row){
 					if($row->numero==$numero) continue;
-					$cont.= ' '.anchor($this->url.'dataprint/modify/'.$row->id,$row->numero).br();
+					if(empty($row->nfiscal)){
+						$adi=' *';
+						if($ft){
+							//$edit->back_save = false;
+							$edit->back_url = $edit->back_uri = $edit->_postprocess_uri= $this->url.'dataprint/modify/'.$row->id;
+							$ft=false;
+						}
+					}else{
+						$adi=' ('.$row->nfiscal.')';
+					}
+					$cont.= ' '.anchor($this->url.'dataprint/modify/'.$row->id,$row->numero.$adi).br();
 				}
 				$edit->free = new freeField('Facturas relacionadas','maestro',$cont);
 			}
+			$edit->build();
 		}
-
-		$edit->buttons('save', 'undo','back');
-		$edit->build();
 
 		if($st=='modify'){
 			$script= '<script type="text/javascript" >

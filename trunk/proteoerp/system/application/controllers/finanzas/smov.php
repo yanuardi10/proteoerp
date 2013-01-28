@@ -1243,6 +1243,15 @@ class Smov extends Controller {
 	}
 
 */
+	function instalar(){
+		$campos=$this->db->list_fields('smov');
+		if (!in_array('id',$campos)){
+			$mSQL="ALTER TABLE `smov`
+				ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT,
+				DROP PRIMARY KEY,
+				ADD UNIQUE INDEX `unic` (`cod_cli`, `tipo_doc`, `numero`, `fecha`),
+				ADD PRIMARY KEY (`id`)";
+			$this->db->simple_query();
+		}
+	}
 }
-
-?>
