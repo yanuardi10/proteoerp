@@ -441,7 +441,7 @@ class Lrece extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+/*
 		$grid->addField('animal');
 		$grid->label('Animal');
 		$grid->params(array(
@@ -564,7 +564,7 @@ class Lrece extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 		$grid->addField('transporte');
 		$grid->label('Transp.');
 		$grid->params(array(
