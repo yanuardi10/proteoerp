@@ -635,6 +635,34 @@ function sugerir(){
 	});
 }
 
+function almubica( id, almacen){
+	mubica = prompt("Introduza la ubicacion ("+almacen+")");
+	if( mubica==null ){
+	}else{
+		$.ajax({
+		 type: "POST",
+		 //processData:false,
+			url: '<?php echo site_url('inventario/sinv/almubica/') ?>',
+			data: {ubica:mubica, mid:id, alma:almacen },
+			dataType: "text",
+			async: false,
+			success: function(msg){
+				alert("Mensaje="+msg);
+/*
+				if(msg=="s.i"){
+					unidad=unidad.substr(0,8);
+					$.post('<?php echo $link6 ?>',{ x:"" },function(data){$("#unidad").html(data);$("#unidad").val(unidad);})
+				}
+				else{
+					alert("Disculpe. En este momento no se ha podido agregar la unidad, por favor intente mas tarde");
+				}
+*/
+			}
+		});
+	}
+}
+
+
 </script>
 <?php }else{
 //script cuando es show
@@ -1552,28 +1580,53 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			<legend class="titulofieldset" >Existencias</legend>
 			<table width='100%' border=0 >
 				<tr>
-					<td width='120' class="littletableheaderc"><?php echo $form->existen->label  ?></td>
-					<td class="littletablerow" align='right'  ><?php echo $form->existen->output ?></td>
+					<td class="littletableheaderc"           ><?php echo $form->existen->label  ?></td>
+					<td class="littletablerow" align='right' ><?php echo $form->existen->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?php echo $form->exmin->label  ?></td>
+					<td class="littletableheaderc"          ><?php echo $form->exmin->label  ?></td>
 					<td class="littletablerow" align='right'><?php echo $form->exmin->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?php echo $form->exmax->label  ?></td>
+					<td class="littletableheaderc"          ><?php echo $form->exmax->label  ?></td>
 					<td class="littletablerow" align='right'><?php echo $form->exmax->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?php echo $form->exord->label  ?></td>
+					<td class="littletableheaderc"          ><?php echo $form->exord->label  ?></td>
 					<td class="littletablerow" align='right'><?php echo $form->exord->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?php echo $form->exdes->label  ?></td>
+					<td class="littletableheaderc"          ><?php echo $form->exdes->label  ?></td>
 					<td class="littletablerow" align='right'><?php echo $form->exdes->output ?></td>
 				</tr>
 			</table>
 			</fieldset>
 		</td>
+
+  		<td valign="top">
+			<fieldset  style='border: 2px outset #FEB404;background: #FFFCE8;'>
+			<legend class="titulofieldset" >Ubicaciones</legend>
+			<table id='simpletabla' width='100%' border=0 >
+				<tbody>
+				<tr>
+					<td class="simplehead">Almacen</td>
+					<td class="simplehead">Ubica</td>
+				</tr>
+
+<?php
+		//Ubicaciones
+		$query=$this->db->query('SELECT alma, ubica FROM sinvalub WHERE codigo='.$this->db->escape($form->_dataobject->get('codigo')).' order by alma');
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				echo "\t\t\t\t<tr><td><a href='javascript:almubica(".$form->_dataobject->get('id').", \"".$row->alma."\")'>".$row->alma."</a></td><td>".$row->ubica."</td></tr>\n";
+			}
+		}
+?>
+				</tbody>
+			</table>
+			</fieldset>
+		</td>
+
 		<?php if( !empty($form->almacenes->output)) { ?>
 		<td valign="top">
 			<fieldset style='border: 1px outset #FEB404;background: #FFFCE8;'>
@@ -1582,6 +1635,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			</fieldset>
 		</td>
 		<?php } ?>
+
 	</tr>
 	</table>
 </div>
@@ -1668,7 +1722,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</table>
 	<br/>
 <?php
-$query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto, id FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".addslashes($form->_dataobject->get('codigo'))."'");
+$query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto, id FROM sinv WHERE MID(tipo,1,1)='F' AND enlace=".$this->db->escape($form->_dataobject->get('codigo')));
 if ($query->num_rows()>0 ) {
 ?>
 	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>

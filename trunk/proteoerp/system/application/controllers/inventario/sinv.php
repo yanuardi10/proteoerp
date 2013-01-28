@@ -56,6 +56,18 @@ class Sinv extends Controller {
 		$this->db->query("UPDATE tmenus SET proteo='verfotos'    WHERE modulo='SINVOTR' AND ejecutar LIKE 'SINVFOTO%' ");
 		$this->db->query("UPDATE tmenus SET proteo='etiquetas'   WHERE modulo='SINVOTR' AND ejecutar LIKE 'SINVETIQ%' ");
 
+		if ( !$this->datasis->istabla('sinvalub') ) {
+			$campos = $this->db->list_fields('sinv');
+			$mSQL = "CREATE TABLE sinvalub (
+					codigo VARCHAR(15) NOT NULL DEFAULT '',
+					alma   VARCHAR(4)  NOT NULL DEFAULT '',
+					ubica  VARCHAR(12) NULL DEFAULT NULL,
+					PRIMARY KEY (codigo, alma)
+					)
+					COLLATE='latin1_swedish_ci' ENGINE=MyISAM;";
+			$this->db->query($mSQL);
+		}
+		$this->db->query("INSERT IGNORE INTO sinvalub SELECT a.codigo, b.ubica, a.ubica FROM sinv a JOIN caub b WHERE MID(a.tipo,1,1) <> 'S' AND b.gasto='N' ");
 		$this->datasis->modintramenu( 950, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -201,6 +213,7 @@ class Sinv extends Controller {
 			return meco;
 		};
 		';
+
 
 		//Recalcular Precios
 		$funciones .= '
@@ -544,6 +557,14 @@ class Sinv extends Controller {
 		var mstatus = "";
 		';
 
+/*
+		$bodyscript .= '
+		function almubica( id, ubica){
+			alert("Almacen="+ubica+" id="+id);
+		};
+		';
+*/
+
 		// Agregar
 		$bodyscript .= '
 		function sinvadd() {
@@ -643,7 +664,6 @@ class Sinv extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
 		};
 		';
-
 
 
 		// Fotos
@@ -3326,7 +3346,6 @@ class Sinv extends Controller {
 
 		$conten['form']  =& $edit;
 
-
 		//$data['content'] =
 		$this->load->view('view_sinv', $conten );
 		//$data['content'] = $edit->output;
@@ -3364,6 +3383,23 @@ class Sinv extends Controller {
 		}
 		return true;
 	}
+
+
+	function almubica(){
+		$alma   = $this->input->post('alma');
+		$mid    = $this->input->post('mid');
+		$ubica  = $this->input->post('ubica');
+		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mid");
+		
+		$mSQL = "UPDATE sinvalub SET ubica=".$this->db->escape($ubica)." WHERE codigo=".$this->db->escape($codigo)." AND alma=".$this->db->escape($alma);
+		if ( $this->db->query($mSQL) )
+			echo "Ubicacion del almacen".$alma." cambiada a ".$ubica.$mSQL;
+		else
+			echo "Fallo al intentar hacer el cambio ".$mSQL;
+		
+	}
+
+
 
 	function _pre_insert($do){
 		$codigo=$do->get('codigo');
