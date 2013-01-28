@@ -32,21 +32,6 @@ class Smov extends Controller {
 
 		$readyLayout = $grid->readyLayout2( 212, 140, $param['grids'][0]['gridname']);
 
-/*
-		$bodyscript = '
-		<script type="text/javascript">
-		jQuery("#boton1").click( function(){
-			var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-			if(id){
-				var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('formatos/ver/CCLIAB').'/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-			}else{
-				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
-			}
-		});
-		</script>
-		';
-*/
 
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
@@ -55,15 +40,16 @@ class Smov extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"cobro",  "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Cobro a Cliente"));
+		$grid->wbotonadd(array('id'=>'bimpri', 'img'=>'images/pdf_logo.gif', 'alt' => 'Formato PDF'    , 'label'=>'Reimprimir Documento'));
+		$grid->wbotonadd(array('id'=>'cobro' , 'img'=>'images/dinero.png'  , 'alt' => 'Cobro a cliente', 'label'=>'Cobro a Cliente'     ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'] );
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Banco o Caja")
+			array("id"=>"fedita"  ,  "title"=>"Agregar/Editar Banco o Caja"),
+			array("id"=>"fsclisel",  "title"=>"Seleccionar cliente")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -90,38 +76,107 @@ class Smov extends Controller {
 	//***************************
 	function bodyscript( $grid0 ){
 
-		$bodyscript  = '		<script type="text/javascript">';
+		$bodyscript  = '<script type="text/javascript">';
 
 		$bodyscript .= '
-		jQuery("#boton1").click( function(){
+		function selscli() {
+			$.post("'.site_url($this->url.'selscli/').'/"+id,
+				function(data){
+					$("#fsclisel").html(data);
+					$("#fsclisel").dialog( "open" );
+				}
+			);
+		};';
+
+		$bodyscript .= '$(function() { ';
+
+		$bodyscript .= '
+		jQuery("#bimpri").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if(id){
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('formatos/ver/CCLIAB').'/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+				window.open(\''.site_url($this->url.'smovprint').'/\'+id, \'_blank\', \'width=400,height=4200,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 			}else{
 				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
 			}
 		});
 		';
-
 
 		$bodyscript .= '
 		jQuery("#cobro").click( function(){
-			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if(id){
-				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				$.post("'.site_url('finanzas/ccli/dataedit').'/"+ret.cod_cli,
-					function(data){
-						$("#fedita").html(data);
-						$("#fedita").dialog( "open" );
-					})
-			}else{
-				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
-			}
-		});
-		';
+			$.post("'.site_url($this->url.'selscli/').'",
+				function(data){
+					$("#fsclisel").html(data);
+					$("#fsclisel").dialog("open");
+				}
+			);
+		});';
 
-		$bodyscript .= "\n</script>\n";
+		$bodyscript .= '
+			$("#fedita").dialog({
+				autoOpen: false, height: 500, width: 800, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						$.ajax({
+							type: "POST",
+							dataType: "html",
+							async: false,
+							url: murl,
+							data: $("#df1").serialize(),
+							success: function(r,s,x){
+								try{
+									var json = JSON.parse(r);
+									if ( json.status == "A" ) {
+										$( "#fedita" ).dialog( "close" );
+										jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+										window.open(\''.site_url($this->url.'/smovprint').'/\'+json.pk.id, \'_blank\', \'width=400,height=420,scrollbars=yes,status=yes,resizable=yes\');
+										return true;
+									} else {
+										apprise(json.mensaje);
+									}
+								}catch(e){
+									$("#fedita").html(r);
+								}
+							}
+						})
+					},
+					"Cancelar": function() {
+						$("#fedita").html("");
+						$( this ).dialog( "close" );
+					}
+				},
+				close: function() {
+					$("#fedita").html("");
+				}
+			});';
+
+		$bodyscript .= '
+			$("#fsclisel").dialog({
+				autoOpen: false, height: 430, width: 540, modal: true,
+				buttons: {
+					"Seleccionar": function() {
+						$.get("'.site_url($this->url.'ccli').'"+"/"+$("#id_scli").val()+"/create", function(data) {
+							$("#fedita").html(data);
+							$("#fedita").dialog("open");
+							$("#fsclisel").html("");
+							$("#fsclisel").dialog("close");
+						});
+					},
+					Cancel: function() {
+						$("#fcobroser").html("");
+						$("#fsclisel").dialog( "close" );
+					}
+				},
+				close: function() {
+					$("#fsclisel").html("");
+				}
+			});';
+
+		$bodyscript .= '});';
+
+		$bodyscript .= "\n</script>";
 		return $bodyscript;
 	}
 
@@ -716,7 +771,6 @@ class Smov extends Controller {
 			'edittype'      => "'text'",
 		));
 
-
 		$grid->addField('ncredito');
 		$grid->label('Ncredito');
 		$grid->params(array(
@@ -835,6 +889,392 @@ class Smov extends Controller {
 		};
 	}
 
+	function selscli(){
+		$this->rapyd->load('dataform');
+
+		$script="$('#cod_cli').autocomplete({
+			source: function( req, add){
+				$.ajax({
+					url:  '".site_url('ajax/buscascli')."',
+					type: 'POST',
+					dataType: 'json',
+					data: 'q='+req.term,
+					success:
+						function(data){
+							var sugiere = [];
+							if(data.length==0){
+								$('#id_scli').val('');
+
+								$('#nombre').val('');
+								$('#nombre_val').text('');
+
+								$('#rifci').val('');
+								$('#rifci_val').text('');
+
+								$('#direc').val('');
+								$('#direc_val').text('');
+							}else{
+								$.each(data,
+									function(i, val){
+										sugiere.push( val );
+									}
+								);
+							}
+							add(sugiere);
+						},
+				})
+			},
+			minLength: 2,
+			select: function( event, ui ) {
+				$('#cod_cli').attr('readonly', 'readonly');
+
+				$('#id_scli').val(ui.item.id);
+
+				$('#nombre').val(ui.item.nombre);
+				$('#nombre_val').text(ui.item.nombre);
+
+				$('#rifci').val(ui.item.rifci);
+				$('#rifci_val').text(ui.item.rifci);
+
+				$('#cod_cli').val(ui.item.cod_cli);
+
+				$('#direc').val(ui.item.direc);
+				$('#direc_val').text(ui.item.direc);
+				setTimeout(function() {  $('#cod_cli').removeAttr('readonly'); }, 1500);
+			}
+		});";
+
+		$form = new DataForm($this->url.'sclise/process');
+		$form->script($script);
+
+		$form->cliente = new inputField('Cliente', 'cod_cli');
+		//$form->cliente->rule = "trim|required|max_length[20]";
+
+		$form->id = new hiddenField('', 'id_scli');
+		$form->id->in='cliente';
+		//$form->body = new textareaField("Body", "body");
+		//$form->body->rule = "required";
+		//$form->body->rows = 10;
+
+		$form->build_form();
+
+		echo $form->output;
+	}
+
+	function smovprint($id){
+		$dbid = $this->db->escape($id);
+		$tipo = $this->datasis->dameval('SELECT tipo_doc FROM smov WHERE id='.$dbid);
+		switch($tipo){
+			case 'NC':
+				redirect('formatos/descargar/CCLINC/'.$id);
+				break;
+			case 'AB':
+				redirect('formatos/descargar/CCLIAB/'.$id);
+				break;
+			case 'GI':
+				redirect('formatos/descargar/CCLIGI/'.$id);
+				break;
+			case 'FC':
+				redirect('ventas/sfac/dataprint/modify/'.$id);
+				break;
+			case 'ND':
+				redirect('formatos/descargar/CCLIND/'.$id);
+				break;
+		}
+	}
+
+	function ccli($id_scli){
+		$cliente  = $this->datasis->dameval("SELECT cliente FROM scli WHERE id=$id_scli");
+		if(!$this->_exitescli($cliente)) redirect($this->url.'filteredgrid');
+		$dbcliente=$this->db->escape($cliente);
+		$scli_nombre=$this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=$dbcliente");
+		$scli_rif   =$this->datasis->dameval("SELECT rifci FROM scli WHERE cliente=$dbcliente");
+
+
+		$cajero=$this->secu->getcajero();
+		if(empty($cajero)) show_error('El usuario debe tener registrado un cajero para poder usar este modulo');
+
+		$this->rapyd->load('dataobject','datadetails');
+		$this->rapyd->uri->keep_persistence();
+
+		$do = new DataObject('smov');
+		$do->rel_one_to_many('itccli', 'itccli', array(
+			'tipo_doc'=>'tipoccli',
+			'numero'  =>'numccli',
+			'cod_cli' =>'cod_cli',
+			'fecha'   =>'fecha')
+		);
+		$do->rel_one_to_many('sfpa'  , 'sfpa'  , array(
+			'transac' =>'transac',
+			'numero'  =>'numero',
+			'tipo_doc'=>'tipo_doc',
+			'fecha'   =>'fecha')
+		);
+		$do->order_by('itccli','itccli.fecha');
+
+		$edit = new DataDetails('Cobro a cliente', $do);
+		$edit->on_save_redirect=false;
+		$edit->back_url = site_url('finanzas/ccli/filteredgrid');
+		$edit->set_rel_title('itccli', 'Producto <#o#>');
+		$edit->set_rel_title('itccli', 'Forma de pago <#o#>');
+
+		$edit->pre_process('insert' , '_pre_insert');
+		$edit->pre_process('update' , '_pre_update');
+		$edit->pre_process('delete' , '_pre_delete');
+		$edit->post_process('insert', '_post_insert');
+		$edit->post_process('update', '_post_update');
+		$edit->post_process('delete', '_post_delete');
+
+		$edit->cod_cli = new hiddenField('Cliente','cod_cli');
+		$edit->cod_cli->rule ='max_length[5]';
+		$edit->cod_cli->size =7;
+		$edit->cod_cli->insertValue=$cliente;
+		$edit->cod_cli->maxlength =5;
+
+		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre->rule='max_length[40]';
+		$edit->nombre->size =42;
+		$edit->nombre->maxlength =40;
+
+		$edit->tipo_doc = new  dropdownField('Tipo doc.', 'tipo_doc');
+		$edit->tipo_doc->option('AB','Abono');
+		$edit->tipo_doc->option('NC','Nota de credito');
+		$edit->tipo_doc->option('AN','Anticipo');
+		$edit->tipo_doc->style='width:140px;';
+		$edit->tipo_doc->rule ='enum[AB,NC,AN]|required';
+
+		$edit->codigo = new  dropdownField('Motivo', 'codigo');
+		$edit->codigo->option('','Ninguno');
+		$edit->codigo->options('SELECT TRIM(codigo) AS cod, nombre FROM botr WHERE tipo=\'C\' ORDER BY nombre');
+		$edit->codigo->style='width:200px;';
+		$edit->codigo->rule ='';
+
+		$edit->numero = new inputField('N&uacute;mero','numero');
+		$edit->numero->rule='max_length[8]';
+		$edit->numero->size =10;
+		$edit->numero->maxlength =8;
+
+		$edit->fecdoc = new dateonlyField('Fecha','fecdoc');
+		$edit->fecdoc->size =10;
+		$edit->fecdoc->maxlength =8;
+		$edit->fecdoc->insertValue=date('Y-m-d');
+		$edit->fecdoc->rule ='chfecha|required';
+
+		$edit->monto = new inputField('Total','monto');
+		$edit->monto->rule='max_length[17]|numeric';
+		$edit->monto->css_class='inputnum';
+		$edit->monto->size =19;
+		$edit->monto->maxlength =17;
+		$edit->monto->type='inputhidden';
+
+		$edit->observa1 = new  textareaField('Concepto:','observa1');
+		$edit->observa1->cols = 70;
+		$edit->observa1->rows = 2;
+		$edit->observa1->style='width:100%;';
+
+		$edit->observa2 = new  textareaField('','observa2');
+		$edit->observa2->cols = 70;
+		$edit->observa2->rows = 2;
+		$edit->observa2->style='width:100%;';
+		$edit->observa2->when=array('show');
+
+		$edit->usuario = new autoUpdateField('usuario' ,$this->secu->usuario(),$this->secu->usuario());
+		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		$edit->hora    = new autoUpdateField('hora'    ,date('H:i:s'), date('H:i:s'));
+		$edit->fecha   = new autoUpdateField('fecha'   ,date('Ymd'), date('Ymd'));
+
+		//************************************************
+		//inicio detalle itccli
+		//************************************************
+		$i=0;
+		$edit->detail_expand_except('itccli');
+		$sel=array('a.tipo_doc','a.numero','a.fecha','a.monto','a.abonos','a.monto - a.abonos AS saldo');
+		$this->db->select($sel);
+		$this->db->from('smov AS a');
+		$this->db->where('a.cod_cli',$cliente);
+		$transac=$edit->get_from_dataobjetct('transac');
+		if($transac!==false){
+			$tipo_doc =$edit->get_from_dataobjetct('tipo_doc');
+			$dbtransac=$this->db->escape($transac);
+			$this->db->join('itccli AS b','a.tipo_doc = b.tipoccli AND a.numero=b.numccli AND a.transac='.$dbtransac);
+			$this->db->where('a.tipo_doc',$tipo_doc);
+		}else{
+			$this->db->where('a.monto > a.abonos');
+			$this->db->where_in('a.tipo_doc',array('FC','ND','GI'));
+		}
+		$this->db->order_by('a.fecha');
+		$query = $this->db->get();
+		//echo $this->db->last_query();
+		foreach ($query->result() as $row){
+			$obj='cod_cli_'.$i;
+			$edit->$obj = new autoUpdateField('cod_cli',$cliente,$cliente);
+			$edit->$obj->rel_id  = 'itccli';
+			$edit->$obj->ind     = $i;
+
+			$obj='tipo_doc_'.$i;
+			$edit->$obj = new inputField('Tipo_doc',$obj);
+			$edit->$obj->db_name='tipo_doc';
+			$edit->$obj->rel_id = 'itccli';
+			$edit->$obj->rule='max_length[2]';
+			$edit->$obj->insertValue=$row->tipo_doc;
+			$edit->$obj->size =4;
+			$edit->$obj->maxlength =2;
+			$edit->$obj->ind       = $i;
+			$edit->$obj->type='inputhidden';
+
+			$obj='numero_'.$i;
+			$edit->$obj = new inputField('Numero',$obj);
+			$edit->$obj->db_name='numero';
+			$edit->$obj->rel_id = 'itccli';
+			$edit->$obj->rule='max_length[8]';
+			$edit->$obj->insertValue=$row->numero;
+			$edit->$obj->size =10;
+			$edit->$obj->maxlength =8;
+			$edit->$obj->ind       = $i;
+			$edit->$obj->type='inputhidden';
+
+			$obj='fecha_'.$i;
+			$edit->$obj = new dateonlyField('Fecha',$obj);
+			$edit->$obj->db_name='fecha';
+			$edit->$obj->rel_id = 'itccli';
+			$edit->$obj->rule='chfecha';
+			$edit->$obj->insertValue=$row->fecha;
+			$edit->$obj->size =10;
+			$edit->$obj->maxlength =8;
+			$edit->$obj->ind       = $i;
+			$edit->$obj->type='inputhidden';
+
+			$obj='monto_'.$i;
+			$edit->$obj = new inputField('Monto',$obj);
+			$edit->$obj->db_name='monto';
+			$edit->$obj->rel_id = 'itccli';
+			$edit->$obj->rule='max_length[18]|numeric';
+			$edit->$obj->css_class='inputnum';
+			$edit->$obj->size =20;
+			$edit->$obj->insertValue=$row->monto;
+			$edit->$obj->maxlength =18;
+			$edit->$obj->ind       = $i;
+			$edit->$obj->showformat='decimal';
+			$edit->$obj->type='inputhidden';
+
+			$obj='saldo_'.$i;
+			$edit->$obj = new freeField($obj,$obj,nformat($row->saldo));
+			$edit->$obj->ind = $i;
+
+	        $obj='abono_'.$i;
+			$edit->$obj = new inputField('Abono',$obj);
+			$edit->$obj->db_name      = 'abono';
+			$edit->$obj->rel_id       = 'itccli';
+			$edit->$obj->rule         = "max_length[18]|numeric|positive|callback_chabono[$i]";
+			$edit->$obj->css_class    = 'inputnum';
+			$edit->$obj->showformat   = 'decimal';
+			$edit->$obj->autocomplete = false;
+			$edit->$obj->disable_paste= true;
+			$edit->$obj->size         = 15;
+			$edit->$obj->maxlength    = 18;
+			$edit->$obj->ind          = $i;
+			$edit->$obj->onfocus      = 'itsaldo(this,'.round($row->saldo,2).');';
+
+	        $obj='ppago_'.$i;
+			$edit->$obj = new inputField('Pronto Pago',$obj);
+			$edit->$obj->db_name      = 'ppago';
+			$edit->$obj->rel_id       = 'itccli';
+			$edit->$obj->rule         = "max_length[18]|numeric|positive|callback_chppago[$i]";
+			$edit->$obj->css_class    = 'inputnum';
+			$edit->$obj->showformat   = 'decimal';
+			$edit->$obj->autocomplete = false;
+			$edit->$obj->disable_paste= true;
+			$edit->$obj->size         = 15;
+			$edit->$obj->maxlength    = 18;
+			$edit->$obj->ind          = $i;
+			$edit->$obj->onchange     = "itppago(this,'$i');";
+
+			$i++;
+		}
+		//************************************************
+		//fin de campos para detalle,inicio detalle2 sfpa
+		//************************************************
+		$edit->tipo = new  dropdownField('Tipo <#o#>', 'tipo_<#i#>');
+		$edit->tipo->option('','Ninguno');
+		$edit->tipo->options('SELECT tipo, nombre FROM tarjeta WHERE activo=\'S\' ORDER BY nombre');
+		$edit->tipo->db_name  = 'tipo';
+		$edit->tipo->rel_id   = 'sfpa';
+		$edit->tipo->style    = 'width:160px;';
+		$edit->tipo->rule     = 'condi_required|callback_chsfpatipo[<#i#>]';
+		$edit->tipo->insertValue='EF';
+		$edit->tipo->onchange   = 'sfpatipo(<#i#>)';
+
+		$edit->sfpafecha = new dateonlyField('Fecha','sfpafecha_<#i#>');
+		$edit->sfpafecha->rel_id   = 'sfpa';
+		$edit->sfpafecha->db_name  = 'fecha';
+		$edit->sfpafecha->size     = 10;
+		$edit->sfpafecha->maxlength= 8;
+		$edit->sfpafecha->rule ='condi_required|chitfecha|callback_chtipo[<#i#>]';
+
+		$edit->numref = new inputField('Numero <#o#>', 'num_ref_<#i#>');
+		$edit->numref->size     = 12;
+		$edit->numref->db_name  = 'num_ref';
+		$edit->numref->rel_id   = 'sfpa';
+		$edit->numref->rule     = 'condi_required|callback_chtipo[<#i#>]';
+
+		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
+		$edit->banco->option('','Ninguno');
+		$edit->banco->options('SELECT cod_banc,nomb_banc
+			FROM tban
+			WHERE cod_banc<>\'CAJ\'
+		UNION ALL
+			SELECT codbanc,CONCAT_WS(\' \',TRIM(banco),numcuent)
+			FROM banc
+			WHERE tbanco <> \'CAJ\' ORDER BY nomb_banc');
+		$edit->banco->db_name='banco';
+		$edit->banco->rel_id ='sfpa';
+		$edit->banco->style  ='width:200px;';
+		$edit->banco->rule   = 'condi_required|callback_chtipo[<#i#>]';
+
+		$edit->itmonto = new inputField('Monto <#o#>', 'itmonto_<#i#>');
+		$edit->itmonto->db_name     = 'monto';
+		$edit->itmonto->css_class   = 'inputnum';
+		$edit->itmonto->rel_id      = 'sfpa';
+		$edit->itmonto->size        = 10;
+		$edit->itmonto->rule        = 'condi_required|positive|callback_chmontosfpa[<#i#>]';
+		$edit->itmonto->showformat  = 'decimal';
+		$edit->itmonto->autocomplete= false;
+		//************************************************
+		// Fin detalle 2 (sfpa)
+		//************************************************
+
+		$edit->buttons('add_rel');
+		$edit->build();
+
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+
+			echo json_encode($rt);
+		}else{
+			$conten['cana']  = $i;
+			$conten['form']  = & $edit;
+			$conten['title'] = heading("Cobro a cliente: ($cliente) $scli_nombre $scli_rif");
+
+			$data['content'] = $this->load->view('view_ccli.php', $conten);
+		}
+	}
+
+	function _exitescli($cliente){
+		$dbscli= $this->db->escape($cliente);
+		$mSQL  = "SELECT COUNT(*) AS cana FROM scli WHERE cliente=$dbscli";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			if( $row->cana>0) return true; else return false;
+		}else{
+			return false;
+		}
+	}
+
 	function tabla() {
 		$id = $this->uri->segment($this->uri->total_segments());
 
@@ -859,8 +1299,7 @@ class Smov extends Controller {
 			$salida .= $td1;
 			$salida .= "Movimiento en Proveedores</caption>";
 			$salida .= "<tr bgcolor='#E7E3E7'><td>Nombre</td><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				if ( $row['tipo_doc'] == 'FC' ) {
 					$saldo = $row['monto']-$row['abonos'];
 				}
@@ -885,8 +1324,7 @@ class Smov extends Controller {
 			$salida .= $td1;
 			$salida .= "Movimiento en Clientes</caption>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Nombre</td><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				if ( $row['tipo_doc'] == 'FC' ) {
 					$saldo = $row['monto']-$row['abonos'];
 				}
@@ -913,8 +1351,7 @@ class Smov extends Controller {
 			$salida .= $td1;
 			$salida .= "Retenciones de IVA</caption>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Periodo</td><td align='center'>Numero</td><td align='center'>Monto</tr>";
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				$salida .= "<tr>";
 				$salida .= "<td>".$row['periodo']."</td>";
 				$salida .= "<td>".$row['nrocomp'].  "</td>";
@@ -932,8 +1369,7 @@ class Smov extends Controller {
 				$salida .= $td1;
 				$salida .= "Factura Relacionada</caption>";
 				$salida .= "<tr bgcolor='#e7e3e7'><td>Tipo</td><td align='center'>Numero</td><td align='center'>Monto</tr>";
-				foreach ($query->result_array() as $row)
-				{
+				foreach ($query->result_array() as $row){
 					$salida .= "<tr>";
 					$salida .= "<td>".$row['tipo_doc']."</td>";
 					$salida .= "<td>".$row['numero'].  "</td>";
@@ -951,13 +1387,12 @@ class Smov extends Controller {
 			$mSQL = "SELECT tipoccli tipo_doc, numccli numero, monto, abono FROM itccli WHERE tipo_doc='$tipo_doc' AND numero='$numero' ";
 			$query = $this->db->query($mSQL);
 		}
-		if ( $query->num_rows() > 0 ){
+		if($query->num_rows() > 0){
 			$saldo = 0;
 			$salida .= $td1;
 			$salida .= "Movimientos Relacionados</caption>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td><td align='center'>Abono</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				$saldo += $row['abono'];
 				$salida .= "<tr>";
 				$salida .= "<td>".$row['tipo_doc']."</td>";
@@ -977,12 +1412,11 @@ class Smov extends Controller {
 		$query = $this->db->query($mSQL);
 		$codcli = 'XXXXXXXXXXXXXXXX';
 		$saldo = 0;
-		if ( $query->num_rows() > 0 ){
+		if ($query->num_rows() > 0){
 			$salida .= $td1;
 			$salida .= "Formas de Pago</caption>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Forma de Pago</td><td align='center'>Numero</td><td align='center'>Banco</td> <td align='center'>Monto</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				$salida .= "<tr>";
 				$salida .= "<td>".$row['tipo']."</td>";
 				$salida .= "<td>".$row['num_ref']."</td>";
@@ -997,12 +1431,11 @@ class Smov extends Controller {
 		$mSQL = "SELECT if(observa2='',observa1,observa2) observa, monto FROM prmo WHERE transac='$transac' AND clipro='$cod_cli' AND monto<>0";
 		$query = $this->db->query($mSQL);
 		$saldo = 0;
-		if ( $query->num_rows() > 0 ){
+		if ($query->num_rows() > 0){
 			$salida .= $td1;
 			$salida .= "Prestamos</caption>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Observacion</td><td align='center'>Monto</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				$salida .= "<tr>";
 				$salida .= "<td>".$row['observa']."</td>";
 				$salida .= "<td align='right'>".nformat($row['monto'])."</td>";
@@ -1023,12 +1456,11 @@ class Smov extends Controller {
 			";
 		$query = $this->db->query($mSQL);
 		$saldo = 0;
-		if ( $query->num_rows() > 0 ){
+		if($query->num_rows() > 0){
 			$salida .= $td1;
 			$salida .= "Cruce de Cuentas</caption>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Nombre</td><td>Codigo</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				$salida .= "<tr>";
 				$salida .= "<td>(".$row['tipo'].') '.$row['nombre']."</td>";
 				$salida .= "<td>".$row['codcp']."</td>";
@@ -1041,208 +1473,307 @@ class Smov extends Controller {
 		echo $salida.'</tr></table>';
 	}
 
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
-/*
+	function _pre_insert($do){
+		$cliente  =$do->get('cod_cli');
+		$estampa = $do->get('estampa');
+		$hora    = $do->get('hora');
+		$usuario = $do->get('usuario');
+		$cod_cli = $do->get('cod_cli');
+		$tipo_doc= $do->get('tipo_doc');
+		$fecha   = $do->get('fecha');
+		$concepto= $do->get('observa1');
+		$itabono=$sfpamonto=$ppagomonto=0;
 
-	function sfacreiva(){
-		$reinte = $this->uri->segment($this->uri->total_segments());
-		$efecha = $this->uri->segment($this->uri->total_segments()-1);
-		$fecha  = $this->uri->segment($this->uri->total_segments()-2);
-		$numero = $this->uri->segment($this->uri->total_segments()-3);
-		$id     = $this->uri->segment($this->uri->total_segments()-4);
-		$mdevo  = "Exito";
+		$rrow    = $this->datasis->damerow('SELECT nombre,rifci,dire11,dire12 FROM scli WHERE cliente='.$this->db->escape($cliente));
+		if($rrow!=false){
+			$do->set('nombre',$rrow['nombre']);
+			$do->set('dire1' ,$rrow['dire11']);
+			$do->set('dire2' ,$rrow['dire12']);
+		}
 
-		//memowrite("efecha=$efecha, fecha=$fecha, numero=$numero, id=$id, reinte=$reinte","sfacreiva");
-
-		// status de la factura
-		$fecha  = substr($fecha, 6,4).substr($fecha, 3,2).substr($fecha, 0,2);
-		$efecha = substr($efecha,6,4).substr($efecha,3,2).substr($efecha,0,2);
-
-		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
-		$referen  = $this->datasis->dameval("SELECT referen  FROM sfac WHERE id=$id");
-		$numfac   = $this->datasis->dameval("SELECT numero   FROM sfac WHERE id=$id");
-		$cod_cli  = $this->datasis->dameval("SELECT cod_cli  FROM sfac WHERE id=$id");
-		$monto    = $this->datasis->dameval("SELECT ROUND(iva*0.75,2)  FROM sfac WHERE id=$id");
-		$factura  = $this->datasis->dameval("SELECT factura  FROM sfac WHERE id=$id");
-
-		$anterior = $this->datasis->dameval("SELECT reiva FROM sfac WHERE id=$id");
-		$usuario = addslashes($this->session->userdata('usuario'));
-
-		if ( strlen($numero) == 14 ){
-			if (  $anterior == 0 )  {
-				$mSQL = "UPDATE sfac SET reiva=round(iva*0.75,2), creiva='$numero', freiva='$fecha', ereiva='$efecha' WHERE id=$id";
-				$this->db->simple_query($mSQL);
-				//memowrite($mSQL,"sfacreivaSFAC");
-
-				$transac = $this->datasis->prox_sql("ntransa");
-				$transac = str_pad($transac, 8, "0", STR_PAD_LEFT);
-
-				if ($referen == 'C') {
-					$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
-				}
-
-				if ( $tipo_doc == 'F') {
-					if ($referen == 'E') {
-						// FACTURA PAGADA AL CONTADO GENERA ANTICIPO
-						$mnumant = $this->datasis->prox_sql("nancli");
-						$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-
-						$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
-						SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
-							CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
-							curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
-						FROM sfac WHERE id=$id";
-						$this->db->simple_query($mSQL);
-						$mdevo = "<h1 style='color:green;'>EXITO</h1>Retencion Guardada, Anticipo Generado por factura pagada al contado";
-					} elseif ($referen == 'C') {
-						// Busca si esta cancelada
-						$tiposfac = 'FC';
-						if ( $tipo_doc == 'D') $tiposfac = 'NC';
-						$mSQL = "SELECT monto-abonos saldo FROM smov WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
-						$saldo = $this->datasis->dameval($mSQL);
-						if ( $saldo < $monto ) {  // crea anticipo
-							$mnumant = $this->datasis->prox_sql("nancli");
-							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-							$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
-							SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
-								CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
-								curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
-							FROM sfac WHERE id=$id";
-							$this->db->simple_query($mSQL);
-							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Anticipo Generado por factura ya pagada";
-							memowrite($mSQL,"sfacreivaAN");
-						} else {
-							$mnumant = $this->datasis->prox_sql("nccli");
-							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-							$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, codigo, descrip, nroriva, emiriva )
-								SELECT cod_cli, nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, reiva abonos, freiva vence,
-								CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
-								curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario,
-								'NOCON 'codigo, 'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
-								FROM sfac WHERE id=$id";
-							$this->db->simple_query($mSQL);
-
-							// ABONA A LA FACTURA
-							$mSQL = "UPDATE smov SET abonos=abonos+$monto WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
-								$this->db->simple_query($mSQL);
-
-							//Crea la relacion en ccli
-
-							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
-						}
-					}
-					$mnumant = $this->datasis->prox_sql("ndcli");
-					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha,
-						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1,
-						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa,
-						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
-						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
-					FROM sfac WHERE id=$id";
-					$this->db->simple_query($mSQL);
-					memowrite($mSQL,"sfacreivaND");
-
-				} else {
-					// DEVOLUCIONES GENERA ND AL CLIENTE
-					$mnumant = $this->datasis->prox_sql("ndcli");
-					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-
-					$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
-					SELECT cod_cli, nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
-						CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
-						curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
-					FROM sfac WHERE id=$id";
-					$this->db->simple_query($mSQL);
-					$mdevo = "<h1 style='color:green;'>EXITO</h1>Retencion Guardada, Anticipo Generado por factura pagada al contado";
-
-					//Devoluciones debe crear un NC si esta en el periodo
-					$mnumant = $this->datasis->prox_sql("nccli");
-					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha,
-						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1,
-						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa,
-						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
-						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
-					FROM sfac WHERE id=$id";
-					$this->db->simple_query($mSQL);
-					memowrite($mSQL,"sfacreivaND");
-
-				}
-			} else {
-				$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
+		//Totaliza el abonado
+		$rel='itccli';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$itabono += $do->get_rel($rel, 'abono', $i);
+			$pppago   = $do->get_rel($rel, 'ppago', $i);
+			if(empty($pppago)){
+				$do->set_rel($rel,'ppago',0,$i);
+			}else{
+				$ppagomonto += $do->get_rel($rel, 'ppago', $i);
 			}
-		} else $mdevo = "<h1 style='color:red;'>ERROR</h1>Longitud del comprobante menor a 14 caracteres, corrijalo y vuelva a intentar";
+		}
+		$itabono=round($itabono,2);
 
-		echo $mdevo;
+		//Totaliza lo pagado
+		$rel='sfpa';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$sfpamonto+=$do->get_rel($rel, 'monto', $i);
+		}
+		$sfpamonto=round($sfpamonto,2);
+
+		//Realiza las validaciones
+		$cajero=$this->secu->getcajero();
+		$this->load->library('validation');
+		$rt=$this->validation->cajerostatus($cajero);
+		if(!$rt){
+			$do->error_message_ar['pre_ins']='El cajero usado ('.$cajero.') esta cerrado para esta fecha';
+			return false;
+		}
+
+		if($tipo_doc=='NC'){
+			$do->truncate_rel('sfpa');
+			if($itabono==0){
+				$do->error_message_ar['pre_ins']='Si crea una nota de credito debe relacionarla con algun movimiento';
+				return false;
+			}
+		}elseif($tipo_doc=='AN'){
+			$do->truncate_rel('itccli');
+			if($itabono!=0){
+				$do->error_message_ar['pre_ins']='Un anticipo no puede estar relacionado con algun efecto, en tal caso seria un abono';
+				return false;
+			}else{
+				$itabono=$sfpamonto;
+			}
+		}else{
+			if(abs($sfpamonto-$itabono)>0.01){
+				$do->error_message_ar['pre_ins']='El monto cobrado no coincide con el monto de la la transacci&oacute;n';
+				return false;
+			}
+		}
+		//fin de las validaciones
+		$do->set('monto',$itabono);
+
+		$dbcliente= $this->db->escape($cliente);
+		$rowscli  = $this->datasis->damerow('SELECT nombre,dire11,dire12 FROM scli WHERE cliente='.$dbcliente);
+		$do->set('nombre', $rowscli['nombre']);
+		$do->set('dire1' , $rowscli['dire11']);
+		$do->set('dire2' , $rowscli['dire12']);
+
+		$transac  = $this->datasis->fprox_numero('ntransa');
+
+		if($tipo_doc=='AB'){
+			$mnum = $this->datasis->fprox_numero('nabcli');
+		}elseif($tipo_doc=='GI'){
+			$mnum = $this->datasis->fprox_numero('ngicli');
+		}elseif($tipo_doc=='NC'){
+			$mnum = $this->datasis->fprox_numero('nccli');
+		}else{
+			$mnum = $this->datasis->fprox_numero('nancli');
+		}
+		$do->set('vence'  , $fecha);
+		$do->set('numero' , $mnum);
+		$do->set('transac', $transac);
+
+		$rel='itccli';
+		$observa=array();
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$itabono = $do->get_rel($rel, 'abono'   , $i);
+			$ittipo  = $do->get_rel($rel, 'tipo_doc', $i);
+			$itnumero= $do->get_rel($rel, 'numero'  , $i);
+			if(empty($itabono) || $itabono==0){
+				$do->rel_rm($rel,$i);
+			}else{
+				$observa[]=$ittipo.$itnumero;
+				$do->set_rel($rel, 'tipoccli', $tipo_doc, $i);
+				$do->set_rel($rel, 'cod_cli' , $cod_cli , $i);
+				$do->set_rel($rel, 'estampa' , $estampa , $i);
+				$do->set_rel($rel, 'hora'    , $hora    , $i);
+				$do->set_rel($rel, 'usuario' , $usuario , $i);
+				$do->set_rel($rel, 'transac' , $transac , $i);
+				$do->set_rel($rel, 'mora'    , 0, $i);
+				$do->set_rel($rel, 'reten'   , 0, $i);
+				$do->set_rel($rel, 'cambio'  , 0, $i);
+				$do->set_rel($rel, 'reteiva' , 0, $i);
+			}
+		}
+
+		if(empty($concepto)){
+			if(count($observa)>0){
+				$observa='PAGA '.implode(',',$observa);
+				$do->set('observa1' , substr($observa,0,50));
+				if(strlen($observa)>50) $do->set('observa2' , substr($observa,50));
+			}
+		}else{
+			$do->set('observa1' , substr($concepto,0,50));
+			if(strlen($concepto)>50) $do->set('observa2' , substr($concepto,50));
+		}
+
+		$rel='sfpa';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$sfpatipo=$do->get_rel($rel, 'tipo_doc', $i);
+			if($sfpatipo=='EF') $do->set_rel($rel, 'fecha' , $fecha , $i);
+
+			$do->set_rel($rel,'estampa'  , $estampa , $i);
+			$do->set_rel($rel,'hora'     , $hora    , $i);
+			$do->set_rel($rel,'usuario'  , $usuario , $i);
+			$do->set_rel($rel,'transac'  , $transac , $i);
+			$do->set_rel($rel,'f_factura', $fecha   , $i);
+			$do->set_rel($rel,'cod_cli'  ,$cliente  , $i);
+			$do->set_rel($rel,'cobro'    ,$fecha    , $i);
+			$do->set_rel($rel,'vendedor' ,$this->secu->getvendedor(),$i);
+			$do->set_rel($rel,'cobrador' ,$this->secu->getcajero()  ,$i);
+			$do->set_rel($rel,'almacen'  ,$this->secu->getalmacen() ,$i);
+		}
+		$this->ppagomonto=$ppagomonto;
+
+		$do->set('mora'    ,0);
+		$do->set('reten'   ,0);
+		$do->set('cambio'  ,0);
+		$do->set('reteiva' ,0);
+		$do->set('ppago'   ,$ppagomonto);
+		$do->set('codigo'  ,'NOCON');
+		$do->set('descrip' ,'NOTA DE CONTABILIDAD');
+		$do->set('vendedor', $this->secu->getvendedor());
+		return true;
 	}
 
+	function _post_insert($do){
+		$cliente  =$do->get('cod_cli');
+		$dbcliente=$this->db->escape($cliente);
 
-	function _creasmov(){
+		$rel_id='itccli';
+		$cana = $do->count_rel($rel_id);
+		if($cana>0){
+			if($this->ppagomonto>0){
+				//Crea la NC por Pronto pago
+				$mnumnc = $this->datasis->fprox_numero('nccli');
 
-		$data['cod_cli']    ='';
-		$data['nombre']     ='';
-		$data['dire1']      ='';
-		$data['dire2']      ='';
-		$data['tipo_doc']   ='';
-		$data['numero']     ='';
-		$data['fecha']      ='';
-		$data['monto']      ='';
-		$data['impuesto']   ='';
-		$data['abonos']     ='';
-		$data['vence']      ='';
+				$dbdata=array();
+				$dbdata['cod_cli']    = $cliente;
+				$dbdata['nombre']     = $do->get('nombre');
+				$dbdata['dire1']      = $do->get('dire1');
+				$dbdata['dire2']      = $do->get('dire2');
+				$dbdata['tipo_doc']   = 'NC';
+				$dbdata['numero']     = $mnumnc;
+				$dbdata['fecha']      = $do->get('fecha');
+				$dbdata['monto']      = $this->ppagomonto;
+				$dbdata['impuesto']   = 0;
+				$dbdata['abonos']     = $this->ppagomonto;
+				$dbdata['vence']      = $do->get('fecha');
+				$dbdata['tipo_ref']   = 'AB';
+				$dbdata['num_ref']    = $do->get('numero');
+				$dbdata['observa1']   = 'DESCUENTO POR PRONTO PAGO';
+				$dbdata['estampa']    = $do->get('estampa');
+				$dbdata['hora']       = $do->get('hora');
+				$dbdata['transac']    = $do->get('transac');
+				$dbdata['usuario']    = $do->get('usuario');
+				$dbdata['codigo']     = 'DEPPC';
+				$dbdata['descrip']    = 'DESCUENTO PRONTO PAGO';
+				$dbdata['fecdoc']     = $do->get('fecha');
+				$dbdata['nroriva']    = '';
+				$dbdata['emiriva']    = '';
+				$dbdata['reten']      = 0;
+				$dbdata['cambio']     = 0;
+				$dbdata['mora']       = 0;
 
-		$data['tipo_ref']   ='';
-		$data['num_ref']    ='';
-		$data['observa1']   ='';
-		$data['observa2']   ='';
-		$data['servicio']   ='';
-		$data['banco']      ='';
-		$data['tipo_op']    ='';
-		$data['fecha_op']   ='';
-		$data['num_op']     ='';
-		$data['ppago']      ='';
-		$data['reten']      ='';
-		$data['codigo']     ='';
-		$data['descrip']    ='';
-		$data['control']    ='';
-		$data['usuario']    ='';
-		$data['estampa']    ='';
-		$data['hora']       ='';
-		$data['transac']    ='';
-		$data['origen']     ='';
-		$data['cambio']     ='';
-		$data['mora']       ='';
-		$data['reteiva']    ='';
-		$data['vendedor']   ='';
-		$data['nfiscal']    ='';
-		$data['montasa']    ='';
-		$data['monredu']    ='';
-		$data['monadic']    ='';
-		$data['tasa']       ='';
-		$data['reducida']   ='';
-		$data['sobretasa']  ='';
-		$data['exento']     ='';
-		$data['fecdoc']     ='';
-		$data['nroriva']    ='';
-		$data['emiriva']    ='';
-		$data['codcp']      ='';
-		$data['depto']      ='';
-		$data['maqfiscal']  ='';
-		$data['ningreso']   ='';
-		$data['ncredito']   ='';
+				$mSQL = $this->db->insert_string('smov', $dbdata);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'ccli'); }
+
+				$itdbdata=array();
+				$itdbdata['cod_cli']  = $cliente;
+				$itdbdata['numccli']  = $mnumnc;
+				$itdbdata['tipoccli'] = 'NC';
+				$itdbdata['estampa']  = $do->get('estampa');
+				$itdbdata['hora']     = $do->get('hora');
+				$itdbdata['transac']  = $do->get('transac');
+				$itdbdata['usuario']  = $do->get('usuario');
+				$itdbdata['fecha']    = $do->get('fecha');
+				$itdbdata['monto']    = $this->ppagomonto;
+				$itdbdata['reten']    = 0;
+				$itdbdata['cambio']   = 0;
+				$itdbdata['mora']     = 0;
+
+				unset($dbdata);
+			}
+
+			foreach($do->data_rel[$rel_id] AS $i=>$data){
+				$tipo_doc = $data['tipo_doc'];
+				$numero   = $data['numero'];
+				$fecha    = $data['fecha'];
+				$monto    = $data['abono'];
+				$ppago    = (empty($data['ppago']))? 0: $data['ppago'];
+
+				$dbtipo_doc = $this->db->escape($tipo_doc);
+				$dbnumero   = $this->db->escape($numero  );
+				$dbfecha    = $this->db->escape($fecha   );
+				$dbmonto    = $monto+$ppago;
+
+				$mSQL="UPDATE smov SET abonos=abonos+$dbmonto WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero AND cod_cli=$dbcliente LIMIT 1";
+
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'ccli'); }
+
+				if($ppago > 0 ){
+					$itdbdata['tipo_doc'] = $tipo_doc;
+					$itdbdata['numero']   = $numero;
+					$itdbdata['abono']    = $ppago;
+
+					$mSQL = $this->db->insert_string('itccli', $itdbdata);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'ccli'); }
+				}
+			}
+		}
+
+		$rel='sfpa';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$sfpatipo = $do->get_rel($rel, 'tipo', $i);
+			$codbanc  = $do->get_rel($rel,'banco',$i);
+			$dbcodbanc= $this->db->escape($codbanc);
+			$monto    = $do->get_rel($rel,'monto',$i);
+			//Si es deposito en banco o transferencia crea el movimiento
+			if($sfpatipo=='DE' || $sfpatipo=='NC'){
+				$sql ='SELECT tbanco,moneda,banco,saldo,depto,numcuent FROM banc WHERE codbanc='.$dbcodbanc;
+				$fila=$this->datasis->damerow($sql);
+
+				$ffecha  = $do->get_rel($rel,'fecha',$i);
+				$itdbdata=array();
+				$itdbdata['codbanc']  = $codbanc;
+				$itdbdata['moneda']   = $fila['moneda'];
+				$itdbdata['numcuent'] = $fila['numcuent'];
+				$itdbdata['banco']    = $fila['banco'];
+				$itdbdata['saldo']    = $fila['saldo']+$monto;
+				$itdbdata['tipo_op']  = $do->get_rel($rel,'tipo',$i);
+				$itdbdata['numero']   = $do->get_rel($rel,'num_ref',$i);
+				$itdbdata['fecha']    = $ffecha;
+				$itdbdata['clipro']   = 'C';
+				$itdbdata['codcp']    = $cliente;
+				$itdbdata['nombre']   = $do->get('nombre');
+				$itdbdata['monto']    = $monto;
+				$itdbdata['concepto'] = 'INGRESO POR COBRANZA';
+				$itdbdata['status']   = 'P';
+				$itdbdata['liable']   = 'S';
+				$itdbdata['transac']  = $do->get('transac');
+				$itdbdata['usuario']  = $do->get('usuario');
+				$itdbdata['estampa']  = $do->get('estampa');
+				$itdbdata['hora']     = $do->get('hora');
+				$itdbdata['anulado']  = 'N';
+				$mSQL = $this->db->insert_string('bmov', $itdbdata);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'ccli'); }
+
+				$sfecha=str_replace('-','',$ffecha);
+				$mSQL="CALL sp_actusal($dbcodbanc,'$sfecha',$monto)";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false) memowrite($mSQL,'ccli');
+			}
+		}
 	}
 
-
-	function sclibu(){
-		$control = $this->uri->segment(4);
-		$id = $this->datasis->dameval("SELECT b.id FROM smov a JOIN sprv b ON a.proveed=b.proveed WHERE control='$control'");
-		redirect('finanzas/sprv/dataedit/show/'.$id);
+	function _pre_update($do){
+		return false;
 	}
 
-*/
+	function _pre_delete($do){
+		return false;
+	}
+
 	function instalar(){
 		$campos=$this->db->list_fields('smov');
 		if (!in_array('id',$campos)){
