@@ -150,9 +150,10 @@ class Formatos extends Controller{
 			}else{
 				$rep = $row->proteo;
 			}
-
-			echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
+		}else{
+			$rep = $this->_crearep($nombre,'proteo');
 		}
+		echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $rep )).'<?php ');
 	}
 
 	function verhtml(){

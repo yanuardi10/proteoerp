@@ -11,7 +11,7 @@ $this->db->select($sel);
 $this->db->from('smov AS a');
 $this->db->join('scli AS b'  ,'a.cod_cli=b.cliente');
 $this->db->where('a.id'   , $id);
-$this->db->where('a.tipo_doc','AB');
+$this->db->where('a.tipo_doc','AN');
 
 $mSQL_1 = $this->db->get();
 if($mSQL_1->num_rows()==0) show_error('Registro no encontrado');
@@ -32,16 +32,6 @@ $direc    = trim($row->direc);
 $observa  = trim($row->observa);
 $transac  = $row->transac;
 
-$sel=array('b.tipo_doc','b.numero','b.fecha','b.monto','b.abono','b.reten','b.ppago','b.cambio','b.mora','b.reteiva');
-$this->db->select($sel);
-$this->db->from('smov AS a');
-$this->db->join('itccli AS b','a.tipo_doc = b.tipoccli AND a.numero=b.numccli AND a.cod_cli=b.cod_cli');
-$this->db->where('a.cod_cli' ,$cliente);
-$this->db->where('a.tipo_doc',$tipo_doc);
-$this->db->where('a.numero'  ,$numero);
-$this->db->where('a.fecha'   ,$row->fecha);
-$mSQL_2 = $this->db->get();
-$detalle  = $mSQL_2->result();
 
 $sel=array('a.tipo','a.monto','a.num_ref','a.fecha','a.cambio','b.nomb_banc AS banco');
 $this->db->select($sel);
@@ -54,10 +44,10 @@ $detalle2 = $mSQL_3->result();
 $det3encab = 5; //Tamanio del encadezado de la segunda tabla
 $npagos=$mSQL_3->num_rows()+$det3encab;
 
-$ittot['monto']=$ittot['reten']=$ittot['ppago']=$ittot['cambio']=$ittot['mora']=$ittot['reteiva']=$ittot['abono']=$lineas=0;
+$lineas=0;
 ?><html>
 <head>
-<title>Abono <?php echo $numero ?></title>
+<title>Anticipo recibido de cliente <?php echo $numero ?></title>
 <link rel="stylesheet" href="<?php echo $this->_direccion ?>/assets/default/css/formatos.css" type="text/css" />
 </head>
 <body style="margin-left: 30px; margin-right: 30px;">
@@ -75,8 +65,10 @@ $ittot['monto']=$ittot['reten']=$ittot['ppago']=$ittot['cambio']=$ittot['mora']=
 
 		//***Inicio cuadro
 		//**************VARIABLES MODIFICABLES***************
-		$texto[]="Recibido por";
-		$texto[]="Firma y sello";
+		$texto[]="ELABORADO POR:";
+		$texto[]="AUTORIA";
+		$texto[]="AUTORIZADO POR:";
+		$texto[]="APROBADO";
 
 		$cuadros = 0;   //Cantidad de cuadros (en caso de ser 0 calcula la cantidad)
 		$margenh = 40;  //Distancia desde el borde derecho e izquierdo
@@ -118,7 +110,7 @@ $ittot['monto']=$ittot['reten']=$ittot['ppago']=$ittot['cambio']=$ittot['mora']=
 $encabezado = <<<encabezado
 						<table style="width: 100%;" class="header">
 							<tr>
-								<td><h1 style="text-align: left">RECIBO DE INGRESO No. ${numero}</h1></td>
+								<td><h1 style="text-align: left">ANTICIPO RECIBIDO DE CLIENTE No. ${numero}</h1></td>
 								<td><h1 style="text-align: right">Fecha: ${hfecha}</h1></td>
 							</tr><tr>
 								<td colspan='2'><h1 style="text-align: center">Por Bs.: ***${monto}***</h1></td>
@@ -154,122 +146,6 @@ encabezado;
 //************************
 $estilo  = "style='color: #111111;background: #EEEEEE;border: 1px solid black;font-size: 8pt;";
 $encabezado_tabla="
-	<h2>Detalle:</h2>
-	<table class=\"change_order_items\" style=\"padding-top:0; \">
-		<thead>
-			<tr>
-				<th ${estilo}' >Documento   </th>
-				<th ${estilo}' >Fecha       </th>
-				<th ${estilo}' >Monto/Abono </th>
-				<th ${estilo}' >Ret/ISLR    </th>
-				<th ${estilo}' >Desc./P/Pago</th>
-				<th ${estilo}' >Dif/Cambio  </th>
-				<th ${estilo}' >Int./Mora   </th>
-				<th ${estilo}' >Ret/IVA     </th>
-				<th ${estilo}' >Abono neto  </th>
-			</tr>
-		</thead>
-		<tbody>
-";
-//Fin Encabezado Tabla
-
-//************************
-//     Pie Pagina
-//************************
-$pie_final=<<<piefinal
-		</tbody>
-		<tfoot style='border:1px solid;background:#EEEEEE;'>
-			<tr>
-				<td colspan='2' >Totales...</td>
-				<td style="text-align: right">%s</td>
-				<td style="text-align: right">%s</td>
-				<td style="text-align: right">%s</td>
-				<td style="text-align: right">%s</td>
-				<td style="text-align: right">%s</td>
-				<td style="text-align: right">%s</td>
-				<td style="text-align: right">%s</td>
-			</tr>
-		</tfoot>
-
-	</table>
-piefinal;
-
-$pie_continuo=<<<piecontinuo
-		</tbody>
-		<tfoot>
-			<tr>
-				<td colspan="6" style="text-align: right;">CONTINUA...</td>
-			</tr>
-		</tfoot>
-	</table>
-<div style="page-break-before: always;"></div>
-piecontinuo;
-//Fin Pie Pagina
-
-$mod     = $clinea = false;
-$npagina = true;
-$i       = 0;
-
-foreach ($detalle AS $items){ $i++;
-	do {
-		if($npagina){
-			$this->incluir('X_CINTILLO');
-			echo $encabezado;
-			echo $encabezado_tabla;
-			$npagina=false;
-		}
-?>
-			<tr class="<?php if(!$mod) echo 'even_row'; else  echo 'odd_row'; ?>">
-
-				<td style="text-align: left" ><?php echo $items->tipo_doc.$items->numero; ?></td>
-				<td style="text-align: left" ><?php echo dbdate_to_human($items->fecha);  ?></td>
-				<td style="text-align: right"><?php $ittot['monto']   += $items->monto  ; echo nformat($items->monto  ,2); ?></td>
-				<td style="text-align: right"><?php $ittot['reten']   += $items->reten  ; echo nformat($items->reten  ,2); ?></td>
-				<td style="text-align: right"><?php $ittot['ppago']   += $items->ppago  ; echo nformat($items->ppago  ,2); ?></td>
-				<td style="text-align: right"><?php $ittot['cambio']  += $items->cambio ; echo nformat($items->cambio ,2); ?></td>
-				<td style="text-align: right"><?php $ittot['mora']    += $items->mora   ; echo nformat($items->mora   ,2); ?></td>
-				<td style="text-align: right"><?php $ittot['reteiva'] += $items->reteiva; echo nformat($items->reteiva,2); ?></td>
-				<td style="text-align: right"><?php $ittot['abono']   += $items->abono  ; echo nformat($items->abono  ,2); ?></td>
-				<?php
-				$lineas++;
-				if($lineas >= $maxlin){
-					$lineas =0;
-					$npagina=true;
-					break;
-				}
-				?>
-			</tr>
-<?php
-		if($npagina){
-			echo $pie_continuo;
-		}else{
-			$mod = ! $mod;
-		}
-	} while ($clinea);
-}
-$mm=$maxlin-$npagos;
-for(1; $lineas<$mm;$lineas++){ ?>
-			<tr class="<?php if(!$mod) echo 'even_row'; else  echo 'odd_row'; ?>">
-				<td>&nbsp;</td><td>&nbsp;</td>
-				<td>&nbsp;</td><td>&nbsp;</td>
-				<td>&nbsp;</td><td>&nbsp;</td>
-				<td>&nbsp;</td><td>&nbsp;</td>
-				<td>&nbsp;</td>
-			</tr>
-<?php
-	$mod = ! $mod;
-}
-echo sprintf($pie_final,nformat($ittot['monto']),nformat($ittot['reten']),nformat($ittot['ppago']),nformat($ittot['cambio']),nformat($ittot['mora']),nformat($ittot['reteiva']),nformat($ittot['abono']));
-
-$lineas+=$det3encab;
-//******************************
-//detalle del pago
-//******************************
-
-//************************
-//   Encabezado Tabla
-//************************
-$encabezado_tabla="
 	<h2>Forma de pago:</h2>
 	<table class=\"change_order_items\" style=\"padding-top:0; \">
 		<thead>
@@ -302,7 +178,9 @@ $pie_continuo=<<<piecontinuo
 piecontinuo;
 //Fin Pie Pagina
 
-echo $encabezado_tabla;
+$mod     = $clinea = false;
+$npagina = true;
+$i       = 0;
 foreach ($detalle2 AS $items2){ $i++;
 	do {
 		if($npagina){

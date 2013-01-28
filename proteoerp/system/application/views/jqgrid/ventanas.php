@@ -8,7 +8,7 @@ if( isset($tema) == false) {
 } 
 ?>
 
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title><?php echo $encabeza ?></title>
 
 
