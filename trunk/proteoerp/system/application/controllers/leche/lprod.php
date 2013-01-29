@@ -788,7 +788,7 @@ class Lprod extends Controller {
 
 		$edit->itlitros = new inputField('litros','itlitros_<#i#>');
 		$edit->itlitros->db_name = 'litros';
-		$edit->itlitros->rule='max_length[12]|numeric|required|mayorcero|callback_chlitros[<#i#>]';
+		$edit->itlitros->rule='max_length[12]|numeric|mayorcero|callback_chlitros[<#i#>]';
 		$edit->itlitros->css_class='inputnum';
 		$edit->itlitros->size =14;
 		$edit->itlitros->maxlength =12;
