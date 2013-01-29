@@ -61,9 +61,9 @@ class Lrece extends Controller {
 		$grid->setWpAdicional($WpAdic);
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
+		//$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"bcierre"  , "img"=>"images/candado.png","alt" => 'Cierre'  , "label"=>"Cierre"  ));
-		$grid->wbotonadd(array("id"=>"bagrega"  , "img"=>"images/candado.png","alt" => 'Agrega'  , "label"=>'Agregar Vaquera'  ));
+		$grid->wbotonadd(array("id"=>"bagrega"  , "img"=>"images/vaca.png","alt" => 'Agrega'  , "label"=>'Agregar Vaquera'  ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -761,7 +761,7 @@ class Lrece extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 200,
+			'width'         => 250,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:45, maxlength: 45 }',

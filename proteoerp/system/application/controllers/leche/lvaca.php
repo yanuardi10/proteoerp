@@ -247,6 +247,18 @@ class Lvaca extends Controller {
 			'editoptions'   => '{ size:200, maxlength: 200 }',
 		));
 
+		$grid->addField('animal');
+		$grid->label('Animal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:1, maxlength: 1 }',
+		));
+
+
 		$grid->addField('codprv');
 		$grid->label('Codigo');
 		$grid->params(array(
@@ -483,6 +495,14 @@ class Lvaca extends Controller {
 		$edit->ubicacion = new inputField('Ubicaci&oacute;n','ubicacion');
 		$edit->ubicacion->rule='max_length[200]';
 		$edit->ubicacion->maxlength =200;
+
+		$edit->animal = new  dropdownField ('Animal', 'animal');
+		$edit->animal->option('M' ,'Mezcla');
+		$edit->animal->option('V' ,'Vaca');
+		$edit->animal->option('B' ,'Bufala');
+		$edit->animal->rule = 'required';
+		$edit->animal->style= 'width:100px;';
+
 
 		$edit->codprv = new inputField('Propietario','codprv');
 		$edit->codprv->rule='max_length[15]';
