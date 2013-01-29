@@ -2,7 +2,7 @@
 $id = $parametros[0];
 
 $sel=array('a.emision','a.periodo','a.tipo_doc','a.fecha','a.numero','a.nfiscal','a.afecta'
-,'a.clipro','a.nombre','a.rif','a.exento','CONCAT_WS(\' \',b.direc1,b.direc2) AS direc'
+,'a.clipro','TRIM(b.nombre) AS nombre','TRIM(b.nomfis) AS nomfis','a.rif','a.exento','CONCAT_WS(\' \',TRIM(b.direc1),b.direc2) AS direc'
 ,'a.tasa'    ,'a.general'  ,'a.geneimpu'
 ,'a.tasaadic','a.adicional','adicimpu'
 ,'a.tasaredu','a.reducida' ,'a.reduimpu'
@@ -17,17 +17,17 @@ if ($mSQL_1->num_rows() == 0){ show_error('Retención no encontrada');}
 
 $row = $mSQL_1->row();
 
-$nrocomp   = $row->nrocomp  ;
+$nrocomp   = trim($row->nrocomp)  ;
 $emision   = dbdate_to_human($row->emision);
-$periodo   = $row->periodo  ;
-$tipo_doc  = $row->tipo_doc ;
+$periodo   = trim($row->periodo)  ;
+$tipo_doc  = trim($row->tipo_doc) ;
 $fecha     = dbdate_to_human($row->fecha);
-$numero    = $row->numero   ;
-$nfiscal   = $row->nfiscal  ;
-$afecta    = $row->afecta   ;
-$clipro    = $row->clipro   ;
-$nombre    = $row->nombre   ;
-$direc     = $row->direc   ;
+$numero    = trim($row->numero) ;
+$nfiscal   = trim($row->nfiscal);
+$afecta    = trim($row->afecta) ;
+$clipro    = trim($row->clipro) ;
+$nombre    = (empty($row->nomfis))? $row->nombre : $row->nomfis;
+$direc     = trim($row->direc);
 
 $rif       = $row->rif      ;
 $exento    = $row->exento   ;
@@ -44,9 +44,10 @@ $stotal    = $row->stotal   ;
 $impuesto  = $row->impuesto ;
 $gtotal    = $row->gtotal   ;
 $reiva     = $row->reiva    ;
+$tipotra   = '01';
 ?><html>
 <head>
-<title>Comprobante de retenci&oacute;n <?php echo $numero ?></title>
+<title>Comprobante de retenci&oacute;n de IVA <?php echo $numero ?></title>
 <link rel="STYLESHEET" href="<?php echo $this->_direccion ?>/assets/default/css/formatos.css" type="text/css" />
 </head>
 <body>
@@ -85,7 +86,7 @@ if ( isset($pdf) ) {
 					<div class="page" style="font-size: 7pt">
 						<table style="width: 100%;" class="header">
 							<tr>
-								<td colspan='2'><h1 style="text-align: center">COMPROBANTE DE RETENCION DEL IMPUESTO AL VALOR AGREGADO</h1></td>
+								<td colspan='2'><h1 style="text-align: center">COMPROBANTE DE RETENCI&Oacute;N DEL IMPUESTO AL VALOR AGREGADO</h1></td>
 							</tr>
 							<tr>
 								<td align='center' colspan='2'>(Ley IVA - Art. 11: Seran responsables del pago del Impuesto en calidad de agentes de retenci&oacute;n
@@ -98,9 +99,9 @@ if ( isset($pdf) ) {
 							<tr>
 								<td style="text-align:center;font-size:12pt; ">N&uacute;mero: <b><?php echo str_replace('-','',$periodo).$nrocomp ?></b></td>
 								<td style="text-align:center;font-size:12pt;">Per&iacute;odo F&iacute;scal: <b><?php echo $periodo; ?></b></td>
-								<td style="text-align:center;font-size:12pt;">Fecha de Emision: <b><?php echo $emision; ?></b></td>
+								<td style="text-align:center;font-size:12pt;">Fecha de Emisi&oacute;n: <b><?php echo $emision; ?></b></td>
 							</tr>
-						</table
+						</table>
 						</div>
 						<br>
 						<span style="text-align: left">Agente de Retenci&oacute;n</span>
@@ -114,7 +115,7 @@ if ( isset($pdf) ) {
 						</p>
 						</div>
 						<br />
-						<span style="text-align: left">Sujeto de Retencion</span>
+						<span style="text-align: left">Sujeto de Retenci&oacute;n</span>
 						<div class="page" >
 						<p style="font-size: 10pt;font-weight:bold;">
 							<?php echo $nombre;  ?><br>
@@ -132,32 +133,41 @@ if ( isset($pdf) ) {
 								<td><?php echo $fecha; ?></td>
 							</tr>
 
+					<?php if ($tipo_doc=='FC'){
+						$tipotra   = '01';
+					?>
 							<tr>
-								<td><b>N&uacute;mero de Factura:</b> </b></td>
+								<td><b>N&uacute;mero de Factura:</b></td>
 								<td><?php echo ($tipo_doc=='FC')? $numero:' '; ?></td>
 							</tr>
+					<?php }; ?>
+
+					<?php if ( $tipo_doc=='ND'){
+						$tipotra   = '02';
+					?>
+							<tr>
+								<td><b>N&uacute;mero de Nota de D&eacute;bito:</b></td>
+								<td><?php echo ($tipo_doc=='ND')? $numero:' '; ?></td>
+							</tr>
+					<?php }; ?>
+
+					<?php if ( $tipo_doc=='NC'){
+						$tipotra   = '03';
+					?>
+							<tr>
+								<td><b>N&uacute;mero de Nota de Cr&eacute;dito:</b></td>
+								<td><?php echo ($tipo_doc=='NC')? $numero:' '; ?></td>
+							</tr>
+					<?php }; ?>
 
 							<tr>
 								<td><b>N&uacute;mero de control:</b></td>
 								<td><?php echo $nfiscal; ?></td>
 							</tr>
-							<?php if ( $tipo_doc=='ND'){ ?>
-							<tr>
-								<td><b>N&uacute;mero de Nota de D&eacute;bito:</b></td>
-								<td><?php echo ($tipo_doc=='ND')? $numero:' '; ?></td>
-							</tr>
-							<?php }; ?>
-
-							<?php if ( $tipo_doc=='NC'){ ?>
-							<tr>
-								<td><b>N&uacute;mero de Nota de Cr&eacute;dito:</b></td>
-								<td><?php echo ($tipo_doc=='NC')? $numero:' '; ?></td>
-							</tr>
-							<?php }; ?>
 
 							<tr>
 								<td><b>Tipo de Transacci&oacute;n:</b></td>
-								<td><?php echo ($tipo_doc=='FC')? '01': ($tipo_doc=='ND')? '02': '03'; ?></td>
+								<td><?php echo $tipotra; ?></td>
 							</tr>
 
 							<?php if ( !empty($afecta) ){ ?>
@@ -238,10 +248,9 @@ Firma Y Sello:
 		<tr>
 			<td><b><div align="center" style="font-size: 9pt">Agente de Retenci&oacute;n</div></b></td>
 			<td>&nbsp;&nbsp;&nbsp;</td>
-			<td><b><div align="center" style="font-size: 9pt">Sujeto de Retencion</div></b></td>
+			<td><b><div align="center" style="font-size: 9pt">Sujeto de Retenci&oacute;n</div></b></td>
 		</tr>
 </table>
-<br>
 <div style="font-size: 11pt;text-align:center">Fecha de Entrega ____/____/______</div>
 
 </div>
