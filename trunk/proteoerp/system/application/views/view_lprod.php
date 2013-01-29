@@ -1,4 +1,4 @@
-<?php 
+<?php
 echo $form_scripts;
 echo $form_begin;
 
@@ -188,7 +188,7 @@ function autocod(id){
 		$it_litros  = "itlitros_${i}";
 ?>
 	<tr id='tr_itlprod_<?php echo $i; ?>'>
-		<td class="littletablerow" align="center"><?php echo $form->$it_codrut->output.$form->$it_id->output;  ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_codrut->output; if(isset($form->$it_id)) echo $form->$it_id->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_nombre->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_litros->output;  ?></td>
 		<?php if($form->_status!='show') {

@@ -1,0 +1,99 @@
+$this->db->query('UPDATE lrece SET diferen = ROUND(litros-if( MID(ruta,1,1)="G",0,round(lista,2)),2) WHERE fecha=curdate() ');
+
+
+$base_process_uri   = $this->rapyd->uri->implode_uri("base_uri","gfid","orderby");
+
+$filter = new DataForm('');
+$filter->_process_uri  = $this->rapyd->uri->add_clause($base_process_uri, "search");
+$filter->attributes=array('onsubmit'=>'is_loaded()');
+
+$filter->fecha = new dateonlyField("Fecha", "fecha",'d/m/Y');
+$filter->fecha->db_name ='b.fecha';
+$filter->fecha->clause ='where';
+$filter->fecha->insertValue = date('Y-m-d'); 
+$filter->fecha->rule='required';
+$filter->fecha->operator='='; 
+ 
+$filter->salformat = new radiogroupField("Formato de salida","salformat");
+$filter->salformat->options($this->opciones);
+$filter->salformat->insertValue ='PDF';
+$filter->salformat->clause = '';
+
+$filter->submit("btnsubmit",RAPYD_BUTTON_SEARCH);  
+$filter->build_form();
+ 
+if($this->rapyd->uri->is_set("search")  AND $filter->is_valid()){	
+
+	$dbfecha=$this->db->escape($filter->fecha->newValue);
+
+	$mSQL="SELECT fecha, ruta, nombre, chofer, SUM(litros) litros,
+		observa, SUM(crios) crios, SUM(h2o) h2o, SUM(temp) temp, SUM(brix) brix, SUM(grasa) grasa, SUM(acidez) acidez, SUM(cloruros) cloruros, SUM(alcohol) alcohol, 
+		SUM(dagua) dagua, SUM(vaca) vaca, SUM(bufala) bufala
+		FROM (
+			SELECT b.fecha, b.ruta, c.nombre, b.nombre chofer, a.litros,
+			a.observa, a.crios, a.h2o, a.temp, a.brix, a.grasa, a.acidez, a.cloruros, a.alcohol, ROUND(a.litros*a.h2o,2) dagua, 0 vaca, 0 bufala
+			FROM lanal a 
+			JOIN lrece b ON a.id_lrece=b.id 
+			JOIN lruta c ON b.ruta=c.codigo 
+			WHERE b.fecha=$dbfecha
+		
+			UNION ALL
+		
+			SELECT b.fecha, b.ruta, c.nombre, b.nombre chofer, 0 litros,
+			'' observa, 0 crios, 0 h2o, 0 temp, 0 brix, 0 grasa, 0 acidez, 0 cloruros, 0 alcohol, 0 dtoagua, SUM(a.lista*(d.animal!='B')) vaca , 
+			SUM(a.lista*(d.animal='B')) bufala 
+			FROM itlrece a 
+			JOIN lrece b ON a.id_lrece=b.id 
+			JOIN lruta c ON b.ruta=c.codigo 
+			JOIN lvaca d ON a.id_lvaca=d.id
+			WHERE MID(b.ruta,1,1)<>'G' AND a.lista > 0 AND b.fecha=$dbfecha
+			GROUP BY b.ruta 
+		) JOJO
+		GROUP BY ruta 
+		
+		UNION ALL
+		
+		SELECT b.fecha, b.ruta, c.nombre, b.nombre chofer, a.lista,
+		'TRANSPORTE C/B' observa, a.crios, a.h2o, a.temp, a.brix, a.grasa, a.acidez, a.cloruros, a.alcohol, ROUND(a.lista*a.h2o,2) dtoagua, a.lista*(a.animal!='B') vaca , a.lista*(a.animal='B') bufala
+		FROM itlrece a 
+		JOIN lrece b ON a.id_lrece=b.id 
+		JOIN lruta c ON b.ruta=c.codigo 
+		WHERE MID(b.ruta,1,1)='G' AND  b.fecha=$dbfecha";
+	 
+	$pdf = new PDFReporte($mSQL,'L');
+	$pdf->setHeadValores('TITULO1');
+	$pdf->setSubHeadValores('TITULO2','TITULO3');
+	$pdf->setTitulo("Reporte Diario de Laboratorio al dia ".$_POST['fecha']);
+	$pdf->AddPage();
+	$pdf->setTableTitu(8,'Times');
+    
+	$pdf->AddCol('ruta',     10,'Ruta'          ,'L',8); 
+	$pdf->AddCol('nombre',   50,'Nombre de Ruta','L',8);
+	$pdf->AddCol('chofer',   40,'Chofer'        ,'L',8);
+
+	$pdf->AddCol('litros',   15,'Litros',  'R',8);
+
+	$pdf->AddCol('crios',    13,'Crios',   'R',8);
+	$pdf->AddCol('h2o',      13,'%Agua',   'R',8);
+	$pdf->AddCol('temp',     13,'Temp',    'R',8);
+	$pdf->AddCol('brix',     13,'Brix',    'R',8);
+	$pdf->AddCol('grasa',    13,'Grasa',   'R',8);
+	$pdf->AddCol('acidez',   13,'Acidez',  'R',8);
+	$pdf->AddCol('cloruros', 13,'Cloruros','R',8);
+	$pdf->AddCol('alcohol',  13,'Alcohol', 'R',8);
+	$pdf->AddCol('dagua',    13,'Dtoagua', 'R',8);
+
+	$pdf->AddCol('vaca',    13,'Vaca', 'R',8);
+	$pdf->AddCol('bufala',    13,'Bufala', 'R',8);
+
+
+	$pdf->setTotalizar('litros');
+	$pdf->Table();
+	$pdf->Output();
+			
+}else{
+	$data["filtro"] = $filter->output;
+	$data["titulo"] = '<h2 class="mainheader">Recepci&oacute;n de leche</h2>';
+	$data["head"] = $this->rapyd->get_head();
+	$this->load->view('view_freportes', $data);
+}
