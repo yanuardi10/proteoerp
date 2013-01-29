@@ -1,4 +1,4 @@
-<?php 
+<?php
 class Casi extends Controller {
 	var $mModulo='CASI';
 	var $titp='Comprobantes de Contabilidad';
@@ -114,8 +114,12 @@ jQuery("#boton4").click( function(){
 		$grid->wbotonadd(array("id"=>"boton4", "img"=>"images/checklist.png", "alt" => 'Auditoria',         "label"=>"Herramientas"));
 		$WestPanel = $grid->deploywestp();
 
+		$adic = array(
+			array("id"=>"fedita" , "title"=>"Agregar/Editar Pedido"),
+			array("id"=>"fshow"  , "title"=>"Mostrar registro")
+		);
 
-
+		//$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$centerpanel = '
 <div id="RightPane" class="ui-layout-center">
@@ -1009,21 +1013,34 @@ class casi extends Controller {
 		$edit->buttons('save', 'delete','modify', 'exit','add_rel','add');
 		$edit->build();
 
-		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_casi', $conten,true);
-		$data['title']   = heading('Asientos Contables');
-		$data['style']   = style('redmond/jquery-ui.css');
-		$data['style']  .= style('gt_grid.css');
-		$data['style']  .= style('impromptu.css');
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('jquery-impromptu.js');
-		$data['script'] .= script('plugins/jquery.blockUI.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= phpscript('nformat.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
+			echo json_encode($rt);
+		}else{
+			//echo $edit->output;
+			$conten['form'] =&  $edit;
+			$this->load->view('view_casi', $conten);
+		}
+
+		//$conten['form']  =&  $edit;
+		//$data['content'] = $this->load->view('view_casi', $conten,true);
+		//$data['title']   = heading('Asientos Contables');
+		//$data['style']   = style('redmond/jquery-ui.css');
+		//$data['style']  .= style('gt_grid.css');
+		//$data['style']  .= style('impromptu.css');
+		//$data['script']  = script('jquery.js');
+		//$data['script'] .= script('jquery-ui.js');
+		//$data['script'] .= script('jquery-impromptu.js');
+		//$data['script'] .= script('plugins/jquery.blockUI.js');
+		//$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		//$data['script'] .= phpscript('nformat.js');
+		//$data['script'] .= script('plugins/jquery.floatnumber.js');
+		//$data['head']    = $this->rapyd->get_head();
+		//$this->load->view('view_ventanas', $data);
 	}
 
 	function grid1(){

@@ -1312,7 +1312,7 @@ class Lrece extends Controller {
 		$edit->crios = new inputField('Criosc&oacute;pia','crios');
 		$edit->crios->rule='max_length[10]|numeric|required';
 		$edit->crios->css_class='inputnum';
-		$edit->crios->insertValue='420';
+		$edit->crios->insertValue='536';
 		$edit->crios->size =7;
 		$edit->crios->maxlength =10;
 
@@ -1341,7 +1341,7 @@ class Lrece extends Controller {
 		$edit->grasa = new inputField('Grasa %','grasa');
 		$edit->grasa->rule='max_length[10]|numeric|porcent|required';
 		$edit->grasa->css_class='inputnum';
-		$edit->grasa->insertValue='4.12';
+		$edit->grasa->insertValue='4.2';
 		$edit->grasa->size =7;
 		$edit->grasa->maxlength =10;
 
