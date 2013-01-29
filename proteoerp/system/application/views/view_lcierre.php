@@ -59,7 +59,8 @@ function totalizar(){
 		<th align="center">Cestas</th>
 		<th align="center"><?php
 			$it_peso = 'itpeso_0';
-			echo $form->$it_peso->label;
+			if(isset($form->$it_peso))
+				echo $form->$it_peso->label;
 		?></th>
 	</tr>
 

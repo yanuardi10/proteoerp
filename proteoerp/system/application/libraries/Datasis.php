@@ -1,4 +1,4 @@
-<?php 
+<?php
 if (!defined('BASEPATH')) exit('No direct script access allowed');
 /**
  * DataSIS Components
@@ -334,7 +334,7 @@ class Datasis {
 		}
 
 
-	
+
 		// Si no existe lo crea
 		$mSQL   = "SELECT COUNT(*) FROM tmenus WHERE modulo = '$modulo' ";
 		if ( $this->dameval($mSQL) == 0 ) {
@@ -1442,7 +1442,7 @@ class Datasis {
 	function creaintramenu( $data = array() ) {
 		$CI =& get_instance();
 		if ( !empty($data) ){
-			if ( $this->dameval('SELECT COUNT(*) FROM intramenu WHERE modulo='.$CI->db->escape($data['modulo'])) == 0 ) 
+			if ( $this->dameval('SELECT COUNT(*) FROM intramenu WHERE modulo='.$CI->db->escape($data['modulo'])) == 0 )
 				$CI->db->insert('intramenu', $data);
 		}
 	}

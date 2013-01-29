@@ -1,0 +1,66 @@
+$this->db->query('UPDATE lrece SET diferen = ROUND(litros-if( MID(ruta,1,1)="G",0,round(lista,2)),2) ');
+
+$filter = new DataFilter("Filtro del Reporte");
+$filter->attributes=array('onsubmit'=>'is_loaded()');
+$sel=array(
+'b.ruta', 'c.nombre', 'b.litros', 'b.lista', 'b.litros-b.lista diferen', 'a.vaquera', 
+'a.nombre', 'a.lista AS lisvaca', 'd.animal', 'd.codprv', 'd.proveed' 
+);
+
+$filter->db->select($sel);
+$filter->db->from('itlrece AS a');
+$filter->db->join('lrece   AS b','a.id_lrece=b.id');
+$filter->db->join('lruta   AS c','b.ruta=c.codigo');
+$filter->db->join('lvaca   AS d','a.id_lvaca=d.id');
+$filter->db->where('a.lista>','0');
+
+$filter->db->orderby('a.id_lrece');
+
+$filter->fecha = new dateonlyField("Fecha", "fecha",'d/m/Y');
+$filter->fecha->db_name ='b.fecha';
+$filter->fecha->clause ='where';
+$filter->fecha->insertValue = date('Y-m-d'); 
+$filter->fecha->operator='='; 
+ 
+$filter->salformat = new radiogroupField("Formato de salida","salformat");
+$filter->salformat->options($this->opciones);
+$filter->salformat->insertValue ='PDF';
+$filter->salformat->clause = '';
+
+$filter->buttons("search");
+$filter->build();
+ 
+if($this->rapyd->uri->is_set("search")){	
+
+	$mSQL=$this->rapyd->db->_compile_select();
+	 
+	$pdf = new PDFReporte($mSQL,'L');
+	$pdf->setHeadValores('TITULO1');
+	$pdf->setSubHeadValores('TITULO2','TITULO3');
+	$pdf->setTitulo("Recepcion por Fecha ".$_POST['fecha']);
+	//$pdf->setSubTitulo("Desde la fecha: ".$_POST['fecha']." Hasta ".$_POST['fecha']);
+	$pdf->AddPage();
+	$pdf->setTableTitu(8,'Times');
+    
+	$pdf->AddCol('vaquera',  15,'Codigo'       ,'L',8); 
+	$pdf->AddCol('nombre',   60,'Productor'     ,'L',8);
+
+	$pdf->AddCol('codprv',   15,'CodPrv'       ,'L',8); 
+	$pdf->AddCol('proveed',  90,'Proveedor'     ,'L',8);
+
+	$pdf->AddCol('lisvaca',  20,'Litros'     ,'R',8);
+
+
+	$pdf->setGrupoLabel('<#ruta#> <#nombre#> Litros: <#litros#> Lista: <#lista#> Saldo: <#diferen#>');
+	//$pdf->setGrupoLabel('Fecha <#fecha#> Chofer <#nombre#> Litros: <#litros#> ');
+	$pdf->setGrupo('ruta');
+	$pdf->setTotalizar('lisvaca');
+	$pdf->Table();
+	$pdf->Output();
+			
+}else{
+	$data["filtro"] = $filter->output;
+	$data["titulo"] = '<h2 class="mainheader">Recepci&oacute;n de leche</h2>';
+	$data["head"] = $this->rapyd->get_head();
+	$this->load->view('view_freportes', $data);
+}
