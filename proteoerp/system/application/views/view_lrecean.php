@@ -24,24 +24,6 @@ function descuagua(){
 	$('#dtoagua_val').text(roundNumber(neto*h2o/100,2));
 }
 </script>
-<?php
-/*
-<table width='100%' style='font-size:11pt;background:#F2E69D;'>
-	<tr>
-		<td                           width='60'>Numero:</td>
-		<td style='font-weight:bold;' width='70'><?php echo str_pad(trim($form->numero->output),7,'0',STR_PAD_LEFT);    ?></td>
-		<td                           width='60' align='right'>Fecha:</td>
-		<td style='font-weight:bold;' width='90'><?php echo $form->fecha->output; ?></td>
-	</tr>
-	<tr>
-		<td>Ruta:</td>
-		<td colspan='3' style='font-weight:bold;' width='50' align='left'><?php echo $form->ruta->output;  ?>
-		<span style='font-weight:bold;'><?php echo $this->datasis->dameval("SELECT nombre FROM lruta WHERE codigo='".$form->ruta->value."'");  ?></span></td>
-	</tr>
-</table>
-*/
-?>
-
 <span style='text-align:center;font-size:14pt;'>
     <?php echo img(array('src' =>"images/lab.png",  'height' => 18, 'alt' => 'Laboratorio',    'title' => 'Laboratorio', 'border'=>'0'));	?>
 	Analisis de Laboratorio
@@ -82,6 +64,9 @@ function descuagua(){
 	</tr><tr>
 		<td class="littletableheaderc"><?php echo $form->cloruros->label;?></td>
 		<td class="littletablerow"    ><?php echo $form->cloruros->output;?></td>
+		<td class="littletableheaderc"><?php echo $form->alcohol->label;?></td>
+		<td class="littletablerow"    ><?php echo $form->alcohol->output;?></td>
+	</tr><tr>
 		<td class="littletableheaderc"><?php echo $form->dtoagua->label; ?></td>
 		<td class="littletablerow"    ><?php echo $form->dtoagua->output;?></td>
 	</tr>
