@@ -774,7 +774,7 @@ class Lprod extends Controller {
 
 		$edit->itcodrut = new inputField('ruta','codrut_<#i#>');
 		$edit->itcodrut->db_name = 'codrut';
-		$edit->itcodrut->rule='max_length[4]|required';
+		$edit->itcodrut->rule='max_length[4]';
 		$edit->itcodrut->size =7;
 		$edit->itcodrut->maxlength =4;
 		$edit->itcodrut->rel_id   ='itlprod';
