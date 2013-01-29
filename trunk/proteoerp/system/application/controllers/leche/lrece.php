@@ -1208,7 +1208,7 @@ class Lrece extends Controller {
 	//
 	//    Analisis de Laboratorio
 	//
-	function analisis(){
+	function analisis($id_lrece){
 		$this->rapyd->load('dataedit');
 
 		$script= '
@@ -1253,6 +1253,7 @@ class Lrece extends Controller {
 */
 		$edit->observa = new inputField('Observaciones','observa');
 		//$edit->observa->mode='autohide';
+		$edit->observa->insertValue='TQ1';
 		$edit->observa->size =40;
 		$edit->observa->maxlength =45;
 /*
@@ -1291,6 +1292,7 @@ class Lrece extends Controller {
 		$edit->litros->rule='numeric';
 		$edit->litros->css_class='inputnum';
 		$edit->litros->size =7;
+		$edit->litros->insertValue=round($this->datasis->dameval('SELECT SUM(lista) AS lt FROM itlrece WHERE id_lrece='.$this->db->escape($id_lrece)),2);
 		$edit->litros->maxlength =16;
 		//$edit->litros->type = 'inputhidden';
 /*
@@ -1310,6 +1312,7 @@ class Lrece extends Controller {
 		$edit->crios = new inputField('Criosc&oacute;pia','crios');
 		$edit->crios->rule='max_length[10]|numeric|required';
 		$edit->crios->css_class='inputnum';
+		$edit->crios->insertValue='420';
 		$edit->crios->size =7;
 		$edit->crios->maxlength =10;
 
@@ -1317,41 +1320,48 @@ class Lrece extends Controller {
 		$edit->h2o->rule='max_length[10]|numeric|porcent|required';
 		$edit->h2o->css_class='inputnum';
 		$edit->h2o->size =7;
+		$edit->h2o->insertValue='0';
 		$edit->h2o->maxlength =10;
 		$edit->h2o->onkeyup = 'descuagua()';
 
 		$edit->temp = new inputField('Temperatura','temp');
 		$edit->temp->rule='max_length[10]|numeric|required';
 		$edit->temp->css_class='inputnum';
+		$edit->temp->insertValue='7';
 		$edit->temp->size =7;
 		$edit->temp->maxlength =10;
 
 		$edit->brix = new inputField('Grados Brix','brix');
 		$edit->brix->rule='max_length[10]|numeric|required';
 		$edit->brix->css_class='inputnum';
+		$edit->brix->insertValue='9.4';
 		$edit->brix->size =7;
 		$edit->brix->maxlength =10;
 
 		$edit->grasa = new inputField('Grasa %','grasa');
 		$edit->grasa->rule='max_length[10]|numeric|porcent|required';
 		$edit->grasa->css_class='inputnum';
+		$edit->grasa->insertValue='4.12';
 		$edit->grasa->size =7;
 		$edit->grasa->maxlength =10;
 
 		$edit->acidez = new inputField('Acidez','acidez');
 		$edit->acidez->rule='max_length[10]|numeric|required';
 		$edit->acidez->css_class='inputnum';
+		$edit->acidez->insertValue='16';
 		$edit->acidez->size =7;
 		$edit->acidez->maxlength =10;
 
 		$edit->cloruros = new inputField('Cloruros','cloruros');
 		$edit->cloruros->rule='max_length[10]|numeric|required';
 		$edit->cloruros->css_class='inputnum';
+		$edit->cloruros->insertValue='200';
 		$edit->cloruros->size =7;
 		$edit->cloruros->maxlength =10;
 
 		$edit->alcohol = new inputField('Alcohol','alcohol');
 		$edit->alcohol->rule='numeric|required';
+		$edit->alcohol->insertValue='-1';
 		$edit->alcohol->css_class='inputnum';
 		$edit->alcohol->size =7;
 		$edit->alcohol->maxlength =10;
