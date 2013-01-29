@@ -157,12 +157,17 @@ class Smov extends Controller {
 				autoOpen: false, height: 430, width: 540, modal: true,
 				buttons: {
 					"Seleccionar": function() {
-						$.get("'.site_url($this->url.'ccli').'"+"/"+$("#id_scli").val()+"/create", function(data) {
-							$("#fedita").html(data);
-							$("#fedita").dialog("open");
-							$("#fsclisel").html("");
-							$("#fsclisel").dialog("close");
-						});
+						var id_scli=$("#id_scli").val();
+						if(id_scli){
+							$.get("'.site_url($this->url.'ccli').'"+"/"+$("#id_scli").val()+"/create", function(data) {
+								$("#fedita").html(data);
+								$("#fedita").dialog("open");
+								$("#fsclisel").html("");
+								$("#fsclisel").dialog("close");
+							});
+						}else{
+							apprise("<b>Debe seleccionar un cliente primero.</b>");
+						}
 					},
 					Cancel: function() {
 						$("#fcobroser").html("");
