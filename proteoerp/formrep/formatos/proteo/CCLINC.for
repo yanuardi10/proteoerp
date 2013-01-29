@@ -29,7 +29,7 @@ $abonos   = $row->abonos;
 $nombre   = (empty($row->nomfis))? trim($row->nombre) : $row->nomfis;
 $rifci    = trim($row->rifci);
 $direc    = trim($row->direc);
-$observa  = trim($row->observa);
+$observa  = wordwrap(trim(str_replace(',',', ',$row->observa)), 100, '<br>');
 $transac  = $row->transac;
 $codigo   = trim($row->codigo);
 $descrip  = trim($row->descrip);
@@ -170,16 +170,14 @@ foreach ($detalle2 AS $items2){ $i++;
 				if($lineas > $maxlin){
 					$lineas =0;
 					$npagina=true;
+					echo $pie_continuo;
 					break;
 				}
 				?>
 			</tr>
 <?php
-		if($npagina){
-			echo $pie_continuo;
-		}else{
-			$mod = ! $mod;
-		}
+
+		$mod = ! $mod;
 	} while ($clinea);
 }
 
