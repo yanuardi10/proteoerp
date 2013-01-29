@@ -78,7 +78,7 @@ function del_itlrece(id){
 		<th align="center">Grados Brix</th>
 		<th align="center">% Grasa</th>
 		<th align="center">Cloruros</th>
-		<th align="center">Dscto.Agua</th>
+		<th align="center">Alcohol</th>
 		<?php if($form->_status!='show'){ ?>
 		<th></th>
 		<?php } ?>
@@ -105,6 +105,7 @@ function del_itlrece(id){
 		$it_lvacadescrip = "itlvacadescrip_${i}";
 		$it_vaquera      = "itvaquera_${i}";
 		$it_nombre       = "itnombre_${i}";
+		$it_alcohol      = "italcohol_${i}";
 
 		echo $form->$it_lista->output.$form->$it_id->output.$form->$it_id_lvaca->output.$form->$it_nombre->output.$form->$it_vaquera->output;
 ?>
@@ -118,7 +119,7 @@ function del_itlrece(id){
 		<td class="littletablerow" align="center"><?php echo $form->$it_brix->output;    ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_grasa->output;   ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_cloruros->output;?></td>
-		<td class="littletablerow" align="center"><?php echo $form->$it_dtoagua->output; ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_alcohol->output; ?></td>
 		<?php if($form->_status!='show'){ ?>
 		<td class="littletablerow"><a href=# onclick="del_itlrece(<?php echo $i; ?>);return false;"><?php echo img("images/delete.jpg"); ?></a></td>
 		<?php } ?>
