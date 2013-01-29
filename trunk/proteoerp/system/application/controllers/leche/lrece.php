@@ -1100,7 +1100,7 @@ class Lrece extends Controller {
 
 		$edit->ruta = new dropdownField('Ruta', 'ruta');
 		$edit->ruta->option('','Seleccionar');
-		$edit->ruta->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM lruta ORDER BY nombre');
+		$edit->ruta->options('SELECT codigo, CONCAT(nombre," ", codigo) nombre FROM lruta ORDER BY nombre');
 		$edit->ruta->rule   = 'trim|required';
 		$edit->ruta->style  = 'width:300px';
 
@@ -1706,7 +1706,7 @@ class Lrece extends Controller {
 		$edit->itacidez->maxlength =10;
 
 		$edit->itcloruros = new inputField('Cloruros','cloruros_<#i#>');
-		$edit->itcloruros ->db_name  = 'cloruros';
+		$edit->itcloruros->db_name  = 'cloruros';
 		$edit->itcloruros->rel_id = 'itlrece';
 		$edit->itcloruros->rule='numeric|required';
 		$edit->itcloruros->css_class='inputnum';
@@ -1714,9 +1714,11 @@ class Lrece extends Controller {
 		$edit->itcloruros->maxlength =10;
 
 		$edit->italcohol = new inputField('Alcohol','alcohol_<#i#>');
+		$edit->italcohol->db_name  = 'alcohol';
 		$edit->italcohol->rule='numeric|required';
 		$edit->italcohol->css_class='inputnum';
 		$edit->italcohol->size =7;
+		$edit->italcohol->rel_id = 'itlrece';
 		$edit->italcohol->maxlength =10;
 
 /*
