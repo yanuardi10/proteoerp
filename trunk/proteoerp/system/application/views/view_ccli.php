@@ -54,6 +54,9 @@ $(function() {
 		var r=confirm("Confirma guardar las transacciones?");
 		return r;
 	});
+
+	$('#fecdoc').datepicker({ dateFormat: "dd/mm/yy" });
+	$('input[name^="sfpafecha_"]').datepicker({ dateFormat: "dd/mm/yy" });
 });
 
 function totaliza(){
@@ -98,6 +101,7 @@ function add_sfpa(){
 	$("#__ITPL__sfpa").after(htm);
 	falta = faltante();
 	$("#itmonto_"+can).val(falta);
+	$("#sfpafecha_"+can).datepicker({ dateFormat: "dd/mm/yy" });
 	sfpa_cont=sfpa_cont+1;
 	return can;
 }

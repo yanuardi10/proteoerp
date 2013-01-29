@@ -1136,6 +1136,7 @@ class Smov extends Controller {
 		$edit->fecdoc->size =10;
 		$edit->fecdoc->maxlength =8;
 		$edit->fecdoc->insertValue=date('Y-m-d');
+		$edit->fecdoc->calendar = false;
 		$edit->fecdoc->rule ='chfecha|required';
 
 		$edit->monto = new inputField('Total','monto');
@@ -1287,6 +1288,7 @@ class Smov extends Controller {
 		$edit->sfpafecha->db_name  = 'fecha';
 		$edit->sfpafecha->size     = 10;
 		$edit->sfpafecha->maxlength= 8;
+		$edit->sfpafecha->calendar = false;
 		$edit->sfpafecha->rule ='condi_required|chitfecha|callback_chtipo[<#i#>]';
 
 		$edit->numref = new inputField('Numero <#o#>', 'num_ref_<#i#>');
