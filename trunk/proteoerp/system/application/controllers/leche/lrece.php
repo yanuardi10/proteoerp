@@ -885,7 +885,6 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('cloruros');
 		$grid->label('Cloruros');
 		$grid->params(array(
@@ -900,6 +899,19 @@ class Lrece extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
+		$grid->addField('alcohol');
+		$grid->label('Alcohol');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 70,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
 
 		$grid->addField('dtoagua');
 		$grid->label('Dto. Agua');
@@ -1338,6 +1350,12 @@ class Lrece extends Controller {
 		$edit->cloruros->size =7;
 		$edit->cloruros->maxlength =10;
 
+		$edit->alcohol = new inputField('Alcohol','alcohol');
+		$edit->alcohol->rule='numeric|required';
+		$edit->alcohol->css_class='inputnum';
+		$edit->alcohol->size =7;
+		$edit->alcohol->maxlength =10;
+
 		$edit->dtoagua = new inputField('Dcto. de Agua','dtoagua');
 		$edit->dtoagua->rule='max_length[10]|numeric|required';
 		$edit->dtoagua->css_class='inputnum';
@@ -1389,7 +1407,7 @@ class Lrece extends Controller {
 					$data=array();
 					$data['vaquera']    = $row->codigo;
 					$data['nombre']     = $row->nombre;
-					$data['densidad']   = 1.032;
+					$data['densidad']   = 1.0164;
 					$data['lista']      = 0;
 					$data['animal']     = 'V';
 					$data['crios']      = 0;
@@ -1399,6 +1417,7 @@ class Lrece extends Controller {
 					$data['grasa']      = 0;
 					$data['acidez']     = 0;
 					$data['cloruros']   = 0;
+					$data['alcohol']    = 0;
 					$data['dtoagua']    = 0;
 					$data['id_lvaca']   = $row->id;
 					$data['id_lrece']   = $id;
@@ -1569,6 +1588,12 @@ class Lrece extends Controller {
 		$edit->cloruros->size =12;
 		$edit->cloruros->maxlength =10;
 
+		$edit->alcohol = new inputField('Alcohol','alcohol');
+		$edit->alcohol->rule='numeric|required';
+		$edit->alcohol->css_class='inputnum';
+		$edit->alcohol->size =7;
+		$edit->alcohol->maxlength =10;
+
 		$edit->dtoagua = new inputField('Dto. Agua','dtoagua');
 		$edit->dtoagua->rule='max_length[10]|numeric';
 		$edit->dtoagua->mode = 'autohide';
@@ -1675,7 +1700,7 @@ class Lrece extends Controller {
 		$edit->itacidez = new inputField('Acidez','acidez_<#i#>');
 		$edit->itacidez->db_name  = 'acidez';
 		$edit->itacidez->rel_id = 'itlrece';
-		$edit->itacidez->rule='max_length[10]|numeric|required';
+		$edit->itacidez->rule='numeric|required';
 		$edit->itacidez->css_class='inputnum';
 		$edit->itacidez->size =6;
 		$edit->itacidez->maxlength =10;
@@ -1683,18 +1708,26 @@ class Lrece extends Controller {
 		$edit->itcloruros = new inputField('Cloruros','cloruros_<#i#>');
 		$edit->itcloruros ->db_name  = 'cloruros';
 		$edit->itcloruros->rel_id = 'itlrece';
-		$edit->itcloruros->rule='max_length[10]|numeric|required';
+		$edit->itcloruros->rule='numeric|required';
 		$edit->itcloruros->css_class='inputnum';
 		$edit->itcloruros->size =6;
 		$edit->itcloruros->maxlength =10;
 
+		$edit->italcohol = new inputField('Alcohol','alcohol_<#i#>');
+		$edit->italcohol->rule='numeric|required';
+		$edit->italcohol->css_class='inputnum';
+		$edit->italcohol->size =7;
+		$edit->italcohol->maxlength =10;
+
+/*
 		$edit->itdtoagua = new inputField('Dto. Agua','dtoagua_<#i#>');
 		$edit->itdtoagua->db_name  = 'dtoagua';
 		$edit->itdtoagua->rel_id = 'itlrece';
-		$edit->itdtoagua->rule='max_length[10]|numeric|required';
+		$edit->itdtoagua->rule='numeric|required';
 		$edit->itdtoagua->css_class='inputnum';
 		$edit->itdtoagua->size =6;
 		$edit->itdtoagua->maxlength =10;
+*/
 		//Fin del detalle
 
 		$edit->build();
@@ -2055,6 +2088,17 @@ class Lrece extends Controller {
 			$mSQL="ALTER TABLE `lrece` ADD COLUMN `transporte` INT(11) NULL DEFAULT NULL COMMENT 'Transporte' AFTER `fecha`, ADD INDEX `transporte` (`transporte`)";
 			$this->db->simple_query($mSQL);
 		}
+
+		if(!$this->db->field_exists('alcohol', 'itlrece')){
+			$mSQL = "ALTER TABLE itlrece ADD COLUMN `alcohol` DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'alcohol' AFTER `dtoagua`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('alcohol', 'lanal')){
+			$mSQL = "ALTER TABLE lanal ADD COLUMN `alcohol` DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'alcohol' AFTER `dtoagua`";
+			$this->db->simple_query($mSQL);
+		}
+
 
 		if(!$this->db->table_exists('itlrece')){
 			$mSQL="CREATE TABLE `itlrece` (
