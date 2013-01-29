@@ -95,7 +95,7 @@ class Smov extends Controller {
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if(id){
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url($this->url.'smovprint').'/\'+id, \'_blank\', \'width=400,height=4200,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+				window.open(\''.site_url($this->url.'smovprint').'/\'+id, \'_blank\', \'width=400,height=420,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 			}else{
 				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
 			}
@@ -131,7 +131,7 @@ class Smov extends Controller {
 									if ( json.status == "A" ) {
 										$( "#fedita" ).dialog( "close" );
 										jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
-										window.open(\''.site_url($this->url.'/smovprint').'/\'+json.pk.id, \'_blank\', \'width=400,height=420,scrollbars=yes,status=yes,resizable=yes\');
+										window.open(\''.site_url($this->url.'smovprint').'/\'+json.pk.id, \'_blank\', \'width=400,height=420,scrollbars=yes,status=yes,resizable=yes\');
 										return true;
 									} else {
 										apprise(json.mensaje);
@@ -913,6 +913,8 @@ class Smov extends Controller {
 
 								$('#direc').val('');
 								$('#direc_val').text('');
+
+								$('#saldo_val').text('');
 							}else{
 								$.each(data,
 									function(i, val){
@@ -941,6 +943,9 @@ class Smov extends Controller {
 				$('#direc').val(ui.item.direc);
 				$('#direc_val').text(ui.item.direc);
 				setTimeout(function() {  $('#cod_cli').removeAttr('readonly'); }, 1500);
+
+				var saldo= $.ajax({ type: 'POST', url: '".site_url($this->url.'ajaxsaldo')."/'+ui.item.id, async: false, data: {cod_cli: ui.item.cod_cli } }).responseText;
+				$('#saldo_val').text(nformat(saldo,2));
 			}
 		});";
 
@@ -952,6 +957,15 @@ class Smov extends Controller {
 
 		$form->id = new hiddenField('', 'id_scli');
 		$form->id->in='cliente';
+
+		$form->nombre = new freeField('Nombre','nombre','<b id=\'nombre_val\'></b>');
+
+		$form->rif    = new freeField('RIF/CI','rif','<b id=\'rifci_val\'></b>');
+
+		$form->direc  = new freeField('Direcci&oacute;n','direc','<b id=\'direc_val\'></b>');
+
+		$form->saldo  = new freeField('Saldo','saldo','<b style="font-size:2em" id=\'saldo_val\'></b>');
+
 		//$form->body = new textareaField("Body", "body");
 		//$form->body->rule = "required";
 		//$form->body->rows = 10;
@@ -964,9 +978,35 @@ class Smov extends Controller {
 	function smovprint($id){
 		$dbid = $this->db->escape($id);
 		$tipo = $this->datasis->dameval('SELECT tipo_doc FROM smov WHERE id='.$dbid);
+
 		switch($tipo){
 			case 'NC':
+				//Chequea si viene de sfac
+				$mSQL='SELECT a.id
+				FROM sfac AS a
+				JOIN smov AS b ON a.transac=b.transac AND a.tipo_doc="D" AND a.numero=b.numero AND a.fecha=b.fecha
+				WHERE b.id='.$dbid;
+				$sfac_id=$this->datasis->dameval($mSQL);
+				if(!empty($sfac_id)){
+					redirect('ventas/sfac/dataprint/modify/'.$sfac_id);
+					break;
+				}
+
+				//Chequea si viene de una retencion de cliente
+				$mSQL='SELECT a.id
+				FROM rivc AS a
+				JOIN smov AS b ON a.transac=b.transac AND a.fecha=b.fecha
+				WHERE b.id='.$dbid;
+				$rivc_id=$this->datasis->dameval($mSQL);
+				if(!empty($sfac_id)){
+					redirect('formatos/ver/RIVC/'.$rivc_id);
+					break;
+				}
+
 				redirect('formatos/descargar/CCLINC/'.$id);
+				break;
+			case 'AN':
+				redirect('formatos/descargar/CCLIAN/'.$id);
 				break;
 			case 'AB':
 				redirect('formatos/descargar/CCLIAB/'.$id);
@@ -975,11 +1015,47 @@ class Smov extends Controller {
 				redirect('formatos/descargar/CCLIGI/'.$id);
 				break;
 			case 'FC':
-				redirect('ventas/sfac/dataprint/modify/'.$id);
+				$mSQL='SELECT a.id
+				FROM sfac AS a
+				JOIN smov AS b ON a.transac=b.transac AND a.tipo_doc="F" AND a.numero=b.numero AND a.fecha=b.fecha
+				WHERE b.id='.$dbid;
+				$sfac_id=$this->datasis->dameval($mSQL);
+				if(!empty($sfac_id))
+					redirect('ventas/sfac/dataprint/modify/'.$sfac_id);
 				break;
 			case 'ND':
+				//Chequea si viene de una retencion de cliente
+				$mSQL='SELECT a.id
+				FROM rivc AS a
+				JOIN smov AS b ON a.transac=b.transac AND a.fecha=b.fecha
+				WHERE b.id='.$dbid;
+				$rivc_id=$this->datasis->dameval($mSQL);
+				if(!empty($sfac_id)){
+					redirect('formatos/ver/RIVC/'.$rivc_id);
+					break;
+				}
+
 				redirect('formatos/descargar/CCLIND/'.$id);
 				break;
+			default:
+				echo 'Formato no definido';
+		}
+	}
+
+	function ajaxsaldo(){
+		$cod_cli = $this->input->post('cod_cli');
+
+		if($cod_cli!==false){
+			$this->db->select_sum('a.monto - a.abonos','saldo');
+			$this->db->from('smov AS a');
+			$this->db->where('a.cod_cli',$cod_cli);
+			$this->db->where('a.monto > a.abonos');
+			$this->db->where_in('a.tipo_doc',array('FC','ND','GI'));
+			$q=$this->db->get();
+			$row = $q->row_array();
+			echo (empty($row['saldo']))? 0: $row['saldo'];
+		}else{
+			echo 0;
 		}
 	}
 
@@ -992,7 +1068,10 @@ class Smov extends Controller {
 
 
 		$cajero=$this->secu->getcajero();
-		if(empty($cajero)) show_error('El usuario debe tener registrado un cajero para poder usar este modulo');
+		if(empty($cajero)){
+			echo 'El usuario debe tener registrado un cajero para poder usar este modulo';
+			exit();
+		}
 
 		$this->rapyd->load('dataobject','datadetails');
 		$this->rapyd->uri->keep_persistence();
@@ -1016,14 +1095,13 @@ class Smov extends Controller {
 		$edit->on_save_redirect=false;
 		$edit->back_url = site_url('finanzas/ccli/filteredgrid');
 		$edit->set_rel_title('itccli', 'Producto <#o#>');
-		$edit->set_rel_title('itccli', 'Forma de pago <#o#>');
+		$edit->set_rel_title('sfpa'  , 'Forma de pago <#o#>');
 
-		$edit->pre_process('insert' , '_pre_insert');
-		$edit->pre_process('update' , '_pre_update');
-		$edit->pre_process('delete' , '_pre_delete');
-		$edit->post_process('insert', '_post_insert');
-		$edit->post_process('update', '_post_update');
-		$edit->post_process('delete', '_post_delete');
+		$edit->pre_process('insert' , '_pre_ccli_insert');
+		$edit->pre_process('update' , '_pre_ccli_update');
+		$edit->pre_process('delete' , '_pre_ccli_delete');
+		$edit->post_process('insert', '_post_ccli_insert');
+		//$edit->post_process('delete', '_post_delete');
 
 		$edit->cod_cli = new hiddenField('Cliente','cod_cli');
 		$edit->cod_cli->rule ='max_length[5]';
@@ -1473,7 +1551,7 @@ class Smov extends Controller {
 		echo $salida.'</tr></table>';
 	}
 
-	function _pre_insert($do){
+	function _pre_ccli_insert($do){
 		$cliente  =$do->get('cod_cli');
 		$estampa = $do->get('estampa');
 		$hora    = $do->get('hora');
@@ -1631,7 +1709,7 @@ class Smov extends Controller {
 		return true;
 	}
 
-	function _post_insert($do){
+	function _post_ccli_insert($do){
 		$cliente  =$do->get('cod_cli');
 		$dbcliente=$this->db->escape($cliente);
 
@@ -1766,12 +1844,16 @@ class Smov extends Controller {
 		}
 	}
 
-	function _pre_update($do){
+	function _pre_ccli_update($do){
 		return false;
 	}
 
-	function _pre_delete($do){
+	function _pre_ccli_delete($do){
 		return false;
+	}
+
+	function giro(){
+
 	}
 
 	function instalar(){
