@@ -90,7 +90,7 @@ class Ppro extends Controller {
 				'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMPRE').'/\'+ret.id').';
 			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
 		});';
-		
+
 		//Wraper de javascript
 		$bodyscript .= '
 		$(function() {
@@ -101,18 +101,18 @@ class Ppro extends Controller {
 			var grid = jQuery("#newapi'.$grid.'");
 			var s;
 			var allFields = $( [] ).add( ffecha );
-	
+
 			var tips = $( ".validateTips" );
 
-			s = grid.getGridParam(\'selarrrow\'); 
+			s = grid.getGridParam(\'selarrrow\');
 			//$( "input:submit, a, button", ".otros" ).button();';
-		
+
 		//Prepara Pago o Abono
 		$bodyscript .= '
 			$( "#preabono" ).click(function() {
 				var id     = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
 				if (id)	{
-					var ret    = $("#newapi'.$grid.'").getRowData(id);  
+					var ret    = $("#newapi'.$grid.'").getRowData(id);
 					mId = id;
 					$.post("'.site_url('finanzas/ppro/formapabono').'/"+id, function(data){
 						$("#fabono").html("");
@@ -145,7 +145,7 @@ class Ppro extends Controller {
 									if ( res.status == "A"){
 										alert(res.mensaje);
 										grid.trigger("reloadGrid");
-										'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMPRE/').'/\'+res.id').';
+										'.$this->datasis->jwinopen(site_url('reportes/ver/PPROABC').'/\'+res.id').';
 										$( "#fpreabono" ).dialog( "close" );
 										return [true, a ];
 									} else {
@@ -166,7 +166,7 @@ class Ppro extends Controller {
 			$( "#abonos" ).click(function() {
 				var id     = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
 				if (id)	{
-					var ret    = $("#newapi'.$grid.'").getRowData(id);  
+					var ret    = $("#newapi'.$grid.'").getRowData(id);
 					mId = id;
 					$.post("'.site_url('finanzas/ppro/formaabono').'/"+id, function(data){
 						$("#fpreabono").html("");
@@ -200,7 +200,7 @@ class Ppro extends Controller {
 									if ( res.status == "A"){
 										apprise(res.mensaje);
 										grid.trigger("reloadGrid");
-										'.$this->datasis->jwinopen(site_url('formatos/ver/PPROABB').'/\'+res.id').';
+										'.$this->datasis->jwinopen(site_url('formatos/ver/PPROABC').'/\'+res.id').';
 										$( "#fabono" ).dialog( "close" );
 										return [true, a ];
 									} else {
@@ -221,7 +221,7 @@ class Ppro extends Controller {
 			$( "#ncredito" ).click(function() {
 				var id     = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
 				if (id)	{
-					var ret    = $("#newapi'.$grid.'").getRowData(id);  
+					var ret    = $("#newapi'.$grid.'").getRowData(id);
 					mId = id;
 					$.post("'.site_url('finanzas/ppro/formancredito').'/"+id, function(data){
 						$("#fpreabono").html("");
@@ -273,7 +273,7 @@ class Ppro extends Controller {
 		});';
 		$bodyscript .= "\n</script>\n";
 		return $bodyscript;
-		
+
 	}
 
 	//***************************
@@ -511,10 +511,10 @@ class Ppro extends Controller {
 				grid1.jqGrid("setCell",id,"abonar", Number(row["saldo"])-Number(row["faltan"]));
 			}
 			sumatot();
-		}, 
+		},
 		editurl: "clientArray"
 	});
-	
+
 	var mefectos = [
 ';
 
@@ -525,7 +525,7 @@ class Ppro extends Controller {
 		$mSQL .= "WHERE a.monto > a.abonos AND a.tipo_doc IN ('FC','ND','GI') AND a.cod_prv=".$this->db->escape($reg['proveed']);
 		$mSQL .= ' GROUP BY a.cod_prv, a.tipo_doc, a.numero ';
 		$mSQL .= "ORDER BY a.fecha ";
-		
+
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0 ){
 			foreach( $query->result() as $row ){
@@ -550,7 +550,7 @@ class Ppro extends Controller {
 	for(var i=0;i<=mefectos.length;i++) jQuery("#aceptados").jqGrid(\'addRowData\',i+1,mefectos[i]);
 	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
 	function sumatot()
-        { 
+        {
 		var grid = jQuery("#aceptados");
 		var s;
 		var total = 0;
@@ -580,7 +580,7 @@ class Ppro extends Controller {
 					total -= Number(entirerow["ppago"]);
 				}
 			}
-			total = Math.round(total*100)/100;	
+			total = Math.round(total*100)/100;
 			$("#grantotal").html("Total a Pagar: "+nformat(total,2));
 			$("input#fmonto").val(total);
 			montotal = total;
@@ -588,7 +588,7 @@ class Ppro extends Controller {
 			total = 0;
 			$("#grantotal").html("Sin seleccion");
 			$("input#fmonto").val(total);
-			montotal = total;	
+			montotal = total;
 		}
 	};
 	sumatot();
@@ -596,7 +596,7 @@ class Ppro extends Controller {
 </script>
 	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Codigo: '.$reg['proveed'].'</td><td>'.$reg['nombre'].'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
 	<p class="validateTips"></p>
-	<form id="abonopforma">	
+	<form id="abonopforma">
 	<table width="80%" align="center">
 	<tr>
 		<td class="CaptionTD" align="right">Fecha</td>
@@ -663,10 +663,10 @@ class Ppro extends Controller {
 				grid1.jqGrid("setCell",id,"abonar", Number(row["saldo"]));
 			}
 			sumabo();
-		}, 
+		},
 		editurl: "clientArray"
 	});
-	
+
 	var mefectos = [
 ';
 
@@ -677,7 +677,7 @@ class Ppro extends Controller {
 		$mSQL .= "WHERE a.monto > a.abonos AND a.tipo_doc IN ('FC','ND','GI') AND a.cod_prv=".$this->db->escape($reg['proveed']);
 		$mSQL .= ' GROUP BY a.cod_prv, a.tipo_doc, a.numero ';
 		$mSQL .= "ORDER BY a.fecha ";
-		
+
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0 ){
 			foreach( $query->result() as $row ){
@@ -696,17 +696,17 @@ class Ppro extends Controller {
 		$mSQL .= "FROM banc ";
 		$mSQL .= "WHERE activo='S' ";
 		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
-		
+
 		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ',' ',numcuent) ) banco FROM banc WHERE activo='S' ORDER BY tbanco='CAJ', codbanc ";
 		$cajas = $this->datasis->llenaopciones($mSQL, true, 'fcodbanc');
 
-		
+
 		$salida .= '
 	];
 	for(var i=0;i<=mefectos.length;i++) jQuery("#abonados").jqGrid(\'addRowData\',i+1,mefectos[i]);
 	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
 	function sumabo()
-        { 
+        {
 		var grid = jQuery("#abonados");
 		var s;
 		var total = 0;
@@ -735,7 +735,7 @@ class Ppro extends Controller {
 					total -= Number(entirerow["ppago"]);
 				}
 			}
-			total = Math.round(total*100)/100;	
+			total = Math.round(total*100)/100;
 			$("#grantotal").html("Total a Pagar: "+nformat(total,2));
 			$("input#fmonto").val(total);
 			montotal = total;
@@ -743,7 +743,7 @@ class Ppro extends Controller {
 			total = 0;
 			$("#grantotal").html("Sin seleccion");
 			$("input#fmonto").val(total);
-			montotal = total;	
+			montotal = total;
 		}
 	};
 	sumabo();
@@ -751,7 +751,7 @@ class Ppro extends Controller {
 </script>
 	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Codigo: '.$reg['proveed'].'</td><td>'.$reg['nombre'].'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
 	<p class="validateTips"></p>
-	<form id="abonoforma">	
+	<form id="abonoforma">
 	<table width="90%" align="center" border="0">
 	<tr>
 		<td class="CaptionTD" align="right">Banco/Caja</td>
@@ -829,10 +829,10 @@ class Ppro extends Controller {
 				grid1.jqGrid("setCell",id,"abonar", Number(row["saldo"]));
 			}
 			sumanc();
-		}, 
+		},
 		editurl: "clientArray"
 	});
-	
+
 	var mefectos = [
 ';
 
@@ -843,7 +843,7 @@ class Ppro extends Controller {
 		$mSQL .= "WHERE a.monto > a.abonos AND a.tipo_doc IN ('FC','ND','GI') AND a.cod_prv=".$this->db->escape($reg['proveed']);
 		$mSQL .= ' GROUP BY a.cod_prv, a.tipo_doc, a.numero ';
 		$mSQL .= "ORDER BY a.fecha ";
-		
+
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0 ){
 			foreach( $query->result() as $row ){
@@ -862,17 +862,17 @@ class Ppro extends Controller {
 		$mSQL .= "FROM banc ";
 		$mSQL .= "WHERE activo='S' ";
 		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
-		
+
 		$mSQL = "SELECT codigo, TRIM(nombre) descrip FROM botr WHERE tipo='P' ORDER BY codigo ";
 		$botr = $this->datasis->llenaopciones($mSQL, true, 'fcodigo');
-		
+
 		$salida .= '
 	];
 	for(var i=0;i<=mefectos.length;i++) jQuery("#abonados").jqGrid(\'addRowData\',i+1,mefectos[i]);
 	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
 	$("#femision").datepicker({dateFormat:"dd/mm/yy"});
 	function sumanc()
-        { 
+        {
 		var grid = jQuery("#abonados");
 		var s;
 		var total    = 0;
@@ -896,8 +896,8 @@ class Ppro extends Controller {
 						tiva  += Number(entirerow["impuesto"])*Number(entirerow["abonar"])/Number(entirerow["monto"]) ;
 				}
 			}
-			total = Math.round(total*100)/100;	
-			tiva  = Math.round(tiva*100)/100;	
+			total = Math.round(total*100)/100;
+			tiva  = Math.round(tiva*100)/100;
 			$("#grantotal").html("Total: "+nformat(total,2));
 			$("input#fmonto").val(total);
 			$("input#fiva").val(tiva);
@@ -908,7 +908,7 @@ class Ppro extends Controller {
 			$("#grantotal").html("Sin seleccion");
 			$("input#fmonto").val(total);
 			$("input#fiva").val(0);
-			montotal = total;	
+			montotal = total;
 		}
 	};
 	sumanc();
@@ -916,7 +916,7 @@ class Ppro extends Controller {
 </script>
 	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Codigo: '.$reg['proveed'].'</td><td>'.$reg['nombre'].'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
 	<p class="validateTips"></p>
-	<form id="ncreditoforma">	
+	<form id="ncreditoforma">
 	<table width="90%" align="center" border="0">
 	<tr>
 		<td  class="CaptionTD"  align="right">Numero</td>
@@ -977,7 +977,7 @@ class Ppro extends Controller {
 		foreach( $meco as $row ){
 			parse_str($row,$linea[]);
 		}
-	
+
 		$cod_prv = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
 		foreach( $linea as $efecto ){
 			//actualiza los movimientos
@@ -1018,15 +1018,15 @@ class Ppro extends Controller {
 			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Debe seleccionar un Banco o Caja "}';
 			return;
 		}
-		
+
 		if ( $this->datasis->dameval("SELECT count(*) FROM banc WHERE codbanc=".$this->db->escape($codbanc))==0 )
 		{
 			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Debe seleccionar un Banco o Caja "}';
-			return;	
+			return;
 		}
-		
+
 		$tbanco = $this->datasis->dameval("SELECT tbanco FROM banc WHERE codbanc=".$this->db->escape($codbanc));
-		
+
 		if ( $tbanco <> 'CAJ' && $numche == ''  ) {
 			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Falta colocar el numero de Documento"}';
 			return;
@@ -1051,13 +1051,13 @@ class Ppro extends Controller {
 				$impuesto += $efecto['abonar']*$this->datasis->dameval($mTempo." AND tipo_doc='".$efecto['tipo_doc']."' AND numero='".$efecto['numero']."'" )/$efecto['monto'];
 			}
 		}
-		
+
 		$observa2 = '';
 		if ( strlen($observa1)>50) {
 			$observa2 = substr($observa1, 49);
 			$observa1 = substr($observa1, 0, 50);
 		}
-		
+
 		if ( $totalab <= 0) {
 			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Seleccione los efectos a abonar"}';
 			return;
@@ -1081,7 +1081,7 @@ class Ppro extends Controller {
 		$data["vence"]    = $fecha;
 		$data["observa1"] = $observa1;
 		$data["observa2"] = $observa2;
-		
+
 		$data["banco"]    = $codbanc;
 		$data["tipo_op"]  = $tipo_op;
 		$data["numche"]   = $numche;
@@ -1138,17 +1138,17 @@ class Ppro extends Controller {
 			// DEBE DEVOLVER EL IVA EN CASO DE CONTRIBUYENTE
 			/*
 			IF TRAEVALOR("CONTRIBUYENTE") = 'ESPECIAL'
-				
+
 			ENDIF
 			*/
 		}
-		
+
 		//Crea Movimiento en Bancos
 		$mndebito = '';
-	
+
 		if ( $tbanco == 'CAJ' ) $tipo_op = 'ND';
 		if ( $tipo_op == 'ND' && $tbanco != 'CAJ' ) $mndebito = $this->datasis->prox_sql("ndebito",8);
-		
+
 		$data = array();
 
 		$data["codbanc"]  = $codbanc;
@@ -1157,7 +1157,7 @@ class Ppro extends Controller {
 		$data["numcuent"] = $this->datasis->dameval("SELECT numcuent ".$mTempo);
 		$data["banco"]    = $this->datasis->dameval("SELECT banco    ".$mTempo);
 		$data["saldo"]    = $this->datasis->dameval("SELECT saldo    ".$mTempo);
-		
+
 		$data["fecha"]    = $fecha;
 		$data["tipo_op"]  = $tipo_op;
 		$data["numero"]   = $numche;
@@ -1170,7 +1170,7 @@ class Ppro extends Controller {
 		$data["codcp"]    = $cod_prv;
 		$data["nombre"]   = $nombre;
 		$data["benefi"]   = $benefi;
-		
+
 		$data["negreso"]  = $mnroegre;
 		$data["ndebito"]  = $mndebito;
 
@@ -1211,7 +1211,7 @@ class Ppro extends Controller {
 				$data['hora']     = date('H:i:s');
 				$data['transac']  = $transac;
 				$this->db->insert('itppro',$data);
-			
+
 				// Actualiza sprm
 				$data = array($efecto['abonar'], $efecto['tipo_doc'], $efecto['numero'], $cod_prv, $efecto['fecha']);
 				$mSQL = "UPDATE sprm SET abonos=abonos+?, preabono=0, preppago=0 WHERE tipo_doc=? AND numero=? AND cod_prv=? AND fecha=?";
@@ -1292,19 +1292,19 @@ class Ppro extends Controller {
 		$mTempo = "SELECT impuesto FROM sprm WHERE cod_prv=".$this->db->escape($cod_prv);
 		foreach( $linea as $efecto ){
 			if ($efecto['abonar'] > 0 ){
-				$fecdoc    = $efecto['fecha']; 
+				$fecdoc    = $efecto['fecha'];
 				$totalab  += $efecto['abonar'];
 				$observa1 .= $efecto['tipo_doc'].$efecto['numero'].', ';
 				$impuesto += $efecto['abonar']*$this->datasis->dameval($mTempo." AND tipo_doc='".$efecto['tipo_doc']."' AND numero='".$efecto['numero']."'" )/$efecto['monto'];
 			}
 		}
-		
+
 		$observa2 = '';
 		if ( strlen($observa1)>50) {
 			$observa2 = substr($observa1, 49);
 			$observa1 = substr($observa1, 0, 50);
 		}
-		
+
 		if ( $totalab <= 0) {
 			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Seleccione los efectos a abonar"}';
 			return;
@@ -1328,7 +1328,7 @@ class Ppro extends Controller {
 		$data["vence"]     = $fecha;
 		$data["observa1"]  = $observa1;
 		$data["observa2"]  = $observa2;
-		
+
 		$data["banco"]     = "";
 		$data["tipo_op"]   = "";
 		$data["numche"]    = "";
@@ -1393,7 +1393,7 @@ class Ppro extends Controller {
 				$data['hora']     = date('H:i:s');
 				$data['transac']  = $transac;
 				$this->db->insert('itppro',$data);
-			
+
 				// Actualiza sprm
 				$data = array($efecto['abonar'], $efecto['tipo_doc'], $efecto['numero'], $cod_prv, $efecto['fecha']);
 				$mSQL = "UPDATE sprm SET abonos=abonos+?, preabono=0, preppago=0 WHERE tipo_doc=? AND numero=? AND cod_prv=? AND fecha=?";
