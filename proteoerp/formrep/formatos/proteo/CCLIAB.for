@@ -4,7 +4,7 @@ $maxlin=36; //Maximo de lineas de items.
 if(count($parametros) < 0) show_error('Faltan parametros');
 $id=$parametros[0];
 
-$sel=array('a.tipo_doc','a.numero','a.cod_cli','a.fecha','a.monto','a.abonos','a.tipo_doc'
+$sel=array('a.tipo_doc','a.numero','a.cod_cli','a.fecha','a.monto','a.abonos'
 ,'b.nombre','TRIM(b.nomfis) AS nomfis','CONCAT_WS(\'\',TRIM(b.dire11),b.dire12) AS direc','b.rifci'
 ,'CONCAT_WS(\' \',observa1,observa2) AS observa','b.rifci','a.transac');
 $this->db->select($sel);
