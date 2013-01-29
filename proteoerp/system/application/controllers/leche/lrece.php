@@ -1590,6 +1590,7 @@ class Lrece extends Controller {
 
 		$edit->alcohol = new inputField('Alcohol','alcohol');
 		$edit->alcohol->rule='numeric|required';
+		$edit->alcohol->mode = 'autohide';
 		$edit->alcohol->css_class='inputnum';
 		$edit->alcohol->size =7;
 		$edit->alcohol->maxlength =10;

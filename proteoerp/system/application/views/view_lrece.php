@@ -19,7 +19,7 @@ $scampos .='<td class="littletablerow" align="center">'.$campos['itcrios']['fiel
 $scampos .='<td class="littletablerow" align="center">'.$campos['itbrix']['field']    .'</td>';
 $scampos .='<td class="littletablerow" align="center">'.$campos['itgrasa']['field']   .'</td>';
 $scampos .='<td class="littletablerow" align="center">'.$campos['itcloruros']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="center">'.$campos['itdtoagua']['field'] .'</td>';
+$scampos .='<td class="littletablerow" align="center">'.$campos['italcohol']['field'] .'</td>';
 $scampos .='<td class="littletablerow"><a href=# onclick="del_itlrece(<#i#>);return false;">'.img("images/delete.jpg").'</a></td>';
 $scampos .='</tr>';
 $campos=$form->js_escape($scampos);
@@ -65,6 +65,9 @@ function del_itlrece(id){
 		<td                           width='50' align='right'>Ruta:</td>
 		<td style='font-weight:bold;' width='50' align='left'><?php echo $form->ruta->output;  ?></td>
 		<td style='font-weight:bold;'><?php echo $this->datasis->dameval("SELECT nombre FROM lruta WHERE codigo='".$form->ruta->value."'");  ?></td>
+		<td                            align='right'>Alcohol:</td>
+		<td style='font-weight:bold;'  align='left'><?php echo $form->alcohol->output;  ?></td>
+
 	</tr>
 </table>
 <div style='border: 1px solid #9AC8DA;background: #FAFAFA'>
