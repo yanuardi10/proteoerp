@@ -240,6 +240,8 @@ class Generar extends Metodos {
 		}else{
 			$salida=utf8_encode('Seleccione al menos un Modulo');
 		}
+		$mSQL='UPDATE itcasi JOIN casi ON itcasi.comprob=casi.comprob SET itcasi.idcasi=casi.id WHERE itcasi.idcasi IS NULL';
+		$rt=$this->db->simple_query($mSQL);
 		return $salida;
 	}
 
