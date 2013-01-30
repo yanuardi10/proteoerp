@@ -566,6 +566,7 @@ class PDFReporte extends Fpdf {
 
 				if($this->DBfieldsType[$key]=='real') $row[$key]=nformat($row[$key]);
 				elseif($this->DBfieldsType[$key]=='date') $row[$key]=dbdate_to_human($row[$key]);
+				elseif($this->DBfieldsType[$key]=='int') $row[$key]=intval($row[$key]);
 			}
 			$this->Row($row);
 		}
