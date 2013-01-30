@@ -10,6 +10,7 @@ class Casi extends Controller {
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
 		$this->datasis->modulo_nombre( 'CASI', $ventana=0 );
+		$this->chrepetidos = array();
 	}
 
 	function index(){
@@ -108,9 +109,9 @@ jQuery("#boton4").click( function(){
 */
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif",  "alt" => 'Imprimir Asiento',  "label"=>"Imprimir Asiento"));
-		$grid->wbotonadd(array("id"=>"boton2", "img"=>"images/agrega4.png",   "alt" => 'Agregar',           "label"=>"Agregar Asiento"));
-		$grid->wbotonadd(array("id"=>"boton3", "img"=>"images/editar.png",    "alt" => 'Editar',            "label"=>"Editar Asiento"));
+		//$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif",  "alt" => 'Imprimir Asiento',  "label"=>"Imprimir Asiento"));
+		//$grid->wbotonadd(array("id"=>"boton2", "img"=>"images/agrega4.png",   "alt" => 'Agregar',           "label"=>"Agregar Asiento"));
+		//$grid->wbotonadd(array("id"=>"boton3", "img"=>"images/editar.png",    "alt" => 'Editar',            "label"=>"Editar Asiento"));
 		$grid->wbotonadd(array("id"=>"boton4", "img"=>"images/checklist.png", "alt" => 'Auditoria',         "label"=>"Herramientas"));
 		$WestPanel = $grid->deploywestp();
 
@@ -119,7 +120,7 @@ jQuery("#boton4").click( function(){
 			array("id"=>"fshow"  , "title"=>"Mostrar registro")
 		);
 
-		//$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$centerpanel = '
 <div id="RightPane" class="ui-layout-center">
@@ -133,11 +134,11 @@ jQuery("#boton4").click( function(){
 </div> <!-- #RightPane -->
 ';
 
-		$SouthPanel = '
+		/*$SouthPanel .= '
 <div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
-';
+';*/
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['readyLayout']  = $readyLayout;
@@ -166,32 +167,161 @@ jQuery("#boton4").click( function(){
 		$bodyscript = '<script type="text/javascript">';
 
 		$bodyscript .= '
+		function casiadd() {
+			$.post("'.site_url($this->url.'dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function casiedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		$bodyscript .= '
+		function casishow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		};';
+
+		$bodyscript .= '
+		function casidel() {
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				if(confirm(" Seguro desea eliminar el registro?")){
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(data){
+						$("#fborra").html(data);
+						$("#fborra").dialog( "open" );
+					});
+					jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+				}
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
+		};';
+
+		$bodyscript .= '$(function() {';
+
+		$bodyscript .= '
 		jQuery("#boton1").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				window.open(\''.site_url('formatos/ver/CASI').'/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-		});
+		});';
 
+
+		$bodyscript .= '
 		jQuery("#boton2").click( function(){
 				window.open(\''.site_url('contabilidad/casi/dataedit/create/').'\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-		});
+		});';
 
+		$bodyscript .= '
 		jQuery("#boton3").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				window.open(\''.site_url('contabilidad/casi/dataedit/modify').'/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-		});
+		});';
 
+		$bodyscript .= '
 		jQuery("#boton4").click( function() {
 			window.open(\''.site_url('contabilidad/casi/auditoria/').'\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-		});
-		';
+		});';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					$.ajax({
+						type: "POST",
+						dataType: "text",
+						async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									apprise("Registro Guardado");
+									$( "#fedita" ).dialog( "close" );
+									jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+									//'.$this->datasis->jwinopen(site_url('formatos/ver/CASI').'/\'+res.id+\'/id\'').';
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#fedita").html(r);
+							}
+						}
+					})
+				},
+				"Cancelar": function() {
+					$("#fedita").html("");
+					$( this ).dialog( "close" );
+				}
+			},
+			close: function() {
+				$("#fedita").html("");
+			}
+		});';
+
+		$bodyscript .= '
+		$("#fshow").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+				},
+			},
+			close: function() {
+				$("#fshow").html("");
+			}
+		});';
+
+		$bodyscript .= '
+		$("#fborra").dialog({
+			autoOpen: false, height: 300, width: 300, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$("#fborra").html("");
+					$( this ).dialog( "close" );
+					jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+				}
+			},
+			close: function() {
+				$("#fborra").html("");
+			}
+		});';
 
 
+		$bodyscript .= '});';
 		$bodyscript .= "\n</script>\n";
 		return $bodyscript;
 	}
@@ -421,11 +551,13 @@ jQuery("#boton4").click( function(){
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
+		$grid->setBarOptions('addfunc: casiadd, editfunc: casiedit, delfunc: casidel, viewfunc: casishow');
+
 		#show/hide navigations buttons
-		$grid->setAdd(false);
-		$grid->setEdit(false);
-		$grid->setDelete(true);
-		$grid->setSearch(true);
+		$grid->setAdd(    $this->datasis->sidapuede('CASI','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('CASI','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('CASI','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('CASI','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
@@ -445,8 +577,7 @@ jQuery("#boton4").click( function(){
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -460,8 +591,7 @@ jQuery("#boton4").click( function(){
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -727,8 +857,7 @@ jQuery("#boton4").click( function(){
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait()
-	{
+	function getdatait(){
 		$id = $this->uri->segment(4);
 		if ($id){
 			$comprob = $this->datasis->dameval("SELECT comprob FROM casi WHERE id=$id");
@@ -741,118 +870,6 @@ jQuery("#boton4").click( function(){
 		echo $rs;
 	}
 
-/*
-class casi extends Controller {
-	var $qformato;
-	var $chrepetidos=array();
-
-	function casi(){
-		parent::Controller();
-		$this->load->library('rapyd');
-		$this->datasis->modulo_id('607',1);
-
-		if (!$this->db->field_exists('id','casi')) {
-			$mSQL='ALTER TABLE `casi` DROP PRIMARY KEY, ADD UNIQUE `comprob` (`comprob`)';
-			$this->db->simple_query($mSQL);
-			$mSQL='ALTER TABLE casi ADD id INT AUTO_INCREMENT PRIMARY KEY';
-			$this->db->simple_query($mSQL);
-		}
-	}
-
-	function index() {
-		//redirect('contabilidad/casi/filteredgrid');
-		if ( !$this->datasis->iscampo('itcasi','idcasi') ) {
-			$mSQL='ALTER TABLE itcasi ADD idcasi INT(11) ';
-			$this->db->simple_query($mSQL);
-			$this->db->simple_query('ALTER TABLE itcasi ADD INDEX idcasi (idcasi)');
-			$mSQL = "UPDATE itcasi a JOIN casi b ON a.comprob=b.comprob SET a.idcasi=b.id";
-			$this->db->simple_query($mSQL);
-		}
-		$this->casiextjs();
-	}
-
-	function filteredgrid(){
-		$this->rapyd->load('datagrid','datafilter');
-
-		$filter = new DataFilter('Filtro de Asientos');
-		$filter->db->select=array("comprob","fecha","descrip","origen","debe","haber","total");
-		$filter->db->from('casi');
-
-		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
-		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause ='where';
-		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator='>=';
-		$filter->fechah->operator='<=';
-
-		$filter->comprob = new inputField("N&uacute;mero"     , "comprob");
-		$filter->comprob->size=15;
-
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
-		$filter->descrip->db_name="descrip";
-
-		$filter->origen = new dropdownField("Or&iacute;gen", "origen");
-		$filter->origen->option("","Todos");
-		$filter->origen->options("SELECT modulo, modulo valor FROM reglascont GROUP BY modulo");
-
-		$filter->status = new dropdownField("Status", "status");
-		$filter->status->option("","Todos");
-		$filter->status->option("A","Actualizado");
-		$filter->status->option("D","Diferido");
-
-		$filter->vdes = new checkboxField("Ver solo asientos descuadrados","vdes",'S','N');
-		$filter->vdes->insertValue='N';
-		$filter->vdes->clause='';
-
-		$filter->buttons('reset','search');
-		$filter->build('dataformfiltro');
-
-		$uri = anchor('contabilidad/casi/dataedit/show/<#comprob#>','<#comprob#>');
-
-		$grid = new DataGrid();
-		$vdes = $this->input->post('vdes');
-		if($vdes) $grid->db->where('(debe-haber) <>',0);
-		$grid->order_by('comprob','asc');
-		$grid->per_page = 15;
-		$grid->column_orderby('N&uacute;mero',$uri,'comprob');
-		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
-		$grid->column_orderby('Descripci&oacute;n','descrip','descrip');
-		$grid->column_orderby('Or&iacute;gen'  ,'origen'  ,'origen',"align='center'");
-		$grid->column_orderby('Debe'  ,'<nformat><#debe#></nformat>' ,'debe' ,"align='right'");
-		$grid->column_orderby('Haber' ,'<nformat><#haber#></nformat>','haber',"align='right'");
-		$grid->column_orderby('Total' ,'<nformat><#total#></nformat>','total',"align='right'");
-		$grid->add('contabilidad/casi/dataedit/create');
-		$grid->build();
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		//$data['extras'] = $extras;
-
-		//$data["style"]   = style('jquery-ui-1.8.2.custom.css');
-		$data['style']   = style('themes/redmond/jquery-ui-1.8.2.custom.css');
-		$data['style']  .= style('themes/ui.jqgrid.css');
-		$data['style']  .= style('themes/ui.multiselect.css');
-		//$data["style"]  .= style('datagrid.css');
-
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery.layout.js');
-
-		$data['script'] .= script('i18n/grid.locale-sp.js');
-		$data['script'] .= script('jquery-ui-custom.min.js');
-		$data['script'] .= script('ui.multiselect.js');
-
-		$data['script'] .= script('jquery.jqGrid.min.js');
-		$data['script'] .= script('jquery.tablednd.js');
-		$data['script'] .= script('jquery.contextmenu.js');
-		//$data["script"] .= script("datagrid.js");
-
-		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Asientos');
-		$this->load->view('view_ventanas', $data);
-	}
-*/
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
 		$this->qformato=$qformato=$this->datasis->formato_cpla();
@@ -883,8 +900,8 @@ class casi extends Controller {
 		$do->rel_pointer('itcasi','cpla','itcasi.cuenta=cpla.codigo','cpla.ccosto AS cplaccosto,cpla.departa AS cpladeparta');
 
 		$edit = new DataDetails('Asientos', $do);
-		//$edit->back_save=true;
 		$edit->back_url = site_url('contabilidad/casi/dataedit/create');
+		$edit->on_save_redirect=false;
 		$edit->set_rel_title('itcasi','cuenta contables');
 
 		$edit->pre_process('insert' ,'_pre_insert');
@@ -1010,7 +1027,7 @@ class casi extends Controller {
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->origen = new autoUpdateField('origen'  ,'MANUAL','MANUAL');
 
-		$edit->buttons('save', 'delete','modify', 'exit','add_rel','add');
+		$edit->buttons('add_rel');
 		$edit->build();
 
 		if($edit->on_success()){
@@ -1021,26 +1038,10 @@ class casi extends Controller {
 			);
 			echo json_encode($rt);
 		}else{
-			//echo $edit->output;
 			$conten['form'] =&  $edit;
 			$this->load->view('view_casi', $conten);
 		}
 
-		//$conten['form']  =&  $edit;
-		//$data['content'] = $this->load->view('view_casi', $conten,true);
-		//$data['title']   = heading('Asientos Contables');
-		//$data['style']   = style('redmond/jquery-ui.css');
-		//$data['style']  .= style('gt_grid.css');
-		//$data['style']  .= style('impromptu.css');
-		//$data['script']  = script('jquery.js');
-		//$data['script'] .= script('jquery-ui.js');
-		//$data['script'] .= script('jquery-impromptu.js');
-		//$data['script'] .= script('plugins/jquery.blockUI.js');
-		//$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		//$data['script'] .= phpscript('nformat.js');
-		//$data['script'] .= script('plugins/jquery.floatnumber.js');
-		//$data['head']    = $this->rapyd->get_head();
-		//$this->load->view('view_ventanas', $data);
 	}
 
 	function grid1(){
@@ -1087,9 +1088,9 @@ class casi extends Controller {
 		$this->db->orderby($sidx,$sord);
 		$this->db->limit($limit,$start);
 		$query = $this->db->get();
-//echo $this->db->last_query();
+
 		$campos = $this->db->field_data('casi');
-//print_r($campos);
+
 		foreach ($query->result() as $row){
 			$s .= "<row id='". $row->id."'>";
 			$s .= '<cell>'.xml_convert($row->comprob).'</cell>';
@@ -1920,7 +1921,7 @@ class casi extends Controller {
 		$this->validation->set_message('chvalidt','La transacci&oacute;n no parece v&aacute;lida, debe tener una longitud no mayor a 8 y caracteres num&eacute;ricos');
 		return false;
 	}
-/*
+
 	function _pre_insert($do){
 		$cana=$do->count_rel('itcasi');
 		$comprob=$do->get('comprob');
@@ -1981,11 +1982,11 @@ class casi extends Controller {
 			$adebe=$do->get_rel('itcasi','debe',$i);
 			$ahaber=$do->get_rel('itcasi','haber' ,$i);
 			if ($adebe!=0 && $ahaber!=0){
-				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener debe y haber en el asiento '.$o;
+				$do->error_message_ar['pre_upd'] = $do->error_message_ar['update']='No puede tener debe y haber en el asiento '.$o;
 				return false;
 			}
 			if ($adebe==0 && $ahaber==0){
-				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe tener debe o haber en el asiento '.$o;
+				$do->error_message_ar['pre_upd'] = $do->error_message_ar['update']='Debe tener debe o haber en el asiento '.$o;
 				return false;
 			}
 			if($adebe != 0){
@@ -1996,11 +1997,11 @@ class casi extends Controller {
 			}
 		}
 		if ($debe == 0){
-			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de debe.';
+			$do->error_message_ar['pre_upd'] = $do->error_message_ar['update']='Debe ingresar al menos un monto en la columna de debe.';
 			return false;
 		}
 		if ($haber == 0){
-			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de haber.';
+			$do->error_message_ar['pre_upd'] = $do->error_message_ar['update']='Debe ingresar al menos un monto en la columna de haber.';
 			return false;
 		}
 		if($debe-$haber != 0){ $do->set('status' ,'D'); }
@@ -2029,23 +2030,6 @@ class casi extends Controller {
 		logusu('casi',"Asiento $codigo ELIMINADO");
 	}
 
-	function getData(){
-		//memowrite('datajqgridget','datajqgrid');
-
-		$this->load->library('datajqgrid');
-		$grid             = $this->datajqgrid;
-		$response         = $grid->getData('casi', array(array('table' => 'casi')),array(),false);
-		$rs = $grid->jsonresult( $response);
-		echo $rs;
-	}
-
-	 #Put information
-	function setData(){
-	    $this->load->library('datajqgrid');
-	    $grid             = $this->datajqgrid;
-	    $response         = $grid->operations('casi','id');
-	}
-*/
 	// Postea la tabla principal a Extjs
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
@@ -2088,292 +2072,4 @@ class casi extends Controller {
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
-/*
-	function sprvbu(){
-		$control = $this->uri->segment(4);
-		$id = $this->datasis->dameval("SELECT b.id FROM casi a JOIN sprv b ON a.proveed=b.proveed WHERE control='$control'");
-		redirect('compras/sprv/dataedit/show/'.$id);
-	}
-
-	function tabla() {
-		$comprob   = isset($_REQUEST['control'])  ? $_REQUEST['control']   :  0;
-		$transac = $this->datasis->dameval("SELECT transac FROM casi WHERE control='$control'");
-		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
-		$query = $this->db->query($mSQL);
-		$codprv = 'XXXXXXXXXXXXXXXX';
-		$salida = '';
-		$saldo = 0;
-		if ( $query->num_rows() > 0 ){
-			$salida = "<br><table width='100%' border=1>";
-			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-
-			foreach ($query->result_array() as $row)
-			{
-				if ( $codprv != $row['cod_prv']){
-					$codprv = $row['cod_prv'];
-					$salida .= "<tr bgcolor='#c7d3c7'>";
-					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
-					$salida .= "</tr>";
-				}
-				if ( $row['tipo_doc'] == 'FC' ) {
-					$saldo = $row['monto']-$row['abonos'];
-				}
-				$salida .= "<tr>";
-				$salida .= "<td>".$row['tipo_doc']."</td>";
-				$salida .= "<td>".$row['numero'].  "</td>";
-				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
-				$salida .= "</tr>";
-			}
-			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
-			$salida .= "</table>";
-		}
-		echo $salida;
-	}
-
-	function casiextjs() {
-		$encabeza='ASIENTOS CONTABLES';
-		$listados= $this->datasis->listados('casi');
-		$otros=$this->datasis->otros('casi', 'contabilidad/casi');
-
-		$urlajax = 'contabilidad/casi/';
-
-		$columnas = "
-		{ header: 'Comprobante',  width: 80, sortable: true, dataIndex: 'comprob' , field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'Fecha',        width: 70, sortable: true, dataIndex: 'fecha' ,   field: { type: 'date'       }, filter: { type: 'date'   }},
-		{ header: 'Descripcion',  width:250, sortable: true, dataIndex: 'descrip' , field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'Debe',         width: 80, sortable: true, dataIndex: 'debe' ,    field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Haber',        width: 80, sortable: true, dataIndex: 'haber' ,   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Total',        width: 60, sortable: true, dataIndex: 'total' ,   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Status',       width: 40, sortable: true, dataIndex: 'status' ,  field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'Tipo',         width: 60, sortable: true, dataIndex: 'tipo' ,    field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'Origen',       width: 60, sortable: true, dataIndex: 'origen' ,  field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'Transac',      width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'Usuario',      width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'Estampa',      width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date'       }, filter: { type: 'date'   }},
-		{ header: 'Hora',         width: 60, sortable: true, dataIndex: 'hora' ,    field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'id',           width: 80, sortable: true, dataIndex: 'id' ,      field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0000')},
-		";
-
-		$coldeta = "
-	var Deta1Col = [
-		{ header: 'cuenta',   width: 90, sortable: true, dataIndex: 'cuenta',  field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'referen',  width: 90, sortable: true, dataIndex: 'referen', field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'concepto', width:190, sortable: true, dataIndex: 'concepto',field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'debe',     width: 80, sortable: true, dataIndex: 'debe',    field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'haber',    width: 80, sortable: true, dataIndex: 'haber',   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'origen',   width: 60, sortable: true, dataIndex: 'origen',  field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'ccosto',   width: 60, sortable: true, dataIndex: 'ccosto',  field: { type: 'textfield'  }, filter: { type: 'string' }},
-		{ header: 'sucursal', width: 60, sortable: true, dataIndex: 'sucursal',field: { type: 'textfield'  }, filter: { type: 'string' }},
-	]";
-
-		$variables='';
-
-		$valida="		{ type: 'length', field: 'cliente',  min:  1 }";
-
-
-		$funciones = "
-function renderSprv(value, p, record) {
-	var mreto='';
-	if ( record.data.proveed == '' ){
-		mreto = '{0}';
-	} else {
-		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'compras/casi/sprvbu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	}
-	return Ext.String.format(mreto,	value, record.data.control );
 }
-
-function renderSinv(value, p, record) {
-	var mreto='';
-	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	return Ext.String.format(mreto,	value, record.data.codid );
-}
-	";
-
-		$campos = $this->datasis->extjscampos('casi');
-
-		$stores = "
-	Ext.define('Itcasi', {
-		extend: 'Ext.data.Model',
-		fields: [".$this->datasis->extjscampos('itcasi')."],
-		proxy: {
-			type: 'ajax',
-			noCache: false,
-			api: {
-				read   : urlAjax + 'griditcasi',
-				method: 'POST'
-			},
-			reader: {
-				type: 'json',
-				root: 'data',
-				successProperty: 'success',
-				messageProperty: 'message',
-				totalProperty: 'results'
-			}
-		}
-	});
-
-	//////////////////////////////////////////////////////////
-	// create the Data Store
-	var storeItCasi = Ext.create('Ext.data.Store', {
-		model: 'Itcasi',
-		autoLoad: false,
-		autoSync: true,
-		method: 'POST'
-	});
-
-	//////////////////////////////////////////////////////////
-	//
-	var gridDeta1 = Ext.create('Ext.grid.Panel', {
-		width:   '100%',
-		height:  '100%',
-		store:   storeItCasi,
-		title:   'Articulos',
-		iconCls: 'icon-grid',
-		frame:   true,
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		columns: Deta1Col
-	});
-
-	var casiTplMarkup = [
-		'<table width=\'100%\' bgcolor=\"#F3F781\">',
-		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR ASIENTO</p></td></tr><tr>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/COMPRA/{comprob}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
-		'<td align=\'center\'>{comprob}</td>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/COMPRA/{comprob}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
-		'</table>'
-	];
-
-	// Al cambiar seleccion
-	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
-		if (selectedRecord.length) {
-			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
-			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
-			comprob = selectedRecord[0].data.comprob;
-			gridDeta1.setTitle(comprob+' '+selectedRecord[0].data.descrip);
-			storeItCasi.load({ params: { comprob: comprob }});
-			var meco1 = Ext.getCmp('imprimir');
-
-			var casiTpl = Ext.create('Ext.Template', casiTplMarkup );
-			meco1.setTitle('Imprimir Asiento');
-			casiTpl.overwrite(meco1.body, selectedRecord[0].data );
-
-		}
-	});
-
-
-";
-
-		$acordioni = "{
-					layout: 'fit',
-					items:[
-						{
-							name: 'imprimir',
-							id: 'imprimir',
-							border:false,
-							html: 'Para imprimir seleccione una Compra '
-						}
-					]
-				},
-";
-
-
-		$dockedItems = "{
-			xtype: 'toolbar',
-			items: [
-				{
-					iconCls: 'icon-add',
-					text: 'Agregar',
-					scope: this,
-					handler: function(){
-						window.open(urlApp+'contabilidad/casi/dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},{
-					iconCls: 'icon-update',
-					text: 'Modificar',
-					disabled: true,
-					itemId: 'update',
-					scope: this,
-					handler: function(selModel, selections){
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						gridMaest.down('#delete').setDisabled(selections.length === 0);
-						window.open(urlApp+'contabilidad/casi/dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},{
-					iconCls: 'icon-delete',
-					text: 'Eliminar',
-					disabled: true,
-					itemId: 'delete',
-					scope: this,
-					handler: function() {
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						Ext.MessageBox.show({
-							title: 'Confirme',
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
-							buttons: Ext.MessageBox.YESNO,
-							fn: function(btn){
-								if (btn == 'yes') {
-									if (selection) {
-										//storeMaest.remove(selection);
-									}
-									storeMaest.load();
-								}
-							},
-							icon: Ext.MessageBox.QUESTION
-						});
-					}
-				}
-			]
-		}
-		";
-
-		$grid2 = ",{
-				itemId: 'viewport-center-detail',
-				activeTab: 0,
-				region: 'south',
-				height: '40%',
-				split: true,
-				margins: '0 0 0 0',
-				preventHeader: true,
-				items: gridDeta1
-			}";
-
-
-		$titulow = 'Asientos';
-
-		$filtros = "";
-		$features = "
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
-";
-
-		$final = "storeItCasi.load();";
-
-		$data['listados']    = $listados;
-		$data['otros']       = $otros;
-		$data['encabeza']    = $encabeza;
-		$data['urlajax']     = $urlajax;
-		$data['variables']   = $variables;
-		$data['funciones']   = $funciones;
-		$data['valida']      = $valida;
-		$data['stores']      = $stores;
-		$data['columnas']    = $columnas;
-		$data['campos']      = $campos;
-		$data['titulow']     = $titulow;
-		$data['dockedItems'] = $dockedItems;
-		$data['features']    = $features;
-		$data['filtros']     = $filtros;
-		$data['grid2']       = $grid2;
-		$data['coldeta']     = $coldeta;
-		$data['acordioni']   = $acordioni;
-		$data['final']       = $final;
-
-		$data['title']  = heading('Asientos');
-		$this->load->view('extjs/extjsvenmd',$data);
-
-	}
-
-}
-*/
-}
-?>
