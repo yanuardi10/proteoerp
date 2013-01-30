@@ -1674,6 +1674,7 @@ class Lrece extends Controller {
 		$edit->itcrios->rule='max_length[10]|numeric|required';
 		$edit->itcrios->css_class='inputnum';
 		$edit->itcrios->size =6;
+		$edit->itcrios->insertValue='536';
 		$edit->itcrios->maxlength =10;
 
 		$edit->ith2o = new inputField('Agua %','h2o_<#i#>');
@@ -1681,6 +1682,7 @@ class Lrece extends Controller {
 		$edit->ith2o->rel_id = 'itlrece';
 		$edit->ith2o->rule='max_length[10]|numeric|porcent|required';
 		$edit->ith2o->css_class='inputnum';
+		$edit->ith2o->insertValue='0';
 		$edit->ith2o->size =6;
 		$edit->ith2o->maxlength =10;
 
@@ -1705,11 +1707,13 @@ class Lrece extends Controller {
 		$edit->itgrasa->rel_id = 'itlrece';
 		$edit->itgrasa->rule='max_length[10]|numeric|porcent|required';
 		$edit->itgrasa->css_class='inputnum';
+		$edit->itgrasa->insertValue='4.2';
 		$edit->itgrasa->size =6;
 		$edit->itgrasa->maxlength =10;
 
 		$edit->itacidez = new inputField('Acidez','acidez_<#i#>');
 		$edit->itacidez->db_name  = 'acidez';
+		$edit->itacidez->insertValue='16';
 		$edit->itacidez->rel_id = 'itlrece';
 		$edit->itacidez->rule='numeric|required';
 		$edit->itacidez->css_class='inputnum';
@@ -1721,6 +1725,7 @@ class Lrece extends Controller {
 		$edit->itcloruros->rel_id = 'itlrece';
 		$edit->itcloruros->rule='numeric|required';
 		$edit->itcloruros->css_class='inputnum';
+		$edit->itcloruros->insertValue='200';
 		$edit->itcloruros->size =6;
 		$edit->itcloruros->maxlength =10;
 
@@ -1728,7 +1733,8 @@ class Lrece extends Controller {
 		$edit->italcohol->db_name  = 'alcohol';
 		$edit->italcohol->rule='numeric|required';
 		$edit->italcohol->css_class='inputnum';
-		$edit->italcohol->size =7;
+		$edit->italcohol->size =4;
+		$edit->italcohol->insertValue='-1';
 		$edit->italcohol->rel_id = 'itlrece';
 		$edit->italcohol->maxlength =10;
 
