@@ -52,8 +52,8 @@ function autocod(id){
 		source: function( req, add){
 			$.ajax({
 				url:  "<?php echo site_url('ajax/buscasinvart'); ?>",
-				type: "POST",
-				dataType: "json",
+				type: 'POST',
+				dataType: 'json',
 				data: "q="+req.term,
 				success:
 					function(data){
@@ -69,9 +69,13 @@ function autocod(id){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$('#codigo_'+id).attr('readonly','readonly');
+
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#descrip_'+id).val(ui.item.descrip);
 			post_modbus(id);
+
+			setTimeout(function(){ $('#codigo_'+id).removeAttr('readonly'); }, 1500);
 		}
 	});
 }
@@ -84,6 +88,8 @@ function add_itstra(){
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__UTPL__").before(htm);
 	$("#cantidad_"+can).numeric(".");
+	$("#codigo_"+can).focus();
+	autocod(can);
 	itstra_cont=itstra_cont+1;
 }
 
@@ -92,7 +98,7 @@ function del_itstra(id){
 	$('#tr_itstra_'+id).remove();
 }
 </script>
-<?php } 
+<?php }
 //	<tr>
 //		<td align=right><?php echo $container_tr ? ></td>
 //	</tr>
@@ -123,7 +129,7 @@ function del_itstra(id){
 	<tr>
 		<td>
 		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:250px'>
-		
+
 		<table width='100%'>
 			<tr>
 				<td width="160" bgcolor='#7098D0'>C&oacute;digo</td>
@@ -136,7 +142,7 @@ function del_itstra(id){
 				$obj2="descrip_$i";
 				$obj3="cantidad_$i";
 			?>
-			<tr id='tr_itstra_<?=$i ?>'>
+			<tr id='tr_itstra_<?php echo $i; ?>'>
 				<td class="littletablerow"><?php echo $form->$obj1->output ?></td>
 				<td class="littletablerow"><?php echo $form->$obj2->output ?></td>
 				<td class="littletablerow"align="right"><?php echo $form->$obj3->output ?></td>

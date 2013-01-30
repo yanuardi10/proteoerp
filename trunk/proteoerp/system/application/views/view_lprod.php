@@ -191,19 +191,15 @@ function autocod(id){
 		<td class="littletablerow" align="center"><?php echo $form->$it_codrut->output; if(isset($form->$it_id)) echo $form->$it_id->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_nombre->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_litros->output;  ?></td>
-		<?php if($form->_status!='show') {
-			$colspan=4;
-		?>
+		<?php if($form->_status!='show') { ?>
 			<td class="littletablerow"><a href=# onclick="del_itlprod(<?php echo $i; ?>);return false;"><?php echo img('images/delete.jpg'); ?></a></td>
-		<?php }else{
-			$colspan=3;
-		}?>
+		<?php } ?>
 	</tr>
 	<?php
 	$mod=!$mod;
 	} ?>
 	<tr id='__UTPL__lprod'>
-		<td colspan='<?php echo $colspan; ?>' class="littletableheaderdet">&nbsp;</td>
+		<td colspan='<?php echo ($form->_status!='show')? 4: 3 ?>' class="littletableheaderdet">&nbsp;</td>
 	</tr>
 </table>
 </div>

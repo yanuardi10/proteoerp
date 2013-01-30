@@ -41,7 +41,10 @@ class Lprod extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprime", "img"=>"assets/default/images/print.png","alt" => 'Reimprimir',"label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"bcierre", "img"=>"images/candado.png"             ,"alt" => 'Cierre Producci&oacute;n',"label"=>"Cierre Producci&oacute;n"));
+
+		if($this->datasis->sidapuede('LCIERRE','INCLUIR%')){
+			$grid->wbotonadd(array("id"=>"bcierre", "img"=>"images/candado.png"             ,"alt" => 'Cierre Producci&oacute;n',"label"=>"Cierre Producci&oacute;n"));
+		}
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -219,7 +222,7 @@ class Lprod extends Controller {
 								grid.trigger("reloadGrid");
 								//'.$this->datasis->jwinopen(site_url('formatos/ver/LRECE').'/\'+res.id+\'/id\'').';
 								return true;
-							} else {
+							}else{
 								apprise(json.mensaje);
 							}
 						}catch(e){
@@ -260,6 +263,17 @@ class Lprod extends Controller {
 			'search'        => 'false'
 		));
 
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
 
 		$grid->addField('codigo');
 		$grid->label('C&oacute;digo');
@@ -322,20 +336,6 @@ class Lprod extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
-
-
-		$grid->addField('fecha');
-		$grid->label('Fecha');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-
 
 		$grid->showpager(true);
 		$grid->setWidth('');
@@ -620,10 +620,9 @@ class Lprod extends Controller {
 		$edit->peso->maxlength =12;
 
 		//Inicio del detalle
-		$edit->itid = new inputField('','itid_<#i#>');
+		$edit->itid = new hiddenField('','itid_<#i#>');
 		$edit->itid->db_name = 'id';
-		$edit->itid->type    ='inputhidden';
-		$edit->itid->rel_id  ='itlprod';
+		$edit->itid->rel_id  = 'itlprod';
 
 		$edit->itcodrut = new inputField('ruta','codrut_<#i#>');
 		$edit->itcodrut->db_name = 'codrut';
@@ -726,17 +725,34 @@ class Lprod extends Controller {
 
 		if($cana>0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
+			$do->error_message_ar['pre_upd'] = $do->error_message_ar['update'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
 			return false;
+		}
+
+		$cana=$do->count_rel('itlprod');
+		for($i=0;$i<$cana;$i++){
+			$codrut = $do->get_rel('itlprod','codrut' ,$i);
+			if(empty($codrut)){
+				$do->rel_rm('itlprod',$i);
+			}
 		}
 
 		return true;
 	}
 
 	function _pre_update($do){
-		return true;
+		return $this->_pre_insert($do);
 	}
 
 	function _pre_delete($do){
+		$fecha  = $do->get('fecha');
+		$dbfecha= $this->db->escape($fecha);
+		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
+
+		if($cana>0){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete'] = 'Ya el d&iacute;a '.dbdate_to_human($fecha).' fue cerrado.';
+			return false;
+		}
 		return true;
 	}
 
@@ -798,6 +814,7 @@ class Lprod extends Controller {
 				`id` INT(10) NOT NULL AUTO_INCREMENT,
 				`fecha` DATE NULL DEFAULT NULL,
 				`dia` VARCHAR(50) NULL DEFAULT NULL,
+				`status` CHAR(1) NULL DEFAULT 'A',
 				`recepcion` DECIMAL(12,2) NULL DEFAULT NULL,
 				`enfriamiento` DECIMAL(12,2) NULL DEFAULT NULL,
 				`requeson` DECIMAL(12,2) NULL DEFAULT NULL,
@@ -808,7 +825,7 @@ class Lprod extends Controller {
 			)
 			COMMENT='Cierre de produccion de lacteos'
 			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM;";
+			ENGINE=MyISAM";
 			$this->db->simple_query($mSQL);
 		}
 
@@ -825,7 +842,7 @@ class Lprod extends Controller {
 				INDEX `id_lcierre` (`id_lcierre`)
 			)
 			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM;";
+			ENGINE=MyISAM";
 			$this->db->simple_query($mSQL);
 		}
 	}
