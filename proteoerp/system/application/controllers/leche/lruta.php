@@ -216,6 +216,20 @@ class Lruta extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
+		$grid->addField('tarsob');
+		$grid->label('Sobrante');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 70,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -427,6 +441,12 @@ class Lruta extends Controller {
 		$edit->tarifa->size =7;
 		$edit->tarifa->maxlength =10;
 
+		$edit->tarsob = new inputField('Sobrante','tarsob');
+		$edit->tarsob->rule='numeric|required';
+		$edit->tarsob->insertValue='0';
+		$edit->tarsob->css_class='inputnum';
+		$edit->tarsob->size =7;
+		$edit->tarsob->maxlength =10;
 
 
 		$edit->build();
