@@ -96,7 +96,7 @@ class Lruta extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 320, width: 550, modal: true,
+			autoOpen: false, height: 400, width: 550, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
