@@ -202,7 +202,7 @@ class Lruta extends Controller {
 			'editoptions'   => '{ size:50, maxlength: 50 }',
 		));
 
-		$grid->addField('terifa');
+		$grid->addField('tarifa');
 		$grid->label('Tarifa');
 		$grid->params(array(
 			'search'        => 'true',
