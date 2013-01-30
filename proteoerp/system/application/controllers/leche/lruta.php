@@ -202,6 +202,20 @@ class Lruta extends Controller {
 			'editoptions'   => '{ size:50, maxlength: 50 }',
 		));
 
+		$grid->addField('terifa');
+		$grid->label('Tarifa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 70,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -405,6 +419,15 @@ class Lruta extends Controller {
 		$edit->zona->option('','Seleccionar');
 		$edit->zona->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM zona ORDER BY nombre');
 		$edit->zona->style = 'width:166px';
+
+		$edit->tarifa = new inputField('Tarifa','tarifa');
+		$edit->tarifa->rule='numeric|required';
+		$edit->tarifa->insertValue='0';
+		$edit->tarifa->css_class='inputnum';
+		$edit->tarifa->size =7;
+		$edit->tarifa->maxlength =10;
+
+
 
 		$edit->build();
 
