@@ -153,7 +153,7 @@ class Lprod extends Controller {
 				var idcierre = $.ajax({ type: "POST", url: "'.site_url($this->url.'getcierre').'/"+ret.fecha, async: false }).responseText;
 
 				if(idcierre == "0"){
-					$.post("'.site_url($this->url.'dataeditcierre/').'/"+ret.fecha+"/create",
+					$.post("'.site_url('leche/lcierre/dataedit/').'/"+ret.fecha+"/create",
 					function(data){
 						$("#fedita").html(data);
 						$("#fedita").dialog( "open" );
@@ -162,13 +162,13 @@ class Lprod extends Controller {
 					var status = $.ajax({ type: "POST", url: "'.site_url($this->url.'getstatus').'/"+ret.fecha, async: false }).responseText;
 
 					if(status=="A"){
-						$.post("'.site_url($this->url.'dataeditcierre/').'/"+ret.fecha+"/modify/"+idcierre,
+						$.post("'.site_url('leche/lcierre/dataedit/').'/"+ret.fecha+"/modify/"+idcierre,
 						function(data){
 							$("#fedita").html(data);
 							$("#fedita").dialog( "open" );
 						});
 					}else{
-						$.post("'.site_url($this->url.'dataeditcierre/').'/show/"+idcierre,
+						$.post("'.site_url('leche/lcierre/dataedit/').'/show/"+idcierre,
 						function(data){
 							$("#fshow").html(data);
 							$("#fshow").dialog( "open" );
@@ -564,153 +564,6 @@ class Lprod extends Controller {
 	// DataEdit
 	//***********************************
 
-	function dataeditcierre($urlfecha){
-		$semana=array('DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES');
-
-		if(preg_match('/(?P<anio>\d{4})\-(?P<mes>\d{2})\-(?P<dia>\d{2})/', $urlfecha, $matches)>0){
-			$fecha = date('Y-m-d', mktime(0, 0, 0, $matches['mes'], $matches['dia'], $matches['anio']));
-			$dia   = $semana[date('w', mktime(0, 0, 0, $matches['mes'], $matches['dia'], $matches['anio']))];
-		}else{
-			$fecha= '';
-			$dia  = '';
-		}
-
-		$this->rapyd->load('datadetails','dataobject');
-
-		$do = new DataObject('lcierre');
-		//$do->pointer('scli' ,'scli.cliente=rivc.cod_cli','sprv.tipo AS sprvtipo, sprv.reteiva AS sprvreteiva','left');
-		$do->rel_one_to_many('itlcierre' ,'itlcierre' ,array('id'=>'id_lcierre'));
-		$do->order_rel_one_to_many('itlcierre','codigo');
-
-		$edit = new DataDetails($this->tits, $do);
-		$edit->on_save_redirect=false;
-
-		//$edit->post_process('insert','_post_insert');
-		//$edit->post_process('update','_post_update');
-		//$edit->post_process('delete','_post_delete');
-		$edit->pre_process('insert' ,'_pre_insert_lcierre');
-		//$edit->pre_process('update' ,'_pre_update_lcierre');
-		//$edit->pre_process('delete' ,'_pre_delete_lcierre');
-
-		$edit->requeson = new inputField('Requeson','requeson');
-		$edit->requeson->rule='required';
-		$edit->requeson->size =12;
-		$edit->requeson->maxlength =10;
-
-		$edit->dia = new inputField('D&iacute;a','dia');
-		$edit->dia->size =12;
-		$edit->dia->maxlength =10;
-		$edit->dia->type='inputhidden';
-		$edit->dia->insertValue=$dia;
-
-		$edit->fecha = new dateField('Fecha','fecha');
-		$edit->fecha->rule='chfecha|required';
-		$edit->fecha->size =10;
-		$edit->fecha->maxlength =8;
-		$edit->fecha->type='inputhidden';
-		$edit->fecha->insertValue=$fecha;
-		$edit->fecha->calendar=false;
-
-		$edit->usuario = new autoUpdateField('usuario', $this->secu->usuario(), $this->secu->usuario());
-
-		//Inicio del detalle
-		$i  = 0;
-		$rel= 'itlcierre';
-		$id = $edit->get_from_dataobjetct('id');
-
-		if($id){
-			$sel=array('a.codigo','a.descrip');
-			$this->db->select($sel);
-			$this->db->from('itlcierre AS a');
-			$this->db->where('a.id_lcierre',$id);
-			$this->db->order_by('a.codigo');
-		}else{
-			$sel=array('a.codigo','a.descrip');
-			$this->db->select($sel);
-			$this->db->from('lprod AS a');
-			$this->db->where('a.fecha',$fecha);
-			$this->db->group_by('a.codigo');
-			$this->db->order_by('a.codigo');
-		}
-
-		$query = $this->db->get();
-		$edit->detail_expand_except($rel);
-		foreach ($query->result() as $row){
-			$obj='itcodigo_'.$i;
-			$edit->$obj = new inputField('Codigo',$obj);
-			$edit->$obj->db_name = 'codigo';
-			$edit->$obj->rule='max_length[15]|required';
-			$edit->$obj->size =7;
-			$edit->$obj->insertValue=$row->codigo;
-			$edit->$obj->type='inputhidden';
-			$edit->$obj->maxlength =4;
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
-
-			$obj='itdescrip_'.$i;
-			$edit->$obj = new inputField('',$obj);
-			$edit->$obj->db_name = 'descrip';
-			$edit->$obj->type='inputhidden';
-			$edit->$obj->insertValue=$row->descrip;
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
-
-			$obj='itcestas_'.$i;
-			$edit->$obj = new inputField('Cestas',$obj);
-			$edit->$obj->db_name = 'cestas';
-			$edit->$obj->rule='max_length[12]|numeric|required';
-			$edit->$obj->css_class='inputnum';
-			$edit->$obj->size =14;
-			$edit->$obj->maxlength =12;
-			$edit->$obj->onkeyup='totalizar();';
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
-
-			$obj='itunidades_'.$i;
-			$edit->$obj = new inputField('Unidades',$obj);
-			$edit->$obj->db_name = 'unidades';
-			$edit->$obj->rule='max_length[12]|numeric|required';
-			$edit->$obj->css_class='inputnum';
-			$edit->$obj->size =14;
-			$edit->$obj->maxlength =12;
-			$edit->$obj->onkeyup='totalizar();';
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
-
-			$obj='itpeso_'.$i;
-			$edit->$obj = new inputField('Producido (Peso)',$obj);
-			$edit->$obj->db_name = 'peso';
-			$edit->$obj->rule='max_length[12]|numeric';
-			$edit->$obj->css_class='inputnum';
-			$edit->$obj->size =14;
-			$edit->$obj->maxlength =12;
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
-			$edit->$obj->when   = array('modify','show');
-
-			$i++;
-		}
-		$max_rel_count = $i;
-		//Fin del detalle
-
-		$edit->buttons('add_rel');
-		$edit->build();
-
-		if($edit->on_success()){
-			$rt=array(
-				'status' =>'A',
-				'mensaje'=>'Registro guardado',
-				'pk'     =>$edit->_dataobject->pk
-			);
-			echo json_encode($rt);
-		}else{
-			//echo $edit->output;
-			$conten['max_rel_count']=$max_rel_count;
-			$conten['form']  =& $edit;
-			$this->load->view('view_lcierre', $conten);
-		}
-	}
-
 	function dataedit(){
 		$this->rapyd->load('datadetails','dataobject');
 
@@ -863,17 +716,6 @@ class Lprod extends Controller {
 		}
 	}
 
-	function _pre_insert_lcierre($do){
-		$fecha  = $do->get('fecha');
-		$dbfecha= $this->db->escape($fecha);
-		$cana   = $this->datasis->dameval("SELECT COUNT(*) FROM lcierre WHERE fecha=".$dbfecha);
-
-		if($cana>0){
-			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya existe un cierre para el d&iacute;a '.dbdate_to_human($fecha).' no puede realizar otro.';
-			return false;
-		}
-		return true;
-	}
 
 	function _pre_insert($do){
 		$do->set('fecha',date('Y-m-d'));

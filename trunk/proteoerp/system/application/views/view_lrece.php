@@ -12,6 +12,8 @@ $campos=$form->template_details('itlrece');
 
 $scampos  ='<tr id="tr_itlrece_<#i#>" style="background:#E4E4E4;">';
 $scampos .='<td align="left"><b>'.$campos['itlvacacodigo']['field'].' '.$campos['itlvacadescrip']['field'].'</b></td>';
+$scampos .='<td class="littletablerow" align="center">'.$campos['itdensidad']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="center">'.$campos['ittemp']['field']    .'</td>';
 $scampos .='<td class="littletablerow" align="center">'.$campos['itanimal']['field']  .'</td>';
 $scampos .='<td class="littletablerow" align="center">'.$campos['itacidez']['field']  .'</td>';
 $scampos .='<td class="littletablerow" align="center">'.$campos['ith2o']['field']     .'</td>';
@@ -74,6 +76,8 @@ function del_itlrece(id){
 <table width='100%' cellspacing='0' cellpadding='0'>
 	<tr style='background:#030B7A;color:#FDFDFD;font-size:10pt;' id='__INPL__'>
 		<th align="center">Vaquera</th>
+		<th align="center">Denc</th>
+		<th align="center">Temp.</th>
 		<th align="center">Animal</th>
 		<th align="center">Acidez</th>
 		<th align="center">% Agua</th>
@@ -95,7 +99,7 @@ function del_itlrece(id){
 		$it_animal       = "itanimal_${i}";
 		$it_crios        = "itcrios_${i}";
 		$it_h2o          = "ith2o_${i}";
-		//$it_temp         = "ittemp_${i}";
+		$it_temp         = "ittemp_${i}";
 		$it_brix         = "itbrix_${i}";
 		$it_grasa        = "itgrasa_${i}";
 		$it_acidez       = "itacidez_${i}";
@@ -115,6 +119,8 @@ function del_itlrece(id){
 
 	<tr style='background:#E4E4E4;'  id='tr_itlrece_<?php echo $i ?>'>
 		<td align='left'><b><?php echo $form->$it_lvacacodigo->output.' '.$form->$it_lvacadescrip->output; ?></b></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_densidad->output;?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it_temp->output;    ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_animal->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_acidez->output;  ?></td>
 		<td class="littletablerow" align="center"><?php echo $form->$it_h2o->output;     ?></td>
