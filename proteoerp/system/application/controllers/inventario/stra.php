@@ -45,9 +45,10 @@ class Stra extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array('id'=>'boton1','img'=>'assets/default/images/print.png','alt'=> 'Imprimir transferencia', 'label'=>'Reimprimir Documento'));
 		$WestPanel = $grid->deploywestp();
 
++
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
@@ -86,7 +87,7 @@ class Stra extends Controller {
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				window.open(\''.site_url('formatos/ver/STRA').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
-			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
+			} else { $.prompt("<h1>Por favor Seleccione una tranferencia</h1>");}
 		});';
 
 		$bodyscript .= '
@@ -121,29 +122,41 @@ class Stra extends Controller {
 		$("#fedita").dialog({
 			autoOpen: false, height: 500, width: 700, modal: true,
 			buttons: {
-			"Guardar": function() {
-				var bValid = true;
-				var murl = $("#df1").attr("action");
-				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST", dataType: "html", async: false,
-					url: murl,
-					data: $("#df1").serialize(),
-					success: function(r,s,x){
-						if ( r.length == 0 ) {
-							apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/STRA').'/\'+res.id+\'/id\'').';
-							return true;
-						} else { 
-							$("#fedita").html(r);
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "text", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									$( "#fedita" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									'.$this->datasis->jwinopen(site_url('formatos/ver/STRA').'/\'+res.id+\'/id\'').';
+									apprise("Registro Guardado");
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#fedita").html(r);
+							}
 						}
-					}
-			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
+					})
+				},
+				"Cancelar": function() {
+					$("#fedita").html("");
+					$( this ).dialog( "close" );
+				}
 			},
-			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			close: function() {
+				$("#fedita").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
 		});';
 		$bodyscript .= '});'."\n";
 
@@ -442,8 +455,7 @@ class Stra extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -457,8 +469,7 @@ class Stra extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -468,7 +479,7 @@ class Stra extends Controller {
 
 		unset($data['oper']);
 		unset($data['id']);
-		
+
 		if($oper == 'edit'){
 			$numero = $data['numero'];
 			unset($data['numero']);
@@ -706,8 +717,7 @@ class Stra extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait($id = 0)
-	{
+	function getdatait($id = 0){
 
 
 		if ($id === 0 ){
@@ -727,8 +737,7 @@ class Stra extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setDatait()
-	{
+	function setDatait(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -1030,6 +1039,7 @@ class stra extends Controller {
 
 		$edit->fecha = new  dateonlyField('Fecha', 'fecha');
 		$edit->fecha->rule='required|chfecha';
+		$edit->fecha->calendar=false;
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->size =12;
 
@@ -1083,25 +1093,24 @@ class stra extends Controller {
 		$edit->buttons('save', 'undo', 'add','back','add_rel');
 
 		if($this->genesal){
-			$edit->build();
-			$conten['form']  =& $edit;
-			//$data['style']   = style('redmond/jquery-ui.css');
-
-			//$data['script']  = script('jquery.js');
-			//$data['script'] .= script('jquery-ui.js');
-			//$data['script'] .= script("jquery-impromptu.js");
-			//$data['script'] .= script('plugins/jquery.numeric.pack.js');
-			//$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-			//$data['script'] .= script('plugins/jquery.floatnumber.js');
-			//$data['script'] .= phpscript('nformat.js');
-			$data['content'] = $this->load->view('view_stra', $conten, false);
-			//$data['title']   = heading('Transferencias de inventario');
-			//$data['head']    = $this->rapyd->get_head();
-			//$this->load->view('view_ventanas', $data);
-		}else{
 			$edit->on_save_redirect=false;
 			$edit->build();
 
+			if($edit->on_success()){
+				$rt=array(
+						'status' =>'A',
+						'mensaje'=>'Registro guardado',
+						'pk'     =>$edit->_dataobject->pk
+					);
+
+				echo json_encode($rt);
+			}else{
+				$conten['form']  =& $edit;
+				$data['content'] = $this->load->view('view_stra', $conten, false);
+			}
+		}else{
+			$edit->on_save_redirect=false;
+			$edit->build();
 			if($edit->on_success()){
 				$rt= 'Transferencia Guardada';
 			}elseif($edit->on_error()){
@@ -1227,7 +1236,7 @@ class stra extends Controller {
 		$edit->cantidad->size     =10;
 		//Fin del detalle
 
-		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		$edit->estampa = new autoUpdateField('estampa',date('Ymd'), date('Ymd'));
 		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
@@ -1277,6 +1286,103 @@ class stra extends Controller {
 		$this->validation->set_message('chordp','No existe una orden de producci&oacute;n abierta con el n&uacute;mero '.$numero);
 		return false;
 	}
+
+	//Hace la consolidacion del cierre de los productos lacteos
+	function consolidar($id){
+		$dbid     = $this->db->escape($id);
+		$fecha    = $this->datasis->dameval('SELECT fecha FROM lcierre WHERE id='.$dbid);
+		$dbfecha  = $this->db->escape($fecha);
+		$sinvlec = $this->datasis->damerow('SELECT codigo,descrip FROM sinv WHERE descrip LIKE \'%LECHE%CRUDA%\' LIMIT 1');
+		$almacen  = '0001';
+
+		$inventario= $this->datasis->dameval("SELECT SUM(inventario)        AS val FROM lprod WHERE fecha=$dbfecha");
+		$recibido  = $this->datasis->dameval("SELECT SUM(lista)             AS val FROM lrece WHERE fecha=$dbfecha");
+		$producido = $this->datasis->dameval("SELECT SUM(litros-inventario) AS val FROM lprod WHERE fecha=$dbfecha");
+
+		$enfria = $recibido-$producido;
+
+		$this->genesal=false;
+		$mSQL="INSERT IGNORE INTO caub  (ubica,ubides,gasto) VALUES ('PROD','ALMACEN DE PRODUCCION','S')";
+		$this->db->simple_query($mSQL);
+
+		//Saca los productos realizados
+		$_POST=array(
+			'btn_submit' => 'Guardar',
+			'envia'      => 'PROD',
+			'fecha'      => date('d/m/Y'),
+			'recibe'     => $almacen,
+			'observ1'    => 'PRODUCCION DE LACTEOS '.$id
+		);
+
+		$sel=array('a.codigo','b.descrip','a.peso');
+		$this->db->select($sel);
+		$this->db->from('itlcierre AS a');
+		$this->db->join('sinv AS b','a.codigo=b.codigo');
+		$this->db->where('a.id_lcierre' , $id);
+		$mSQL_2 = $this->db->get();
+		$row =$mSQL_2->result();
+
+		foreach ($row as $ind=>$itrow){
+			$ind='codigo_'.$ind;
+			$_POST[$ind] = $itrow->codigo;
+			$ind='descrip_'.$ind;
+			$_POST[$ind] = $itrow->descrip;
+			$ind='cantidad_'.$ind;
+			$_POST[$ind] = $itrow->peso;
+		}
+		//Mete la leche sobrante del dia a inventario
+		if($enfria > 0){
+			$ind++;
+			$ind='codigo_'.$ind;
+			$_POST[$ind] = $sinvlec['codigo'];
+			$ind='descrip_'.$ind;
+			$_POST[$ind] = $sinvlec['descrip'];
+			$ind='cantidad_'.$ind;
+			$_POST[$ind] = $enfria ;
+		}
+		//Fin de la leche sobrante
+
+		$rt=$this->dataedit();
+		if(strripos($rt,'Guardada')){
+			$data = array('status' => 'C');
+			$this->db->where('id', $id);
+			$this->db->update('lcierre', $data);
+		}
+		//fin de los productos realizados
+
+		//Limpia las validaciones
+		$this->validation->_error_array    = array();
+		$this->validation->_rules          = array();
+		$this->validation->_fields         = array();
+		$this->validation->_error_messages = array();
+		//Fin de la limpieza de validaciones
+
+		//Consume la leche usada de inventario
+		if($inventario>0){
+			$_POST=array(
+				'btn_submit' => 'Guardar',
+				'envia'      => 'PROD',
+				'fecha'      => date('d/m/Y'),
+				'recibe'     => $almacen,
+				'observ1'    => 'PRODUCCION DE LACTEOS '.$id.' CONSUMO DE LECHE'
+			);
+
+			$ind=0;
+			$ind='codigo_'.$ind;
+			$_POST[$ind] = $sinvlec['codigo'];
+			$ind='descrip_'.$ind;
+			$_POST[$ind] = $sinvlec['descrip'];
+			$ind='cantidad_'.$ind;
+			$_POST[$ind] = $enfria ;
+
+			$rt=$this->dataedit();
+			if(strripos($rt,'Guardada')){
+			}
+		}
+		//Fin de la leche usada en inventario
+
+	}
+
 
 	//Hace la reservacion del material para una orden de produccion
 	function creadordp($id_ordp){

@@ -13,7 +13,9 @@ class Lcierre extends Controller {
 	}
 
 	function index(){
-
+		$this->instalar();
+		$mSQL="INSERT IGNORE INTO caub (ubica,ubides,gasto) VALUES ('PROD','ALMACEN DE PRODUCCION','S')";
+		$this->db->simple_query($mSQL);
 		//$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		$this->datasis->creaintramenu(array('modulo'=>'224','titulo'=>'Cierre de Producción','mensaje'=>'Cierre de Producción','panel'=>'LECHE','ejecutar'=>'leche/lcierre','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
@@ -40,7 +42,8 @@ class Lcierre extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array('id'=>'imprime'   ,'img'=>'assets/default/images/print.png','alt' => 'Reimprimir'       ,'label'=>'Reimprimir Documento'));
+		$grid->wbotonadd(array('id'=>'bconsolida','img'=>'images/candado.png'             ,'alt' => 'Consolidar cierre','label'=>'Consolidar'          ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -123,13 +126,18 @@ class Lcierre extends Controller {
 					url: murl,
 					data: $("#df1").serialize(),
 					success: function(r,s,x){
-						if ( r.length == 0 ) {
-							apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/LCIERRE').'/\'+res.id+\'/id\'').';
-							return true;
-						} else {
+						try{
+							var json = JSON.parse(r);
+							if (json.status == "A"){
+								apprise("Registro Guardado");
+								$( "#fedita" ).dialog( "close" );
+								grid.trigger("reloadGrid");
+								//'.$this->datasis->jwinopen(site_url('formatos/ver/LCIERRE').'/\'+res.id+\'/id\'').';
+								return true;
+							} else {
+								apprise(json.mensaje);
+							}
+						}catch(e){
 							$("#fedita").html(r);
 						}
 					}
@@ -138,6 +146,20 @@ class Lcierre extends Controller {
 			},
 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
+
+		$bodyscript .= '
+		jQuery("#bconsolida").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret      = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+
+				//var idcierre = $.ajax({ type: "POST", url: "'.site_url($this->url.'getcierre').'/"+ret.fecha, async: false }).responseText;
+
+			} else {
+				$.prompt("<h1>Por favor Seleccione el cierre que desea consolidar</h1>");
+			}
+		});';
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
@@ -412,7 +434,7 @@ class Lcierre extends Controller {
 
 		$grid  = new $this->jqdatagrid;
 
-		$grid->addField('id');
+		/*$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
 			'align'         => "'center'",
@@ -435,11 +457,11 @@ class Lcierre extends Controller {
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
-		));
+		));*/
 
 
 		$grid->addField('codigo');
-		$grid->label('Codigo');
+		$grid->label('C&oacute;digo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -451,7 +473,7 @@ class Lcierre extends Controller {
 
 
 		$grid->addField('descrip');
-		$grid->label('Descrip');
+		$grid->label('Descripci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -461,6 +483,19 @@ class Lcierre extends Controller {
 			'editoptions'   => '{ size:45, maxlength: 45 }',
 		));
 
+		$grid->addField('peso');
+		$grid->label('Producido (Peso)');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
 
 		$grid->addField('unidades');
 		$grid->label('Unidades');
@@ -491,28 +526,39 @@ class Lcierre extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
-		$grid->addField('peso');
-		$grid->label('Peso');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
 		$grid->setShrinkToFit('false');
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdatait/'));
 
 		#GET url
 		$grid->setUrlget(site_url($this->url.'getdatait/'));
+
+		$grid->setOnSelectRow('
+			function(id){if (id){var ret = 0;}}
+			,cellEdit: true
+			,cellsubmit: "remote"
+			,cellurl: "'.site_url($this->url.'setdatait/').'"
+			,afterSaveCell: function(r,n,v,ir,ic) {
+				var id = $(gridId1).jqGrid(\'getGridParam\',\'selrow\');
+ 				$(gridId1).trigger("reloadGrid");
+ 				//$(gridId1).loadComplete);
+				$(gridId1).setSelection(id,false);
+			}
+		');
+
+		$grid->setOndblClickRow("");
+
+		$grid->setFormOptionsE('');
+		$grid->setFormOptionsA('');
+		$grid->setAfterSubmit('');
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(true);
+		$grid->setDelete(false);
+		$grid->setSearch(false);
+		$grid->setRowNum(90);
+		$grid->setShrinkToFit('false');
 
 		if ($deployed) {
 			return $grid->deploy();
@@ -542,12 +588,34 @@ class Lcierre extends Controller {
 	* Guarda la Informacion
 	*/
 	function setDatait(){
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+
+		if($oper == 'add'){
+			echo 'Operaci&oacute;n no permitida';
+		}elseif($oper == 'edit'){
+			if(is_numeric($data['peso'])){
+				$this->db->where('id', $id);
+				$this->db->update('itlcierre', $data);
+				logusu('LRECE',"Registro $id MODIFICADO");
+				echo 'Registro Modificado';
+			}else{
+				echo 'Valor no permitido';
+			}
+		} elseif($oper == 'del') {
+			echo 'Operaci&oacute;n no permitida';
+		};
 	}
 
 	//***********************************
 	// DataEdit
 	//***********************************
-
 	function dataedit($urlfecha=null){
 		$semana=array('DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES');
 
@@ -598,83 +666,44 @@ class Lcierre extends Controller {
 		$edit->usuario = new autoUpdateField('usuario', $this->secu->usuario(), $this->secu->usuario());
 
 		//Inicio del detalle
-		$i  = 0;
 		$rel= 'itlcierre';
-		$id = $edit->get_from_dataobjetct('id');
 
-		if($id){
-			$sel=array('a.codigo','a.descrip');
-			$this->db->select($sel);
-			$this->db->from('itlcierre AS a');
-			$this->db->where('a.id_lcierre',$id);
-			$this->db->order_by('a.codigo');
-		}else{
-			$sel=array('a.codigo','a.descrip');
-			$this->db->select($sel);
-			$this->db->from('lprod AS a');
-			$this->db->where('a.fecha',$fecha);
-			$this->db->group_by('a.codigo');
-			$this->db->order_by('a.codigo');
-		}
+		$edit->itcodigo = new inputField('Codigo','itcodigo_<#i#>');
+		$edit->itcodigo->db_name = 'codigo';
+		$edit->itcodigo->rule='max_length[15]|required';
+		$edit->itcodigo->size =7;
+		$edit->itcodigo->maxlength =4;
+		$edit->itcodigo->rel_id = $rel;
 
-		$query = $this->db->get();
-		$edit->detail_expand_except($rel);
-		foreach ($query->result() as $row){
-			$obj='itcodigo_'.$i;
-			$edit->$obj = new inputField('Codigo',$obj);
-			$edit->$obj->db_name = 'codigo';
-			$edit->$obj->rule='max_length[15]|required';
-			$edit->$obj->size =7;
-			$edit->$obj->insertValue=$row->codigo;
-			$edit->$obj->type='inputhidden';
-			$edit->$obj->maxlength =4;
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
+		$edit->itdescrip = new inputField('','itdescrip_<#i#>');
+		$edit->itdescrip->db_name = 'descrip';
+		$edit->itdescrip->type='inputhidden';
+		$edit->itdescrip->rel_id = $rel;
 
-			$obj='itdescrip_'.$i;
-			$edit->$obj = new inputField('',$obj);
-			$edit->$obj->db_name = 'descrip';
-			$edit->$obj->type='inputhidden';
-			$edit->$obj->insertValue=$row->descrip;
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
+		$edit->itcestas = new inputField('Cestas','itcestas_<#i#>');
+		$edit->itcestas->db_name = 'cestas';
+		$edit->itcestas->rule='max_length[12]|numeric|required';
+		$edit->itcestas->css_class='inputnum';
+		$edit->itcestas->size =14;
+		$edit->itcestas->maxlength =12;
+		$edit->itcestas->rel_id = $rel;
 
-			$obj='itcestas_'.$i;
-			$edit->$obj = new inputField('Cestas',$obj);
-			$edit->$obj->db_name = 'cestas';
-			$edit->$obj->rule='max_length[12]|numeric|required';
-			$edit->$obj->css_class='inputnum';
-			$edit->$obj->size =14;
-			$edit->$obj->maxlength =12;
-			$edit->$obj->onkeyup='totalizar();';
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
+		$edit->itunidades = new inputField('Unidades','itunidades_<#i#>');
+		$edit->itunidades->db_name = 'unidades';
+		$edit->itunidades->rule='max_length[12]|numeric|required';
+		$edit->itunidades->css_class='inputnum';
+		$edit->itunidades->size =14;
+		$edit->itunidades->maxlength =12;
+		$edit->itunidades->rel_id = $rel;
 
-			$obj='itunidades_'.$i;
-			$edit->$obj = new inputField('Unidades',$obj);
-			$edit->$obj->db_name = 'unidades';
-			$edit->$obj->rule='max_length[12]|numeric|required';
-			$edit->$obj->css_class='inputnum';
-			$edit->$obj->size =14;
-			$edit->$obj->maxlength =12;
-			$edit->$obj->onkeyup='totalizar();';
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
-
-			$obj='itpeso_'.$i;
-			$edit->$obj = new inputField('Producido (Peso)',$obj);
-			$edit->$obj->db_name = 'peso';
-			$edit->$obj->rule='max_length[12]|numeric';
-			$edit->$obj->css_class='inputnum';
-			$edit->$obj->size =14;
-			$edit->$obj->maxlength =12;
-			$edit->$obj->rel_id = $rel;
-			$edit->$obj->ind    = $i;
-			$edit->$obj->when   = array('modify','show');
-
-			$i++;
-		}
-		$max_rel_count = $i;
+		$edit->itpeso = new inputField('Producido (Peso)','itpeso_<#i#>');
+		$edit->itpeso->db_name = 'peso';
+		$edit->itpeso->rule='max_length[12]|numeric';
+		$edit->itpeso->css_class='inputnum';
+		$edit->itpeso->size =14;
+		$edit->itpeso->maxlength =12;
+		$edit->itpeso->rel_id = $rel;
+		$edit->itpeso->when   = array('modify','show');
 		//Fin del detalle
 
 		$edit->buttons('add_rel');
@@ -689,7 +718,8 @@ class Lcierre extends Controller {
 			echo json_encode($rt);
 		}else{
 			//echo $edit->output;
-			$conten['max_rel_count']=$max_rel_count;
+			//$conten['max_rel_count']=$max_rel_count;
+			$conten['fecha'] = $fecha;
 			$conten['form']  =& $edit;
 			$this->load->view('view_lcierre', $conten);
 		}
@@ -704,10 +734,61 @@ class Lcierre extends Controller {
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Ya existe un cierre para el d&iacute;a '.dbdate_to_human($fecha).' no puede realizar otro.';
 			return false;
 		}
+
+		//Chequea que todos los insumos producidos esten en el cierrre
+		$sel=array('a.codigo');
+		$this->db->select($sel);
+		$this->db->from('lprod AS a');
+		$this->db->where('a.fecha',$fecha);
+		$this->db->group_by('a.codigo');
+		$produce_arr = array();
+		$query = $this->db->get();
+		foreach ($query->result() as $row){
+			$produce_arr[]=trim($row->codigo);
+		}
+		$cana=$do->count_rel('itlcierre');
+		for($i=0;$i<$cana;$i++){
+			$codigo = trim($do->get_rel('itlcierre','codigo' ,$i));
+			$key = array_search($codigo, $produce_arr);
+			if($key!==false){
+				unset($produce_arr[$key]);
+			}
+		}
+		if(count($produce_arr)>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert'] = 'Faltan productos en el cierre ('.implode(',',$produce_arr).')';
+			return false;
+		}
+		//Fin del chequeo
+
 		return true;
 	}
 
 	function _pre_update_lcierre($do){
+		//Chequea que todos los insumos producidos esten en el cierrre
+		$sel=array('a.codigo');
+		$this->db->select($sel);
+		$this->db->from('lprod AS a');
+		$this->db->where('a.fecha',$fecha);
+		$this->db->group_by('a.codigo');
+		$produce_arr = array();
+		$query = $this->db->get();
+		foreach ($query->result() as $row){
+			$produce_arr[]=trim($row->codigo);
+		}
+		$cana=$do->count_rel('itlcierre');
+		for($i=0;$i<$cana;$i++){
+			$codigo = trim($do->get_rel('itlcierre','codigo' ,$i));
+			$key = array_search($codigo, $produce_arr);
+			if($key!==false){
+				unset($produce_arr[$key]);
+			}
+		}
+		if(count($produce_arr)>0){
+			$do->error_message_ar['pre_upd'] = $do->error_message_ar['update'] = 'Faltan productos en el cierre ('.implode(',',$produce_arr).')';
+			return false;
+		}
+		//Fin del chequeo
+
 		return true;
 	}
 
@@ -716,18 +797,6 @@ class Lcierre extends Controller {
 	}
 
 	function _post_insert_lcierre($do){
-		$fecha    = $do->get('fecha');
-		$dbfecha  = $this->escape($fecha);
-
-		$recibido = $this->datasis->dameval("SELECT SUM(lista)  AS reci FROM lrece WHERE fecha=$dbfecha");
-		$producido= $this->datasis->dameval("SELECT SUM(litros) AS prod FROM lprod WHERE fecha=$dbfecha");
-
-		$enfria = $recibido-$producido;
-		//Suma en el inventario
-		if($enfria>0){
-
-		}
-
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits $primary ");
 	}
@@ -740,5 +809,50 @@ class Lcierre extends Controller {
 	function _post_delete_lcierre($do){
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
+	}
+
+	function instalar(){
+		if(!$this->db->table_exists('lcierre')){
+			$mSQL = "CREATE TABLE `lcierre` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`fecha` DATE NULL DEFAULT NULL,
+				`dia` VARCHAR(50) NULL DEFAULT NULL,
+				`status` CHAR(1) NULL DEFAULT 'A',
+				`recepcion` DECIMAL(12,2) NULL DEFAULT NULL,
+				`enfriamiento` DECIMAL(12,2) NULL DEFAULT NULL,
+				`requeson` DECIMAL(12,2) NULL DEFAULT NULL,
+				`requesonteorico` DECIMAL(12,2) NULL DEFAULT NULL,
+				`requesonreal` DECIMAL(12,2) NULL DEFAULT NULL,
+				`usuario` VARCHAR(50) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			)
+			COMMENT='Cierre de produccion de lacteos'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->table_exists('itlcierre')){
+			$mSQL = "CREATE TABLE `itlcierre` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`id_lcierre` INT(10) NULL DEFAULT NULL,
+				`codigo` VARCHAR(15) NULL DEFAULT NULL,
+				`descrip` VARCHAR(45) NULL DEFAULT NULL,
+				`unidades` DECIMAL(10,2) NULL DEFAULT NULL,
+				`cestas` DECIMAL(10,2) NULL DEFAULT NULL,
+				`peso` DECIMAL(10,2) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`),
+				INDEX `id_lcierre` (`id_lcierre`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
+		}
+
+		$campos=$this->db->list_fields('lcierre');
+		if (!in_array('status',$campos)){
+			$mSQL="ALTER TABLE `lcierre` ADD COLUMN `status` CHAR(1) NULL DEFAULT 'A' AFTER `dia`;";
+			$this->db->simple_query($mSQL);
+		}
 	}
 }

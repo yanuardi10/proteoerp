@@ -6,9 +6,9 @@ $id   = $parametros[0];
 $dbid = $this->db->escape($id);
 
 $mSQL = "
-SELECT If(a.referen='E','Efectivo',IF( a.referen='C','Cr&eacute;dito',IF(a.referen='M','Mixto','Pendiente'))) AS referen,
+SELECT If(a.referen='E','Efectivo',IF( a.referen='C','Cr&eacute;dito',IF(a.referen='M','Mixto','Pendiente'))) AS referen,a.nfiscal,
 	a.tipo_doc,a.numero,a.cod_cli,a.nombre,a.rifci,CONCAT(trim(c.dire11),' ', c.dire12) AS direccion,a.factura,a.fecha,a.vence,a.vd,
-	a.iva,a.totals,a.totalg, a.exento,a.tasa, a.montasa, a.reducida, a.monredu, a.sobretasa,a.monadic, b.nombre AS nomvend,tipo_doc, 
+	a.iva,a.totals,a.totalg, a.exento,a.tasa, a.montasa, a.reducida, a.monredu, a.sobretasa,a.monadic, b.nombre AS nomvend,tipo_doc,
 	a.numero,a.peso,c.telefono, a.observa,a.observ1
 FROM sfac a JOIN scli AS c ON a.cod_cli=c.cliente LEFT JOIN vend b ON a.vd=b.vendedor
 WHERE a.id=${dbid}";
@@ -38,11 +38,11 @@ $monadic   = nformat($row->monadic);
 $peso     = nformat($row->peso);
 $impuesto = nformat($row->iva);
 $direc    = trim($row->direccion);
-$direc    = $row->direccion;
-$tipo_doc = $row->tipo_doc;
-$referen  = $row->referen;
+$tipo_doc = trim($row->tipo_doc);
+$referen  = trim($row->referen);
+$nfiscal  = trim($row->nfiscal);
 $telefono = trim($row->telefono);
-$nomvend  = $row->nomvend;
+$nomvend  = trim($row->nomvend);
 $factura  = ($tipo_doc=='D')? $row->factura :'';
 
 $dbtipo_doc = $this->db->escape($tipo_doc);
@@ -267,7 +267,7 @@ foreach ($detalle AS $items){ $i++;
 
 for(1;$lineas<$maxlin;$lineas++){ ?>
 			<tr class="<?php if(!$mod) echo 'even_row'; else  echo 'odd_row'; ?>">
-<?php 
+<?php
 	if(!empty($observa)){
 		echo "<td colspan='6' style='text-align: center;'>${observa}</td>";
 		$observa='';
@@ -290,4 +290,3 @@ echo $pie_final;
 ?>
 </body>
 </html>
-

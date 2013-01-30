@@ -62,7 +62,6 @@ class Lrece extends Controller {
 
 		//Botones Panel Izq
 		//$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"bcierre"  , "img"=>"images/candado.png","alt" => 'Cierre'  , "label"=>"Cierre"  ));
 		$grid->wbotonadd(array("id"=>"bagrega"  , "img"=>"images/vaca.png","alt" => 'Agrega'  , "label"=>'Agregar Vaquera'  ));
 		$WestPanel = $grid->deploywestp();
 
@@ -914,7 +913,7 @@ class Lrece extends Controller {
 		));
 
 		$grid->addField('dtoagua');
-		$grid->label('Dto. Agua');
+		$grid->label('Dto.Agua');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1855,12 +1854,6 @@ class Lrece extends Controller {
 			echo $edit->output;
 		}
 	}
-
-
-	function cierre(){
-		echo 'En construcci&oacute;n';
-	}
-
 
 	//Pre y Pos para la apertura
 	function _pre_itvaqueras_insert($do){
