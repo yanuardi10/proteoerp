@@ -77,6 +77,7 @@ class Pedidos extends Controller {
 
 		//$grid->column_orderby('C&oacute;digo','codigoa','control');
 		$grid->column('Pedir' ,'<descheck><#barras#>|<#pedir#></descheck>');
+		$grid->column('C&oacute;digo'  ,'codigoa');
 		$grid->column_orderby('Barras'  ,'barras','barras');
 		$grid->column_orderby('Descripci&oacute;n'   ,'desca','desca');
 		$grid->column('Trimestral','<nformat><#trimestral#>|0</nformat>','align=\'right\'' );
