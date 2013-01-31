@@ -32,7 +32,7 @@ class Pedidos extends Controller {
 		$filter->db->join('farmaxasig AS d','a.codigoa=d.abarras');
 
 		$filter->db->where('b.existen <= b.exmin ');
-		$filter->db->where('a.fecha = curdate() and c.fecha >= curdate() - 90');
+		$filter->db->where('a.fecha = CURDATE() AND c.fecha >= DATE_ADD( CURDATE(), INTERVAL -90 DAY)');
 
 		$filter->db->groupby('a.codigoa');
 		$filter->db->having('pedir > 0');
