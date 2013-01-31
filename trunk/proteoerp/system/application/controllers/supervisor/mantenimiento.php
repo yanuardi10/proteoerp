@@ -1006,8 +1006,9 @@ function bobo(url){'."
 		unlink($file);
 	}
 
-	function puertosdir(){
+	function puertosdir($obj=null){
 		$this->load->helper('download');
+
 		if (extension_loaded('dbase')) {
 			$def = array(
 			    array('FORMA'  , 'C',  10),
@@ -1020,7 +1021,11 @@ function bobo(url){'."
 				$query = $this->db->query('SELECT nombre FROM formatos UNION SELECT nombre FROM reportes');
 				if ($query->num_rows() > 0){
 					foreach ($query->result() as $row){
-						$pivot=array($row->nombre,'C:\\spool\\'.$row->nombre.'.TXT','');
+						if(is_null($bj)){
+							$pivot=array($row->nombre,'C:\\spool\\'.$row->nombre.'.TXT','');
+						}else{
+							$pivot=array($row->nombre,$obj,'');
+						}
 						dbase_add_record($db, $pivot);
 					}
 				}

@@ -792,133 +792,6 @@ class Stra extends Controller {
 		};
 	}
 
-
-
-/*
-	function dataedit(){
-		$this->rapyd->load('dataedit');
-
-		$edit = new DataEdit($this->tits, 'stra');
-
-		$edit->back_url = site_url($this->url.'filteredgrid');
-
-		$edit->post_process('insert','_post_insert');
-		$edit->post_process('update','_post_update');
-		$edit->post_process('delete','_post_delete');
-		$edit->pre_process('insert','_pre_insert');
-		$edit->pre_process('update','_pre_update');
-		$edit->pre_process('delete','_pre_delete');
-
-		$edit->numero = new inputField('Numero','numero');
-		$edit->numero->rule='max_length[8]';
-		$edit->numero->size =10;
-		$edit->numero->maxlength =8;
-
-		$edit->fecha = new dateField('Fecha','fecha');
-		$edit->fecha->rule='chfecha';
-		$edit->fecha->size =10;
-		$edit->fecha->maxlength =8;
-
-		$edit->envia = new inputField('Envia','envia');
-		$edit->envia->rule='max_length[4]';
-		$edit->envia->size =6;
-		$edit->envia->maxlength =4;
-
-		$edit->recibe = new inputField('Recibe','recibe');
-		$edit->recibe->rule='max_length[4]';
-		$edit->recibe->size =6;
-		$edit->recibe->maxlength =4;
-
-		$edit->observ1 = new inputField('Observ1','observ1');
-		$edit->observ1->rule='max_length[30]';
-		$edit->observ1->size =32;
-		$edit->observ1->maxlength =30;
-
-		$edit->observ2 = new inputField('Observ2','observ2');
-		$edit->observ2->rule='max_length[30]';
-		$edit->observ2->size =32;
-		$edit->observ2->maxlength =30;
-
-		$edit->totalg = new inputField('Totalg','totalg');
-		$edit->totalg->rule='max_length[14]|numeric';
-		$edit->totalg->css_class='inputnum';
-		$edit->totalg->size =16;
-		$edit->totalg->maxlength =14;
-
-		$edit->tratot = new inputField('Tratot','tratot');
-		$edit->tratot->rule='max_length[14]|numeric';
-		$edit->tratot->css_class='inputnum';
-		$edit->tratot->size =16;
-		$edit->tratot->maxlength =14;
-
-		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
-
-		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
-
-		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
-
-		$edit->transac = new inputField('Transac','transac');
-		$edit->transac->rule='max_length[8]';
-		$edit->transac->size =10;
-		$edit->transac->maxlength =8;
-
-		$edit->gasto = new inputField('Gasto','gasto');
-		$edit->gasto->rule='max_length[5]';
-		$edit->gasto->size =7;
-		$edit->gasto->maxlength =5;
-
-		$edit->numeen = new inputField('Numeen','numeen');
-		$edit->numeen->rule='max_length[8]';
-		$edit->numeen->size =10;
-		$edit->numeen->maxlength =8;
-
-		$edit->numere = new inputField('Numere','numere');
-		$edit->numere->rule='max_length[8]';
-		$edit->numere->size =10;
-		$edit->numere->maxlength =8;
-
-		$edit->ordp = new inputField('Ordp','ordp');
-		$edit->ordp->rule='max_length[8]';
-		$edit->ordp->size =10;
-		$edit->ordp->maxlength =8;
-
-		$edit->esta = new inputField('Esta','esta');
-		$edit->esta->rule='max_length[5]';
-		$edit->esta->size =7;
-		$edit->esta->maxlength =5;
-
-		$edit->modificado = new inputField('Modificado','modificado');
-		$edit->modificado->rule='max_length[8]';
-		$edit->modificado->size =10;
-		$edit->modificado->maxlength =8;
-
-		$edit->build();
-
-		$script= '';
-
-		$data['content'] = $edit->output;
-		$data['script'] = $script;
-		$this->load->view('jqgrid/ventanajq', $data);
-
-	}
-
-	function _pre_insert($do){
-		return true;
-	}
-
-	function _pre_update($do){
-		return true;
-	}
-
-	function _pre_delete($do){
-		return true;
-	}
-
-	function _post_insert($do){
-		$primary =implode(',',$do->pk);
-		logusu($do->table,"Creo $this->tits $primary ");
-	}
-
 	function _post_update($do){
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Modifico $this->tits $primary ");
@@ -929,65 +802,6 @@ class Stra extends Controller {
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
 
-
-class stra extends Controller {
-
-	var $genesal=true;
-
-	function stra(){
-		parent::Controller();
-		$this->load->library('rapyd');
-		$this->datasis->modulo_id('302',1);
-		$this->back_dataedit='inventario/stra/filteredgrid';
-	}
-
-	function index(){
-		redirect('inventario/stra/filteredgrid');
-	}
-
-	function filteredgrid(){
-		$this->rapyd->load('datafilter','datagrid');
-
-		$filter = new DataFilter('Filtro de Transferencias','stra');
-
-		$filter->numero = new inputField('N&uacute;mero', 'numero');
-		$filter->numero->size=15;
-
-		$filter->fecha = new dateonlyField('Fecha', 'fecha');
-		$filter->fecha->size=12;
-
-		$filter->envia = new inputField('Env&iacute;a', 'envia');
-		$filter->envia->size=12;
-
-		$filter->recibe = new inputField('Recibe', 'recibe');
-		$filter->recibe->size=12;
-
-		$filter->buttons('reset','search');
-		$filter->build();
-
-		$uri = anchor('inventario/stra/dataedit/show/<#numero#>','<#numero#>');
-
-		$grid = new DataGrid('Lista de Transferencias');
-		$grid->order_by('numero','desc');
-		$grid->per_page = 15;
-		$grid->use_function("substr");
-
-		$grid->column_orderby('N&uacute;mero',$uri,'numero');
-		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
-		$grid->column_orderby('Env&iacute;a','envia','envia');
-		$grid->column_orderby('Recibe','recibe','recibe');
-		$grid->column_orderby('Observaci&oacute;n','observ1','observ1');
-
-		//echo $grid->db->last_query();
-		$grid->add('inventario/stra/dataedit/create');
-		$grid->build();
-
-		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = heading('Transferencias de inventario');
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
-*/
 
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
@@ -1290,97 +1104,102 @@ class stra extends Controller {
 	//Hace la consolidacion del cierre de los productos lacteos
 	function consolidar($id){
 		$dbid     = $this->db->escape($id);
-		$fecha    = $this->datasis->dameval('SELECT fecha FROM lcierre WHERE id='.$dbid);
-		$dbfecha  = $this->db->escape($fecha);
-		$sinvlec = $this->datasis->damerow('SELECT codigo,descrip FROM sinv WHERE descrip LIKE \'%LECHE%CRUDA%\' LIMIT 1');
-		$almacen  = '0001';
 
-		$inventario= $this->datasis->dameval("SELECT SUM(inventario)        AS val FROM lprod WHERE fecha=$dbfecha");
-		$recibido  = $this->datasis->dameval("SELECT SUM(lista)             AS val FROM lrece WHERE fecha=$dbfecha");
-		$producido = $this->datasis->dameval("SELECT SUM(litros-inventario) AS val FROM lprod WHERE fecha=$dbfecha");
+		$lcierre_cana=$this->datasis->dameval('SELECT COUNT(*) FROM lcierre WHERE id='.$dbid);
+		if($lcierre_cana>0){
+			$fecha    = $this->datasis->dameval('SELECT fecha FROM lcierre WHERE id='.$dbid);
+			$dbfecha  = $this->db->escape($fecha);
+			$sinvlec = $this->datasis->damerow('SELECT codigo,descrip FROM sinv WHERE descrip LIKE \'%LECHE%CRUDA%\' LIMIT 1');
+			$almacen  = '0001';
 
-		$enfria = $recibido-$producido;
+			$inventario= $this->datasis->dameval("SELECT SUM(inventario)        AS val FROM lprod WHERE fecha=$dbfecha");
+			$recibido  = $this->datasis->dameval("SELECT SUM(lista)             AS val FROM lrece WHERE fecha=$dbfecha");
+			$producido = $this->datasis->dameval("SELECT SUM(litros-inventario) AS val FROM lprod WHERE fecha=$dbfecha");
 
-		$this->genesal=false;
-		$mSQL="INSERT IGNORE INTO caub  (ubica,ubides,gasto) VALUES ('PROD','ALMACEN DE PRODUCCION','S')";
-		$this->db->simple_query($mSQL);
+			$enfria = $recibido-$producido;
 
-		//Saca los productos realizados
-		$_POST=array(
-			'btn_submit' => 'Guardar',
-			'envia'      => 'PROD',
-			'fecha'      => date('d/m/Y'),
-			'recibe'     => $almacen,
-			'observ1'    => 'PRODUCCION DE LACTEOS '.$id
-		);
+			$this->genesal=false;
+			$mSQL="INSERT IGNORE INTO caub  (ubica,ubides,gasto) VALUES ('PROD','ALMACEN DE PRODUCCION','S')";
+			$this->db->simple_query($mSQL);
 
-		$sel=array('a.codigo','b.descrip','a.peso');
-		$this->db->select($sel);
-		$this->db->from('itlcierre AS a');
-		$this->db->join('sinv AS b','a.codigo=b.codigo');
-		$this->db->where('a.id_lcierre' , $id);
-		$mSQL_2 = $this->db->get();
-		$row =$mSQL_2->result();
-
-		foreach ($row as $ind=>$itrow){
-			$ind='codigo_'.$ind;
-			$_POST[$ind] = $itrow->codigo;
-			$ind='descrip_'.$ind;
-			$_POST[$ind] = $itrow->descrip;
-			$ind='cantidad_'.$ind;
-			$_POST[$ind] = $itrow->peso;
-		}
-		//Mete la leche sobrante del dia a inventario
-		if($enfria > 0){
-			$ind++;
-			$ind='codigo_'.$ind;
-			$_POST[$ind] = $sinvlec['codigo'];
-			$ind='descrip_'.$ind;
-			$_POST[$ind] = $sinvlec['descrip'];
-			$ind='cantidad_'.$ind;
-			$_POST[$ind] = $enfria ;
-		}
-		//Fin de la leche sobrante
-
-		$rt=$this->dataedit();
-		if(strripos($rt,'Guardada')){
-			$data = array('status' => 'C');
-			$this->db->where('id', $id);
-			$this->db->update('lcierre', $data);
-		}
-		//fin de los productos realizados
-
-		//Limpia las validaciones
-		$this->validation->_error_array    = array();
-		$this->validation->_rules          = array();
-		$this->validation->_fields         = array();
-		$this->validation->_error_messages = array();
-		//Fin de la limpieza de validaciones
-
-		//Consume la leche usada de inventario
-		if($inventario>0){
+			//Saca los productos realizados
 			$_POST=array(
 				'btn_submit' => 'Guardar',
 				'envia'      => 'PROD',
 				'fecha'      => date('d/m/Y'),
 				'recibe'     => $almacen,
-				'observ1'    => 'PRODUCCION DE LACTEOS '.$id.' CONSUMO DE LECHE'
+				'observ1'    => 'PRODUCCION DE LACTEOS '.$id
 			);
 
-			$ind=0;
-			$ind='codigo_'.$ind;
-			$_POST[$ind] = $sinvlec['codigo'];
-			$ind='descrip_'.$ind;
-			$_POST[$ind] = $sinvlec['descrip'];
-			$ind='cantidad_'.$ind;
-			$_POST[$ind] = $enfria ;
+			$sel=array('a.codigo','b.descrip','a.peso');
+			$this->db->select($sel);
+			$this->db->from('itlcierre AS a');
+			$this->db->join('sinv AS b','a.codigo=b.codigo');
+			$this->db->where('a.id_lcierre' , $id);
+			$mSQL_2 = $this->db->get();
+			$row =$mSQL_2->result();
+
+			foreach ($row as $ind=>$itrow){
+				$ind='codigo_'.$ind;
+				$_POST[$ind] = $itrow->codigo;
+				$ind='descrip_'.$ind;
+				$_POST[$ind] = $itrow->descrip;
+				$ind='cantidad_'.$ind;
+				$_POST[$ind] = $itrow->peso;
+			}
+			//Mete la leche sobrante del dia a inventario
+			if($enfria > 0){
+				$ind++;
+				$ind='codigo_'.$ind;
+				$_POST[$ind] = $sinvlec['codigo'];
+				$ind='descrip_'.$ind;
+				$_POST[$ind] = $sinvlec['descrip'];
+				$ind='cantidad_'.$ind;
+				$_POST[$ind] = $enfria ;
+			}
+			//Fin de la leche sobrante
 
 			$rt=$this->dataedit();
 			if(strripos($rt,'Guardada')){
+				$data = array('status' => 'C');
+				$this->db->where('id', $id);
+				$this->db->update('lcierre', $data);
 			}
-		}
-		//Fin de la leche usada en inventario
+			//fin de los productos realizados
 
+			//Limpia las validaciones
+			$this->validation->_error_array    = array();
+			$this->validation->_rules          = array();
+			$this->validation->_fields         = array();
+			$this->validation->_error_messages = array();
+			//Fin de la limpieza de validaciones
+
+			//Consume la leche usada de inventario
+			if($inventario>0){
+				$_POST=array(
+					'btn_submit' => 'Guardar',
+					'envia'      => 'PROD',
+					'fecha'      => date('d/m/Y'),
+					'recibe'     => $almacen,
+					'observ1'    => 'PRODUCCION DE LACTEOS '.$id.' CONSUMO DE LECHE'
+				);
+
+				$ind=0;
+				$ind='codigo_'.$ind;
+				$_POST[$ind] = $sinvlec['codigo'];
+				$ind='descrip_'.$ind;
+				$_POST[$ind] = $sinvlec['descrip'];
+				$ind='cantidad_'.$ind;
+				$_POST[$ind] = $enfria ;
+
+				$rt=$this->dataedit();
+				if(strripos($rt,'Guardada')){
+				}
+			}
+			//Fin de la leche usada en inventario
+		}else{
+			echo 'Registro no encontrado';
+		}
 	}
 
 
@@ -1605,11 +1424,11 @@ class stra extends Controller {
 			$itcodigo  = $do->get_rel('itstra', 'codigo'  ,$i);
 			$dbitcodigo=$this->db->escape($itcodigo);
 
-			$mSQL="INSERT INTO itsinv (codigo,alma,existen) VALUES (${dbitcodigo},${dbenvia},-$itcana) ON DUPLICATE KEY UPDATE existen=existen-${itcana}";
+			$mSQL="INSERT INTO itsinv (codigo,alma,existen) VALUES (${dbitcodigo},${dbenvia},-${itcana}) ON DUPLICATE KEY UPDATE existen=existen-${itcana}";
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ memowrite($mSQL,'stra'); $error++;}
 
-			$mSQL="INSERT INTO itsinv (codigo,alma,existen) VALUES (${dbitcodigo},${dbrecibe},$itcana) ON DUPLICATE KEY UPDATE existen=existen+${itcana}";
+			$mSQL="INSERT INTO itsinv (codigo,alma,existen) VALUES (${dbitcodigo},${dbrecibe},${itcana}) ON DUPLICATE KEY UPDATE existen=existen+${itcana}";
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ memowrite($mSQL,'stra'); $error++;}
 		}
