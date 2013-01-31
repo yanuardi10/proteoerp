@@ -32,11 +32,13 @@ class Pedidos extends Controller {
 		$filter->db->join('farmaxasig AS d','a.codigoa=d.abarras');
 
 		$filter->db->where('b.existen <= b.exmin ');
-		$filter->db->where('a.fecha = CURDATE() AND c.fecha >= DATE_ADD( CURDATE(), INTERVAL -90 DAY)');
+		$filter->db->where('c.fecha >= DATE_ADD( CURDATE(), INTERVAL -90 DAY)');
 
 		$filter->db->groupby('a.codigoa');
 		$filter->db->having('pedir > 0');
-		if(!$this->rapyd->uri->is_set('search')) $filter->db->where('a.fecha',date('Y-m-d'));
+		if(!$this->rapyd->uri->is_set('search')){
+			 $filter->db->where('a.fecha',date('Y-m-d'));
+		 }
 
 		$filter->fecha = new dateonlyField('Fecha', 'fecha');
 		$filter->fecha->clause  ='where';
