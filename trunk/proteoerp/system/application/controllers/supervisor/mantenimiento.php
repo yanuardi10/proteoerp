@@ -1021,7 +1021,7 @@ function bobo(url){'."
 				$query = $this->db->query('SELECT nombre FROM formatos UNION SELECT nombre FROM reportes');
 				if ($query->num_rows() > 0){
 					foreach ($query->result() as $row){
-						if(is_null($bj)){
+						if(is_null($obj)){
 							$pivot=array($row->nombre,'C:\\spool\\'.$row->nombre.'.TXT','');
 						}else{
 							$pivot=array($row->nombre,$obj,'');
