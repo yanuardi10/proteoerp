@@ -500,3 +500,4 @@ class Lruta extends Controller {
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
 }
+?>

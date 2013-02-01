@@ -22,6 +22,7 @@ class Usuarios extends Controller {
 		if(!$this->datasis->iscampo('usuario','uuid')){
 			$this->db->simple_query("ALTER TABLE `usuario` ADD COLUMN `uuid` VARCHAR(100) NULL DEFAULT NULL COMMENT 'Dispositivo movil para pedidos' AFTER `activo`");
 		}
+		$this->db->simple_query('DELETE FROM sida USING sida LEFT JOIN usuario ON sida.usuario=usuario.us_codigo WHERE usuario.us_codigo IS NULL ');
 		redirect($this->url.'jqdatag');
 	}
 
@@ -34,92 +35,19 @@ class Usuarios extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".a1" ).button();
-});
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		$.get(\''.base_url().'supervisor/usuarios/cclave/\'+id ,function(data){
-			$.prompt(data,{
-				buttons: { Guardar: true, Cancelar: false },
-				focus: 1,
-				submit: function(e,v,m,f){
-					if ( v == true ){
-						if ( f.us_clave1 == f.us_clave ){
-							$(\'#fclave\').submit();
-						} else {
-							m.children(\'#error\').html("ERROR: Claves Diferentes!!! intente de nuevo...");
-							return false;
-						}
-					}
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"camclave",   "img"=>"images/candado.png",  "alt" => "Cambiar Clave", "label"=>"Cambiar Clave"));
+		$WestPanel = $grid->deploywestp();
 
-				}
-/*
-				callback: function(e,v,m,f){
-					if ( v == true ){
-						if ( f.us_clave1 == f.us_clave ){
-							$(\'#fclave\').submit();
-						} else {
-							m.children(\'#error\').html("Claves Diferentes!!!");
-							return false;
-						}
-					}
-				}
-*/
-				}
-			);
-		})
-		//window.open(\''.base_url().'supervisor/usuarios/cclave/modify/\'+id, \'_blank\', \'width=400,height=300,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else {
-		$.prompt("<h2>Por favor Seleccione un Usuario</h2>");}
-});
-</script>
-';
-//supervisor/usuarios/cclave/modify/<#us_codigo#>
+		$adic = array(
+			array("id"=>"fedita",  "title"=>"Agregar/Editar Usuario"),
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
-		#Set url
-		$grid->setUrlput(site_url($this->url.'setdata/'));
-
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
-
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-
-</table>
-
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="a1"><a style="width:190px" href="#" id="a1">Cambiar Clave</a></div></td>
-	</tr>
-</table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
-';
-
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
-
-		$funciones = '
-//$("select#vendedor").selectmenu({style:"popup"});
-		';
-
+		$funciones = '';
 
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -135,6 +63,48 @@ jQuery("#a1").click( function(){
 		$param['encabeza'] = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
 	}
+
+
+	//*******************************
+	// Body Script
+	//*******************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		$(function() {
+			$( "input:submit, a, button", ".a1" ).button();
+		});
+		jQuery("#camclave").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'. $grid0.'").jqGrid(\'getRowData\',id);
+				$.get(\''.base_url().'supervisor/usuarios/cclave/\'+id ,function(data){
+					$.prompt(data,{
+						buttons: { Guardar: true, Cancelar: false },
+						focus: 1,
+						submit: function(e,v,m,f){
+							if ( v == true ){
+								if ( f.us_clave1 == f.us_clave ){
+									$(\'#fclave\').submit();
+								} else {
+									m.children(\'#error\').html("ERROR: Claves Diferentes!!! intente de nuevo...");
+									return false;
+								}
+							}
+						}
+					});
+				})
+			} else {
+				$.prompt("<h2>Por favor Seleccione un Usuario</h2>");}
+		});
+		';
+
+		$bodyscript .= "\n</script>\n";
+		$bodyscript .= "";
+		return $bodyscript;
+	}
+
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -434,15 +404,16 @@ jQuery("#a1").click( function(){
 
 		} elseif($oper == 'del') {
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM usuario WHERE id='$id' ");
+			$us_codigo = $data['us_codigo'];
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM usuario WHERE id=$id ");
-				logusu('usuario',"Registro ????? ELIMINADO");
+				$this->db->simple_query('DELETE FROM usuario WHERE id='.$id );
+				$this->db->simple_query('DELETE FROM sida USING sida LEFT JOIN usuario ON sida.usuario=usuario.us_codigo WHERE usuario.us_codigo IS NULL ');
+				logusu('USUARIO','Registro '.$this->db->escape($us_codigo).' ELIMINADO');
 				echo "Registro Eliminado";
 			}
 		}
-
 	}
 
 /*
@@ -716,7 +687,6 @@ class Usuarios extends Controller {
 		}
 		redirect($this->url.'jqdatag');
 	}
-
 
 	function _pos_updatec($do){
 		$codigo=$do->get('us_codigo');
