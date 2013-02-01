@@ -1,5 +1,4 @@
 <?php
-//require_once(BASEPATH.'application/controllers/validaciones.php');
 class Sprv extends Controller {
 	var $genesal = true;
 	var $mModulo='SPRV';
@@ -15,11 +14,11 @@ class Sprv extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('sprv','id') ) {
+		if ( !$this->datasis->iscampo('sprv','id') ) {
 			$this->db->simple_query('ALTER TABLE sprv DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE sprv ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE sprv ADD UNIQUE INDEX proveed (proveed)');
 			$this->db->simple_query('ALTER TABLE sprv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
+		};
 		$this->db->simple_query('ALTER TABLE sprv CHANGE COLUMN telefono telefono TEXT NULL DEFAULT NULL AFTER direc3');
 
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );

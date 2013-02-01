@@ -657,7 +657,7 @@ class Mgas extends validaciones {
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = "codigo";
 		$check  = 0;
 
 		unset($data['oper']);
@@ -695,13 +695,13 @@ class Mgas extends validaciones {
 			}
 
 		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM mgas WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE id='$id' ");
+			$codigo = $this->datasis->dameval("SELECT codigo FROM mgas WHERE id=$id");
+			$check  = $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE codigo=".$this->db->escape($codigo));
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
 				$this->db->simple_query("DELETE FROM mgas WHERE id=$id ");
-				logusu('MGAS',"Registro ????? ELIMINADO");
+				logusu('MGAS',"Registro ".$this->db->escape($codigo)." ELIMINADO");
 				echo "Registro Eliminado";
 			}
 		};
