@@ -50,6 +50,8 @@ class gser extends Controller {
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
+
+
 		$WpAdic = "
 		<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n
 		<tr><td><div class=\"tema1\">
@@ -68,10 +70,9 @@ class gser extends Controller {
 
 
 		//Botones Panel Izq
-		//$grid->wbotonadd(array("id"=>"imprimir" , "img"=>"assets/default/images/print.png", "alt" => "Imprimir Documento",  "label"=>"Imprimir Documento" ));
-		//$grid->wbotonadd(array("id"=>"reteprint", "img"=>"assets/default/images/print.png", "alt" => "Imprimir Retención",  "label"=>"Imprimir Retención" ));
+		$grid->wbotonadd(array("id"=>"creamga", "img"=>"assets/default/images/print.png", "alt" => "Imprimir Documento", "label"=>"Crea Gasto" ));
+		$grid->wbotonadd(array("id"=>"creaprv", "img"=>"assets/default/images/print.png", "alt" => "Imprimir Retención", "label"=>"Crea Proveedor" ));
 		$WestPanel = $grid->deploywestp();
-
 
 
 		//Panel Central
@@ -105,15 +106,18 @@ class gser extends Controller {
 	//Funciones de los Botones
 	//***************************
 	function bodyscript( $grid0, $grid1 ){
-		$bodyscript = '
-		<script type="text/javascript">
+		$bodyscript = '<script type="text/javascript">';
+
+		$bodyscript .= '
 		jQuery("#imprimir").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				window.open(\''.site_url('formatos/ver/GSER/').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
-		});';
+		});
+		';
+
 
 		//Imprimir retencion
 		$bodyscript .= '
@@ -123,6 +127,32 @@ class gser extends Controller {
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				window.open(\''.site_url($this->url.'printrete').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
 			} else { $.prompt("<h1>Por favor Seleccione un gasto</h1>");}
+		});';
+
+
+		//Agrgaga mgas
+		$bodyscript .= '
+		jQuery("#creamga").click( 
+			function(){
+				$.post("'.site_url('finanzas/mgas/dataedit/create').'",
+				function(data){
+					$("#fgasto").html(data);
+					$("#fgasto").dialog({height: 400, width: 700, title: "Agregar Gasto"});
+					$("#fgasto").dialog( "open" );
+				});
+		});';
+
+
+		// Agrgar Proveedor
+		$bodyscript .= '
+		jQuery("#creaprv").click( 
+			function(){
+			$.post("'.site_url('compras/sprv/dataedit/create').'",
+			function(data){
+				$("#fgasto").html(data);
+				$("#fgasto").dialog({height: 480, width: 720, title: "Agregar Proveedor"});
+				$("#fgasto").dialog( "open" );
+			})
 		});';
 
 		$bodyscript .= '
@@ -135,6 +165,7 @@ class gser extends Controller {
 			$.post("'.site_url('finanzas/gser/solo/create').'",
 			function(data){
 				$("#fgasto").html(data);
+				$("#fgasto").dialog({height: 500, width: 950, title: "Agregar Egreso"});
 				$( "#fgasto" ).dialog( "open" );
 			})
 		};';
@@ -147,7 +178,8 @@ class gser extends Controller {
 				mId = id;
 				$.post("'.site_url('finanzas/gser/solo/modify').'/"+id, function(data){
 					$("#fgasto").html(data);
-					$( "#fgasto" ).dialog( "open" );
+					$("#fgasto").dialog({height: 500, width: 950, title: "Agregar Egreso"});
+					$("#fgasto").dialog( "open" );
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
 		};';
