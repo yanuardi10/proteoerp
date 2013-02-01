@@ -58,8 +58,9 @@ class gser extends Controller {
 			<table cellpadding='0' cellspacing='0' style='width:100%;'>
 				<tr>
 					<td style='vertical-align:center;border:1px solid #AFAFAF;'><div class='botones'>".img(array('src' =>"assets/default/images/print.png",  'height' => 18, 'alt' => 'Imprimir',    'title' => 'Imprimir', 'border'=>'0'))."</div></td>
-					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:70px;text-align:left;vertical-align:top;' href='#' id='imprimir'>Egreso</a></div></td>
-					<td style='vertical-align:top;'><div class='botones'><a style='width:80px;text-align:left;vertical-align:top;' href='#' id='reteprint'>Retencion</a></div></td>
+					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:55px;text-align:left;vertical-align:top;' href='#' id='imprimir'>Egreso</a></div></td>
+					<td style='vertical-align:top;'><div class='botones'><a style='width:55px;text-align:left;vertical-align:top;' href='#' id='reteprint'>R.IVA</a></div></td>
+					<td style='vertical-align:top;'><div class='botones'><a style='width:60px;text-align:left;vertical-align:top;' href='#' id='reteislrprint'>R.ISLR</a></div></td>
 				</tr>
 			</table>
 			</div>
@@ -79,8 +80,9 @@ class gser extends Controller {
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fgasto",  "title"=>"Agregar/Editar Gasto/Egreso"),
-			array("id"=>"fimpri",  "title"=>"Imprimir Gasto/Egreso")
+			array('id'=>'fgasto',  'title'=>'Agregar/Editar Gasto/Egreso'),
+			array('id'=>'fshow'  , 'title'=>'Mostrar registro'),
+			array('id'=>'fimpri',  'title'=>'Imprimir Gasto/Egreso')
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -132,7 +134,7 @@ class gser extends Controller {
 
 		//Agrgaga mgas
 		$bodyscript .= '
-		jQuery("#creamga").click( 
+		jQuery("#creamga").click(
 			function(){
 				$.post("'.site_url('finanzas/mgas/dataedit/create').'",
 				function(data){
@@ -145,7 +147,7 @@ class gser extends Controller {
 
 		// Agrgar Proveedor
 		$bodyscript .= '
-		jQuery("#creaprv").click( 
+		jQuery("#creaprv").click(
 			function(){
 			$.post("'.site_url('compras/sprv/dataedit/create').'",
 			function(data){
@@ -184,6 +186,19 @@ class gser extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
 		};';
 
+		$bodyscript .= '
+		function gsershow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un gasto</h1>");
+			}
+		};';
 
 		$bodyscript .= '
 		jQuery("#modifica").click( function(){
@@ -207,6 +222,55 @@ class gser extends Controller {
 			var tips = $( ".validateTips" );
 			s = grid.getGridParam(\'selarrrow\');
 		';
+
+		$bodyscript.= '
+		jQuery("#imprimir").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/GSER/').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione una gasto</h1>");}
+		});';
+
+		//Imprimir retencion
+		$bodyscript .= '
+		jQuery("#reteprint").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url($this->url.'printrete').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione un gasto</h1>");}
+		});';
+
+		//Imprime retencion islr
+		$bodyscript .= '
+		jQuery("#reteislrprint").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/GSERRT/').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione un gasto</h1>");}
+		});';
+
+		$bodyscript .= '
+		jQuery("#agregar").click( function(){
+			window.open(\''.site_url('finanzas/gser/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+		});';
+
+
+		$bodyscript .= '
+			$("#fshow").dialog({
+				autoOpen: false, height: 500, width: 700, modal: true,
+				buttons: {
+					"Aceptar": function() {
+						$("#fshow").html("");
+						$( this ).dialog( "close" );
+					},
+				},
+				close: function() {
+					$("#fshow").html("");
+				}
+			});';
 
 		$bodyscript .= '
 			$("#fgasto").dialog({
@@ -304,7 +368,7 @@ class gser extends Controller {
 
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -350,7 +414,7 @@ class gser extends Controller {
 		));
 
 		$grid->addField('totpre');
-		$grid->label('Totpre');
+		$grid->label('Base');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -364,7 +428,7 @@ class gser extends Controller {
 		));
 
 		$grid->addField('totiva');
-		$grid->label('Totiva');
+		$grid->label('IVA');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -379,7 +443,7 @@ class gser extends Controller {
 
 
 		$grid->addField('totbruto');
-		$grid->label('Totbruto');
+		$grid->label('Importe');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -394,7 +458,7 @@ class gser extends Controller {
 
 
 		$grid->addField('reten');
-		$grid->label('Reten');
+		$grid->label('R.ISLR');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -409,7 +473,7 @@ class gser extends Controller {
 
 
 		$grid->addField('totneto');
-		$grid->label('Totneto');
+		$grid->label('Monto');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -424,7 +488,7 @@ class gser extends Controller {
 
 
 		$grid->addField('codb1');
-		$grid->label('Codb1');
+		$grid->label('Banco');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -436,7 +500,7 @@ class gser extends Controller {
 
 
 		$grid->addField('tipo1');
-		$grid->label('Tipo1');
+		$grid->label('Tipo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -448,7 +512,7 @@ class gser extends Controller {
 
 
 		$grid->addField('cheque1');
-		$grid->label('Cheque1');
+		$grid->label('N.Cheque');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'true',
@@ -459,7 +523,7 @@ class gser extends Controller {
 		));
 
 		$grid->addField('comprob1');
-		$grid->label('Comprob1');
+		$grid->label('Comprobante');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -469,7 +533,7 @@ class gser extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 6 }',
 		));
 
-		$grid->addField('monto1');
+		/*$grid->addField('monto1');
 		$grid->label('Monto1');
 		$grid->params(array(
 			'search'        => 'true',
@@ -607,11 +671,11 @@ class gser extends Controller {
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
+		));*/
 
 
 		$grid->addField('credito');
-		$grid->label('Credito');
+		$grid->label('Cr&eacute;dito');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -626,7 +690,7 @@ class gser extends Controller {
 
 
 		$grid->addField('tipo_doc');
-		$grid->label('Tipo_doc');
+		$grid->label('Tipo doc.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -665,7 +729,7 @@ class gser extends Controller {
 
 
 		$grid->addField('benefi');
-		$grid->label('Benefi');
+		$grid->label('Beneficiario');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -676,7 +740,7 @@ class gser extends Controller {
 		));
 
 
-		$grid->addField('mdolar');
+		/*$grid->addField('mdolar');
 		$grid->label('Mdolar');
 		$grid->params(array(
 			'search'        => 'true',
@@ -688,7 +752,7 @@ class gser extends Controller {
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
+		));*/
 
 
 		$grid->addField('usuario');
@@ -729,7 +793,7 @@ class gser extends Controller {
 
 
 		$grid->addField('transac');
-		$grid->label('Transac');
+		$grid->label('Transaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -782,7 +846,7 @@ class gser extends Controller {
 		));
 
 
-		$grid->addField('huerfano');
+		/*$grid->addField('huerfano');
 		$grid->label('Huerfano');
 		$grid->params(array(
 			'search'        => 'true',
@@ -791,11 +855,11 @@ class gser extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 1 }',
-		));
+		));*/
 
 
 		$grid->addField('reteiva');
-		$grid->label('Reteiva');
+		$grid->label('R.IVA');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -810,7 +874,7 @@ class gser extends Controller {
 
 
 		$grid->addField('nfiscal');
-		$grid->label('Nfiscal');
+		$grid->label('N.fiscal');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'true',
@@ -822,7 +886,7 @@ class gser extends Controller {
 		));
 
 
-		$grid->addField('afecta');
+		/*$grid->addField('afecta');
 		$grid->label('Afecta');
 		$grid->params(array(
 			'search'        => 'true',
@@ -856,7 +920,7 @@ class gser extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha del Documento" }'
-		));
+		));*/
 
 		$grid->addField('cajachi');
 		$grid->label('Cajachi');
@@ -871,7 +935,7 @@ class gser extends Controller {
 
 
 		$grid->addField('montasa');
-		$grid->label('Montasa');
+		$grid->label('Base G.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -886,7 +950,7 @@ class gser extends Controller {
 
 
 		$grid->addField('monredu');
-		$grid->label('Monredu');
+		$grid->label('Base R.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -901,7 +965,7 @@ class gser extends Controller {
 
 
 		$grid->addField('monadic');
-		$grid->label('Monadic');
+		$grid->label('Base A.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -916,7 +980,7 @@ class gser extends Controller {
 
 
 		$grid->addField('tasa');
-		$grid->label('Tasa');
+		$grid->label('Tasa G.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -931,7 +995,7 @@ class gser extends Controller {
 
 
 		$grid->addField('reducida');
-		$grid->label('Reducida');
+		$grid->label('Tasa R.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -946,7 +1010,7 @@ class gser extends Controller {
 
 
 		$grid->addField('sobretasa');
-		$grid->label('Sobretasa');
+		$grid->label('Tasa A.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -975,7 +1039,7 @@ class gser extends Controller {
 		));
 
 
-		$grid->addField('compra');
+		/*$grid->addField('compra');
 		$grid->label('Compra');
 		$grid->params(array(
 			'search'        => 'true',
@@ -999,7 +1063,7 @@ class gser extends Controller {
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
-		));
+		));*/
 
 
 		$grid->addField('serie');
@@ -1059,7 +1123,7 @@ class gser extends Controller {
 
 
 		$grid->addField('negreso');
-		$grid->label('Negreso');
+		$grid->label('N.Egreso');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1071,7 +1135,7 @@ class gser extends Controller {
 
 
 		$grid->addField('ncausado');
-		$grid->label('Ncausado');
+		$grid->label('N.Causado');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1082,7 +1146,7 @@ class gser extends Controller {
 		));
 
 
-		$grid->addField('tipo_or');
+		/*$grid->addField('tipo_or');
 		$grid->label('Tipo_or');
 		$grid->params(array(
 			'search'        => 'true',
@@ -1102,7 +1166,7 @@ class gser extends Controller {
 			'width'         => 40,
 			'editable'      => 'false',
 			'search'        => 'false'
-		));
+		));*/
 
 
 		$grid->showpager(true);
@@ -1140,7 +1204,7 @@ class gser extends Controller {
 		$grid->setShrinkToFit('false');
 
 		//$grid->setBarOptions("\t\taddfunc: gseradd,\n\t\teditfunc: gseredit");
-		$grid->setBarOptions("\t\taddfunc: gseradd");
+		$grid->setBarOptions('addfunc: gseradd, viewfunc: gsershow');
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -1253,7 +1317,7 @@ class gser extends Controller {
 
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'hidden'        => 'true',
 			'search'        => 'true',
@@ -1279,7 +1343,7 @@ class gser extends Controller {
 
 
 		$grid->addField('codigo');
-		$grid->label('Codigo');
+		$grid->label('C&oacute;digo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1291,7 +1355,7 @@ class gser extends Controller {
 
 
 		$grid->addField('descrip');
-		$grid->label('Descrip');
+		$grid->label('Descripci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'true',
@@ -1318,7 +1382,7 @@ class gser extends Controller {
 
 
 		$grid->addField('iva');
-		$grid->label('Iva');
+		$grid->label('IVA');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1400,7 +1464,7 @@ class gser extends Controller {
 */
 
 		$grid->addField('departa');
-		$grid->label('Departa');
+		$grid->label('Departamento');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1411,7 +1475,7 @@ class gser extends Controller {
 		));
 
 		$grid->addField('transac');
-		$grid->label('Transac');
+		$grid->label('Transaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1588,7 +1652,7 @@ class gser extends Controller {
 */
 
 		$grid->addField('montasa');
-		$grid->label('Montasa');
+		$grid->label('Base G.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1602,7 +1666,7 @@ class gser extends Controller {
 		));
 
 		$grid->addField('monredu');
-		$grid->label('Monredu');
+		$grid->label('Base R.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1616,7 +1680,7 @@ class gser extends Controller {
 		));
 
 		$grid->addField('monadic');
-		$grid->label('Monadic');
+		$grid->label('Base A.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1631,7 +1695,7 @@ class gser extends Controller {
 
 
 		$grid->addField('tasa');
-		$grid->label('Tasa');
+		$grid->label('Tasa G.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1646,7 +1710,7 @@ class gser extends Controller {
 
 
 		$grid->addField('reducida');
-		$grid->label('Reducida');
+		$grid->label('Tasa R.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1661,7 +1725,7 @@ class gser extends Controller {
 
 
 		$grid->addField('sobretasa');
-		$grid->label('Sobretasa');
+		$grid->label('Tasa A.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1690,7 +1754,7 @@ class gser extends Controller {
 		));
 
 
-		$grid->addField('id');
+		/*$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
 			'align'         => "'center'",
@@ -1698,7 +1762,7 @@ class gser extends Controller {
 			'width'         => 40,
 			'editable'      => 'false',
 			'search'        => 'false'
-		));
+		));*/
 
 		$grid->addField('modificado');
 		$grid->label('Modificado');
@@ -1713,7 +1777,7 @@ class gser extends Controller {
 		));
 
 
-		$grid->addField('reteica');
+		$grid->addField('R. ICA');
 		$grid->label('Reteica');
 		$grid->params(array(
 			'search'        => 'true',
@@ -1727,7 +1791,7 @@ class gser extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-		$grid->addField('idgser');
+		/*$grid->addField('idgser');
 		$grid->label('Idgser');
 		$grid->params(array(
 			'search'        => 'true',
@@ -1739,7 +1803,7 @@ class gser extends Controller {
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
-		));
+		));*/
 
 
 		$grid->showpager(true);
@@ -1777,8 +1841,7 @@ class gser extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait()
-	{
+	function getdatait(){
 		$id = $this->uri->segment(4);
 		if ($id === false ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM gser");
@@ -1800,8 +1863,7 @@ class gser extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setDatait()
-	{
+	function setDatait(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -1843,7 +1905,7 @@ class gser extends Controller {
 		};
 	}
 
-	function solo() {
+	function solo(){
 		$this->solo = true;
 		$id = $this->uri->segment($this->uri->total_segments());
 
@@ -1886,204 +1948,6 @@ class gser extends Controller {
 
 		}
 	}
-
-/*
-	function gser(){
-		parent::Controller();
-		$this->load->library('rapyd');
-		$this->mcred='_CR';
-		$this->load->library('pi18n');
-		$this->datasis->modulo_id('518',1);
-		//$this->instalar();
-	}
-
-	function index() {
-		if($this->pi18n->pais=='COLOMBIA'){
-			redirect('finanzas/gsercol/filteredgrid');
-		}else{
-			//redirect('finanzas/gser/filteredgrid');
-			$this->gserextjs();
-		}
-	}
-
-	function filteredgrid(){
-		$this->rapyd->load('datafilter','datagrid');
-		$this->rapyd->uri->keep_persistence();
-
-		$filter = new DataFilter('Filtro de Gastos','gser');
-
-		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
-		$filter->fechad->db_name ='fecha';
-		$filter->fechad->operator='>=';
-		$filter->fechad->group = 'UNO';
-
-		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
-		$filter->fechah->db_name='fecha';
-		$filter->fechah->operator='<=';
-		$filter->fechah->group = 'UNO';
-		$filter->fechad->clause = $filter->fechah->clause ='where';
-		$filter->fechah->size   = $filter->fechad->size=10;
-
-		$filter->tipo_doc = new inputField('Tipo', 'tipo_doc');
-		$filter->tipo_doc->db_name = 'tipo_doc';
-		$filter->tipo_doc->size = 5;
-		$filter->tipo_doc->group = 'UNO';
-
-		$filter->numero = new inputField('N&uacute;mero', 'numero');
-		$filter->numero->size = 10;
-		$filter->numero->group = 'DOS';
-
-		$filter->proveed = new inputField('Proveedor', 'proveed');
-		$filter->proveed->db_name = 'proveed';
-		$filter->proveed->size = 10;
-		$filter->proveed->group = 'DOS';
-
-		$filter->nombre = new inputField('Nombre', 'nombre');
-		$filter->nombre->db_name = 'nombre';
-		$filter->nombre->size = 20;
-		$filter->nombre->group = 'DOS';
-
-		$filter->buttons('reset','search');
-		$filter->build("dataformfiltro");
-
-		$uri2  = anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
-		$uri2 .= "&nbsp;";
-		$uri2 .= anchor('formatos/ver/GSER/<#id#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
-		$uri2 .= "&nbsp;";
-		$uri2 .= anchor('formatos/verhtml/GSER/<#id#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
-
-		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
-
-		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:gserserie(\"<#id#>\")'>";
-		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Serie', 'title' => 'Modifica Nro. de Serie','border'=>'0','height'=>'12');
-		$uri_3 .= img($propiedad);
-		$uri_3 .= "</a>";
-
-		$uri_4  = "<a href='javascript:void(0);' onclick='javascript:gserfiscal(\"<#id#>\")'>";
-		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Control Fiscal', 'title' => 'Modifica Control Fiscal','border'=>'0','height'=>'12');
-		$uri_4 .= img($propiedad);
-		$uri_4 .= "</a>";
-
-
-		$grid = new DataGrid();
-		$grid->order_by('fecha','desc');
-		$grid->per_page = 50;
-		$grid->column('Acciones',$uri2);
-		$grid->column('Tipo',"tipo_doc",'tipo_doc');
-		$grid->column('Caja',"cajachi",'cajachi');
-		$grid->column_orderby('N&uacute;mero',$uri,'numero');
-		$grid->column_orderby('Serie',$uri_3.'<#serie#>','serie');
-		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
-		$grid->column_orderby('Nombre','nombre'  ,'nombre');
-		$grid->column_orderby('Base' ,'<nformat><#totpre#></nformat>' ,'totneto','align=\'right\'');
-		$grid->column_orderby('IVA'   ,'<nformat><#totiva#></nformat>'  ,'totiva' ,'align=\'right\'');
-		$grid->column_orderby('Total' ,'<nformat><#totbruto#></nformat>' ,'totbruto','align=\'right\'');
-		$grid->column_orderby('Ret.IVA'   ,'reteiva'  ,'reteiva' ,'align=\'right\'');
-		$grid->column_orderby('Ret.ISLR'   ,'reten'  ,'reten' ,'align=\'right\'');
-		$grid->column_orderby('Total Neto' ,'<nformat><#totneto#></nformat>' ,'totneto','align=\'right\'');
-		$grid->column_orderby('Ctrl. Fiscal',$uri_4.'<#nfiscal#>','nfiscal');
-
-		$grid->column_orderby('Vence' ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
-		$grid->column_orderby('Prov.' ,'proveed','proveed','align=\'center\'');
-
-		$grid->column_orderby('Banco'  , 'codb1'  ,'codb1' );
-		$grid->column('Tipo'   , 'tipo1'  ,'tipo11' );
-		$grid->column_orderby('Cheque' , 'cheque1'  ,'cheque1' );
-
-
-
-		$grid->add('finanzas/gser/agregar','Agregar Egreso');
-		$grid->build('datagridST');
-		//echo $grid->db->last_query();
-
-// Para usar SuperTable
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-		headerRows : 1,
-		onStart : function () {
-		this.start = new Date();
-		},
-		onFinish : function () {
-		document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";
-		}
-	});
-})();
-//]]>
-</script>
-';
-
-		$style ='
-<style type="text/css">
-.fakeContainer { // The parent container
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 640px; // Required to set
-    height: 320px; // Required to set
-    overflow: hidden; // Required to set
-}
-</style>
-		';
-
-$script ='
-<script type="text/javascript">
-function gserserie(mid){
-	jPrompt("Numero de Serie","" ,"Cambio de Serie", function(mserie){
-		if( mserie==null){
-			jAlert("Cancelado","Informacion");
-		} else {
-			$.ajax({ url: "'.site_url().'finanzas/gser/gserserie/"+mid+"/"+mserie,
-				success: function(msg){
-					jAlert("Cambio Finalizado "+msg,"Informacion");
-					location.reload();
-					}
-			});
-		}
-	})
-}
-
-function gserfiscal(mid){
-	jPrompt("Numero de Control Fiscal","" ,"Cambio de Serie", function(mserie){
-		if( mserie==null){
-			jAlert("Cancelado","Informacion");
-		} else {
-			$.ajax({ url: "'.site_url().'finanzas/gser/gserfiscal/"+mid+"/"+mserie,
-				success: function(msg){
-					jAlert("Cambio Finalizado "+msg,"Informacion");
-					location.reload();
-					}
-			});
-		}
-	})
-}
-
-</script>';
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		$data['script']  = $script;
-		$data['script'] .= script('jquery.js');
-		$data["script"] .= script("jquery.alerts.js");
-		$data['script'] .= script('superTables.js');
-
-		$data['style']   = $style;
-		$data['style']  .=style('superTables.css');
-		$data['style']	.= style("jquery.alerts.css");
-
-		$data['extras']  = $extras;
-
-		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Egresos por Gastos');
-		$this->load->view('view_ventanas', $data);
-	}
-*/
 
 	function gserserie(){
 		$serie   = $this->uri->segment($this->uri->total_segments());
@@ -3683,7 +3547,7 @@ function gserfiscal(mid){
 		//	$edit->button_status('btn_crete','Calcular retenciones',$accion,'TR','show');
 		//}
 
-		$edit->buttons('add_rel','add');
+		$edit->buttons('add_rel');
 
 		$edit->on_save_redirect=false;
 		$edit->build();

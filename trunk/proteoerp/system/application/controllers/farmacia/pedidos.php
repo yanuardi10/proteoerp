@@ -38,7 +38,7 @@ class Pedidos extends Controller {
 		$filter->db->having('pedir > 0');
 		if(!$this->rapyd->uri->is_set('search')){
 			 $filter->db->where('a.fecha',date('Y-m-d'));
-		 }
+		}
 
 		$filter->fecha = new dateonlyField('Fecha', 'fecha');
 		$filter->fecha->clause  ='where';

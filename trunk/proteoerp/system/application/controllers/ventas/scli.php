@@ -68,8 +68,8 @@ class Scli extends validaciones {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"edocta",  "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
-		$grid->wbotonadd(array("id"=>"editacr", "img"=>"images/star.png",      "alt" => 'Credito',     "label"=>"Limite de Credito"));
+		$grid->wbotonadd(array('id'=>'edocta' , 'img'=>'images/pdf_logo.gif', 'alt' => 'Formato PDF'    , 'label'=>'Estado de Cuenta' ));
+		$grid->wbotonadd(array('id'=>'editacr', 'img'=>'images/star.png'    , 'alt' => 'Cr&eacute;dito' , 'label'=>'L&iacute;mite de Cr&eacute;dito'));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
@@ -312,7 +312,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				'.$this->datasis->jwinopen(site_url('reportes/ver/SMOVECU/SCLI/').'/\'+ret.proveed').';
+				'.$this->datasis->jwinopen(site_url('reportes/ver/SMOVECU/SCLI/').'/\'+ret.cliente').';
 			} else { $.prompt("<h1>Por favor Seleccione un Cliente</h1>");}
 		});
 		';
