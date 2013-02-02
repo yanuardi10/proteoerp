@@ -45,16 +45,16 @@ class Rivc extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array('id'=>'imprime',  'img'=>'assets/default/images/print.png','alt' => 'Reimprimir', 'label'=>'Reimprimir Documento'));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fedita", "title"=>"Agregar/Editar Pedido"),
-			array("id"=>"fborra", "title"=>"Eliminar registro"),
-			array("id"=>"fshow" , "title"=>"Mostrar registro")
+			array('id'=>'fedita', 'title'=>'Agregar/Editar registro'),
+			array('id'=>'fborra', 'title'=>'Eliminar registro'),
+			array('id'=>'fshow' , 'title'=>'Mostrar registro')
 		);
 
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
@@ -83,7 +83,7 @@ class Rivc extends Controller {
 
 		$bodyscript .= '
 		function rivcadd() {
-			$.post("'.site_url('finanzas/rivc/dataedit/create').'",
+			$.post("'.site_url($this->url.'dataedit/create').'",
 			function(data){
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
@@ -96,7 +96,7 @@ class Rivc extends Controller {
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
-				$.post("'.site_url('finanzas/rivc/dataedit/modify').'/"+id, function(data){
+				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
 					$("#fedita").html(data);
 					$("#fedita").dialog( "open" );
 				});

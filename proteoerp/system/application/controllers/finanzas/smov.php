@@ -40,7 +40,7 @@ class Smov extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array('id'=>'bimpri', 'img'=>'images/pdf_logo.gif', 'alt' => 'Formato PDF'    , 'label'=>'Reimprimir Documento'));
+		$grid->wbotonadd(array('id'=>'bimpri', 'img'=>'assets/default/images/print.png', 'alt' => 'Formato PDF'    , 'label'=>'Reimprimir Documento'));
 		$grid->wbotonadd(array('id'=>'cobro' , 'img'=>'images/dinero.png'  , 'alt' => 'Cobro a cliente', 'label'=>'Cobro a Cliente'     ));
 		$WestPanel = $grid->deploywestp();
 

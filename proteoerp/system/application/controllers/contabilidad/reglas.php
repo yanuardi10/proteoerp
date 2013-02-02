@@ -13,14 +13,14 @@ class Reglas extends Metodos {
 	function index() {
 		$this->rapyd->load("datagrid","dataform");
 		$fecha=$this->uri->segment(4);
-		$form = new DataForm();  
+		$form = new DataForm();
 		$form->title('Fecha para la ejecuci&oacute;n');
 		$form->fecha = new dateonlyField("Fecha", "fecha","d/m/Y");
 		$form->fecha->size = 10;
 		$form->fecha->insertValue = ($fecha ? $fecha : date("Ymd"));
 		$form->fecha->append("<input type='hidden' name='modulo' id='modulo'>");
 		$form->build_form();
-		
+
 		$link ="<a href='#' onclick='verregla(\"<#modulo#>\")'>Ver Detalle</a>";
 		$link2="<a href='#' onclick='ejecutar(\"<#modulo#>\")'>Ejecutar</a>";
 		$grid = new DataGrid();
@@ -48,7 +48,7 @@ class Reglas extends Metodos {
 			document.getElementById('df1').submit();
 		}
 		</script>";
-		
+
 		$data['content'] =$form->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Reglas de Contabilidad</h1>';
@@ -60,7 +60,7 @@ class Reglas extends Metodos {
 		$modulo=($this->uri->segment(4) ? $this->uri->segment(4) : $this->input->post('modulo'));
 		if(!$modulo) redirect('/contabilidad/reglas');
 
-		$form = new DataForm('contabilidad/reglas/ejecutar');  
+		$form = new DataForm('contabilidad/reglas/ejecutar');
 		$form->title('Fecha para la ejecuci&oacute;n');
 		$form->fecha = new dateonlyField("Fecha", "fecha","d/m/Y");
 		$form->fecha->size = 10;
@@ -69,7 +69,7 @@ class Reglas extends Metodos {
 		$form->submit = new submitField("Ejecutar","btn_submit");
 		$form->submit->in='fecha';
 		$form->build_form();
-		
+
 		$link =anchor('/contabilidad/reglas/dataedit/<#modulo#>/show/<#modulo#>/<#regla#>','Ver regla');
 		$link2=anchor('/contabilidad/reglas/duplicar/<#modulo#>/<#regla#>','Duplicar');
 		$action = "javascript:window.location='" . site_url('contabilidad/reglas') . "'";
@@ -87,98 +87,111 @@ class Reglas extends Metodos {
 		$grid->column(''           , $link ,'align="center"');
 		$grid->column(''           , $link2,'align="center"');
 		$grid->build();
-		
+
 		$data['content'] =$form->output.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
 		$data['title']   ="<h1>Detalle de regla $modulo</h1>";
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function dataedit(){
 		$this->rapyd->load("dataedit");
 		$modulo=($this->uri->segment(4) ? $this->uri->segment(4) : $this->input->post('modulo'));
 		$uri=$this->rapyd->uri->get("show");
 
-		$edit = new DataEdit("Reglas Contabilidad","reglascont");
+		$edit = new DataEdit("Reglas Contabilidad",'reglascont');
+
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
+
 		$edit->back_url = 'contabilidad/reglas/detalle/'.$modulo;
-		$edit->modulo = new inputField("Modulo", "modulo");
+		$edit->modulo = new inputField("M&oacute;dulo", "modulo");
 		$edit->modulo->value=$modulo;
-		$edit->modulo->rule= "required";
-		$edit->modulo->mode="autohide";
+		$edit->modulo->rule= 'required|trim';
+		$edit->modulo->mode= 'autohide';
 		$edit->modulo->maxlength=20;
 		$edit->modulo->size=5;
-		
-		$edit->regla = new inputField("Regla", "regla");
-		$edit->regla->rule= "required";
+
+		$edit->regla = new inputField('Regla', 'regla');
+		$edit->regla->rule= 'required|numeric';
 		$edit->regla->value=$this->_rdisponible($modulo);
 		$edit->regla->maxlength=3;
 		$edit->regla->size=4;
-		
-		$edit->descripcion = new inputField("Descripci&oacute;n", "descripcion");
+
+		$edit->descripcion = new inputField('Descripci&oacute;n', 'descripcion');
+		$edit->descripcion->rule= 'required|trim';
 		$edit->descripcion->maxlength=40;
-		
+
 		$edit->tabla = new dropdownField("Tabla", "tabla");
-		$edit->tabla->option("ITCASI","ITCASI");  
-		$edit->tabla->option("CASI","CASI");  
-		
-		$edit->control = new dropdownField("Control", "control");
-		$edit->control->option("transac","transac");  
-		$edit->control->option("fecha","fecha");  
-		
-		$edit->origen = new textareaField("Tabla Or&iacute;gen", "origen");
-		
-		$edit->condicion = new textareaField("Condiciones", "condicion");
+		$edit->tabla->option("ITCASI","ITCASI");
+		$edit->tabla->option("CASI","CASI");
 
-		$edit->agrupar = new textareaField("Agrupar", "agrupar");
+		$edit->control = new dropdownField('Control', 'control');
+		$edit->control->option('transac','transac');
+		$edit->control->option('fecha','fecha');
 
-		$edit->concepto = new textareaField("Conceptos", "concepto");
-		
-		$edit->fecha = new textareaField("Fecha", "fecha");
+		$edit->origen = new textareaField("Tabla Or&iacute;gen", 'origen');
+		$edit->origen->rule= 'trim';
 
-		$edit->comprob = new textareaField("Comprobante", "comprob");
-		$edit->origen->cols =$edit->condicion->cols =$edit->agrupar->cols =$edit->concepto->cols =$edit->fecha->cols = $edit->comprob->cols = 90;  
+		$edit->condicion = new textareaField("Condiciones", 'condicion');
+		$edit->condicion->rule= 'trim';
+
+		$edit->agrupar = new textareaField('Agrupar', 'agrupar');
+		$edit->agrupar->rule= 'trim';
+
+		$edit->concepto = new textareaField('Conceptos', 'concepto');
+		$edit->concepto->rule= 'trim';
+
+		$edit->fecha = new textareaField('Fecha', 'fecha');
+
+		$edit->comprob = new textareaField('Comprobante', 'comprob');
+		$edit->comprob->rule= 'trim';
+		$edit->origen->cols =$edit->condicion->cols =$edit->agrupar->cols =$edit->concepto->cols =$edit->fecha->cols = $edit->comprob->cols = 90;
 		$edit->origen->rows =$edit->condicion->rows =$edit->agrupar->rows =$edit->concepto->rows =$edit->fecha->rows =$edit->comprob->rows = 2;
 		$edit->origen->maxlength=$edit->condicion->maxlength=$edit->agrupar->maxlength=$edit->concepto->maxlength=$edit->fecha->maxlength=$edit->comprob->maxlength=255;
 
-		$edit->cuenta = new textareaField("Cuenta", "cuenta");
-		$edit->cuenta->cols = 90;  
+		$edit->cuenta = new textareaField('Cuenta', 'cuenta');
+		$edit->cuenta->rule= 'trim';
+		$edit->cuenta->cols = 90;
 		$edit->cuenta->rows = 2;
 		$edit->cuenta->maxlength=255;
 
 		$edit->referen = new textareaField("Referencia", "referen");
-		$edit->referen->cols = 90;  
+		$edit->referen->rule= 'trim';
+		$edit->referen->cols = 90;
 		$edit->referen->rows = 2;
 		$edit->referen->maxlength=255;
 
-		$edit->debe = new textareaField("Debe", "debe");
-		$edit->debe->cols = 90;  
+		$edit->debe = new textareaField('Debe', 'debe');
+		$edit->debe->cols = 90;
 		$edit->debe->rows = 2;
 		$edit->debe->maxlength=255;
 
-		$edit->haber = new textareaField("Haber", "haber");
-		$edit->haber->cols = 90;  
+		$edit->haber = new textareaField('Haber', 'haber');
+		$edit->haber->cols = 90;
 		$edit->haber->rows = 2;
 		$edit->haber->maxlength=255;
 
-		$edit->ccosto = new textareaField("Centro de Costo", "ccosto");
-		$edit->ccosto->cols = 90;  
+		$edit->ccosto = new textareaField('Centro de Costo', 'ccosto');
+		$edit->ccosto->cols = 90;
 		$edit->ccosto->rows = 2;
 		$edit->ccosto->maxlength=255;
 
-		$edit->sucursal = new textareaField("Sucursal", "sucursal");
-		$edit->sucursal->cols = 90;  
+		$edit->sucursal = new textareaField('Sucursal', 'sucursal');
+		$edit->sucursal->cols = 90;
 		$edit->sucursal->rows = 2;
 		$edit->sucursal->maxlength=255;
 
-		if ($this->uri->segment(4)==="1")
-			$edit->buttons("modify", "save", "undo", "back");
-		else 
-			$edit->buttons("modify", "save", "undo", "delete", "back");
+		if ($this->uri->segment(4)==='1')
+			$edit->buttons('modify', 'save', 'undo', 'back');
+		else
+			$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$data['content'] =$edit->output;
 		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ="<h1>Editar regla</h1>";
+		$data['title']   ='<h1>Editar regla contable</h1>';
 
 		$this->load->view('view_ventanas', $data);
 	}
@@ -197,7 +210,7 @@ class Reglas extends Metodos {
 		$action = "javascript:window.location='" . site_url("contabilidad/reglas/index/$mFECHA") . "'";
 		$data['content']='';
 		$query=$this->db->query("SELECT a.$mCONTROL FROM $mTABLA WHERE a.fecha=$mFECHA GROUP BY $mCONTROL ");
-		
+
 		foreach ($query->result_array() as $fila){
 			$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila[$mCONTROL]);
 			//echo '<pre>';print_r($aregla);'</pre>';
@@ -288,5 +301,28 @@ class Reglas extends Metodos {
 			if ($row->regla!=$i) return $i;
 		}return $i+1;
 	}
+
+	function _post_insert($do){
+		$modulo = $do->get('modulo');
+		$regla  = $do->get('regla');
+		$descrip= $do->get('descripcion');
+
+		logusu('REGLASCONT',"Creo ${modulo}, ${regla}, ${descrip}");
+	}
+
+	function _post_update($do){
+		$modulo = $do->get('modulo');
+		$regla  = $do->get('regla');
+		$descrip= $do->get('descripcion');
+
+		logusu('REGLASCONT',"Modifico ${modulo}, ${regla}, ${descrip}");
+	}
+
+	function _post_delete($do){
+		$modulo = $do->get('modulo');
+		$regla  = $do->get('regla');
+		$descrip= $do->get('descripcion');
+
+		logusu('REGLASCONT',"Elimino ${modulo}, ${regla}, ${descrip}");
+	}
 }
-?>
