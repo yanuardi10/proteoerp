@@ -1,32 +1,39 @@
 <?php
 if(count($parametros)==0) show_error('Faltan parametros ');
-
-$control =$parametros[0];
-
+$id  = $parametros[0];
+$dbid= $this->db->escape($id);
 if(count($parametros)>1){
 	$control = $this->datasis->dameval("SELECT control  FROM scst  WHERE id=".$control  );
 }
 
 //ENCABEZADO
 $moneda = $this->datasis->traevalor('MONEDA');
-$mSQL_1 = $this->db->query("SELECT numero,fecha,vence,actuali,depo,proveed,nombre,montotot,montoiva,montonet,peso, if(actuali>=fecha,'CARGADA','PENDIENTE') cargada FROM scst WHERE control='$control'");
+$mSQL_1 = $this->db->query("SELECT
+a.numero,a.fecha,a.vence,a.actuali,a.depo,a.proveed,b.nombre,TRIM(b.nomfis) AS nomfis,a.montotot,a.montoiva,a.montonet,a.peso,
+if(a.actuali>=a.fecha,'CARGADA','PENDIENTE') cargada, a.control
+FROM scst AS a
+JOIN sprv AS b ON a.proveed=b.proveed
+WHERE a.id=${dbid}");
+if($mSQL_1->num_rows()==0) show_error('Registro no encontrado');
 $row = $mSQL_1->row();
 
 $fecha    =dbdate_to_human($row->fecha);
 $numero   =$row->numero;
-$depo     =$row->depo;
-$proveed  =$row->proveed;
-$nombre   =$row->nombre;
+$depo     =trim($row->depo);
+$proveed  =htmlspecialchars($row->proveed);
+$nombre   =(empty($row->nomfis))? htmlspecialchars(trim($row->nombre)) : htmlspecialchars($row->nomfis);
 $montotot =$row->montotot;
 $montoiva =$row->montoiva;
 $montonet =$row->montonet;
-$peso =$row->peso;
+$peso     =$row->peso;
 $cargada  =$row->cargada;
-$vence =dbdate_to_human($row->vence);
-$actuali =dbdate_to_human($row->actuali);
+$control  =$row->control;
+$vence    =dbdate_to_human($row->vence);
+$actuali  =dbdate_to_human($row->actuali);
 
+$dbcontrol=$this->db->escape($control);
 //ARTICULOS
-$mSQL_2 = $this->db->query("SELECT numero,codigo,descrip,cantidad,costo,importe, precio2, if(costo>=precio2,'===>>','     ') alerta FROM itscst WHERE control='$control'");
+$mSQL_2 = $this->db->query("SELECT numero,codigo,descrip,cantidad,costo,importe, precio2, if(costo>=precio2,'===>>','     ') alerta FROM itscst WHERE control=${dbcontrol}");
 $detalle =$mSQL_2->result();
 
 $pagina = 0;
@@ -52,7 +59,7 @@ $encabeza = '
 		<table style="width:100%;font-size:7pt;" class="header">
 		<tr>
 			<td><h1 style="text-align: left">Compra '.$cargada.'</h1></td>
-			<td><h1 style="text-align: right">Numero: '.$numero.'</h1></td>
+			<td><h1 style="text-align: right">N&uacute;mero: '.$numero.'</h1></td>
 		</tr>
 	</table>
 </div>
@@ -61,7 +68,7 @@ $encabeza = '
 $encabeza1p = '
 				<table style="width: 100%; font-size: 8pt;">
 				<tr>
-					<td>Almacen: <strong>'.$depo.'</strong></td>
+					<td>Almac&eacute;n: <strong>'.$depo.'</strong></td>
 					<td>Actualizado: <strong>'.$actuali.'</strong></td>
 				</tr><tr>
 					<td>Fecha: <strong>'.$fecha.'</strong></td>
@@ -76,8 +83,8 @@ $encabeza1p = '
 
 $encatabla = '
 			<tr style="background-color:black;border-style:solid;color:white;font-weight:bold">
-				<th>Código</th>
-				<th>Descripción</th>
+				<th>C&oacute;digo</th>
+				<th>Descripci&oacute;n</th>
 				<th>Cantidad</th>
 				<th>Costo</th>
 				<th>Asignado</th>
@@ -90,7 +97,7 @@ $encatabla = '
 
 <html>
 <head>
-<title>Comprobante de Egresos<?php echo $numero ?></title>
+<title>Compra <?php echo $numero ?></title>
 <link rel="STYLESHEET" href="<?php echo $this->_direccion ?>/assets/default/css/formatos.css" type="text/css" />
 </head>
 <body>
@@ -139,7 +146,7 @@ foreach ($detalle AS $items){ $i++;
 ?>
 				<tr class="<?php if(!$mod) echo 'even_row'; else  echo 'odd_row'; ?>">
 					<td style="text-align:left"><?php echo $items->codigo ?></td>
-					<td><?php echo $items->descrip ?></td>
+					<td><?php echo htmlspecialchars($items->descrip) ?></td>
 					<td style="text-align: center"><?php echo nformat($items->cantidad,0)  ?></td>
 					<td style="text-align: right;"><?php echo nformat($items->costo).$moneda  ?></td>
 					<td style="text-align: right;"><?php echo "<b>".$items->alerta."</b>".nformat($items->precio2) ?></td>
