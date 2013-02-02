@@ -2489,7 +2489,7 @@ class Sinv extends Controller {
 		$rs = $grid->jsonresult( $response);
 
 		memowrite(print_r($mWHERE,true),'VVV');
-		
+
 		//Guarda en la BD el Where para usarlo luego
 		$querydata = array( 'data1' => $this->session->userdata('dtgQuery') );
 		$emp = strpos($querydata['data1'],'WHERE ');
@@ -2652,7 +2652,7 @@ class Sinv extends Controller {
 		$edit->codigo = new inputField('C&oacute;digo', 'codigo');
 		$edit->codigo->size=15;
 		$edit->codigo->maxlength=15;
-		$edit->codigo->rule = 'trim|strtoupper|callback_chexiste';
+		$edit->codigo->rule = 'trim|strtoupper|callback_chexiste|alpha';
 		$edit->codigo->mode = 'autohide';
 		$edit->codigo->append($sugerir);
 		$edit->codigo->append($ultimo);
@@ -3390,13 +3390,13 @@ class Sinv extends Controller {
 		$mid    = $this->input->post('mid');
 		$ubica  = $this->input->post('ubica');
 		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mid");
-		
+
 		$mSQL = "UPDATE sinvalub SET ubica=".$this->db->escape($ubica)." WHERE codigo=".$this->db->escape($codigo)." AND alma=".$this->db->escape($alma);
 		if ( $this->db->query($mSQL) )
 			echo "Ubicacion del almacen".$alma." cambiada a ".$ubica.$mSQL;
 		else
 			echo "Fallo al intentar hacer el cambio ".$mSQL;
-		
+
 	}
 
 
@@ -3617,12 +3617,12 @@ class Sinv extends Controller {
 		$data = $this->datasis->damesesion();
 		if ( isset($data['data1']) ){
 			$where = $data['data1'];
-			if (!empty($where)){ 
-				if ( $cambio > 0 ){ 
+			if (!empty($where)){
+				if ( $cambio > 0 ){
 					$mSQL = "UPDATE sinv SET standard=ultimo WHERE dolar>0 AND formcal='S'";
 					$this->db->query($mSQL);
-			
-					$mSQL = "SET 
+
+					$mSQL = "SET
 					precio1=ROUND((dolar*$cambio)*(100+iva)/(100-margen1),2),
 					precio2=ROUND((dolar*$cambio)*(100+iva)/(100-margen2),2),
 					precio3=ROUND((dolar*$cambio)*(100+iva)/(100-margen3),2),
@@ -3632,11 +3632,11 @@ class Sinv extends Controller {
 					$this->datasis->sinvrecalcular("M");
 					$this->datasis->sinvredondear();
 					echo " Cambio Concluido ";
-				} else 
+				} else
 					echo " Cambio debe ser mayor que 0 ";
-			} else 
+			} else
 				echo " Debe filtrar los productos!  ";
-		} else 
+		} else
 			echo " Debe filtrar los productos!  ";
 	}
 

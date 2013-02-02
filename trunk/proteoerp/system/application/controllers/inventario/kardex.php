@@ -247,7 +247,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('formatos/verhtml/TRANSFER/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
+			$link=anchor('formatos/verhtml/STRA/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
 			$grid->title('Tranferencias');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Env&iacute;a'      ,'envia' );

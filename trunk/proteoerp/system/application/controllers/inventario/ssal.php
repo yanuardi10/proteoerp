@@ -42,14 +42,15 @@ class Ssal extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array('id'=>'boton1',  'img'=>'assets/default/images/print.png','alt' => 'Formato PDF',      'label'=>'Reimprimir Documento'));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar Ajuste de Inventairo")
+			array('id'=>'fedita',  'title'=>'Agregar Ajuste de Inventario'),
+			array('id'=>'fshow' ,  'title'=>'Ver Ajuste de Inventario')
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -57,8 +58,8 @@ class Ssal extends Controller {
 		//$param['EastPanel']  = $EastPanel;
 		$param['readyLayout']  = $readyLayout;
 		$param['SouthPanel']   = $SouthPanel;
-		$param['listados']    = $this->datasis->listados('SSAL', 'JQ');
-		$param['otros']       = $this->datasis->otros('SSAL', 'JQ');
+		$param['listados']     = $this->datasis->listados('SSAL', 'JQ');
+		$param['otros']        = $this->datasis->otros('SSAL', 'JQ');
 		$param['centerpanel']  = $centerpanel;
 		//$param['funciones']    = $funciones;
 		$param['temas']        = array('proteo','darkness','anexos1');
@@ -97,6 +98,20 @@ class Ssal extends Controller {
 		};';
 
 		$bodyscript .= '
+		function ssalshow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		};';
+
+		$bodyscript .= '
 		function ssaledit() {
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
@@ -127,30 +142,53 @@ class Ssal extends Controller {
 		$("#fedita").dialog({
 			autoOpen: false, height: 500, width: 840, modal: true,
 			buttons: {
-			"Guardar": function() {
-				var bValid = true;
-				var murl = $("#df1").attr("action");
-				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST", dataType: "html", async: false,
-					url: murl,
-					data: $("#df1").serialize(),
-					success: function(r,s,x){
-						if ( r.length == 0 ) {
-							apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/SSAL').'/\'+res.id+\'/id\'').';
-							return true;
-						} else {
-							$("#fedita").html(r);
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							if ( r.length == 0 ) {
+								apprise("Registro Guardado");
+								$( "#fedita" ).dialog( "close" );
+								grid.trigger("reloadGrid");
+								'.$this->datasis->jwinopen(site_url('formatos/ver/SSAL').'/\'+res.id+\'/id\'').';
+								return true;
+							} else {
+								$("#fedita").html(r);
+							}
 						}
-					}
-			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
+				})},
+				"Cancelar": function() {
+					$("#fedita").html("");
+					$( this ).dialog( "close" );
+				}
 			},
-			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			close: function() {
+				$("#fedita").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
 		});';
+
+		$bodyscript .= '
+		$("#fshow").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$("#fshow").html("");
+					$( this ).dialog( "close" );
+				},
+			},
+			close: function() {
+				$("#fshow").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
+		});';
+
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
@@ -168,7 +206,7 @@ class Ssal extends Controller {
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -205,7 +243,7 @@ class Ssal extends Controller {
 
 
 		$grid->addField('almacen');
-		$grid->label('Almacen');
+		$grid->label('Almac&eacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -229,7 +267,7 @@ class Ssal extends Controller {
 
 
 		$grid->addField('descrip');
-		$grid->label('Descrip');
+		$grid->label('Descripci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -290,7 +328,7 @@ class Ssal extends Controller {
 
 
 		$grid->addField('transac');
-		$grid->label('Transac');
+		$grid->label('Transaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -326,7 +364,7 @@ class Ssal extends Controller {
 		));
 */
 
-		$grid->addField('id');
+		/*$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
 			'align'         => "'center'",
@@ -334,7 +372,7 @@ class Ssal extends Controller {
 			'width'         => 40,
 			'editable'      => 'false',
 			'search'        => 'false'
-		));
+		));*/
 
 
 
@@ -372,7 +410,7 @@ class Ssal extends Controller {
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("\t\taddfunc: ssaladd,\n\t\teditfunc: ssaledit");
+		$grid->setBarOptions("addfunc: ssaladd,editfunc: ssaledit,viewfunc: ssalshow");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));

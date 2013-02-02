@@ -48,7 +48,6 @@ class Stra extends Controller {
 		$grid->wbotonadd(array('id'=>'boton1','img'=>'assets/default/images/print.png','alt'=> 'Imprimir transferencia', 'label'=>'Reimprimir Documento'));
 		$WestPanel = $grid->deploywestp();
 
-+
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
@@ -72,7 +71,6 @@ class Stra extends Controller {
 		$param['encabeza']     = $this->titp;
 		$param['tamano']       = $this->datasis->getintramenu( substr($this->url,0,-1) );
 		$this->load->view('jqgrid/crud2',$param);
-
 	}
 
 	//***************************
@@ -1400,7 +1398,7 @@ class Stra extends Controller {
 		for($i = 0;$i < $cana;$i++){
 			$itcodigo  = $do->get_rel('itstra', 'codigo'  ,$i);
 			$dbitcodigo=$this->db->escape($itcodigo);
-			$sinvrow=$this->datasis->damerow('SELECT iva,precio1,precio2,precio3,precio4, ultimo FROM sinv WHERE codigo='.$dbitcodigo);
+			$sinvrow=$this->datasis->damerow('SELECT iva,precio1,precio2,precio3,precio4,ultimo,descrip FROM sinv WHERE codigo='.$dbitcodigo);
 
 			$do->set_rel('itstra', 'precio1',  $sinvrow['precio1'], $i);
 			$do->set_rel('itstra', 'precio2',  $sinvrow['precio2'], $i);
@@ -1408,6 +1406,7 @@ class Stra extends Controller {
 			$do->set_rel('itstra', 'precio4',  $sinvrow['precio4'], $i);
 			$do->set_rel('itstra', 'iva'    ,  $sinvrow['iva']    , $i);
 			$do->set_rel('itstra', 'costo'  ,  $sinvrow['ultimo'] , $i);
+			$do->set_rel('itstra', 'descrip',  $sinvrow['descrip'], $i);
 		}
 		return true;
 	}

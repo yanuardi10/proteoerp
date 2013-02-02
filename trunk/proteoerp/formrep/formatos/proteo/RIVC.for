@@ -6,7 +6,7 @@ $dbid=$id;
 $mSQL_1 = $this->db->query("SELECT LPAD(id,8,'0') numero, nrocomp, emision, periodo, fecha, cod_cli, nombre, rif, exento, tasa, general, geneimpu, tasaadic, adicional, adicimpu, tasaredu, reducida, reduimpu, stotal, impuesto, gtotal, reiva, estampa, hora, usuario, modificado, transac, sprmreinte, operacion,codbanc FROM rivc WHERE id=$dbid");
 $mSQL_2 = $this->db->query("SELECT tipo_doc,fecha,numero,nfiscal,exento,tasa,general,geneimpu,tasaadic,adicional,adicimpu,tasaredu,reducida,reduimpu,stotal,impuesto,gtotal,reiva,transac,estampa,hora,usuario,ffactura,modificado FROM itrivc WHERE idrivc=$dbid");
 
-/*$mSQL = "SELECT b.numero, b.monto, CONCAT('(',b.codbanc,') ', TRIM(d.banco),' ', d.numcuent) codbanc,    CONCAT('(',b.usuario,') ', c.us_nombre) usuario 
+/*$mSQL = "SELECT b.numero, b.monto, CONCAT('(',b.codbanc,') ', TRIM(d.banco),' ', d.numcuent) codbanc,    CONCAT('(',b.usuario,') ', c.us_nombre) usuario
 FROM rivc a JOIN bmov b ON a.codbanc=b.codbanc AND a.numche=b.numero JOIN usuario c ON b.usuario=c.us_codigo JOIN banc d ON b.codbanc=d.codbanc
 WHERE a.id=$dbid";*/
 
@@ -27,8 +27,8 @@ $sprmreinte = $row->sprmreinte;
 $operacion  = $row->operacion;
 
 
-$mSQL="SELECT b.numero, b.monto, CONCAT('(',b.codbanc,') ', TRIM(d.banco),' ', d.numcuent) AS codbanc,    CONCAT('(',b.usuario,') ', c.us_nombre) usuario,b.negreso 
-FROM bmov AS b 
+$mSQL="SELECT b.numero, b.monto, CONCAT('(',b.codbanc,') ', TRIM(d.banco),' ', d.numcuent) AS codbanc,    CONCAT('(',b.usuario,') ', c.us_nombre) usuario,b.negreso
+FROM bmov AS b
 JOIN banc AS d ON b.codbanc=d.codbanc
 JOIN usuario AS c ON b.usuario=c.us_codigo
 WHERE b.codbanc=".$this->db->escape($codbanc).' AND b.transac='.$this->db->escape($transac);
@@ -44,7 +44,7 @@ if (count($bmov) > 0) {
 		$monto   = $bmov['monto'];
 		$usuario = $bmov['usuario'];
 	} else {
-		$sbmov   = '';                
+		$sbmov   = '';
 		$egreso  = '';
 		$codbanc = '';
 		$monto   = 0;
@@ -85,7 +85,7 @@ if ( isset($pdf) ) {
 	$text_height = Font_Metrics::get_font_height($font, $size);
 
 	$foot = $pdf->open_object();
-  
+
 	$w = $pdf->get_width();
 	$h = $pdf->get_height();
 
@@ -96,7 +96,7 @@ if ( isset($pdf) ) {
 	$pdf->close_object();
 	$pdf->add_object($foot, "all");
 
-	$text = "PP {PAGE_NUM} de {PAGE_COUNT}";  
+	$text = "PP {PAGE_NUM} de {PAGE_COUNT}";
 
 	// Center the text
 	$width = Font_Metrics::get_text_width("PP 1 de 2", $font, $size);
@@ -145,7 +145,7 @@ if ( isset($pdf) ) {
 			<table style="width: 100%; font-size: 10pt;" border='0'>
 			<tr>
 				<td width='60'>Comprobante: </td><td width='60' ><b><?php echo $periodo.$nrocomp; ?></b></td>
-				<td width='50'>Agente: </td><td><b><?php echo $nombre; ?></b></td>
+				<td width='50'>Agente: </td><td><b><?php echo htmlspecialchars($nombre); ?></b></td>
 				<td width='90'>Fecha de Recepcion: </td><td width='60'><b><?php echo $fecha; ?></b></td>
 			</tr>
 			<tr>
@@ -182,7 +182,7 @@ if ( isset($pdf) ) {
 		</tr>
 			<?php //if($i%10==0) echo "<p STYLE='page-break-after: always'></p>"; ?>
 			<?php $mod = ! $mod; } ?>
-		</tbody>				
+		</tbody>
 		<tfoot>
 		<tr>
 			<td colspan="4" style='font-size:14pt;border-style:solid; border-width:1px;text-align: right;'><strong>TOTAL MONTO RETENIDO:</strong></td>

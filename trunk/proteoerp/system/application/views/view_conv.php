@@ -28,6 +28,7 @@ if($form->_status!='show'){ ?>
 var itconv_cont=<?php echo $form->max_rel_count['itconv']; ?>;
 
 $(function(){
+	$("#fecha").datepicker({ dateFormat: "dd/mm/yy" });
 	$(".inputnum").numeric(".");
 	for(var i=0;i < <?php echo $form->max_rel_count['itconv']; ?>;i++){
 		autocod(i.toString());
@@ -57,11 +58,15 @@ function autocod(id){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$('#codigo').attr("readonly", "readonly");
+
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#descrip_'+id).val(ui.item.descrip);
 			$('#descrip_'+id+'_val').text(ui.item.descrip);
 			$("#costo_"+id).val(ui.item.ultimo);
 			$('#entrada_'+id).focus();
+
+			setTimeout(function() {  $("#codigo").removeAttr("readonly"); }, 1500);
 		}
 	});
 }
@@ -91,6 +96,7 @@ function add_itconv(){
 	$("#salida_"+can).numeric(".");
 	//$("#costo_"+can).numeric(".");
 	autocod(can);
+	$('#codigo_'+can).focus();
 	itconv_cont=itconv_cont+1;
 }
 
@@ -113,10 +119,10 @@ function del_itconv(id){
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->almacen->label   ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->almacen->output  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->observa1->label;  ?>&nbsp;</td>

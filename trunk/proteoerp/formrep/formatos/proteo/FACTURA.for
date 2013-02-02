@@ -7,10 +7,12 @@ $dbid = $this->db->escape($id);
 
 $mSQL = "
 SELECT If(a.referen='E','Efectivo',IF( a.referen='C','Cr&eacute;dito',IF(a.referen='M','Mixto','Pendiente'))) AS referen,a.nfiscal,
-	a.tipo_doc,a.numero,a.cod_cli,a.nombre,a.rifci,CONCAT(trim(c.dire11),' ', c.dire12) AS direccion,a.factura,a.fecha,a.vence,a.vd,
-	a.iva,a.totals,a.totalg, a.exento,a.tasa, a.montasa, a.reducida, a.monredu, a.sobretasa,a.monadic, b.nombre AS nomvend,tipo_doc,
-	a.numero,a.peso,c.telefono, a.observa,a.observ1
-FROM sfac a JOIN scli AS c ON a.cod_cli=c.cliente LEFT JOIN vend b ON a.vd=b.vendedor
+	a.tipo_doc,a.numero,a.cod_cli,TRIM(c.nomfis) AS nomfis,c.nombre,c.rifci,CONCAT_WS('',TRIM(c.dire11),c.dire12) AS direccion,a.factura,a.fecha,a.vence,a.vd,
+	a.iva,a.totals,a.totalg, a.exento,a.tasa, a.montasa, a.reducida, a.monredu, a.sobretasa,a.monadic, b.nombre AS nomvend,
+	a.peso,c.telefono, a.observa,a.observ1
+FROM sfac AS a
+JOIN scli AS c ON a.cod_cli=c.cliente
+LEFT JOIN vend b ON a.vd=b.vendedor
 WHERE a.id=${dbid}";
 
 $mSQL_1 = $this->db->query($mSQL);
@@ -20,13 +22,13 @@ $row = $mSQL_1->row();
 $fecha    = dbdate_to_human($row->fecha);
 $vence    = dbdate_to_human($row->vence);
 $numero   = $row->numero;
-$cod_cli  = trim($row->cod_cli);
-$rifci    = trim($row->rifci);
-$nombre   = trim($row->nombre);
+$cod_cli  = htmlspecialchars(trim($row->cod_cli));
+$rifci    = htmlspecialchars(trim($row->rifci));
+$nombre   = (empty($row->nomfis))? htmlspecialchars(trim($row->nombre)) : htmlspecialchars($row->nomfis);
 $stotal   = nformat($row->totals);
 $gtotal   = nformat($row->totalg);
 $exento   = nformat($row->exento);
-$observa  = trim($row->observa).trim($row->observ1);
+$observa  = htmlspecialchars(trim($row->observa).trim($row->observ1));
 
 $tasa      = nformat($row->tasa);
 $montasa   = nformat($row->montasa);
@@ -37,12 +39,12 @@ $monadic   = nformat($row->monadic);
 
 $peso     = nformat($row->peso);
 $impuesto = nformat($row->iva);
-$direc    = trim($row->direccion);
+$direc    = htmlspecialchars(trim($row->direccion));
 $tipo_doc = trim($row->tipo_doc);
-$referen  = trim($row->referen);
-$nfiscal  = trim($row->nfiscal);
-$telefono = trim($row->telefono);
-$nomvend  = trim($row->nomvend);
+$referen  = htmlspecialchars(trim($row->referen));
+$nfiscal  = htmlspecialchars(trim($row->nfiscal));
+$telefono = htmlspecialchars(trim($row->telefono));
+$nomvend  = htmlspecialchars(trim($row->nomvend));
 $factura  = ($tipo_doc=='D')? $row->factura :'';
 
 $dbtipo_doc = $this->db->escape($tipo_doc);
@@ -112,8 +114,8 @@ $encabezado = "
 	<p style='height: 50px;'> </p>
 	<table style='width:100%;font-size: 9pt;' class='header' cellpadding='0' cellspacing='0'>
 		<tr>
-			<td><h1 style='text-align:left; border-bottom:1px solid;font-size:12pt;'>${documento} Nro. ${numero}</h1></td>
-			<td style='width:230px;'><h1 style='text-align:left;border-bottom:1px solid;font-size:12pt;'>Fecha de Emisi&oacute;n: ${fecha}</h1></td>
+			<td><h1 style='text-align:left;border-bottom:1px solid;font-size:12pt;'>${documento} Nro. ${numero}</h1></td>
+			<td><h1 style='text-align:right;border-bottom:1px solid;font-size:12pt;'>Fecha de Emisi&oacute;n: ${fecha}</h1></td>
 		</tr><tr>
 			<td>RIF, CI o Pasaporte: <b>${rifci}</b></td>
 			<td>Fecha de Vencimiento: <b>${vence}</b></td>
@@ -144,8 +146,8 @@ $encabezado_tabla="
 	<table class=\"change_order_items\" style=\"padding-top:0; \">
 		<thead>
 			<tr>
-				<th ${estilo}width:130px;' >Codigo</th>
-				<th ${estilo}' >Descripcion de la Venta del Bien o Servicio</th>
+				<th ${estilo}width:130px;' >C&oacute;digo</th>
+				<th ${estilo}' >Descripci&oacute;n de la Venta del Bien o Servicio</th>
 				<th ${estilo}width:50px;' >Cant.</th>
 				<th ${estilo}width:80px;' >Precio U.</th>
 				<th ${estilo}width:90px;' >Monto</th>
@@ -235,7 +237,7 @@ foreach ($detalle AS $items){ $i++;
 
 					while(count($arr_des)>0){
 						$uline   = array_shift($arr_des);
-						echo $uline.'<br />';
+						echo htmlspecialchars($uline).'<br />';
 						$lineas++;
 						if($lineas >= $maxlin){
 							$lineas =0;

@@ -20,20 +20,20 @@ if($mSQL_1->num_rows()==0) show_error('Registro no encontrado');
 $row = $mSQL_1->row();
 $tipo_doc = trim($row->tipo_doc);
 $numero   = trim($row->numero);
-$proveed  = trim($row->cod_prv);
+$proveed  = htmlspecialchars(trim($row->cod_prv));
 $tipo_doc = trim($row->tipo_doc);
 $fecha    = $row->fecha;
 $hfecha   = dbdate_to_human($row->fecha);
 $monto    = nformat($row->monto);
 $montole  = strtoupper(numletra($row->monto));
 $abonos   = $row->abonos;
-$nombre   = (empty($row->nomfis))? trim($row->nombre) : $row->nomfis;
-$rifci    = trim($row->rifci);
-$direc    = trim($row->direc);
-$observa  = wordwrap(trim(str_replace(',',', ',$row->observa)), 100, '<br>');
+$nombre   = (empty($row->nomfis))? htmlspecialchars(trim($row->nombre)) : htmlspecialchars($row->nomfis);
+$rifci    = htmlspecialchars(trim($row->rifci));
+$direc    = htmlspecialchars(trim($row->direc));
+$observa  = wordwrap(trim(str_replace(',',', ',htmlspecialchars($row->observa))), 100, '<br>');
 $transac  = $row->transac;
 $tipo_op  = trim($row->tipo_op);
-$banco    = trim($row->banco);
+$banco    = htmlspecialchars(trim($row->banco));
 $numche   = trim($row->numche);
 
 $sql  = 'SELECT tbanco,moneda,banco,numcuent FROM banc WHERE codbanc='.$this->db->escape($banco);
@@ -91,7 +91,7 @@ $ittot['monto']=$ittot['reten']=$ittot['ppago']=$ittot['cambio']=$ittot['mora']=
 		//***Inicio cuadro
 		//**************VARIABLES MODIFICABLES***************
 
-		$texto[]="ELABORADO POR";
+		$texto[]="ELABORADO POR:";
 		$texto[]="AUDITORIA:";
 		$texto[]="AUTORIZADO POR:";
 		$texto[]="APROBADO:";
