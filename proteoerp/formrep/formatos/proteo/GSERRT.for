@@ -9,24 +9,24 @@ $mSQL_1 = $this->db->query('SELECT
 FROM gser AS a
 JOIN sprv AS b ON a.proveed=b.proveed
 LEFT JOIN rete AS c ON c.codigo=a.creten
-WHERE a.id='.$dbid);
+WHERE a.reten>0 AND a.id='.$dbid);
 if($mSQL_1->num_rows()==0) show_error('Registro no encontrado');
 $row = $mSQL_1->row();
 
 $fecha    = dbdate_to_human($row->fecha);
 $numero   = trim($row->numero);
-$proveed  = trim($row->proveed);
+$proveed  = htmlspecialchars(trim($row->proveed));
 $tipo_doc = trim($row->tipo_doc);
 $breten   = $row->breten;
 $reten    = $row->reten;
 $creten   = trim($row->creten);
-$nombre   = (empty($row->nomfis))? trim($row->nombre) : $row->nomfis;
-$direc1   = trim($row->direc1);
-$direc2   = trim($row->direc2);
-$direc3   = trim($row->direc3);
-$telefono = trim($row->telefono);
-$rif      = trim($row->rif);
-$activida = trim($row->activida);
+$nombre   = (empty($row->nomfis))? htmlspecialchars(trim($row->nombre)) : htmlspecialchars($row->nomfis);
+$direc1   = htmlspecialchars(trim($row->direc1));
+$direc2   = htmlspecialchars(trim($row->direc2));
+$direc3   = htmlspecialchars(trim($row->direc3));
+$telefono = htmlspecialchars(trim($row->telefono));
+$rif      = htmlspecialchars(trim($row->rif));
+$activida = htmlspecialchars(trim($row->activida));
 $base1    = $row->base1;
 $tari1    = $row->tari1;
 
@@ -136,7 +136,7 @@ if ( isset($pdf) ) {
 		?>
 			<tr style='color: #111111;background: #EEEEEE;'>
 				<td><div align="left"  style="font-size: 8pt"><b>CONCEPTO:</b></div></td>
-				<td><div align="rigth" style="font-size: 8pt"><?php echo $items->activida ?></div></td>
+				<td><div align="rigth" style="font-size: 8pt"><?php echo htmlspecialchars($items->activida) ?></div></td>
 			</tr><tr>
 				<td><div align="left"  style="font-size: 8pt"><b>MONTO DEL PAGO OBJETO DE RETENCI&Oacute;N  Bs. :</b></div></td>
 				<td><div align="rigth" style="font-size: 8pt"><?php echo nformat($items->monto)?></div></td>

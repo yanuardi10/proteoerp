@@ -4506,15 +4506,32 @@ class gser extends Controller {
 
 			$query="UPDATE gitser AS a
 				JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
-				SET a.idgser=b.id";
+				SET a.idgser=b.id  WHERE a.idgser IS NULL";
 			$this->db->simple_query($query);
 		}
 
 		$query="UPDATE gitser AS a
-			JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
-			SET a.idgser=b.id";
+			JOIN gser AS b on a.numero=b.numero AND a.fecha = b.fecha AND a.proveed = b.proveed
+			SET a.idgser=b.id WHERE a.idgser IS NULL";
 		$this->db->simple_query($query);
 
+		if (!$this->db->table_exists('gereten')) {
+			$mSQL="CREATE TABLE `gereten` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`idd` INT(11) NULL DEFAULT NULL,
+				`origen` CHAR(4) NULL DEFAULT NULL,
+				`numero` VARCHAR(25) NULL DEFAULT NULL,
+				`codigorete` VARCHAR(4) NULL DEFAULT NULL,
+				`actividad` VARCHAR(45) NULL DEFAULT NULL,
+				`base` DECIMAL(10,2) NULL DEFAULT NULL,
+				`porcen` DECIMAL(5,2) NULL DEFAULT NULL,
+				`monto` DECIMAL(10,2) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($query);
+		}
 
 		if (!$this->db->table_exists('gserchi')) {
 			$query="CREATE TABLE IF NOT EXISTS `gserchi` (
@@ -4557,7 +4574,6 @@ class gser extends Controller {
 			$this->db->simple_query($query);
 		}
 
-
 		if (!$this->db->field_exists('ngasto','gserchi')) {
 			$query="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
 			$this->db->simple_query($query);
@@ -4568,27 +4584,24 @@ class gser extends Controller {
 			$this->db->simple_query($query);
 		}
 
-
 		if (!$this->db->table_exists('gereten')) {
-			$query="CREATE TABLE `gereten` (
+			$mSQL="CREATE TABLE `gereten` (
 				`id` INT(10) NOT NULL AUTO_INCREMENT,
 				`idd` INT(11) NULL DEFAULT NULL,
-				`origen` CHAR(4) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
-				`numero` VARCHAR(25) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
-				`codigorete` VARCHAR(4) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
-				`actividad` VARCHAR(45) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+				`origen` CHAR(4) NULL DEFAULT NULL,
+				`numero` VARCHAR(25) NULL DEFAULT NULL,
+				`codigorete` VARCHAR(4) NULL DEFAULT NULL,
+				`actividad` VARCHAR(45) NULL DEFAULT NULL,
 				`base` DECIMAL(10,2) NULL DEFAULT NULL,
 				`porcen` DECIMAL(5,2) NULL DEFAULT NULL,
 				`monto` DECIMAL(10,2) NULL DEFAULT NULL,
 				PRIMARY KEY (`id`)
 			)
 			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM
-			AUTO_INCREMENT=1;";
+			ENGINE=MyISAM";
 			$this->db->simple_query($query);
 		}
 
-		$mSQL="ALTER TABLE gereten CHANGE COLUMN id id INT(10) NOT NULL AUTO_INCREMENT FIRST";
 	}
 
 	function sprvbu(){

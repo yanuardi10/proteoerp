@@ -1,4 +1,4 @@
-<?php 
+<?php
 class Conv extends Controller {
 	var $mModulo = 'CONV';
 	var $titp    = 'Conversiones de Inventario';
@@ -41,15 +41,16 @@ class Conv extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array('id'=>'boton1',  'img'=>'assets/default/images/print.png','alt' => 'Formato PDF',      'label'=>'Reimprimir Documento'));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
-		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+		$centerpanel = $grid->centerpanel( $id = 'radicional', $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar Conversion")
+			array('id'=>'fedita', 'title'=>'Agregar Conversi&oacute;n'),
+			array('id'=>'fshow', 'title'=>'Ver Conversi&oacute;n')
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -85,6 +86,20 @@ class Conv extends Controller {
 				window.open(\''.site_url('formatos/ver/CONV').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
+
+		$bodyscript .= '
+		function convshow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		};';
 
 		$bodyscript .= '
 		function convadd() {
@@ -126,34 +141,55 @@ class Conv extends Controller {
 		$("#fedita").dialog({
 			autoOpen: false, height: 500, width: 700, modal: true,
 			buttons: {
-			"Guardar": function() {
-				var bValid = true;
-				var murl = $("#df1").attr("action");
-				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST", dataType: "html", async: false,
-					url: murl,
-					data: $("#df1").serialize(),
-					success: function(r,s,x){
-						if ( r.length == 0 ) {
-							apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
-							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/CONV').'/\'+res.id+\'/id\'').';
-							return true;
-						} else { 
-							$("#fedita").html(r);
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							if ( r.length == 0 ) {
+								apprise("Registro Guardado");
+								$( "#fedita" ).dialog( "close" );
+								grid.trigger("reloadGrid");
+								'.$this->datasis->jwinopen(site_url('formatos/ver/CONV').'/\'+res.id+\'/id\'').';
+								return true;
+							} else {
+								$("#fedita").html(r);
+							}
 						}
-					}
-			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
+				})},
+				"Cancelar": function() {
+					$("#fedita").html("");
+					$( this ).dialog( "close" );
+				}
 			},
-			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			close: function(){
+				$("#fedita").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
 		});';
+
+		$bodyscript .= '
+		$("#fshow").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+				},
+			},
+			close: function() {
+				$("#fshow").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
+		});';
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
-		$bodyscript .= "";
+
 		return $bodyscript;
 	}
 
@@ -167,7 +203,7 @@ class Conv extends Controller {
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -228,7 +264,7 @@ class Conv extends Controller {
 
 
 		$grid->addField('transac');
-		$grid->label('Transac');
+		$grid->label('Transaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -289,7 +325,7 @@ class Conv extends Controller {
 		));
 
 
-		$grid->addField('id');
+		/*$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
 			'align'         => "'center'",
@@ -297,7 +333,7 @@ class Conv extends Controller {
 			'width'         => 40,
 			'editable'      => 'false',
 			'search'        => 'false'
-		));
+		));*/
 
 
 		$grid->showpager(true);
@@ -328,7 +364,7 @@ class Conv extends Controller {
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("\t\taddfunc: convadd,\n\t\teditfunc: convedit");
+		$grid->setBarOptions("\t\taddfunc: convadd,\n\t\teditfunc: convedit, viewfunc: convshow");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -346,8 +382,7 @@ class Conv extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -361,8 +396,7 @@ class Conv extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -390,9 +424,7 @@ class Conv extends Controller {
 				logusu('CONV',"Grupo de Cliente  ".$nuevo." MODIFICADO");
 				echo "$mcodp Modificado";
 			}
-
-		} 
-		
+		}
 	}
 
 
@@ -401,7 +433,7 @@ class Conv extends Controller {
 	//***************************
 	function defgridit( $deployed = false ){
 		$i      = 1;
-		$editar = "false";
+		$editar = 'false';
 
 		$grid  = new $this->jqdatagrid;
 
@@ -585,8 +617,7 @@ class Conv extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait($id = 0)
-	{
+	function getdatait($id = 0){
 		if ($id === 0 ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM conv");
 		}
@@ -603,8 +634,7 @@ class Conv extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setDatait()
-	{
+	function setDatait(){
 
 	}
 
@@ -656,6 +686,7 @@ class Conv extends Controller {
 		$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
+		$edit->fecha->calendar=false;
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
@@ -753,6 +784,7 @@ class Conv extends Controller {
 	}
 
 	function chrepetidos($cod){
+		if(!isset($this->chrepetidos)) $this->chrepetidos=array();
 		if(array_search($cod, $this->chrepetidos)===false){
 			$this->chrepetidos[]=$cod;
 			return true;
@@ -763,7 +795,6 @@ class Conv extends Controller {
 	}
 
 	function _pre_insert($do){
-		$cana=$do->count_rel('itconv');
 		$monto=$entradas=$salidas=0;
 		$this->costo_entrada= 0;
 		$this->peso_salida  = 0;
@@ -771,6 +802,7 @@ class Conv extends Controller {
 
 		//Hasta aca en costo trae el valor del ultimo de sinv, se opera para cambiarlo a:
 		//costo=costo*(entrada o salida segun se el caso)
+		$cana=$do->count_rel('itconv');
 		for($i=0;$i<$cana;$i++){
 			$ent=$do->get_rel('itconv','entrada',$i);
 			$sal=$do->get_rel('itconv','salida' ,$i);
@@ -814,11 +846,11 @@ class Conv extends Controller {
 		$transac=$this->datasis->fprox_numero('ntransa');
 		$usuario=$do->get('usuario');
 		$estampa=date('Ymd');
-		$hora   =date("H:i:s");
+		$hora   =date('H:i:s');
 
-		$obs1=$obs2=$observa="";
-		if(strlen($do->get("observ1")) >80 ) $observa=substr($do->get("observ1"),0,80);
-		else $observa=$do->get("observ1");
+		$obs1=$obs2=$observa='';
+		if(strlen($do->get('observ1')) >80 ) $observa=substr($do->get('observ1'),0,80);
+		else $observa=$do->get('observ1');
 		if (strlen($observa)>40){
 			$obs1=substr($observa, 0, 39 );
 			$obs2=substr($observa,40);
@@ -864,7 +896,7 @@ class Conv extends Controller {
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ memowrite($mSQL,'conv');}
 
-			if($monto>0){
+			if($monto<0){
 				$peso=$this->pesos[$codigo]*$monto;
 				$participa=$peso/$this->peso_salida;
 				$ncosto   =round($this->costo_entrada*$participa/$monto,2);
@@ -903,39 +935,6 @@ class Conv extends Controller {
 		$mSQL = "ALTER TABLE conv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ";;
 		$this->db->simple_query($mSQL);
 	}
-
-/*
-	function grid(){
-		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
-		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
-		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '';
-		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
-
-		$where = $this->datasis->extjsfiltro($filters,'conv');
-
-		$this->db->_protect_identifiers=false;
-		$this->db->select('*');
-		$this->db->from('conv');
-
-		if (strlen($where)>1){
-			$this->db->where($where);
-		}
-
-		if ( $sort == '') $this->db->order_by( 'numero', 'desc' );
-
-		$sort = json_decode($sort, true);
-		for ($i=0;$i<count($sort);$i++) {
-			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
-		}
-		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
-		$results = $this->datasis->dameval($sql);
-		$this->db->limit($limit, $start);
-		$query = $this->db->get();
-		$arr = $this->datasis->codificautf8($query->result_array());
-
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
-	}
-*/
 
 	function tabla() {
 		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
@@ -990,274 +989,6 @@ class Conv extends Controller {
 */
 		echo $salida;
 	}
-/*
-	function griditconv(){
-		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
-		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM conv")  ;
-
-		$mSQL = "SELECT * FROM itconv a JOIN sinv b ON a.codigo=b.codigo WHERE a.numero='$numero' ORDER BY a.codigo";
-		$query = $this->db->query($mSQL);
-		$results =  0;
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
-	}
-
-
-	function convextjs() {
-		$encabeza='CONVERSIONES DE INVENTARIO';
-
-		$modulo = 'conv';
-		$urlajax = 'inventario/conv/';
-
-		$listados= $this->datasis->listados($modulo);
-		$otros=$this->datasis->otros($modulo, $urlajax);
-
-
-		$columnas = "
-			{ header: 'Numero',     width: 60, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Fecha',      width: 70, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
-			{ header: 'Observ1',    width:200, sortable: true, dataIndex: 'observ1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Observ2',    width:160, sortable: true, dataIndex: 'observ2' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Almacen',    width: 50, sortable: true, dataIndex: 'almacen' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Transac',    width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Estampa',    width: 70, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
-			{ header: 'Hora',       width: 50, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Usuario',    width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Modificado', width: 70, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
-		";
-
-		$coldeta = "
-	var Deta1Col = [
-			{ header: 'codigo',       width:100, sortable: true, dataIndex: 'codigo' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Descripcion',  width:300, sortable: true, dataIndex: 'descrip' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Salida',       width: 80, sortable: true, dataIndex: 'salida' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'Entrada',      width: 80, sortable: true, dataIndex: 'entrada' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'costo',        width: 90, sortable: true, dataIndex: 'costo' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-]";
-
-		$variables='';
-
-		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-
-
-		$funciones = "
-function renderScli(value, p, record) {
-	var mreto='';
-	if ( record.data.cod_cli == '' ){
-		mreto = '{0}';
-	} else {
-		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlAjax+'sclibu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	}
-	return Ext.String.format(mreto,	value, record.data.numero );
-}
-
-
-function renderSinv(value, p, record) {
-	var mreto='';
-	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	return Ext.String.format(mreto,	value, record.data.codid );
-}
-
-	";
-
-		$campos = $this->datasis->extjscampos($modulo);
-
-		$stores = "
-	Ext.define('It".$modulo."', {
-		extend: 'Ext.data.Model',
-		fields: [".$this->datasis->extjscampos("it".$modulo)."],
-		proxy: {
-			type: 'ajax',
-			noCache: false,
-			api: {
-				read   : urlAjax + 'gridit".$modulo."',
-				method: 'POST'
-			},
-			reader: {
-				type: 'json',
-				root: 'data',
-				successProperty: 'success',
-				messageProperty: 'message',
-				totalProperty: 'results'
-			}
-		}
-	});
-
-	//////////////////////////////////////////////////////////
-	// create the Data Store
-	var storeIt".$modulo." = Ext.create('Ext.data.Store', {
-		model: 'It".$modulo."',
-		autoLoad: false,
-		autoSync: true,
-		method: 'POST'
-	});
-
-	//////////////////////////////////////////////////////////
-	//
-	var gridDeta1 = Ext.create('Ext.grid.Panel', {
-		width:   '100%',
-		height:  '100%',
-		store:   storeIt".$modulo.",
-		title:   'Detalle de la NE',
-		iconCls: 'icon-grid',
-		frame:   true,
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		columns: Deta1Col
-	});
-
-	var ".$modulo."TplMarkup = [
-		'<table width=\'100%\' bgcolor=\"#F3F781\">',
-		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR CONVERSION</p></td></tr><tr>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/CONV/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
-		'<td align=\'center\'>{numero}</td>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/CONV/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
-		'</table>','nanai'
-	];
-
-	// Al cambiar seleccion
-	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
-		if (selectedRecord.length) {
-			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
-			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
-			numero = selectedRecord[0].data.numero;
-			gridDeta1.setTitle('Numero '+selectedRecord[0].data.numero);
-			storeIt".$modulo.".load({ params: { numero: numero }});
-			var meco1 = Ext.getCmp('imprimir');
-			Ext.Ajax.request({
-				url: urlAjax +'tabla',
-				params: { numero: numero, id: selectedRecord[0].data.id },
-				success: function(response) {
-					var vaina = response.responseText;
-					".$modulo."TplMarkup.pop();
-					".$modulo."TplMarkup.push(vaina);
-					var ".$modulo."Tpl = Ext.create('Ext.Template', ".$modulo."TplMarkup );
-					meco1.setTitle('Imprimir Compra');
-					".$modulo."Tpl.overwrite(meco1.body, selectedRecord[0].data );
-				}
-			});
-		}
-	});
-";
-
-		$acordioni = "{
-					layout: 'fit',
-					items:[
-						{
-							name: 'imprimir',
-							id: 'imprimir',
-							border:false,
-							html: 'Para imprimir seleccione una Compra '
-						}
-					]
-				},
-";
-
-
-		$dockedItems = "{
-			xtype: 'toolbar',
-			items: [
-				{
-					iconCls: 'icon-add',
-					text: 'Agregar',
-					scope: this,
-					handler: function(){
-						window.open(urlAjax+'dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},
-				{
-					iconCls: 'icon-update',
-					text: 'Modificar',
-					disabled: true,
-					itemId: 'update',
-					scope: this,
-					handler: function(selModel, selections){
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						gridMaest.down('#delete').setDisabled(selections.length === 0);
-						window.open(urlAjax+'dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},{
-					iconCls: 'icon-delete',
-					text: 'Eliminar',
-					disabled: true,
-					itemId: 'delete',
-					scope: this,
-					handler: function() {
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						Ext.MessageBox.show({
-							title: 'Confirme',
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
-							buttons: Ext.MessageBox.YESNO,
-							fn: function(btn){
-								if (btn == 'yes') {
-									if (selection) {
-										//storeMaest.remove(selection);
-									}
-									storeMaest.load();
-								}
-							},
-							icon: Ext.MessageBox.QUESTION
-						});
-					}
-				}
-			]
-		}
-		";
-
-		$grid2 = ",{
-				itemId: 'viewport-center-detail',
-				activeTab: 0,
-				region: 'south',
-				height: '40%',
-				split: true,
-				margins: '0 0 0 0',
-				preventHeader: true,
-				items: gridDeta1
-			}";
-
-
-		$titulow = 'Compras';
-
-		$filtros = "";
-		$features = "
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
-";
-
-		$final = "storeIt".$modulo.".load();";
-
-		$data['listados']    = $listados;
-		$data['otros']       = $otros;
-		$data['encabeza']    = $encabeza;
-		$data['urlajax']     = $urlajax;
-		$data['variables']   = $variables;
-		$data['funciones']   = $funciones;
-		$data['valida']      = $valida;
-		$data['stores']      = $stores;
-		$data['columnas']    = $columnas;
-		$data['campos']      = $campos;
-		$data['titulow']     = $titulow;
-		$data['dockedItems'] = $dockedItems;
-		$data['features']    = $features;
-		$data['filtros']     = $filtros;
-		$data['grid2']       = $grid2;
-		$data['coldeta']     = $coldeta;
-		$data['acordioni']   = $acordioni;
-		$data['final']       = $final;
-
-		$data['title']  = heading('Notas de Entrega');
-		$this->load->view('extjs/extjsvenmd',$data);
-
-	}
-*/
 
 
 }

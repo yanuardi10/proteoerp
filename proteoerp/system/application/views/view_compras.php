@@ -297,7 +297,7 @@ function autocod(id){
 	$('#codigo_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ajax/buscasinv'); ?>",
+				url:  "<?php echo site_url('ajax/buscasinvart'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,

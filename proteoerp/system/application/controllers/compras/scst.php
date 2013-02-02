@@ -528,7 +528,7 @@ class Scst extends Controller {
 		));
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -563,7 +563,7 @@ class Scst extends Controller {
 		));
 
 		$grid->addField('recep');
-		$grid->label('Recep');
+		$grid->label('Recepci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -647,7 +647,7 @@ class Scst extends Controller {
 
 
 		$grid->addField('montotot');
-		$grid->label('Montotot');
+		$grid->label('Base');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -662,7 +662,7 @@ class Scst extends Controller {
 
 
 		$grid->addField('montoiva');
-		$grid->label('Montoiva');
+		$grid->label('Impuesto');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -677,7 +677,7 @@ class Scst extends Controller {
 
 
 		$grid->addField('montonet');
-		$grid->label('Montonet');
+		$grid->label('Total');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -704,7 +704,7 @@ class Scst extends Controller {
 
 
 		$grid->addField('nfiscal');
-		$grid->label('Nfiscal');
+		$grid->label('N.Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'true',
@@ -877,7 +877,7 @@ class Scst extends Controller {
 
 
 		$grid->addField('transac');
-		$grid->label('Transac');
+		$grid->label('Transaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -939,7 +939,7 @@ class Scst extends Controller {
 		));
 
 		$grid->addField('sobretasa');
-		$grid->label('Sobretasa');
+		$grid->label('Iva A.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -953,7 +953,7 @@ class Scst extends Controller {
 		));
 
 		$grid->addField('reducida');
-		$grid->label('Reducida');
+		$grid->label('Iva R.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -967,7 +967,7 @@ class Scst extends Controller {
 		));
 
 		$grid->addField('tasa');
-		$grid->label('Tasa');
+		$grid->label('Iva G.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -992,7 +992,7 @@ class Scst extends Controller {
 		));
 */
 		$grid->addField('reteiva');
-		$grid->label('Retencion IVA');
+		$grid->label('Retenci&oacute;n IVA');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
