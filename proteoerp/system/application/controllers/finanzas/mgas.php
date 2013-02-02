@@ -808,7 +808,7 @@ class Mgas extends validaciones {
 		$edit->iva->size =9;
 		$edit->iva->maxlength =5;
 		$edit->iva->rule ="trim";
-*/	
+*/
 		$ivas=$this->datasis->ivaplica();
 		$edit->iva = new dropdownField('IVA %', 'iva');
 		foreach($ivas as $tasa=>$ivamonto){
@@ -817,7 +817,7 @@ class Mgas extends validaciones {
 		$edit->iva->style='width:100px;';
 		$edit->iva->insertValue=$ivas['tasa'];
 		//$edit->iva->onchange='calculos(\'S\');';
-		
+
 
 
 		//$edit->medida    = new inputField("Unidad Medida", "medida");
@@ -1020,10 +1020,21 @@ class Mgas extends validaciones {
 	}
 
 	function instalar(){
-		if (!$this->db->field_exists('reten','mgas')) {
+		$campos=$this->db->list_fields('mgas');
+		if (!in_array('id',$campos)){
+			$mSQL="ALTER TABLE `mgas`
+			ADD COLUMN `id` INT(11) NOT NULL AUTO_INCREMENT,
+			DROP PRIMARY KEY,
+			ADD UNIQUE INDEX `unico` (`codigo`),
+			ADD PRIMARY KEY (`id`);";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!in_array('reten',$campos)) {
 			$mSQL="ALTER TABLE mgas ADD COLUMN reten VARCHAR(4) NULL DEFAULT NULL AFTER rica, ADD COLUMN retej VARCHAR(4) NULL DEFAULT NULL AFTER reten";
 			$this->db->simple_query($mSQL);
 		}
+
 	}
 
 	/*function sinvgrupos(){
