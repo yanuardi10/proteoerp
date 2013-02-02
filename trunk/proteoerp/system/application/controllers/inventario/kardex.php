@@ -367,6 +367,32 @@ class Kardex extends Controller {
 			$grid->db->join('itssal AS b','a.numero=b.numero');
 			$grid->db->where('b.codigo' ,$codigo);
 			$grid->db->where('a.fecha',$fecha);
+		}elseif($tipo=='5D'){ //Consignacion
+			$fields = $this->db->field_data('scon');
+			$ppk=array();
+			$select=array('a.numero','a.fecha','b.desca','b.cana','b.precio');
+			foreach ($fields as $field){
+				if($field->primary_key==1){
+					$ppk[]='<#'.$field->name.'#>';
+					$pknombre='a.'.$field->name;
+					if(array_search($pknombre, $select)===false){
+						$select[]=$pknombre;
+					}
+				}
+			}
+
+			$link=anchor('formatos/verhtml/SCON/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
+			$grid->title('Consignaci&oacute;n de inventario');
+			$grid->column('N&uacute;mero','numero');
+			$grid->column('Descripci&oacute;n','desca');
+			$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
+			$grid->column('Cantidad' ,'<nformat><#cana#></nformat>','align=\'right\'');
+			$grid->column('Precio'   ,'<nformat><#precio#></nformat>'   ,'align=\'right\'');
+			$grid->db->select($select);
+			$grid->db->from('scon AS a');
+			$grid->db->join('itscon AS b','a.numero=b.numero');
+			$grid->db->where('b.codigo' ,$codigo);
+			$grid->db->where('a.fecha',$fecha);
 		}
 		$grid->build();
 		//echo $grid->db->last_query();
