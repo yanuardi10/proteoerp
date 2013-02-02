@@ -41,6 +41,58 @@ $(function(){
 		cdropdown(i);
 		autocod(i.toString());
 	}
+
+	$('#cod_cli').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscascli'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						if(data.length==0){
+							$('#nombre').val('');
+							$('#nombre_val').text('');
+
+							$('#rifci').val('');
+							$('#rifci_val').text('');
+							$('#sclitipo').val('1');
+
+							$('#dir_cli').val('');
+							$('#dir_cli_val').text('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#cod_cli').attr("readonly", "readonly");
+
+			$('#nombre').val(ui.item.nombre);
+			$('#nombre_val').text(ui.item.nombre);
+
+			$('#rifci').val(ui.item.rifci);
+			$('#rifci_val').text(ui.item.rifci);
+
+			$('#cod_cli').val(ui.item.cod_cli);
+			$('#sclitipo').val(ui.item.tipo);
+
+			$('#dir_cli').val(ui.item.direc);
+			$('#dir_cli_val').text(ui.item.direc);
+			setTimeout(function() {  $("#cod_cli").removeAttr("readonly"); }, 1500);
+			post_modbus_scli();
+		}
+	});
+
 });
 
 function importe(id){
@@ -82,11 +134,11 @@ function totalizar(){
 	$("#gtotal").val(roundNumber(totals+iva,2));
 	$("#stotal").val(roundNumber(totals,2));
 	$("#impuesto").val(roundNumber(iva,2));
-	
+
 	$("#gtotal_val").text(nformat(totals+iva,2));
 	$("#stotal_val").text(nformat(totals,2));
 	$("#impuesto_val").text(nformat(iva,2));
-	
+
 }
 
 function add_itsnte(){
@@ -100,7 +152,7 @@ function add_itsnte(){
 	cdropdown(itsnte_cont);
 	autocod(can);
 	$('#codigo_'+can).focus();
-	
+
 	itsnte_cont=itsnte_cont+1;
 }
 
@@ -121,7 +173,8 @@ function post_precioselec(ind,obj){
 
 function post_modbus_scli(){
 	var tipo  =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
-	//var cambio=confirm('�Deseas cambiar los precios por los que tenga asginado el cliente?');
+
+	//var cambio=confirm('Deseas cambiar los precios por los que tenga asginado el cliente?');
 
 	var arr=$('select[name^="precio_"]');
 	jQuery.each(arr, function() {
@@ -163,7 +216,7 @@ function cdropdown(nind){
 	var ban=0;
 	var ii=0;
 	var id='';
-	
+
 	if(preca==null || preca.length==0) ban=1;
 	for(ii=1;ii<5;ii++){
 		id =ii.toString();
@@ -222,7 +275,8 @@ function autocod(id){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
-			//id='0';
+			$('#codigo_'+id).attr("readonly", "readonly");
+
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#desca_'+id).val(ui.item.descrip);
 			$('#precio1_'+id).val(ui.item.base1);
@@ -245,6 +299,7 @@ function autocod(id){
 			jQuery.each(arr, function() { this.selectedIndex=tipo; });
 			importe(id);
 			totalizar();
+			setTimeout(function() {  $('#codigo_'+id).removeAttr("readonly"); }, 1500);
 		}
 	});
 }
@@ -253,24 +308,18 @@ function autocod(id){
 
 <table align='center' width="95%" border='0'>
 	<tr>
-<?php if ($form->_status=='show') { ?>
-		<td>
-		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/SNTE/<?php echo $form->numero->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
-		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
-		</td>
-<?php } ?>
 		<td align=right><?php echo $container_tr?></td>
 	</tr>
 	<tr>
 		<td colspan=2>
-			<table width='100%'><tr><td>	
+			<table width='100%'><tr><td>
 				<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 				<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
 				<table width="100%" style="margin: 0; width: 100%;">
 				<tr>
 					<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-					
+
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->vende->label     ?>&nbsp;</td>
@@ -289,7 +338,7 @@ function autocod(id){
 				<tr>
 					<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output,$form->nombre->output; ?>&nbsp;</td>
-					
+
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->dir_cli->label  ?>&nbsp;</td>

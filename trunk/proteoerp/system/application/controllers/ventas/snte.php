@@ -14,11 +14,11 @@ class Snte extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('snte','id') ) {
+		if ( !$this->datasis->iscampo('snte','id') ) {
 			$this->db->simple_query('ALTER TABLE snte DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE snte ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE snte ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
+		};
 		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -44,13 +44,19 @@ class Snte extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
+		$grid->wbotonadd(array('id'=>'imprimir', 'img'=>'assets/default/images/print.png',  'alt' => 'Reimprimir', 'label'=>'Reimprimir documento'));
 		$WestPanel = $grid->deploywestp();
 		//Panel Central y Sur
-		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+		$centerpanel = $grid->centerpanel( $id = 'radicional', $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 
-		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
+		$adic = array(
+			array('id'=>'fedita', 'title'=>'Agregar/Editar registro'),
+			array('id'=>'fborra', 'title'=>'Eliminar registro'),
+			array('id'=>'fshow' , 'title'=>'Mostrar registro')
+		);
+
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -73,14 +79,57 @@ class Snte extends Controller {
 	function bodyscript( $grid0, $grid1 ){
 		$bodyscript ='<script type="text/javascript">';
 
-		$bodyscript .='
-		jQuery("#imprime").click( function(){
+		$bodyscript .= '
+		function snteadd() {
+			$.post("'.site_url($this->url.'dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function snteedit() {
+				var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					if ( ret.status == "PE" ) {
+						$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
+							$("#fedita").html(data);
+							$("#fedita").dialog( "open" );
+						});
+					} else {
+						$.prompt("<h1>Orden no modificable, esta cerrada o en back order");
+					}
+				} else {
+					$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+				}
+		};';
+
+		$bodyscript .= '
+		function snteshow() {
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
-				var ret = jQuery("#newapi'. $grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('formatos/ver/ORDC').'/\'+id+"/id", \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
-			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-		});';
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		};';
+
+		$bodyscript .= '
+		function sntedel() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				alert("Opcion deshabilitada");
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		};';
 
 		//Wraper de javascript
 		$bodyscript .= '
@@ -93,71 +142,86 @@ class Snte extends Controller {
 			var s;
 			var allFields = $( [] ).add( ffecha );
 			var tips = $( ".validateTips" );
-			s = grid.getGridParam(\'selarrrow\'); 
+			s = grid.getGridParam(\'selarrrow\');
 		';
 
 		$bodyscript .='
-			jQuery("#modifica").click( function(){
-				var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-				if (id)	{
-					var ret    = $("#newapi'.$grid0.'").getRowData(id);
-					mId = id;
-					if ( ret.status == "PE" ) {
-						$.post("'.site_url('compras/ordc/solo/modify').'/"+id, function(data){
-							$("#fne").html(data);
-							$( "#fne" ).dialog( "open" );
-						});
-					} else {
-						$.prompt("<h1>Orden no modificable, esta cerrada o en back order");
-					}
-				} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-			});
-			';
-
-		//Agregar Compra
-		$bodyscript .= '
-			$( "#agregar" ).click(function() {
-				$.post("'.site_url('compras/ordc/solo/create').'",
-				function(data){
-					$("#fne").html(data);
-					$( "#fne" ).dialog( "open" );
-				})
-			});';
+		jQuery("#imprimir").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'. $grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/SNTE').'/\'+id+"/id", \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});';
 
 		$bodyscript .= '
-			$( "#fne" ).dialog({
-				autoOpen: false, height: 570, width: 860, modal: true,
-				buttons: {
-					"Guardar": function() {
-						var bValid = true;
-						var murl = $("#df1").attr("action");
-						allFields.removeClass( "ui-state-error" );
-						if ( bValid ) {
-							$.ajax({
-								type: "POST", dataType: "html", async: false,
-								url: murl,
-								data: $("#df1").serialize(),
-								success: function(r,s,x){
-									var res = $.parseJSON(r);
-									if ( res.status == "A"){
-										apprise(res.mensaje);
-										$( "#fne" ).dialog( "close" );
-										grid.trigger("reloadGrid");
-										'.$this->datasis->jwinopen(site_url('formatos/ver/ORDC').'/\'+res.id+\'/id\'').';
-										return true;
-									} else if ( res.status == "C"){
-										apprise("<div style=\"font-size:16px;font-weight:bold;background:green;color:white\">Mensaje:</div> <h1>"+res.mensaje);
-									} else {
-										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
-									}
-								}
-							});
+		$("#fedita").dialog({
+			autoOpen: false, height: 595, width: 795, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						try{
+							var json = JSON.parse(r);
+							if (json.status == "A"){
+								apprise("Registro Guardado");
+								$( "#fedita" ).dialog( "close" );
+								grid.trigger("reloadGrid");
+								'.$this->datasis->jwinopen(site_url('formatos/ver/SNTE').'/\'+res.id+\'/id\'').';
+								return true;
+							} else {
+								apprise(json.mensaje);
+							}
+						}catch(e){
+							$("#fedita").html(r);
 						}
-					},
-					Cancelar: function() { $( this ).dialog( "close" ); }
+					}
+				})
+			},
+				"Cancelar": function() {
+					$("#fedita").html("");
+					$( this ).dialog( "close" );
+				}
+			},
+			close: function() {
+				$("#fedita").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
+		});';
+
+		$bodyscript .= '
+		$("#fshow").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
 				},
-				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
-			});';
+			},
+			close: function() {
+				$("#fshow").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
+		});';
+
+		$bodyscript .= '
+		$("#fborra").dialog({
+			autoOpen: false, height: 300, width: 300, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+					grid.trigger("reloadGrid");
+				}
+			},
+			close: function() {
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
+		});';
 
 		$bodyscript .= '	});';
 		$bodyscript .= "\n</script>\n";
@@ -171,12 +235,12 @@ class Snte extends Controller {
 	//***************************
 	function defgrid( $deployed = false ){
 		$i      = 1;
-		$editar = "false";
+		$editar = 'false';
 
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -201,7 +265,7 @@ class Snte extends Controller {
 
 
 		$grid->addField('vende');
-		$grid->label('Vende');
+		$grid->label('Vendedor');
 		$grid->params(array(
 			'align'         => "'center'",
 			'search'        => 'true',
@@ -226,7 +290,7 @@ class Snte extends Controller {
 
 
 		$grid->addField('cod_cli');
-		$grid->label('Codigo');
+		$grid->label('C&oacute;digo');
 		$grid->params(array(
 			'align'         => "'center'",
 			'search'        => 'true',
@@ -262,7 +326,7 @@ class Snte extends Controller {
 		));
 
 		$grid->addField('stotal');
-		$grid->label('Stotal');
+		$grid->label('Subtotal');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -290,7 +354,7 @@ class Snte extends Controller {
 		));
 
 		$grid->addField('gtotal');
-		$grid->label('Gtotal');
+		$grid->label('Total');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -339,7 +403,7 @@ class Snte extends Controller {
 		));
 
 		$grid->addField('observa');
-		$grid->label('Observa');
+		$grid->label('Observaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -361,7 +425,7 @@ class Snte extends Controller {
 		));
 
 		$grid->addField('fechafac');
-		$grid->label('Fechafac');
+		$grid->label('Fecha Fac.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -436,7 +500,7 @@ class Snte extends Controller {
 
 
 		$grid->addField('transac');
-		$grid->label('Transac');
+		$grid->label('Transaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -458,7 +522,7 @@ class Snte extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-		$grid->addField('id');
+		/*$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
 			'align'         => "'center'",
@@ -466,7 +530,7 @@ class Snte extends Controller {
 			'width'         => 40,
 			'editable'      => 'false',
 			'search'        => 'false'
-		));
+		));*/
 
 		$grid->showpager(true);
 		$grid->setWidth('');
@@ -503,18 +567,16 @@ class Snte extends Controller {
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(    $this->datasis->sidapuede('SNTE','1' ));
-		$grid->setEdit(   false ); // $this->datasis->sidapuede('SNTE','2' ) );
-		$grid->setDelete( $this->datasis->sidapuede('SNTE','5'));
-		$grid->setSearch( $this->datasis->sidapuede('SNTE','6'));
+		$grid->setEdit(false);
+		$grid->setAdd(   $this->datasis->sidapuede('SNTE','INCLUIR%' ));
+		$grid->setDelete($this->datasis->sidapuede('SNTE','BORR_REG%'));
+		$grid->setSearch($this->datasis->sidapuede('SNTE','BUSQUEDA%'));
 
-		//$grid->setAdd(false);
-		//$grid->setEdit(true);
-		//$grid->setDelete(false);
-		//$grid->setSearch(true);
-		
+
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+		$grid->setBarOptions('addfunc: snteadd, editfunc: snteedit, delfunc: sntedel, viewfunc: snteshow');
+
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -532,8 +594,7 @@ class Snte extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -547,8 +608,7 @@ class Snte extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -583,9 +643,9 @@ class Snte extends Controller {
 				$this->db->update('snte', $data);
 				logusu('SNTE',"Nro de Factura Cambiado ".$mFactura." en la orden ".$numero." MODIFICADO");
 				echo "Orden ".$mnumero." Cambiada";
-			} else 
+			} else
 				echo "Orden No Cambiada";
-			
+
 
 		} elseif($oper == 'del') {
 		$meco = $this->datasis->dameval("SELECT $mcodp FROM snte WHERE id=$id");
@@ -611,7 +671,7 @@ class Snte extends Controller {
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -623,7 +683,7 @@ class Snte extends Controller {
 
 
 		$grid->addField('codigo');
-		$grid->label('Codigo');
+		$grid->label('C&oacute;digo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -635,7 +695,7 @@ class Snte extends Controller {
 
 
 		$grid->addField('desca');
-		$grid->label('Desca');
+		$grid->label('Descripci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -647,7 +707,7 @@ class Snte extends Controller {
 
 
 		$grid->addField('cana');
-		$grid->label('Cana');
+		$grid->label('Cantidad');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -748,7 +808,7 @@ class Snte extends Controller {
 		));
 
 
-		$grid->addField('id');
+		/*$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
 			'align'         => "'center'",
@@ -756,7 +816,7 @@ class Snte extends Controller {
 			'width'         => 40,
 			'editable'      => 'false',
 			'search'        => 'false'
-		));
+		));*/
 
 
 		$grid->addField('modificado');
@@ -807,8 +867,7 @@ class Snte extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdatait()
-	{
+	function getdatait(){
 		$id = $this->uri->segment(4);
 		if ($id == false ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM snte");
@@ -817,7 +876,7 @@ class Snte extends Controller {
 		$grid     = $this->jqdatagrid;
 		$mSQL     = "SELECT * FROM itsnte WHERE numero='$numero' ORDER BY codigo ";
 		$response = $grid->getDataSimple($mSQL);
-		
+
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 
@@ -826,8 +885,7 @@ class Snte extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setDatait()
-	{
+	function setDatait(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -884,184 +942,9 @@ class Snte extends Controller {
 	}
 
 
-
-/*
-	function snte(){
-		parent::Controller(); 
-		$this->load->library("rapyd");
-		$this->datasis->modulo_id(107,1);
-		$this->back_dataedit='ventas/snte';
-	}
-
-	function index() {
-		if ( !$this->datasis->iscampo('snte','id') ) {
-			$this->db->simple_query('ALTER TABLE snte DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE snte ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
-			$this->db->simple_query('ALTER TABLE snte ADD UNIQUE INDEX numero (numero)');
-		}
-		$this->datasis->modulo_id(107,1);
-		$this->snteextjs();
-	}
-
-	function filteredgrid(){
-
-		$this->rapyd->load("datagrid","datafilter");
-		
-		$atts = array(
-		'width'      => '800',
-		'height'     => '600',
-		'scrollbars' => 'yes',
-		'status'     => 'yes',
-		'resizable'  => 'yes',
-		'screenx'    => '0',
-		'screeny'    => '0'
-		);
-		$scli=array(
-		'tabla'   =>'scli',
-		'columnas'=>array(
-		'cliente' =>'C&oacute;digo Cliente',
-		'nombre'=>'Nombre',
-		'contacto'=>'Contacto'),
-		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'cod_cli'),
-		'titulo'  =>'Buscar Cliente');
-
-		$boton=$this->datasis->modbus($scli);
-		
-		$filter = new DataFilter("Filtro de Nota Entrega");
-		$filter->db->select('fecha,numero,cod_cli,nombre,stotal,gtotal,impuesto,tipo, factura, usuario, estampa, transac');
-		$filter->db->from('snte');
-		
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d"); 
-		$filter->fechah->insertValue = date("Y-m-d"); 
-		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">="; 
-		$filter->fechah->operator="<=";
-
-		$filter->numero = new inputField("N&uacute;mero", "numero");
-		$filter->numero->size = 30;
-
-		$filter->factura = new inputField("Factura", "factura");
-		$filter->factura->size = 30;
-
-		$filter->cliente = new inputField("Cliente","cod_cli");
-		$filter->cliente->size = 30;
-		$filter->cliente->append($boton);
-
-		$filter->buttons("reset","search");
-		$filter->build('dataformfiltro');
-
-		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:sntefactura(\"<#numero#>\")'>";
-		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Factura', 'title' => 'Modifica Nro. de Factura','border'=>'0','height'=>'12');
-		$uri_3 .= img($propiedad);
-		$uri_3 .= "</a>";
-
-		$uri = anchor('ventas/snte/dataedit/show/<#numero#>','<#numero#>');
-
-		$url = "<a href=\"#\" onclick=\"window.open('".base_url()."formatos/verhtml/SNTE/<#numero#>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'')\"; heigth=\"600\" >";
-		$url .="<img src='".base_url()."images/html_icon.gif'/></a>";
-
-		$grid = new DataGrid();
-		$grid->order_by("numero","desc");
-		$grid->per_page = 15;  
-
-		$grid->column_orderby("Acciones",$url,"align='center'");
-		$grid->column_orderby("N&uacute;mero"	,$uri,'numero');
-		$grid->column_orderby("Fecha"		,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
-		$grid->column_orderby("Cliente"		,"cod_cli",'cod_cli');
-		$grid->column_orderby("Nombre"		,"nombre",'nombre');
-		$grid->column_orderby("Tipo"		,"tipo",'tipo');
-		$grid->column_orderby("Factura"		,$uri_3."<#factura#>",'factura');
-		$grid->column_orderby("Sub.Total"	,"<number_format><#stotal#>|2</number_format>",'stotal',"align=right");
-		$grid->column_orderby("IVA"		,"<number_format><#impuesto#>|2</number_format>",'iva',"align=right");
-		$grid->column_orderby("Total"		,"<number_format><#gtotal#>|2</number_format>",'gtotal',"align=right");
-		
-		$grid->add("ventas/snte/dataedit/create");
-		$grid->build('datagridST');
-
-
-//************ SUPER TABLE ************* 
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { // The parent container 
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; // Required to set 
-    height: 320px; // Required to set 
-    overflow: hidden; // Required to set 
-}
-</style>	
-';
-//****************************************
-		
-$script = '
-<script type="text/javascript">
-function sntefactura(mnumero){
-	//var mserie=Prompt("Numero de Factura");
-	//jAlert("Cancelado","Informacion");
-	
-	jPrompt("Numero de Factura","" ,"Cambio de Factura", function(mfactura){
-		if( mfactura==null){
-			jAlert("Cancelado","Informacion");
-		} else {
-			$.ajax({ url: "'.site_url().'ventas/snte/sntefactura/"+mnumero+"/"+mfactura,
-				success: function(msg){
-					jAlert("Cambio Finalizado "+msg,"Informacion");
-					location.reload();
-					}
-			});
-		}
-	})
-
-}
-</script>';
-
-		
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-		$data['style']	.= style("jquery.alerts.css");
-
-		$data['extras']  = $extras;		
-
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		$data['title']   = heading('Notas de Entrega ');
-	
-		$data['script']  = $script;
-		$data['script'] .= script('jquery.js');
-		$data["script"] .= script("jquery.alerts.js");
-		$data['script'] .= script('superTables.js');
-		
-		$data['head']    = $this->rapyd->get_head();
-
-		$this->load->view('view_ventanas', $data);
-	}
-
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
-				
+
 		$modbus=array(
 		'tabla'   =>'sinv',
 		'columnas'=>array(
@@ -1089,12 +972,12 @@ function sntefactura(mnumero){
 		'script'  => array('post_modbus_sinv(<#i#>)'),
 		'titulo'  =>'Buscar Articulo');
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
-		
+
 		$mSCLId=array(
 		'tabla'   =>'scli',
 		'columnas'=>array(
 			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
+			'nombre'=>'Nombre',
 			'cirepre'=>'Rif/Cedula',
 			'dire11'=>'Direcci&oacute;n',
 			'tipo'=>'Tipo'),
@@ -1104,20 +987,19 @@ function sntefactura(mnumero){
 		'titulo'  =>'Buscar Cliente',
 		'script'  => array('post_modbus_scli()'));
 		$btnc =$this->datasis->modbus($mSCLId);
-		
+
 		$do = new DataObject("snte");
 		$do->rel_one_to_many('itsnte', 'itsnte', 'numero');
 		$do->pointer('scli' ,'scli.cliente=snte.cod_cli','scli.tipo AS sclitipo','left');
 		$do->rel_pointer('itsnte','sinv','itsnte.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
-		
+
 		$edit = new DataDetails('Nota de entrega', $do);
-		$edit->back_url = site_url('ventas/snte/filteredgrid');
+		$edit->on_save_redirect=false;
 		$edit->set_rel_title('itsnte','Producto <#o#>');
-		
-		$edit->back_url = $this->back_dataedit;
-		
+
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
+		$edit->pre_process('delete' ,'_pre_delete');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -1176,7 +1058,7 @@ function sntefactura(mnumero){
 		$edit->dir_cli->size = 37;
 
 		//$edit->dir_cl1 = new inputField(" ","dir_cl1");
-		//$edit->dir_cl1->size = 55; 
+		//$edit->dir_cl1->size = 55;
 
 		//Para saber que precio se le va a dar al cliente
 		$edit->sclitipo = new hiddenField('', 'sclitipo');
@@ -1265,26 +1147,52 @@ function sntefactura(mnumero){
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons('add_rel');
 		$edit->build();
 
-		$conten['form']  =&  $edit;
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>'Registro guardado',
+				'pk'     =>$edit->_dataobject->pk
+			);
 
-		$data['content'] = $this->load->view('view_snte', $conten,true);
+			echo json_encode($rt);
+		}else{
+			$conten['form']  =&  $edit;
+			$this->load->view('view_snte', $conten);
+		}
+	}
 
-		$data['title']   = heading('Nota de Entrega No. '.$edit->numero->value);
+	function tabla() {
+		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
+		$cliente = $this->datasis->dameval("SELECT cod_cli FROM snte WHERE id='$id'");
+		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM smov WHERE cod_cli='$cliente' AND abonos<>monto AND tipo_doc<>'AB' ORDER BY fecha ";
+		$query = $this->db->query($mSQL);
+		$salida = '';
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida = "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
 
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= phpscript('nformat.js');
+			foreach ($query->result_array() as $row){
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']-$row['abonos']).   "</td>";
+				$salida .= "</tr>";
+				if ( $row['tipo_doc'] == 'FC' or $row['tipo_doc'] == 'ND' or $row['tipo_doc'] == 'GI' )
+					$saldo += $row['monto']-$row['abonos'];
+				else
+					$saldo -= $row['monto']-$row['abonos'];
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table>";
+		}
+		$query->free_result();
 
-		$data['head']    = $this->rapyd->get_head();
-		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-
-		$this->load->view('view_ventanas', $data);
-		
+		echo $salida;
 	}
 
 	function sntefactura(){
@@ -1292,7 +1200,7 @@ function sntefactura(mnumero){
 		$numero  = $this->uri->segment($this->uri->total_segments()-1);
 		$cod_cli = $this->datasis->dameval("SELECT cod_cli FROM snte WHERE numero='$numero'");
 		$fecha   = $this->datasis->dameval("SELECT fecha FROM snte WHERE numero='$numero'");
-		
+
 		//revisa si elimina el nro
 		if ($factura == 0) {
 			$this->db->simple_query("UPDATE snte SET factura='', fechafac=0 WHERE numero='$numero'");
@@ -1342,6 +1250,7 @@ function sntefactura(mnumero){
 		$do->set('stotal'  ,round($stotal,2));
 		$do->set('gtotal'  ,round($gtotal,2));
 		$do->set('impuesto',round($iva   ,2));
+		$do->set('numero'  ,$numero);
 
 		return true;
 	}
@@ -1375,6 +1284,10 @@ function sntefactura(mnumero){
 		}
 	}
 
+	function _pre_delete($do){
+		return false;
+	}
+
 	function _pre_update($do){
 		return false;
 	}
@@ -1385,355 +1298,10 @@ function sntefactura(mnumero){
 	}
 
 
-	function grid(){
-		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
-		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
-		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '';
-		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
-
-		$where = $this->datasis->extjsfiltro($filters,'snte');
-	
-		$this->db->_protect_identifiers=false;
-		$this->db->select('*');
-		$this->db->from('snte');
-
-		if (strlen($where)>1){
-			$this->db->where($where);
-		}
-
-		if ( $sort == '') $this->db->order_by( 'numero', 'desc' );
-
-		$sort = json_decode($sort, true);
-		for ($i=0;$i<count($sort);$i++) {
-			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
-		}
-		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
-		$results = $this->datasis->dameval($sql);
-		$this->db->limit($limit, $start);
-		$query = $this->db->get();
-		$arr = $this->datasis->codificautf8($query->result_array());
-
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
-	}
-
-
-	function tabla() {
-		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
-		$cliente = $this->datasis->dameval("SELECT cod_cli FROM snte WHERE id='$id'");
-		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM smov WHERE cod_cli='$cliente' AND abonos<>monto AND tipo_doc<>'AB' ORDER BY fecha ";
-		$query = $this->db->query($mSQL);
-		$salida = '';
-		$saldo = 0;
-		if ( $query->num_rows() > 0 ){
-			$salida = "<br><table width='100%' border=1>";
-			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
-			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			
-			foreach ($query->result_array() as $row)
-			{
-				$salida .= "<tr>";
-				$salida .= "<td>".$row['tipo_doc']."</td>";
-				$salida .= "<td>".$row['numero'].  "</td>";
-				$salida .= "<td align='right'>".nformat($row['monto']-$row['abonos']).   "</td>";
-				$salida .= "</tr>";
-				if ( $row['tipo_doc'] == 'FC' or $row['tipo_doc'] == 'ND' or $row['tipo_doc'] == 'GI' )
-					$saldo += $row['monto']-$row['abonos'];
-				else
-					$saldo -= $row['monto']-$row['abonos'];
-			}
-			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
-			$salida .= "</table>";
-		}
-		$query->free_result();
-
-
-		echo $salida;
-	}
-
-	function griditsnte(){
-		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
-		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM snte")  ;
-
-		$mSQL = "SELECT * FROM itsnte a JOIN sinv b ON a.codigo=b.codigo WHERE a.numero='$numero' ORDER BY a.codigo";
-		$query = $this->db->query($mSQL);
-		$results =  0; 
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
-	}
-
 	function sclibu(){
 		$numero = $this->uri->segment(4);
 		$id = $this->datasis->dameval("SELECT b.id FROM snte a JOIN scli b ON a.cod_cli=b.cliente WHERE numero='$numero'");
 		redirect('ventas/scli/dataedit/show/'.$id);
 	}
-
-	function snteextjs() {
-		$encabeza='NOTAS DE ENTREGA';
-
-		$modulo = 'snte';
-		$urlajax = 'ventas/snte/';
-		
-		$listados= $this->datasis->listados($modulo);
-		$otros=$this->datasis->otros($modulo, $urlajax);
-
-
-		$columnas = "
-		{ header: 'Numero',      width: 60, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Fecha',       width: 70, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Cliente',     width: 60, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderScli},
-		{ header: 'Nombre',      width:200, sortable: true, dataIndex: 'nombre' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Base',        width: 90, sortable: true, dataIndex: 'stotal' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'IVA',         width: 90, sortable: true, dataIndex: 'impuesto' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Total',       width: 90, sortable: true, dataIndex: 'gtotal' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Vende',       width: 60, sortable: true, dataIndex: 'vende' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Almacen',     width: 60, sortable: true, dataIndex: 'almacen' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Factura',     width: 60, sortable: true, dataIndex: 'factura' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Direccion 1', width:200, sortable: true, dataIndex: 'dir_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Direccion 2', width:200, sortable: true, dataIndex: 'dir_cl1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Orden',       width: 60, sortable: true, dataIndex: 'orden' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Observa',     width:200, sortable: true, dataIndex: 'observa' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'F.Factura',   width: 60, sortable: true, dataIndex: 'fechafac' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Tipo',        width: 60, sortable: true, dataIndex: 'tipo' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Peso',        width: 60, sortable: true, dataIndex: 'peso' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Transaccion', width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Modificado',  width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Id',         width:  60, sortable: true,  dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},";
-
-		$coldeta = "
-	var Deta1Col = [
-		{ header: 'Codigo',       width: 90, sortable: true, dataIndex: 'codigo',    field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv},
-		{ header: 'Descripcion',  width:200, sortable: true, dataIndex: 'desca',     field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Cantidad',     width: 60, sortable: true, dataIndex: 'cana',      field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Precio',       width: 90, sortable: true, dataIndex: 'precio',    field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Importe',      width: 90, sortable: true, dataIndex: 'importe',   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'iva',          width: 90, sortable: true, dataIndex: 'iva',       field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Entregado',    width: 60, sortable: true, dataIndex: 'entregado', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Tipo',         width: 60, sortable: true, dataIndex: 'tipo',      field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'id',           width: 60, sortable: true, dataIndex: 'id',        field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0000')},
-		{ header: 'Modificado',   width: 70, sortable: true, dataIndex: 'modificado',field: { type: 'date' }, filter: { type: 'date' }},
-]";
-
-		$variables='';
-		
-		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-		
-
-		$funciones = "
-function renderScli(value, p, record) {
-	var mreto='';
-	if ( record.data.cod_cli == '' ){
-		mreto = '{0}';
-	} else {
-		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlAjax+'sclibu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	}
-	return Ext.String.format(mreto,	value, record.data.numero );
-}
-
-
-function renderSinv(value, p, record) {
-	var mreto='';
-	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	return Ext.String.format(mreto,	value, record.data.codid );
-}
-
-	";
-
-		$campos = $this->datasis->extjscampos($modulo);
-
-		$stores = "
-	Ext.define('It".$modulo."', {
-		extend: 'Ext.data.Model',
-		fields: [".$this->datasis->extjscampos("it".$modulo)."],
-		proxy: {
-			type: 'ajax',
-			noCache: false,
-			api: {
-				read   : urlAjax + 'gridit".$modulo."',
-				method: 'POST'
-			},
-			reader: {
-				type: 'json',
-				root: 'data',
-				successProperty: 'success',
-				messageProperty: 'message',
-				totalProperty: 'results'
-			}
-		}
-	});
-
-	//////////////////////////////////////////////////////////
-	// create the Data Store
-	var storeIt".$modulo." = Ext.create('Ext.data.Store', {
-		model: 'It".$modulo."',
-		autoLoad: false,
-		autoSync: true,
-		method: 'POST'
-	});
-	
-	//////////////////////////////////////////////////////////
-	//
-	var gridDeta1 = Ext.create('Ext.grid.Panel', {
-		width:   '100%',
-		height:  '100%',
-		store:   storeIt".$modulo.",
-		title:   'Detalle de la NE',
-		iconCls: 'icon-grid',
-		frame:   true,
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		columns: Deta1Col
-	});
-
-	var ".$modulo."TplMarkup = [
-		'<table width=\'100%\' bgcolor=\"#F3F781\">',
-		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR NOTA DE ENTREGA</p></td></tr><tr>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/SNTE/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
-		'<td align=\'center\'>{numero}</td>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/SNTE/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
-		'</table>','nanai'
-	];
-
-	// Al cambiar seleccion
-	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
-		if (selectedRecord.length) {
-			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
-			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
-			numero = selectedRecord[0].data.numero;
-			gridDeta1.setTitle(selectedRecord[0].data.numero+' '+selectedRecord[0].data.nombre);
-			storeIt".$modulo.".load({ params: { numero: numero }});
-			var meco1 = Ext.getCmp('imprimir');
-			Ext.Ajax.request({
-				url: urlAjax +'tabla',
-				params: { numero: numero, id: selectedRecord[0].data.id },
-				success: function(response) {
-					var vaina = response.responseText;
-					".$modulo."TplMarkup.pop();
-					".$modulo."TplMarkup.push(vaina);
-					var ".$modulo."Tpl = Ext.create('Ext.Template', ".$modulo."TplMarkup );
-					meco1.setTitle('Imprimir Compra');
-					".$modulo."Tpl.overwrite(meco1.body, selectedRecord[0].data );
-				}
-			});
-		}
-	});
-";
-
-		$acordioni = "{
-					layout: 'fit',
-					items:[
-						{
-							name: 'imprimir',
-							id: 'imprimir',
-							border:false,
-							html: 'Para imprimir seleccione una Compra '
-						}
-					]
-				},
-";
-
-
-		$dockedItems = "{
-			xtype: 'toolbar',
-			items: [
-				{
-					iconCls: 'icon-add',
-					text: 'Agregar',
-					scope: this,
-					handler: function(){
-						window.open(urlAjax+'dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},
-				{
-					iconCls: 'icon-update',
-					text: 'Modificar',
-					disabled: true,
-					itemId: 'update',
-					scope: this,
-					handler: function(selModel, selections){
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						gridMaest.down('#delete').setDisabled(selections.length === 0);
-						window.open(urlAjax+'dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},{
-					iconCls: 'icon-delete',
-					text: 'Eliminar',
-					disabled: true,
-					itemId: 'delete',
-					scope: this,
-					handler: function() {
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
-									if (selection) {
-										//storeMaest.remove(selection);
-									}
-									storeMaest.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
-					}
-				}
-			]
-		}		
-		";
-
-		$grid2 = ",{
-				itemId: 'viewport-center-detail',
-				activeTab: 0,
-				region: 'south',
-				height: '40%',
-				split: true,
-				margins: '0 0 0 0',
-				preventHeader: true,
-				items: gridDeta1
-			}";
-
-		$titulow = 'Compras';
-		
-		$filtros = "";
-		$features = "
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
-";
-
-		$final = "storeIt".$modulo.".load();";
-
-		$data['listados']    = $listados;
-		$data['otros']       = $otros;
-		$data['encabeza']    = $encabeza;
-		$data['urlajax']     = $urlajax;
-		$data['variables']   = $variables;
-		$data['funciones']   = $funciones;
-		$data['valida']      = $valida;
-		$data['stores']      = $stores;
-		$data['columnas']    = $columnas;
-		$data['campos']      = $campos;
-		$data['titulow']     = $titulow;
-		$data['dockedItems'] = $dockedItems;
-		$data['features']    = $features;
-		$data['filtros']     = $filtros;
-		$data['grid2']       = $grid2;
-		$data['coldeta']     = $coldeta;
-		$data['acordioni']   = $acordioni;
-		$data['final']       = $final;
-		
-		$data['title']  = heading('Notas de Entrega');
-		$this->load->view('extjs/extjsvenmd',$data);
-		
-	}
-*/
 
 }

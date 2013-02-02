@@ -421,7 +421,7 @@ class Sfac extends Controller {
 		));
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'align'         => "'center'",
 			'search'        => 'true',
@@ -460,7 +460,7 @@ class Sfac extends Controller {
 		$avende  = $this->datasis->llenajqselect($mSQL, true );
 
 		$grid->addField('vd');
-		$grid->label('Vende');
+		$grid->label('Vendedor');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $xmes,
@@ -472,7 +472,7 @@ class Sfac extends Controller {
 		));
 
 		$grid->addField('cod_cli');
-		$grid->label('Codigo');
+		$grid->label('Cliente');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -628,7 +628,7 @@ class Sfac extends Controller {
 
 
 		$grid->addField('devolu');
-		$grid->label('Devolu');
+		$grid->label('Devoluci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -655,7 +655,7 @@ class Sfac extends Controller {
 
 
 		$grid->addField('almacen');
-		$grid->label('Almacen');
+		$grid->label('Almac&eacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -743,7 +743,7 @@ class Sfac extends Controller {
 
 
 		$grid->addField('transac');
-		$grid->label('Transaccion');
+		$grid->label('Transacci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -818,7 +818,7 @@ class Sfac extends Controller {
 
 
 		$grid->addField('comision');
-		$grid->label('Comision');
+		$grid->label('Comisi&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1210,7 +1210,7 @@ class Sfac extends Controller {
 */
 
 		$grid->addField('observa');
-		$grid->label('Observacion 1');
+		$grid->label('Observaci&oacute;n 1');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $xmes,
@@ -1222,7 +1222,7 @@ class Sfac extends Controller {
 		));
 
 		$grid->addField('observ1');
-		$grid->label('Observacion 2');
+		$grid->label('Observaci&oacute;n 2');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $xmes,
@@ -1266,7 +1266,7 @@ class Sfac extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 5 }',
-		));
+		));*/
 
 
 		$grid->addField('maestra');
@@ -1279,7 +1279,7 @@ class Sfac extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-*/
+
 
 		$grid->showpager(true);
 		$grid->setWidth('');
