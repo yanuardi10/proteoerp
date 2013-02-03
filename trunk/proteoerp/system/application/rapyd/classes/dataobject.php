@@ -571,7 +571,11 @@ class DataObject{
 	* @return  boolean
 	*/
 	function is_unique($field, $value){
-		$this->db->where($field, $value);
+		if($this->flag_pointer){
+			$this->db->where($this->table.'.'.$field, $value);
+		}else{
+			$this->db->where($field, $value);
+		}
 		$query = $this->db->get($this->table);
 
 		if($query->num_rows()>1){

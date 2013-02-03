@@ -14,26 +14,31 @@ class Sinv extends Controller {
 	}
 
 	function index(){
-		if ( !$this->datasis->iscampo('barraspos','id') ) {
+		$campos=$this->db->list_fields('sinv');
+		if(!$this->datasis->iscampo('barraspos','id') ){
 			$this->db->simple_query('ALTER TABLE barraspos DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE barraspos ADD UNIQUE INDEX codigo (codigo, suplemen)');
 			$this->db->simple_query('ALTER TABLE barraspos ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
 
-		if ( !$this->datasis->iscampo('formatos','tcpdf') ) {
+		if(!$this->datasis->iscampo('formatos','tcpdf') ) {
 			$this->db->simple_query('ALTER TABLE formatos ADD COLUMN tcpdf TEXT NULL COMMENT "Formas TCPDF"');
 		};
 
-		if ( !$this->datasis->iscampo('sinv','url') ) {
+		if(!in_array('url',$campos)) {
 			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN url VARCHAR(200) NULL COMMENT "Pagina Web"');
 		};
 
-		if ( !$this->datasis->iscampo('sinv','ficha') ) {
+		if(!in_array('ficha',$campos)) {
 			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN ficha TEXT NULL COMMENT "Ficha Tecnica"');
 		};
 
+		if(!in_array('maxven',$campos)) {
+			$this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `maxven` INT(10) NULL DEFAULT '0' COMMENT 'Maximo de venta', ADD COLUMN `minven` INT(10) NULL DEFAULT '0' COMMENT 'Minimo de venta' AFTER `maxven`");
+		};
+
+
 		if ( $this->datasis->traevalor('SUNDECOP') == 'S') {
-			$campos = $this->db->list_fields('sinv');
 			if (!in_array('mpps',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `mpps`        VARCHAR(20) NULL  COMMENT 'Numero de Ministerior de Salud'");
 			if (!in_array('cpe',        $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpe`         VARCHAR(20) NULL  COMMENT 'Registro de CPE'");
 			if (!in_array('dcomercial', $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `dcomercial`  INT(6)     NULL  COMMENT 'Destino Comercial'");
@@ -2559,7 +2564,6 @@ class Sinv extends Controller {
 	//
 	//******************************************************************
 	function dataedit($status='',$id='' ) {
-		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit','datadetails');
 
 		$modbus = array(
@@ -2633,7 +2637,8 @@ class Sinv extends Controller {
 
 		if($status=='create' && !empty($id)){
 			$do->load($id);
-			$do->set('codigo', '');
+			$do->set('codigo' , '');
+			$do->set('alterno', '');
 		}
 
 		$edit = new DataDetails('Maestro de Inventario', $do);
@@ -2647,20 +2652,20 @@ class Sinv extends Controller {
 		$edit->back_url = site_url('inventario/sinv/filteredgrid');
 
 		$ultimo ='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
-		$sugerir='<a href="javascript:sugerir();" title="Sugerir un C&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
+		$sugerir='<a href="javascript:sugerir();" title="Sugerir un c&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
 
 		$edit->codigo = new inputField('C&oacute;digo', 'codigo');
 		$edit->codigo->size=15;
 		$edit->codigo->maxlength=15;
-		$edit->codigo->rule = 'trim|strtoupper|callback_chexiste|alpha';
+		$edit->codigo->rule = 'alpha_numeric|trim|strtoupper|callback_chexiste';
 		$edit->codigo->mode = 'autohide';
 		$edit->codigo->append($sugerir);
 		$edit->codigo->append($ultimo);
 
-		$edit->alterno = new inputField('Codigo Alterno', 'alterno');
+		$edit->alterno = new inputField('Alterno', 'alterno');
 		$edit->alterno->size=15;
 		$edit->alterno->maxlength=15;
-		$edit->alterno->rule = 'trim|strtoupper|unique';
+		$edit->alterno->rule = 'trim|strtoupper|callback_chalterno';
 
 		$edit->enlace  = new inputField('Caja', 'enlace');
 		$edit->enlace ->size=15;
@@ -2679,6 +2684,20 @@ class Sinv extends Controller {
 		$edit->aumento->rule='numeric|callback_chfraccion';
 		$edit->aumento->autocomplete = false;
 		//$edit->aumento->append('Solo si es fracci&oacute;n');
+
+		$edit->maxven = new inputField('Venta m&aacute;xima', 'maxven');
+		$edit->maxven->css_class='inputnum';
+		$edit->maxven->insertValue='0';
+		$edit->maxven->size=6;
+		$edit->maxven->rule='numeric';
+		$edit->maxven->autocomplete = false;
+
+		$edit->minven = new inputField('Venta m&iacute;nima', 'minven');
+		$edit->minven->css_class='inputnum';
+		$edit->minven->insertValue='0';
+		$edit->minven->size=6;
+		$edit->minven->rule='numeric|callback_chminven';
+		$edit->minven->autocomplete = false;
 
 		$edit->barras = new inputField('C&oacute;digo Barras', 'barras');
 		$edit->barras->size=15;
@@ -2715,7 +2734,7 @@ class Sinv extends Controller {
 		$AddDepto='<a href="javascript:add_depto();" title="Haz clic para Agregar un nuevo Departamento">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->depto = new dropdownField('Departamento', 'depto');
 		$edit->depto->rule ='required';
-		$edit->depto->style='width:300px;white-space:nowrap;';
+		$edit->depto->style='width:250px;white-space:nowrap;';
 		$edit->depto->option('','Seleccione un Departamento');
 		$edit->depto->options('SELECT depto, CONCAT(depto,\'-\',descrip) descrip FROM dpto WHERE tipo=\'I\' ORDER BY depto');
 		$edit->depto->db_name='dptodepto';
@@ -2724,7 +2743,7 @@ class Sinv extends Controller {
 		$AddLinea='<a href="javascript:add_linea();" title="Haz clic para Agregar una nueva Linea;">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->linea = new dropdownField('L&iacute;nea','linea');
 		$edit->linea->rule ='required';
-		$edit->linea->style='width:300px;';
+		$edit->linea->style='width:250px;';
 		$edit->linea->db_name='linelinea';
 		$edit->linea->pointer=true;
 		$depto=$edit->getval('depto');
@@ -2738,7 +2757,7 @@ class Sinv extends Controller {
 		$AddGrupo='<a href="javascript:add_grupo();" title="Haz clic para Agregar un nuevo Grupo;">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->grupo = new dropdownField('Grupo', 'grupo');
 		$edit->grupo->rule ='required';
-		$edit->grupo->style='width:300px;';
+		$edit->grupo->style='width:250px;';
 
 		$linea=$edit->getval('linea');
 		if($linea!==FALSE){
@@ -2801,37 +2820,37 @@ class Sinv extends Controller {
 		$edit->ficha = new textareaField('Ficha Tecnica', 'ficha');
 		$edit->ficha->rule = 'trim';
 		$edit->ficha->cols = 85;
-		$edit->ficha->rows =11;
+		$edit->ficha->rows = 11;
 
 		$edit->peso  = new inputField('Peso', 'peso');
 		$edit->peso->size=10;
 		$edit->peso->maxlength=12;
 		$edit->peso->css_class='inputnum';
-		$edit->peso->rule='numeric|callback_positivo|trim';
+		$edit->peso->rule='numeric|callback_positivo';
 
 		$edit->alto = new inputField('Alto', 'alto');
 		$edit->alto->size=10;
 		$edit->alto->maxlength=12;
 		$edit->alto->css_class='inputnum';
-		$edit->alto->rule='numeric|callback_positivo|trim';
+		$edit->alto->rule='numeric|callback_positivo';
 
 		$edit->ancho = new inputField('Ancho', 'ancho');
 		$edit->ancho->size=10;
 		$edit->ancho->maxlength=12;
 		$edit->ancho->css_class='inputnum';
-		$edit->ancho->rule='numeric|callback_positivo|trim';
+		$edit->ancho->rule='numeric|callback_positivo';
 
 		$edit->largo = new inputField('Largo', 'largo');
 		$edit->largo->size=10;
 		$edit->largo->maxlength=12;
 		$edit->largo->css_class='inputnum';
-		$edit->largo->rule='numeric|callback_positivo|trim';
+		$edit->largo->rule='numeric|callback_positivo';
 
 		$edit->garantia = new inputField('Garantia', 'garantia');
-		$edit->garantia->size=5;
+		$edit->garantia->size=7;
 		$edit->garantia->maxlength=3;
 		$edit->garantia->css_class='inputonlynum';
-		$edit->garantia->rule='numeric|callback_positivo|trim';
+		$edit->garantia->rule='numeric|callback_positivo';
 
 		$edit->marca = new dropdownField('Marca', 'marca');
 		$edit->marca->rule = 'required';
@@ -2871,7 +2890,7 @@ class Sinv extends Controller {
 		$edit->dolar->maxlength    = 13;
 		$edit->dolar->autocomplete = false;
 
-		$edit->ultimo = new inputField('Ultimo', 'ultimo');
+		$edit->ultimo = new inputField('&Uacute;ltimo', 'ultimo');
 		$edit->ultimo->css_class    = 'inputnum';
 		$edit->ultimo->size         = 10;
 		$edit->ultimo->maxlength    = 13;
@@ -2962,7 +2981,6 @@ class Sinv extends Controller {
 			$edit->$objeto->pointer=true;
 			$edit->$objeto->db_name=$objeto;
 			//$edit->$objeto->type='inputhidden';
-
 		}
 
 		$edit->existen = new inputField('Cantidad Actual','existen');
@@ -2995,14 +3013,16 @@ class Sinv extends Controller {
 		$edit->exdes->css_class='inputonlynum';
 		$edit->exdes->style='background:#F5F6CE;';
 
-		$edit->fechav = new dateField('Ultima Venta','fechav','d/m/Y');
+		$edit->fechav = new dateField('&Uacute;ltima Venta','fechav','d/m/Y');
 		$edit->fechav->readonly = true;
 		$edit->fechav->size=10;
 
 		$edit->fdesde = new dateField('Desde','fdesde','d/m/Y');
+		$edit->fdesde->calendar=false;
 		$edit->fdesde->size=10;
 
 		$edit->fhasta = new dateField('Desde','fhasta','d/m/Y');
+		$edit->fhasta->calendar=false;
 		$edit->fhasta->size=10;
 
 		$edit->bonicant = new inputField('Cant. Bonifica', 'bonicant');
@@ -3134,7 +3154,7 @@ class Sinv extends Controller {
 		$edit->mmargen = new inputField('Margen al Mayor','mmargen');
 		$edit->mmargen->css_class='inputnum';
 		$edit->mmargen->size=10;
-		$edit->mmargen->insertValue=0;
+		$edit->mmargen->insertValue='0';
 		$edit->mmargen->maxlength=10;
 
 		$edit->mmargenplus = new inputField('Descuento +','mmargenplus');
@@ -3145,13 +3165,15 @@ class Sinv extends Controller {
 
 		$edit->pm = new inputField('Descuento al Mayor A','pm');
 		$edit->pm->css_class='inputnum';
+		$edit->pm->rule='numeric';
 		$edit->pm->size=10;
-		$edit->pm->insertValue=0;
+		$edit->pm->insertValue='0';
 		$edit->pm->maxlength=10;
 
 		$edit->pmb = new inputField('Descuento al Mayor B','pmb');
 		$edit->pmb->css_class='inputnum';
-		$edit->pmb->insertValue=0;
+		$edit->pmb->rule='numeric';
+		$edit->pmb->insertValue='0';
 		$edit->pmb->size=10;
 		$edit->pmb->maxlength=10;
 
@@ -3346,31 +3368,18 @@ class Sinv extends Controller {
 
 		$conten['form']  =& $edit;
 
-		//$data['content'] =
 		$this->load->view('view_sinv', $conten );
-		//$data['content'] = $edit->output;
-		//$data['script']  = $script;
-		//$this->load->view('view_sinv', $data);
+	}
 
-
-/*
-		$smenu['link']   = barra_menu('301');
-		$conten['form']  =& $edit;
-
-		$data['content'] = $this->load->view('view_sinv', $conten,true);
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('jquery.alerts.js');
-		$data['script'] .= script('plugins/jquery.blockUI.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script('sinvmaes.js');
-		$data['style']   = style('jquery.alerts.css');
-		$data['style']  .= style('redmond/jquery-ui.css');
-		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading(substr($edit->descrip->value,0,30));
-		$this->load->view('view_ventanas', $data);
-*/
+	function chminven($val){
+		$min=intval($val);
+		$max=intval($this->input->post('maxven'));
+		if($max==0) return true;
+		if($min>=$max){
+			$this->validation->set_message('chminven',"El campo %s no puede ser mayor que el de venta m&aacute;xima.");
+			return false;
+		}
+		return true;
 	}
 
 	function chfraccion($tipo){
@@ -4363,30 +4372,32 @@ class Sinv extends Controller {
 	}
 
 	function chexiste($codigo){
-		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$codigo'");
+		$dbcodigo=$this->db->escape($codigo);
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo=$dbcodigo");
 		if ($check > 0){
-			$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo='$codigo'");
+			$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=$dbcodigo");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el producto $descrip");
-			return FALSE;
-		}else {
-		 return TRUE;
+			return false;
+		}else{
+		 return true;
 		}
 	}
 
-	// Si exsite el codigo Alterno
-	function chexiste2($alterno){
+	// Si existe el codigo Alterno
+	function chalterno($alterno){
 		$alterno = trim($alterno);
-		if ( empty( $alterno) )
+		if (empty($alterno)){
 			return true;
-		else {
-			$codigo = $this->input->post('codigo');
-			$check=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE alterno='$alterno' AND codigo<>".$this->db->escape($codigo));
-			if ($check > 0){
-				$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE alterno='$alterno'");
-				$this->validation->set_message('chexiste2',"El codigo alterno $alterno ya existe para el producto $descrip");
-				return FALSE;
-			}else {
-				return TRUE;
+		}else{
+			if(!$this->validation->_dataobject->is_unique($this->validation->_current_field,$alterno)){
+				$codigo   =$this->validation->_dataobject->get('codigo');
+				if(!empty($codigo)) $ww=' AND codigo<>'.$this->db->escape($codigo); else $ww='';
+				$dbalterno=$this->db->escape($alterno);
+				$descrip  =$this->datasis->dameval("SELECT descrip FROM sinv WHERE alterno=$dbalterno ${ww} LIMIT 1");
+				$this->validation->set_message('chalterno',"El c&oacute;digo alterno $alterno ya existe para el producto $descrip.");
+				return false;
+			}else{
+				return true;
 			}
 		}
 	}

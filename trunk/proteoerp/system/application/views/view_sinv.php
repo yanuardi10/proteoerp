@@ -114,6 +114,8 @@ function ocultatab(){
 
 $(function(){
 	ocultatab();
+	$("#fdesde").datepicker({ dateFormat: "dd/mm/yy" });
+	$("#fhasta").datepicker({ dateFormat: "dd/mm/yy" });
 	$('#maintabcontainer').tabs();
 	$(".inputnum").numeric(".");
 	//totalizarcombo();
@@ -1042,89 +1044,6 @@ function sinvborraprv(mproveed, mcodigo){
 </script>
 <?php }
 if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
-/*
-<table border='0' width="100%">
-	<tr>
-		<td>
-			<?php if($form->_status=='show'){ ?>
-			<table>
-				<tr>
-					<td>&nbsp;</td>
-					<td>&nbsp;
-						<a href='javascript:void(0);' onclick="window.open('<?php echo base_url();?>inventario/sinv/consulta/<?php echo $form->_dataobject->get('id'); ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+', screeny='+((screen.availHeight/2)-300)+'');">
-						<?php
-							$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'30');
-							echo img($propiedad);
-						?>
-						</a>
-					</td>
-					<td>&nbsp;
-						<a href='javascript:sinvcodigo("<?php echo $form->_dataobject->get('id'); ?>")'>
-						<?php
-							$propiedad = array('src' => 'images/cambiocodigo.jpg', 'alt' => 'Cambio de Codigo', 'title' => 'Cambio de codigo','border'=>'0','height'=>'30');
-							echo img($propiedad);
-						?>
-						</a>
-					</td>
-					<td>&nbsp;
-						<a href='javascript:void(0);' onclick='javascript:submitkardex()'>
-						<?php
-							$propiedad = array('src' => 'images/kardex.jpg', 'alt' => 'Kardex de Inventario', 'title' => 'Kardex de Inventario','border'=>'0','height'=>'30');
-							echo img($propiedad);
-						?>
-					</a>
-					<td>&nbsp;
-						<a href='javascript:void(0);' onclick='javascript:sinvbarras("<?php echo $form->_dataobject->get('id'); ?>")'>
-						<?php
-							$propiedad = array('src' => 'images/addcode.png', 'alt' => 'Codigo Suplementarios', 'title' => 'Codigo de Barras Suplementarios','border'=>'0','height'=>'30');
-							echo img($propiedad);
-						?>
-						</a>
-					</td>
-					<td>&nbsp;
-						<a href='javascript:void(0);' onclick='javascript:sinvproveed("<?php echo $form->_dataobject->get('id'); ?>")'>
-						<?php
-							$propiedad = array('src' => 'images/camion.png', 'alt' => 'Codigo en el proveedor', 'title' => 'Codigo en el proveedor','border'=>'0','height'=>'30');
-							echo img($propiedad);
-						?>
-					</a>
-					</td>
-					<td>&nbsp;
-						<a href='javascript:void(0);' onclick='javascript:sinvpromo("<?php echo $form->_dataobject->get('id'); ?>")'>
-						<?php
-							$propiedad = array('src' => 'images/descuento.jpg', 'alt' => 'Descuentos y Promociones', 'title' => 'Descuentos y Promociones','border'=>'0','height'=>'30');
-							echo img($propiedad);
-						?>
-						</a>
-					</td>
-					<td>&nbsp;
-						<a href='javascript:void(0);' onclick='javascript:sinvdescu("<?php echo $form->_dataobject->get('id'); ?>")'>
-						<?php
-							$propiedad = array('src' => 'images/cliente.jpg', 'alt' => 'Descuentos por Cliente', 'title' => 'Descuentos por Cliente','border'=>'0','height'=>'30');
-							echo img($propiedad);
-						?>
-						</a>
-					</td>
-					<td>&nbsp;
-						<a href='javascript:void(0);'
-						onclick="window.open('<?php echo base_url(); ?>inventario/fotos/dataedit/<?php echo $form->_dataobject->get('id'); ?>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" >
-						<?php
-							$propiedad = array('src' => 'images/camara.jpg', 'alt' => 'Imagenes', 'title' => 'Imagenes','border'=>'0','height'=>'30');
-							echo img($propiedad);
-						?>
-						</a>
-					</td>
-				</tr>
-			</table>
-			<?php } // show ?>
-		</td>
-		<td align='center' valign='middle'>
-			<?php  if ($form->activo->value=='N') echo "<div style='font-size:14px;font-weight:bold;background: #B40404;color: #FFFFFF'>***DESACTIVADO***</div>"; ?>&nbsp;
-		</td>
-		<td align='right'><?php echo $container_tr; ?></td>
-	</tr>
-</table>
-*/
 ?>
 
 <fieldset style='border: 1px outset #9AC8DA;background: #FFFFF9;'>
@@ -1133,13 +1052,8 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<td colspan='2' valign='top'>
 			<table border=0 width="100%">
 				<tr>
-					<td class="littletableheaderc"><? echo $form->codigo->label ?></td>
-					<?php if( $form->_status == 'modify' ) { ?>
-					<td class="littletablerow">
-					<input readonly value="<?php echo $form->codigo->output ?>" class='input' size='15' style='background: #F5F6CE;'  /></td>
-					<?php } else { ?>
-					<td class="littletablerow"><?php echo $form->codigo->output ?></td>
-					<?php } ?>
+					<td class="littletableheaderc"><?php echo $form->codigo->label; ?></td>
+					<td class="littletablerow"><?php echo $form->codigo->output; ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'>Alterno</td>
@@ -1171,21 +1085,21 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			<table border=0 width="100%">
 				<tr>
 					<td class='littletableheaderc'><?php echo $form->descrip->label  ?></td>
-					<td colspan="3" class="littletablerow">    <?php echo $form->descrip->output ?></td>
+					<td colspan="3" class="littletablerow"> <?php echo $form->descrip->output; ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'>Adicional</td>
-					<td colspan="3" class="littletablerow"><?php echo $form->descrip2->output   ?></td>
+					<td colspan="3" class="littletablerow"><?php echo $form->descrip2->output; ?></td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?php echo $form->marca->label ?></td>
-					<td class="littletablerow"> <?php echo $form->marca->output   ?></td>
+					<td class='littletableheaderc'><?php echo $form->marca->label;  ?></td>
+					<td class="littletablerow"> <?php echo $form->marca->output;    ?></td>
 					<td class='littletableheaderc'><?php echo $form->ubica->label;  ?></td>
 					<td class="littletablerow">    <?php echo $form->ubica->output; ?></td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?php echo $form->modelo->label ?></td>
-					<td class="littletablerow">    <?php echo $form->modelo->output   ?></td>
+					<td class='littletableheaderc'><?php echo $form->modelo->label;  ?></td>
+					<td class="littletablerow">    <?php echo $form->modelo->output; ?></td>
 				</tr>
 			</table>
 		</td>
@@ -1194,38 +1108,14 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<td colspan='4'>
 			<table width="100%" border='0' style="border-collapse;border:1px dashed">
 				<tr>
-					<td  valign='top'  align='center'>
-						<table border='0' >
-							<tr>
-								<td width="40" class="littletableheaderc"><?php echo $form->tipo->label ?></td>
-								<td class="littletablerow"><?php echo $form->tipo->output   ?></td>
-							</tr>
-						</table>
-					</td>
-						<td valign='top' align='center'>
-						<table border='0' >
-							<tr>
-								<td class='littletableheaderc'><?php echo $form->activo->label ?></td>
-								<td class="littletablerow"><?php echo $form->activo->output   ?></td>
-							</tr>
-						</table>
-					</td>
-					<td valign='top'  align='center'>
-						<table border='0'>
-							<tr>
-								<td width='50' class="littletableheaderc"><?php echo $form->iva->label   ?></td>
-								<td class="littletablerow" ><?php echo $form->iva->output ?></td>
-							</tr>
-						</table>
-					</td>
-					<td valign='top'  align='center'>
-						<table border='0'>
-							<tr>
-								<td width='100' class="littletableheaderc"><?php echo $form->exento->label   ?></td>
-								<td class="littletablerow" ><?php echo $form->exento->output ?></td>
-							</tr>
-						</table>
-					</td>
+					<td class="littletablerow"><?php echo $form->tipo->label;    ?></td>
+					<td class="littletablerow"><?php echo $form->tipo->output;   ?></td>
+					<td class='littletablerow'><?php echo $form->activo->label;  ?></td>
+					<td class="littletablerow"><?php echo $form->activo->output; ?></td>
+					<td class="littletablerow"><?php echo $form->iva->label;     ?></td>
+					<td class="littletablerow"><?php echo $form->iva->output;    ?></td>
+					<td class="littletablerow"><?php echo $form->exento->label;  ?></td>
+					<td class="littletablerow"><?php echo $form->exento->output; ?></td>
 				</tr>
 			</table>
 		</td>
@@ -1328,6 +1218,21 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 				<tr>
 					<td class='littletableheaderc'><?php echo $form->grupo->label ?></td>
 					<td nowrap class="littletablerow" id='td_grupo'><?php echo $form->grupo->output   ?></td>
+				</tr>
+			</table>
+		</td>
+		<td>
+			<table border='0' style='border-collapse;border: 1px dotted' >
+				<tr>
+					<td class='littletableheaderc'><?php echo $form->maxven->label ?></td>
+					<td class="littletablerow"><?php  echo $form->maxven->output   ?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc'><?php echo $form->minven->label ?></td>
+					<td class="littletablerow"><?php echo $form->minven->output?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc' style="text-align:center" colspan='2'><b>*(0)Cero para desactivar</b></td>
 				</tr>
 			</table>
 		</td>
@@ -1756,10 +1661,12 @@ if ($query->num_rows()>0 ) {
 				<legend class="titulofieldset" >Descuentos al Mayor</legend>
 				<table width='100%'>
 				<tr>
-					<td colspan="2" class="littletablerow" align='right'><?php echo $form->pm->label  ?>%</td>
-					<td colspan="2" class="littletablerow" align='left'><?php echo $form->pm->output ?></td>
-					<td colspan="2" class="littletablerow" align='right'><?php echo $form->mmargen->label  ?>%</td>
-					<td colspan="2" class="littletablerow" align='left'><?php echo $form->mmargen->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->mmargen->label      ?>%</td>
+					<td class="littletablerow" align='left' ><?php echo $form->mmargen->output     ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->pm->label           ?>%</td>
+					<td class="littletablerow" align='left' ><?php echo $form->pm->output          ?></td>
+					<td class="littletablerow" align='left' ><?php echo $form->mmargenplus->label  ?>%</td>
+					<td class="littletablerow" align='right'><?php echo $form->mmargenplus->output ?></td>
 				</tr>
 				</table>
 				</fieldset>
@@ -1771,19 +1678,17 @@ if ($query->num_rows()>0 ) {
 				<legend class="titulofieldset" >Bonos por volumen</legend>
 				<table width='100%'>
 				<tr>
-					<td class="littletablerow" >Inicio</td>
+					<td class="littletablerow" >Fecha de inicio</td>
 					<td class="littletablerow" align='right'><?php echo $form->fdesde->output ?></td>
-					<td class="littletablerow">si compra</td>
-					<td class="littletablerow" align='right'><?php echo $form->bonicant->output ?></td>
-				</tr><tr>
-					<td class="littletablerow">Fin</td>
+					<td class="littletablerow">Fecha de fin</td>
 					<td class="littletablerow" align='right'><?php echo $form->fhasta->output ?></td>
-					<td class="littletablerow">adicional </td>
+				</tr><tr>
+					<td class="littletablerow">Si compra</td>
+					<td class="littletablerow" align='right'><?php echo $form->bonicant->output ?></td>
+					<td class="littletablerow">se bonifica con </td>
 					<td class="littletablerow" align='right'><?php echo $form->bonifica->output ?></td>
 				</tr><tr>
-					<td>&nbsp;</td>	<td>&nbsp;</td>
-					<td class="littletablerow"><?php echo $form->mmargenplus->label ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->mmargenplus->output ?></td>
+					<td colspan='4' class="littletablerow" >&nbsp;</td>
 				</tr>
 				</table>
 				</fieldset>
