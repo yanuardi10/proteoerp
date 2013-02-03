@@ -623,7 +623,7 @@ class DataDetails extends DataForm{
 	function _details_fields(){
 		$this->_fields = array();
 		$max_count=0;
-		$object = (get_object_vars($this));
+		$object   =(get_object_vars($this));
 		foreach ($object as $property_name=>$property){
 			if (is_object($property)){
 				if (is_subclass_of($property, 'objField')){
@@ -637,7 +637,6 @@ class DataDetails extends DataForm{
 							}else{
 								//$this->_dataobject->data_rel=array();
 								$max=$this->rel_count($this->$property_name->name,$property->rel_id);
-
 
 								$this->max_rel_count[$property->rel_id]=$max;
 								$max_count=$max_count+$max;
@@ -698,8 +697,11 @@ class DataDetails extends DataForm{
 				}
 			}
 		}
-		if($max_count==0 && !in_array($property->rel_id,$this->_except))
-			$this->_dataobject->save_rel=false;
+		if($max_count==0){
+			if(is_object($property) && !in_array($property->rel_id,$this->_except)){
+				$this->_dataobject->save_rel=false;
+			}
+		}
 		$this->details_expand=true;
 	}
 

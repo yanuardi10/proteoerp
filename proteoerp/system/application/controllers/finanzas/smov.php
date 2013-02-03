@@ -1626,6 +1626,10 @@ class Smov extends Controller {
 				$do->error_message_ar['pre_ins']='El monto cobrado no coincide con el monto de la la transacci&oacute;n';
 				return false;
 			}
+			if($itabono==0){
+				$do->error_message_ar['pre_ins']='Un Abono tiene que estar relacionado con una deuda, de lo contrario seria un anticipo.';
+				return false;
+			}
 		}
 		//fin de las validaciones
 		$do->set('monto',$itabono);
