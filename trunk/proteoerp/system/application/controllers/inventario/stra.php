@@ -23,10 +23,9 @@ class Stra extends Controller {
 		redirect($this->url.'jqdatag');
 	}
 
-	//***************************
+	//******************************************************************
 	//Layout en la Ventana
-	//
-	//***************************
+	//******************************************************************
 	function jqdatag(){
 
 		$grid = $this->defgrid();
@@ -73,9 +72,9 @@ class Stra extends Controller {
 		$this->load->view('jqgrid/crud2',$param);
 	}
 
-	//***************************
+	//******************************************************************
 	//Funciones de los Botones
-	//***************************
+	//******************************************************************
 	function bodyscript( $grid0 ){
 		$bodyscript = '		<script type="text/javascript">';
 
@@ -163,9 +162,9 @@ class Stra extends Controller {
 		return $bodyscript;
 	}
 
-	//***************************
+	//******************************************************************
 	//Definicion del Grid y la Forma
-	//***************************
+	//******************************************************************
 	function defgrid( $deployed = false ){
 		$i      = 1;
 		$editar = "false";
@@ -450,9 +449,9 @@ class Stra extends Controller {
 		}
 	}
 
-	/**
-	* Busca la data en el Servidor por json
-	*/
+	//******************************************************************
+	// Busca la data en el Servidor por json
+	//******************************************************************
 	function getdata(){
 		$grid       = $this->jqdatagrid;
 
@@ -464,9 +463,9 @@ class Stra extends Controller {
 		echo $rs;
 	}
 
-	/**
-	* Guarda la Informacion
-	*/
+	//******************************************************************
+	// Guarda la Informacion
+	//******************************************************************
 	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
@@ -489,26 +488,14 @@ class Stra extends Controller {
 
 	}
 
-	//***************************
+	//******************************************************************
 	//Definicion del Grid y la Forma
-	//***************************
+	//******************************************************************
 	function defgridit( $deployed = false ){
 		$i      = 1;
 		$editar = "false";
 
 		$grid  = new $this->jqdatagrid;
-/*
-		$grid->addField('numero');
-		$grid->label('Numero');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:8, maxlength: 8 }',
-		));
-*/
 
 		$grid->addField('codigo');
 		$grid->label('Codigo');
@@ -712,9 +699,9 @@ class Stra extends Controller {
 		}
 	}
 
-	/**
-	* Busca la data en el Servidor por json
-	*/
+	//******************************************************************
+	// Busca la data en el Servidor por json
+	//******************************************************************
 	function getdatait($id = 0){
 
 
@@ -732,9 +719,9 @@ class Stra extends Controller {
 
 	}
 
-	/**
-	* Guarda la Informacion
-	*/
+	//******************************************************************
+	// Guarda la Informacion
+	//******************************************************************
 	function setDatait(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
@@ -857,13 +844,13 @@ class Stra extends Controller {
 
 		$edit->envia = new dropdownField('Env&iacute;a', 'envia');
 		$edit->envia->option('','Seleccionar');
-		$edit->envia->options('SELECT ubica,ubides FROM caub ORDER BY ubica');
+		$edit->envia->options('SELECT ubica, CONCAT(ubides," (",ubica,")") FROM caub WHERE invfis<>"S" ORDER BY ubides');
 		$edit->envia->rule ='required';
 		$edit->envia->style='width:200px;';
 
 		$edit->recibe = new dropdownField('Recibe', 'recibe');
 		$edit->recibe->option('','Seleccionar');
-		$edit->recibe->options('SELECT ubica,ubides FROM caub ORDER BY ubica');
+		$edit->recibe->options('SELECT ubica, CONCAT(ubides," (",ubica,")") FROM caub WHERE invfis<>"S" ORDER BY ubides');
 		$edit->recibe->rule ='required|callback_chrecibe';
 		$edit->recibe->style='width:200px;';
 
@@ -872,7 +859,9 @@ class Stra extends Controller {
 		$edit->observ1->size =32;
 		$edit->observ1->maxlength =30;
 
-		//comienza el detalle
+		//**************************************************************
+		// Comienza el Detalle
+		//**************************************************************
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->db_name='codigo';
 		$edit->codigo->append($btn);
@@ -932,6 +921,9 @@ class Stra extends Controller {
 		}
 	}
 
+	//******************************************************************
+	//  Aparta Mercancia en Ordenes de Produccion
+	//******************************************************************
 	function dataeditordp($numero,$esta){
 		if(!isset($_POST['codigo_0'])){
 			//SELECT c.codigo
@@ -1099,7 +1091,9 @@ class Stra extends Controller {
 		return false;
 	}
 
+	//******************************************************************
 	//Hace la consolidacion del cierre de los productos lacteos
+	//******************************************************************
 	function consolidar($id){
 		$dbid     = $this->db->escape($id);
 
@@ -1201,7 +1195,9 @@ class Stra extends Controller {
 	}
 
 
+	//******************************************************************
 	//Hace la reservacion del material para una orden de produccion
+	//******************************************************************
 	function creadordp($id_ordp){
 		$url='inventario/ordp/dataedit/show/'.$id_ordp;
 		$this->rapyd->uri->keep_persistence();
@@ -1265,7 +1261,9 @@ class Stra extends Controller {
 		}
 	}
 
+	//******************************************************************
 	//Termina la produccion
+	//******************************************************************
 	function creadordpt($id_ordp){
 		$error=0;
 		$url='inventario/ordp/dataedit/show/'.$id_ordp;
@@ -1462,3 +1460,4 @@ class Stra extends Controller {
 	}
 
 }
+?>
