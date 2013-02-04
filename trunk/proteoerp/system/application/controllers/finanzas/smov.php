@@ -9,7 +9,7 @@ class Smov extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		$this->datasis->modulo_id('502',1);
+		$this->datasis->modulo_id('525',1);
 	}
 
 	function index(){
@@ -18,6 +18,7 @@ class Smov extends Controller {
 			$this->db->simple_query('ALTER TABLE smov ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE smov ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
+		$this->datasis->creaintramenu(array('modulo'=>'525','titulo'=>'Movimiento de Clientes','mensaje'=>'Movimiento de Clientes','panel'=>'CLIENTES','ejecutar'=>'finanzas/smov','target'=>'popu','visible'=>'S','pertenece'=>'5','ancho'=>900,'alto'=>600));
 		redirect($this->url.'jqdatag');
 	}
 
