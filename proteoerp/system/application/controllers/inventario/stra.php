@@ -14,11 +14,9 @@ class Stra extends Controller {
 	}
 
 	function index(){
-		if ( !$this->datasis->iscampo('stra','id') ) {
-			$this->db->simple_query('ALTER TABLE stra DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE stra ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE stra ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};
+		$this->instalar();
+		//$mSQL = "UPDATE itstra AS a JOIN stra AS b ON a.numero=b.numero SET a.idstra=b.id";
+		//$this->db->simple_query($mSQL);
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -52,8 +50,10 @@ class Stra extends Controller {
 
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar Transferencia")
+			array('id'=>'fedita',  'title'=>'Agregar Transferencia'),
+			array('id'=>'fshow' ,  'title'=>'Ver Transferencia')
 		);
+
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$param['WestPanel']    = $WestPanel;
@@ -94,6 +94,20 @@ class Stra extends Controller {
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
 			})
+		};';
+
+		$bodyscript .= '
+		function strashow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
 		};';
 
 		$bodyscript .= '
@@ -155,10 +169,25 @@ class Stra extends Controller {
 				allFields.val( "" ).removeClass( "ui-state-error" );
 			}
 		});';
+
+		$bodyscript .= '
+			$("#fshow").dialog({
+				autoOpen: false, height: 500, width: 700, modal: true,
+				buttons: {
+					"Aceptar": function() {
+						$("#fshow").html("");
+						$(this).dialog( "close" );
+					},
+				},
+				close: function() {
+					$("#fshow").html("");
+				}
+			});';
+
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
-		$bodyscript .= "";
 		return $bodyscript;
 	}
 
@@ -172,7 +201,7 @@ class Stra extends Controller {
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;;mero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -197,7 +226,7 @@ class Stra extends Controller {
 
 
 		$grid->addField('envia');
-		$grid->label('Envia');
+		$grid->label('Env&iacute;a');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -221,7 +250,7 @@ class Stra extends Controller {
 
 
 		$grid->addField('observ1');
-		$grid->label('Observaciones 1');
+		$grid->label('Observaciones');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -245,7 +274,7 @@ class Stra extends Controller {
 
 
 		$grid->addField('totalg');
-		$grid->label('Totalg');
+		$grid->label('Monto total');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -259,7 +288,7 @@ class Stra extends Controller {
 		));
 
 
-		$grid->addField('tratot');
+		/*$grid->addField('tratot');
 		$grid->label('Tratot');
 		$grid->params(array(
 			'search'        => 'true',
@@ -271,7 +300,7 @@ class Stra extends Controller {
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
+		));*/
 
 
 		$grid->addField('estampa');
@@ -312,7 +341,7 @@ class Stra extends Controller {
 
 
 		$grid->addField('transac');
-		$grid->label('Transac');
+		$grid->label('Transaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -335,7 +364,7 @@ class Stra extends Controller {
 		));
 
 
-		$grid->addField('numeen');
+		/*$grid->addField('numeen');
 		$grid->label('Numeen');
 		$grid->params(array(
 			'search'        => 'true',
@@ -356,11 +385,11 @@ class Stra extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:8, maxlength: 8 }',
-		));
+		));*/
 
 
 		$grid->addField('ordp');
-		$grid->label('Ordp');
+		$grid->label('O.Prod.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -372,7 +401,7 @@ class Stra extends Controller {
 
 
 		$grid->addField('esta');
-		$grid->label('Esta');
+		$grid->label('Estaci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -395,7 +424,7 @@ class Stra extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-		$grid->addField('id');
+		/*$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
 			'align'    => "'center'",
@@ -403,8 +432,7 @@ class Stra extends Controller {
 			'editable' => 'false',
 			'search'   => 'false',
 			'hidden'   => 'true'
-		));
-
+		));*/
 
 		$grid->showpager(true);
 		$grid->setWidth('');
@@ -434,7 +462,7 @@ class Stra extends Controller {
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("\t\taddfunc: straadd,\n\t\teditfunc: straedit");
+		$grid->setBarOptions('addfunc: straadd,editfunc: straedit,viewfunc: strashow');
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -498,7 +526,7 @@ class Stra extends Controller {
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('codigo');
-		$grid->label('Codigo');
+		$grid->label('C&oacute;digo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -510,7 +538,7 @@ class Stra extends Controller {
 
 
 		$grid->addField('descrip');
-		$grid->label('Descripcion');
+		$grid->label('Descripci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -639,7 +667,6 @@ class Stra extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-*/
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -651,7 +678,6 @@ class Stra extends Controller {
 			'search'        => 'false'
 		));
 
-/*
 		$grid->addField('modificado');
 		$grid->label('Modificado');
 		$grid->params(array(
@@ -703,8 +729,6 @@ class Stra extends Controller {
 	// Busca la data en el Servidor por json
 	//******************************************************************
 	function getdatait($id = 0){
-
-
 		if ($id === 0 ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM stra");
 		}
@@ -727,7 +751,7 @@ class Stra extends Controller {
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = '??????';
 		$check  = 0;
 
 		unset($data['oper']);
@@ -1095,20 +1119,20 @@ class Stra extends Controller {
 	//Hace la consolidacion del cierre de los productos lacteos
 	//******************************************************************
 	function consolidar($id){
-		$dbid     = $this->db->escape($id);
+		$dbid = $this->db->escape($id);
 
 		$lcierre_cana=$this->datasis->dameval('SELECT COUNT(*) FROM lcierre WHERE id='.$dbid);
 		if($lcierre_cana>0){
 			$fecha    = $this->datasis->dameval('SELECT fecha FROM lcierre WHERE id='.$dbid);
 			$dbfecha  = $this->db->escape($fecha);
-			$sinvlec = $this->datasis->damerow('SELECT codigo,descrip FROM sinv WHERE descrip LIKE \'%LECHE%CRUDA%\' LIMIT 1');
-			$almacen  = '0001';
+			$sinvlec  = $this->datasis->damerow('SELECT codigo,descrip FROM sinv WHERE descrip LIKE \'%LECHE%CRUDA%\' LIMIT 1');
+			$almacen  = $this->datasis->traevalor('ALMACEN','Almacen principal');
 
-			$inventario= $this->datasis->dameval("SELECT SUM(inventario)        AS val FROM lprod WHERE fecha=$dbfecha");
-			$recibido  = $this->datasis->dameval("SELECT SUM(lista)             AS val FROM lrece WHERE fecha=$dbfecha");
-			$producido = $this->datasis->dameval("SELECT SUM(litros-inventario) AS val FROM lprod WHERE fecha=$dbfecha");
+			$inventario= $this->datasis->dameval("SELECT SUM(inventario)        AS val FROM lprod WHERE fecha=$dbfecha"); //Litros usado de inventario
+			$recibido  = $this->datasis->dameval("SELECT SUM(litros)            AS val FROM lrece WHERE fecha=$dbfecha"); //Litros recibidos
+			$producido = $this->datasis->dameval("SELECT SUM(litros-inventario) AS val FROM lprod WHERE fecha=$dbfecha"); //Litros recibidos usados en produccion
 
-			$enfria = $recibido-$producido;
+			$enfria = $recibido-$producido; //Litros que quedan para enfriar
 
 			$this->genesal=false;
 			$mSQL="INSERT IGNORE INTO caub  (ubica,ubides,gasto) VALUES ('PROD','ALMACEN DE PRODUCCION','S')";
@@ -1128,26 +1152,27 @@ class Stra extends Controller {
 			$this->db->from('itlcierre AS a');
 			$this->db->join('sinv AS b','a.codigo=b.codigo');
 			$this->db->where('a.id_lcierre' , $id);
+			$this->db->where('a.peso >' , 0);
 			$mSQL_2 = $this->db->get();
 			$row =$mSQL_2->result();
 
 			foreach ($row as $ind=>$itrow){
-				$ind='codigo_'.$ind;
-				$_POST[$ind] = $itrow->codigo;
-				$ind='descrip_'.$ind;
-				$_POST[$ind] = $itrow->descrip;
-				$ind='cantidad_'.$ind;
-				$_POST[$ind] = $itrow->peso;
+				$iind='codigo_'.$ind;
+				$_POST[$iind] = $itrow->codigo;
+				$iind='descrip_'.$ind;
+				$_POST[$iind] = $itrow->descrip;
+				$iind='cantidad_'.$ind;
+				$_POST[$iind] = $itrow->peso;
 			}
 			//Mete la leche sobrante del dia a inventario
 			if($enfria > 0){
 				$ind++;
-				$ind='codigo_'.$ind;
-				$_POST[$ind] = $sinvlec['codigo'];
-				$ind='descrip_'.$ind;
-				$_POST[$ind] = $sinvlec['descrip'];
-				$ind='cantidad_'.$ind;
-				$_POST[$ind] = $enfria ;
+				$iind='codigo_'.$ind;
+				$_POST[$iind] = $sinvlec['codigo'];
+				$iind='descrip_'.$ind;
+				$_POST[$iind] = $sinvlec['descrip'];
+				$iind='cantidad_'.$ind;
+				$_POST[$iind] = $enfria ;
 			}
 			//Fin de la leche sobrante
 
@@ -1177,12 +1202,12 @@ class Stra extends Controller {
 				);
 
 				$ind=0;
-				$ind='codigo_'.$ind;
-				$_POST[$ind] = $sinvlec['codigo'];
-				$ind='descrip_'.$ind;
-				$_POST[$ind] = $sinvlec['descrip'];
-				$ind='cantidad_'.$ind;
-				$_POST[$ind] = $enfria ;
+				$iind='codigo_'.$ind;
+				$_POST[$iind] = $sinvlec['codigo'];
+				$iind='descrip_'.$ind;
+				$_POST[$iind] = $sinvlec['descrip'];
+				$iind='cantidad_'.$ind;
+				$_POST[$iind] = $inventario;
 
 				$rt=$this->dataedit();
 				if(strripos($rt,'Guardada')){
@@ -1446,18 +1471,24 @@ class Stra extends Controller {
 	}
 
 	function instalar(){
-		if(!$this->db->field_exists('ordp', 'stra')){
+		$campos=$this->db->list_fields('stra');
+
+		if(!in_array('id',$campos)){
+			$this->db->simple_query('ALTER TABLE stra DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE stra ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE stra ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		}
+
+		if(!in_array('ordp',$campos)){
 			$mSQL="ALTER TABLE `stra`
-			ADD COLUMN `ordp` VARCHAR(8) NULL DEFAULT NULL AFTER `numere`,
-			ADD COLUMN `esta` VARCHAR(5) NULL DEFAULT NULL AFTER `ordp`";
+			ADD COLUMN `ordp` VARCHAR(8) NULL DEFAULT NULL,
+			ADD COLUMN `esta` VARCHAR(5) NULL DEFAULT NULL ";
 			$this->db->simple_query($mSQL);
 		}
 
-		if(!$this->db->field_exists('tipoordp', 'stra')){
-			$mSQL="ALTER TABLE `stra` ADD COLUMN `tipoordp` CHAR(1) NULL DEFAULT NULL COMMENT 'Si es entrega a estacion o retiro de estacion' AFTER `esta`";
+		if(!in_array('tipoordp',$campos)){
+			$mSQL="ALTER TABLE `stra` ADD COLUMN `tipoordp` CHAR(1) NULL DEFAULT NULL COMMENT 'Si es entrega a estacion o retiro de estacion'";
 			$this->db->simple_query($mSQL);
 		}
 	}
-
 }
-?>

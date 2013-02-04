@@ -40,19 +40,19 @@ class Lprod extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprime", "img"=>"assets/default/images/print.png","alt" => 'Reimprimir',"label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array('id'=>'imprime', 'img'=>'assets/default/images/print.png','alt' => 'Reimprimir','label'=>'Reimprimir Documento'));
 
 		if($this->datasis->sidapuede('LCIERRE','INCLUIR%')){
-			$grid->wbotonadd(array("id"=>"bcierre", "img"=>"images/candado.png"             ,"alt" => 'Cierre Producci&oacute;n',"label"=>"Cierre Producci&oacute;n"));
+			$grid->wbotonadd(array('id'=>'bcierre', 'img'=>'images/candado.png'             ,'alt' => 'Cierre Producci&oacute;n','label'=>'Cierre Producci&oacute;n'));
 		}
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
-		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+		$centerpanel = $grid->centerpanel( $id = 'radicional', $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fedita" , "title"=>"Agregar/Editar Pedido"),
-			array("id"=>"fshow"  , "title"=>"Mostrar registro")
+			array('id'=>'fedita' , 'title'=>'Agregar/Editar Pedido'),
+			array('id'=>'fshow'  , 'title'=>'Mostrar registro')
 		);
 
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
