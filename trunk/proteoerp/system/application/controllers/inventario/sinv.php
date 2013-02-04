@@ -5275,6 +5275,4 @@ class Sinv extends Controller {
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
-
 }
-?>

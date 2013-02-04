@@ -228,7 +228,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'align'        => "'center'",
 			'search'       => 'true',
@@ -320,7 +320,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('num_ref');
-		$grid->label('Num. Refer');
+		$grid->label('Num.Ref');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -330,7 +330,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('observa1');
-		$grid->label('Observa1');
+		$grid->label('Observaci&oacute;n 1');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -340,7 +340,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('observa2');
-		$grid->label('Observa2');
+		$grid->label('Observaci&oacute;n 2');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -359,7 +359,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('tipo_op');
-		$grid->label('Tipo_op');
+		$grid->label('Tipo.Op');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -369,7 +369,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('fecha_op');
-		$grid->label('Fecha_op');
+		$grid->label('Fecha.Op');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -382,7 +382,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('num_op');
-		$grid->label('Num_op');
+		$grid->label('Num.Op');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -392,7 +392,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('ppago');
-		$grid->label('Ppago');
+		$grid->label('P.Pago');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -407,7 +407,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('reten');
-		$grid->label('Reten');
+		$grid->label('R.ISLR');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -422,7 +422,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('codigo');
-		$grid->label('Codigo');
+		$grid->label('C&oacute;digo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -432,7 +432,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('descrip');
-		$grid->label('Descripcion');
+		$grid->label('Descripci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -486,7 +486,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('transac');
-		$grid->label('Transac');
+		$grid->label('Transac&iacute;on');
 		$grid->params(array(
 			'align'         => "'center'",
 			'search'        => 'true',
@@ -497,7 +497,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('origen');
-		$grid->label('Origen');
+		$grid->label('Or&iacute;gen');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -522,7 +522,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('mora');
-		$grid->label('Mora');
+		$grid->label('I.Mora');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -537,7 +537,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('reteiva');
-		$grid->label('Reteiva');
+		$grid->label('R.IVA');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -562,7 +562,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('nfiscal');
-		$grid->label('Nfiscal');
+		$grid->label('N.Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'true',
@@ -572,7 +572,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('montasa');
-		$grid->label('Montasa');
+		$grid->label('Base G.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -587,7 +587,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('monredu');
-		$grid->label('Monredu');
+		$grid->label('Base R.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -602,7 +602,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('monadic');
-		$grid->label('Monadic');
+		$grid->label('Base A.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -617,7 +617,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('tasa');
-		$grid->label('Tasa');
+		$grid->label('Impuesto G.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -632,7 +632,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('reducida');
-		$grid->label('Reducida');
+		$grid->label('Impuesto R.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -647,7 +647,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('sobretasa');
-		$grid->label('Sobretasa');
+		$grid->label('Impuesto A.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -677,7 +677,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('fecdoc');
-		$grid->label('Fecdoc');
+		$grid->label('F.Documento');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -690,7 +690,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('nroriva');
-		$grid->label('Nroriva');
+		$grid->label('N.Ret.IVA');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -700,7 +700,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('emiriva');
-		$grid->label('Emiriva');
+		$grid->label('Emision R.IVA');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -723,7 +723,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('depto');
-		$grid->label('Depto');
+		$grid->label('Depto.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -733,7 +733,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('maqfiscal');
-		$grid->label('Maqfiscal');
+		$grid->label('Maq.Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
@@ -756,7 +756,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('ningreso');
-		$grid->label('Ningreso');
+		$grid->label('N.Ingreso');
 		$grid->params(array(
 			'align'         => "'center'",
 			'search'        => 'true',
@@ -767,7 +767,7 @@ class Smov extends Controller {
 
 
 		$grid->addField('ncredito');
-		$grid->label('Ncredito');
+		$grid->label('N.Cr&eacute;dito');
 		$grid->params(array(
 			'align'         => "'center'",
 			'search'        => 'true',
@@ -776,17 +776,7 @@ class Smov extends Controller {
 			'edittype'      => "'text'",
 		));
 
-		$grid->addField('ncredito');
-		$grid->label('Ncredito');
-		$grid->params(array(
-			'align'         => "'center'",
-			'search'        => 'true',
-			'editable'      => 'false',
-			'width'         => 70,
-			'edittype'      => "'text'",
-		));
-
-		$grid->addField('id');
+		/*$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
 			'align'    => "'center'",
@@ -794,7 +784,7 @@ class Smov extends Controller {
 			'width'    => 50,
 			'editable' => 'false',
 			'search'   => 'false'
-		));
+		));*/
 
 
 		$grid->showpager(true);

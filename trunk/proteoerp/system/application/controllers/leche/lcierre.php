@@ -50,7 +50,8 @@ class Lcierre extends Controller {
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fedita" , "title"=>"Agregar/Editar Pedido"),
+			array('id'=>'fedita' , 'title'=>'Agregar/Editar cierre de producci&oacute;n'),
+			array('id'=>'fshow'  , 'title'=>'Ver cierre de producci&oacute;n')
 		);
 
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
@@ -88,20 +89,34 @@ class Lcierre extends Controller {
 
 		$bodyscript .= '
 		function lcierreedit() {
-			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id){
+				var ret = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
 				$.post("'.site_url('leche/lcierre/dataedit/modify').'/"+id, function(data){
 					$("#fedita").html(data);
 					$("#fedita").dialog( "open" );
 				});
-			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+			} else { $.prompt("<h1>Por favor seleccione un registro</h1>");}
+		};';
+
+		$bodyscript .= '
+		function lcierreshow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor seleccione un registro</h1>");
+			}
 		};';
 
 		//Wraper de javascript
 		$bodyscript .= '
-		$(function() {
+		$(function(){
 			$("#dialog:ui-dialog").dialog( "destroy" );
 			var mId = 0;
 			var montotal = 0;
@@ -117,34 +132,54 @@ class Lcierre extends Controller {
 		$("#fedita").dialog({
 			autoOpen: false, height: 500, width: 700, modal: true,
 			buttons: {
-			"Guardar": function() {
-				var bValid = true;
-				var murl = $("#df1").attr("action");
-				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST", dataType: "html", async: false,
-					url: murl,
-					data: $("#df1").serialize(),
-					success: function(r,s,x){
-						try{
-							var json = JSON.parse(r);
-							if (json.status == "A"){
-								apprise("Registro Guardado");
-								$( "#fedita" ).dialog( "close" );
-								grid.trigger("reloadGrid");
-								//'.$this->datasis->jwinopen(site_url('formatos/ver/LCIERRE').'/\'+res.id+\'/id\'').';
-								return true;
-							} else {
-								apprise(json.mensaje);
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									apprise("Registro Guardado");
+									$( "#fedita" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									//'.$this->datasis->jwinopen(site_url('formatos/ver/LCIERRE').'/\'+res.id+\'/id\'').';
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#fedita").html(r);
 							}
-						}catch(e){
-							$("#fedita").html(r);
 						}
-					}
-			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
+				})},
+				"Cancelar": function() {
+					$( this ).dialog("close");
+					$("#fedita").html("");
+				}
 			},
-			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			close: function() {
+				allFields.val( "" ).removeClass( "ui-state-error" );
+				$("#fedita").html("");
+			}
+		});';
+
+		$bodyscript .= '
+		$("#fshow").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$("#fshow").html("");
+					$( this ).dialog( "close" );
+				},
+			},
+			close: function() {
+				$("#fshow").html("");
+			}
 		});';
 
 		$bodyscript .= '
@@ -177,13 +212,25 @@ class Lcierre extends Controller {
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('id');
-		$grid->label('Id');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'align'         => "'center'",
 			'frozen'        => 'true',
 			'width'         => 40,
 			'editable'      => 'false',
 			'search'        => 'false'
+		));
+
+
+		$grid->addField('status');
+		$grid->label('Estatus');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:1, maxlength: 1 }',
 		));
 
 
@@ -201,11 +248,11 @@ class Lcierre extends Controller {
 
 
 		$grid->addField('dia');
-		$grid->label('Dia');
+		$grid->label('D&iacute;a');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 200,
+			'width'         => 100,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:50, maxlength: 50 }',
@@ -213,7 +260,7 @@ class Lcierre extends Controller {
 
 
 		$grid->addField('recepcion');
-		$grid->label('Recepcion');
+		$grid->label('Recepci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -287,18 +334,6 @@ class Lcierre extends Controller {
 		));
 
 
-		$grid->addField('status');
-		$grid->label('Status');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:1, maxlength: 1 }',
-		));
-
-
 		$grid->addField('usuario');
 		$grid->label('Usuario');
 		$grid->params(array(
@@ -338,7 +373,7 @@ class Lcierre extends Controller {
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("\t\taddfunc: lcierreadd,\n\t\teditfunc: lcierreedit");
+		$grid->setBarOptions('addfunc: lcierreadd,editfunc: lcierreedit,viewfunc: lcierreshow');
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
