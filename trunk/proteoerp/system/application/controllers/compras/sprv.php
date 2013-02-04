@@ -196,7 +196,7 @@ class Sprv extends Controller {
 	function defgrid( $deployed = false ){
 		$i       = 1;
 		$linea   = 1;
-		$editar  = "true";
+		$editar  = "false";
 
 		$mSQL = "SELECT grupo, CONCAT(grupo, ' ', gr_desc) descrip FROM grpr ORDER BY grupo ";
 		$agrupo  = $this->datasis->llenajqselect($mSQL, false );
@@ -410,7 +410,7 @@ class Sprv extends Controller {
 		$grid->label('Cuenta');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'false',
 			'width'         => 150,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
@@ -486,7 +486,7 @@ class Sprv extends Controller {
 		$grid->label('Cuenta1');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
