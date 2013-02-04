@@ -258,6 +258,17 @@ class Lvaca extends Controller {
 			'editoptions'   => '{ size:1, maxlength: 1 }',
 		));
 
+		$grid->addField('tipolec');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:1, maxlength: 1 }',
+		));
+
 
 		$grid->addField('codprv');
 		$grid->label('Codigo');
@@ -503,6 +514,11 @@ class Lvaca extends Controller {
 		$edit->animal->rule = 'required';
 		$edit->animal->style= 'width:100px;';
 
+		$edit->tipolec = new  dropdownField ('Tipo', 'tipolec');
+		$edit->tipolec->option('C' ,'Caliente');
+		$edit->tipolec->option('F' ,'Fria');
+		$edit->tipolec->rule = 'required';
+		$edit->tipolec->style= 'width:100px;';
 
 		$edit->codprv = new inputField('Propietario','codprv');
 		$edit->codprv->rule='max_length[15]';
