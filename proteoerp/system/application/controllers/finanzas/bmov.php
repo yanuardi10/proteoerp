@@ -444,15 +444,29 @@ class Bmov extends Controller {
 		));
 
 
+		$grid->addField('liable');
+		$grid->label('Liable');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{value: {"S":"Conciliable","N":"No Conciliable" }, style:"width:180px" }',
+
+		));
+
+
 		$grid->addField('concilia');
 		$grid->label('Concilia');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 80,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
+			'editrules'     => '{ required:false,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
@@ -479,16 +493,6 @@ class Bmov extends Controller {
 			'edittype'      => "'text'",
 		));
 
-
-		$grid->addField('liable');
-		$grid->label('Liable');
-		$grid->params(array(
-			'align'         => "'center'",
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-		));
 
 		$grid->addField('anulado');
 		$grid->label('Nulo');
@@ -695,10 +699,11 @@ class Bmov extends Controller {
 			return "Registro Agregado";
 
 		} elseif($oper == 'edit') {
-			//unset($data['ubica']);
-			//$this->db->where('id', $id);
-			//$this->db->update('bmov', $data);
-			return "Registro Modificado";
+			$this->db->where("id", $id);
+			$this->db->update('bmov', $data);
+			logusu('BMOV',"Movimiento de bancos  ".$id." MODIFICADO");
+			echo "Movimiento Modificado";
+			//return "Registro Modificado";
 
 		} elseif($oper == 'del') {
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE id='$id' ");
