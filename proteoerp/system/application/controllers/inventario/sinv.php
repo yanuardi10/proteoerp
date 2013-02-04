@@ -504,7 +504,7 @@ class Sinv extends Controller {
 			}
 		};
 		';
-
+//SFAC 10811
 
 		// Busca si estan la opcion en tmenus
 		$mSQL = "SELECT COUNT(*) FROM tmenus WHERE modulo='SINVOTR' AND proteo='recaldolar'";
@@ -3816,7 +3816,7 @@ class Sinv extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		$mSQL = "INSERT INTO sinvfusion SET anterior=".$mviejo.", nuevo=".$mcodigo.", usuario=".$this->db->escape($this->secu('usuario'));
+		$mSQL = "INSERT INTO sinvfusion SET anterior=".$mviejo.", nuevo=".$mcodigo.", usuario=".$this->db->escape($this->session->userdata('usuario'));
 		$this->db->simple_query($mSQL);
 
 	}

@@ -62,6 +62,7 @@ class Lrece extends Controller {
 
 		//Botones Panel Izq
 		//$grid->wbotonadd(array("id"=>"imprime",  "img"=>"assets/default/images/print.png","alt" => 'Reimprimir', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"recalcu"  , "img"=>"images/vaca.png","alt" => 'Recalcular'  , "label"=>'Recalcular'  ));
 		$grid->wbotonadd(array("id"=>"bagrega"  , "img"=>"images/vaca.png","alt" => 'Agrega'  , "label"=>'Agregar Vaquera'  ));
 		$WestPanel = $grid->deploywestp();
 
@@ -175,6 +176,16 @@ class Lrece extends Controller {
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
 		});';
+
+		$bodyscript .= '
+		jQuery("#recalcu").click( function(){
+			var ret    = $("#newapi'.$grid0.'").getRowData(id);
+			mId = id;
+			$.post("'.site_url($this->url.'recalcula').'/"+id+"/create", function(data){
+				$.prompt("<h1>Recalculo Concluido</h1>"+data)
+			});
+		});';
+
 
 		$bodyscript .= '
 		jQuery("#bvaqueras").click( function(){
@@ -1854,6 +1865,26 @@ class Lrece extends Controller {
 			echo $edit->output;
 		}
 	}
+
+
+	//******************************************************************
+	// RECALCULA LOS VALORES DE LAS RECEPCIONES
+	//******************************************************************
+	function recalcula(){
+		$mSQL = 'UPDATE lrece a SET lista=(SELECT sum(lista) FROM itlrece b WHERE a.id=b.id_lrece );';
+		$this->db->query($mSQL);
+		$mSQL = 'UPDATE lrece SET litros=lleno, neto=lleno, diferen=lleno-lista WHERE vacio=0 AND lleno>0;';
+		$this->db->query($mSQL);
+		$mSQL = 'UPDATE lrece SET lista=TRUNCATE(lista,0); ';
+		$this->db->query($mSQL);
+		$mSQL = 'UPDATE lrece SET litros=TRUNCATE(ROUND((lleno-vacio)/densidad,2),0), neto=lleno-vacio, diferen=ROUND((lleno-vacio)/densidad,2)-lista 
+		WHERE vacio>0 AND lleno>0;';
+		$this->db->query($mSQL);
+		$mSQL = 'UPDATE lrece SET diferen=litros-lista;';
+		$this->db->query($mSQL);
+	}
+
+
 
 	//Pre y Pos para la apertura
 	function _pre_itvaqueras_insert($do){
