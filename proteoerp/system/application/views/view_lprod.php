@@ -61,6 +61,8 @@ $(function(){
 			$('#codigo').val(ui.item.codigo);
 			$('#descrip').val(ui.item.descrip);
 			$('#descrip_val').text(ui.item.descrip);
+			$('#inventario').focus();
+			$('#inventario').select();
 
 			totalizar();
 			setTimeout(function() {  $('#codigo').removeAttr("readonly"); }, 1500);

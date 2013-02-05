@@ -276,15 +276,19 @@ class Ajax extends Controller {
 		$mid  = $this->input->post('q');
 		if($mid == false) $mid  = $this->input->post('term');
 
-		$qmid = $this->db->escape($mid);
-		$qdb  = $this->db->escape('%'.$mid.'%');
+		$fecha = $this->input->post('fecha');
+		if($fecha == false) $fecha=date('Y-m-d');
+
+		$qmid  = $this->db->escape($mid);
+		$qdb   = $this->db->escape('%'.$mid.'%');
+		$qfecha =$this->db->escape($fecha);
 
 		$data = '[ ]';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.codigo) AS codigo
+			$mSQL="SELECT DISTINCT TRIM(a.nombre) AS nombre, TRIM(a.codigo) AS codigo
 				FROM lruta AS a
-				JOIN lrece AS b ON a.codigo=b.ruta AND b.fecha=CURDATE()
+				JOIN lrece AS b ON a.codigo=b.ruta AND b.fecha=${qfecha}
 				WHERE (a.codigo LIKE ${qdb} OR a.nombre LIKE ${qdb})
 				ORDER BY a.nombre LIMIT ".$this->autolimit;
 			$query = $this->db->query($mSQL);

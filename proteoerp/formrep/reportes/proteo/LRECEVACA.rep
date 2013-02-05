@@ -1,0 +1,114 @@
+$filter = new DataFilter("Filtro del Reporte");
+$filter->attributes=array('onsubmit'=>'is_loaded()');
+
+// agua * precio de leche
+
+
+$sel=array(
+'LPAD(a.id,5,"0") numero',
+'IF(b.transporte>0,DATE_SUB(b.fecha, INTERVAL 1 DAY),b.fecha) AS fecha',
+'b.ruta', 'c.codigo', 'c.nombre nomvaca',
+'e.ultimo leche', 'f.ultimo frio', 'g.ultimo grasa', 'h.ultimo bacter',
+'d.proveed', 'd.nombre', 'a.lista', 'd.banco1, d.cuenta1',
+'a.lista monto', 'a.dtoagua', 'a.temp',
+'ROUND(a.lista*e.ultimo,2) monto',
+'ROUND(a.lista*(f.ultimo+g.ultimo+h.ultimo)*(c.tipolec="F"),2) incent',
+'(f.ultimo+g.ultimo+h.ultimo) pincent',
+'ROUND(a.lista*e.ultimo,2)+ROUND(a.lista*(f.ultimo+g.ultimo+h.ultimo)*(c.tipolec="F"),2) total',
+'ROUND(a.lista*IF(c.animal="B",i.ultimo, 0 ),2) bufala'
+);
+
+$filter->db->select($sel);
+$filter->db->from('itlrece AS a');
+$filter->db->join('lrece   AS b','a.id_lrece=b.id');
+$filter->db->join('lvaca   AS c','a.id_lvaca=c.id');
+$filter->db->join('sprv    AS d','c.codprv=d.proveed','LEFT');
+
+$filter->db->join('sinv e','e.codigo="ZLCALIENTE"','LEFT');
+$filter->db->join('sinv f','f.codigo="ZMANFRIO"',  'LEFT');
+$filter->db->join('sinv g','g.codigo="ZPGRASA"',   'LEFT');
+$filter->db->join('sinv h','h.codigo="ZBACTE"',    'LEFT');
+$filter->db->join('sinv i','i.codigo="ZBUFALA"',   'LEFT');
+
+$filter->db->where('a.lista>','0');
+
+$filter->db->orderby('c.proveed, a.id');
+
+$filter->fecha = new dateonlyField("Desde", "dfecha",'d/m/Y');
+$filter->fecha->db_name ='b.fecha';
+$filter->fecha->clause ='where';
+$filter->fecha->clause ='';
+$filter->fecha->dbformat='Y-m-d';
+$filter->fecha->rule='chfecha|required';
+$filter->fecha->insertValue = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*(date('w')+6)));
+$filter->fecha->operator='>=';
+
+$filter->hasta = new dateonlyField("Hasta", "hfecha",'d/m/Y');
+$filter->hasta->db_name ='b.fecha';
+//$filter->hasta->clause ='where';
+$filter->hasta->clause ='';
+$filter->hasta->dbformat='Y-m-d';
+$filter->hasta->rule='chfecha|required';
+$filter->hasta->insertValue = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
+$filter->hasta->operator='<=';
+
+$filter->salformat = new radiogroupField("Formato de salida","salformat");
+$filter->salformat->options($this->opciones);
+$filter->salformat->insertValue ='PDF';
+$filter->salformat->clause = '';
+
+$filter->buttons("search");
+$filter->build();
+
+if($this->rapyd->uri->is_set("search")){
+	$arr_fdesde=explode('-',$filter->fecha->newValue);
+	$arr_fhasta=explode('-',$filter->hasta->newValue);
+
+	$fdbdesde= $filter->fecha->newValue;
+	$fdbhasta= $filter->hasta->newValue;
+
+	$gdbdesde= date('Y-m-d',mktime(0, 0, 0, $arr_fdesde[1],$arr_fdesde[2]+1,$arr_fdesde[0]));
+	$gdbhasta= date('Y-m-d',mktime(0, 0, 0, $arr_fhasta[1],$arr_fhasta[2]+1,$arr_fhasta[0]));
+
+	$this->db->where("(b.fecha BETWEEN '$fdbdesde' AND '$fdbhasta' AND b.transporte<=0)");
+	$this->db->or_where("(b.fecha BETWEEN '$gdbdesde' AND '$gdbhasta' AND b.transporte>0)");
+
+	$mSQL=$this->rapyd->db->_compile_select();
+
+	$pdf = new PDFReporte($mSQL); //,'L');
+	$pdf->setHeadValores('TITULO1');
+	$pdf->setSubHeadValores('TITULO2','TITULO3');
+	$pdf->setTitulo("Relacion de Productores por pagar ".$filter->fecha->value);
+	$pdf->setSubTitulo("Desde la fecha: ".$filter->fecha->value." Hasta ".$filter->hasta->value);
+	$pdf->AddPage();
+	$pdf->setTableTitu(8,'Times');
+
+	$pdf->setType('fecha','date');
+
+	$pdf->AddCol('fecha',  17,'Fecha',  'L',8);
+	$pdf->AddCol('id',     10,'Nro.',   'L',8);
+	$pdf->AddCol('ruta',   10,'Ruta',   'L',8);
+	$pdf->AddCol('codigo', 10,'Prod', 'L',8);
+
+	$pdf->AddCol('nomvaca', 50,'Vaquera',   'L',8);
+	$pdf->AddCol('lista',   17,'Lista',     'R',8);
+	$pdf->AddCol('leche',   10,'Precio',    'R',8);
+	$pdf->AddCol('monto',   20,'Monto',     'R',8);
+	$pdf->AddCol('pincent', 10,'P/In.',     'R',8);
+	$pdf->AddCol('incent',  18,'Incentivo', 'R',8);
+	$pdf->AddCol('total',   20,'Total',     'R',8);
+	$pdf->AddCol('bufala',  20,'Bufala',   'R',8);
+
+	$pdf->setGrupoLabel('<#proveed#> <#nombre#> Cuenta: <#banco1#> <#cuenta1#> ');
+	//$pdf->setGrupoLabel('Fecha <#fecha#> Chofer <#nombre#> Litros: <#litros#> ');
+	$pdf->setGrupo('proveed');
+	$pdf->setTotalizar('lista','litros','monto','bufala', 'incent','total');
+	$pdf->Table();
+	$pdf->Output();
+
+}else{
+	$data["filtro"] = $filter->output;
+	$data["titulo"] = '<h2 class="mainheader">Recepci&oacute;n de leche</h2>';
+	$data["head"] = $this->rapyd->get_head();
+	$this->load->view('view_freportes', $data);
+}

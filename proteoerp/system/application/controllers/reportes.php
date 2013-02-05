@@ -22,7 +22,7 @@ class Reportes extends Controller
 	}
 	function ver(){
 		//$this->load->library('XLSReporte');
-		$this->rapyd->load("datafilter2");
+		$this->rapyd->load('datafilter2');
 		$repo =$this->uri->segment(3);
 		$esta =$this->uri->segment(4);
 		$mSQL= 'SELECT proteo FROM reportes WHERE nombre='.$this->db->escape($repo);
@@ -31,7 +31,7 @@ class Reportes extends Controller
 
 		if(empty($mc)) $mc=$this->_crearep($repo,'proteo');
 		if(!empty($mc)){
-			$data["regresar"]='<a href='.site_url("/reportes/enlistar/$esta").'>'.image('go-previous.png','Regresar',array('border'=>0)).'Regresar'.'</a>';
+			$data['regresar']='<a href='.site_url("/reportes/enlistar/$esta").'>'.image('go-previous.png','Regresar',array('border'=>0)).'Regresar'.'</a>';
 
 			$_formato=$this->input->post('salformat');
 			if($_formato || !empty($_formato))

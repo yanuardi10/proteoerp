@@ -1,0 +1,266 @@
+$scli=array(
+	'tabla'   =>'scli',
+	'columnas'=>array(
+		'cliente' =>'Código Cliente',
+		'nombre'=>'Nombre',
+		'contacto'=>'Contacto'),
+	'filtro'  =>array('cliente'=>'Código Cliente','nombre'=>'Nombre'),
+	'retornar'=>array('cliente'=>'cod_cli'),
+	'titulo'  =>'Buscar Cliente');
+
+$sinv=array(
+	'tabla'   =>'sinv',
+	'columnas'=>array(
+		'codigo' =>'Código',
+		'descrip'=>'descrip'),
+	'filtro'  =>array('codigo' =>'Código','descrip'=>'descrip'),
+	'retornar'=>array('codigo'=>'codigo'),
+	'titulo'  =>'Buscar Articulo');
+
+$cboton=$this->datasis->modbus($scli);
+$iboton=$this->datasis->modbus($sinv);
+
+$filter = new DataFilter2("Filtro del Reporte");
+//$filter->attributes=array('onsubmit'=>'is_loaded()');
+
+$link2=site_url('inventario/common/get_linea');
+$link3=site_url('inventario/common/get_grupo');
+
+$script='
+$(document).ready(function(){
+
+        $("#depto").change(function(){
+                depto();
+                $.post("'.$link2.'",{ depto:$(this).val() },function(data){$("#linea").html(data);})
+                $.post("'.$link3.'",{ linea:"" },function(data){$("#grupo").html(data);})
+        });
+        $("#linea").change(function(){
+                linea();
+                $.post("'.$link3.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);})
+        });
+
+        $("#grupo").change(function(){
+                grupo();
+        });
+        depto();
+        linea();
+        grupo();
+});
+
+function depto(){
+        if($("#depto").val()!=""){
+                $("#nom_depto").attr("disabled","disabled");
+        }
+        else{
+                $("#nom_depto").attr("disabled","");
+        }
+}
+
+function linea(){
+        if($("#linea").val()!=""){
+                $("#nom_linea").attr("disabled","disabled");
+        }
+        else{
+                $("#nom_linea").attr("disabled","");
+        }
+}
+
+function grupo(){
+        if($("#grupo").val()!=""){
+                $("#nom_grupo").attr("disabled","disabled");
+        }
+        else{
+                $("#nom_grupo").attr("disabled","");
+        }
+}';
+
+$filter = new DataFilter2("Filtro por Producto");
+$filter->script($script);
+
+$filter->db->select('a.codigo');
+$filter->db->select('a.descrip');
+$filter->db->select('s.exmin');
+$filter->db->select('s.existen');
+$filter->db->select('s.id');
+$filter->db->select('s.grupo');
+$filter->db->select('b.nom_grup');
+$filter->db->select('c.linea');
+$filter->db->select('c.descrip as dlinea');
+$filter->db->select('d.depto');
+$filter->db->select('d.descrip AS dptodescrip');
+$filter->db->from('eventas AS a');
+$filter->db->join('sinv   AS s' ,'a.codigo=s.codigo');
+$filter->db->join("grup AS b","s.grupo=b.grupo ");
+$filter->db->join("line   AS c","b.linea=c.linea");
+$filter->db->join("dpto AS d","d.depto=c.depto");
+$filter->db->groupby('a.codigo');
+$filter->db->orderby('d.depto,c.linea,b.grupo');
+
+$filter->fechad = new dateonlyField("Desde", "fechad",'m/Y');
+$filter->fechah = new dateonlyField("Hasta", "fechah",'m/Y');
+$filter->fechad->dbformat='Y-m-';
+$filter->fechah->dbformat='Y-m-';
+$filter->fechah->rule = "required";
+$filter->fechad->rule = "required";
+$filter->fechad->clause  =$filter->fechah->clause='';
+$filter->fechad->insertValue = date("Y-m-d",mktime(0,0,0,date('m')-11,date('j'),date('Y')));
+$filter->fechah->insertValue = date("Y-m-d");
+
+$filter->codigo = new inputField("C&oacute;digo", "codigo");
+$filter->codigo->db_name=("a.codigo");
+$filter->codigo-> size=25;
+
+$filter->tipo = new dropdownField("Tipo", "tipo");
+$filter->tipo->db_name=("s.tipo");
+$filter->tipo->option("","Todos");
+$filter->tipo->option("Articulo","Art&iacute;culo");
+$filter->tipo->option("Servicio","Servicio");
+$filter->tipo->option("Descartar","Descartar");
+$filter->tipo->option("Consumo","Consumo");
+$filter->tipo->option("Fraccion","Fracci&oacute;n");
+$filter->tipo->style='width:220px;';
+
+$filter->clave = new inputField("Clave", "clave");
+$filter->clave->db_name="s.clave";
+$filter->clave -> size=25;
+
+$filter->activo = new dropdownField("Activo", "activo");
+$filter->activo->option('','Todos');
+$filter->activo->option("S","Si");
+$filter->activo->option("N","No");
+$filter->activo->db_name="s.activo";
+$filter->activo->style='width:220px;';
+
+$filter->depto = new dropdownField("Departamento","depto");
+$filter->depto->db_name="d.depto";
+$filter->depto->option('','Seleccione un Departamento');
+$filter->depto->options("SELECT depto, descrip FROM dpto WHERE tipo='I' ORDER BY depto");
+
+$filter->linea = new dropdownField("L&iacute;nea","linea");
+$filter->linea->db_name="c.linea";
+$filter->linea->option("","Seleccione un Departamento primero");
+$depto=$filter->getval('depto');
+if($depto!==FALSE){
+        $filter->linea->options("SELECT linea, descrip FROM line WHERE depto='$depto' ORDER BY descrip");
+}else{
+        $filter->linea->option("","Seleccione un Departamento primero");
+}
+
+$filter->grupo = new dropdownField("Grupo", "grupo");
+$filter->grupo->db_name="b.grupo";
+$filter->grupo->option("","Seleccione una L&iacute;nea primero");
+$linea=$filter->getval('linea');
+if($linea!==FALSE){
+        $filter->grupo->options("SELECT grupo, nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
+}else{
+        $filter->grupo->option("","Seleccione un Departamento primero");
+}
+
+$filter->marca = new dropdownField("Marca", "marca");
+$filter->marca->option('','Todas');
+$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
+$filter->marca->style='width:220px;';
+$filter->marca->db_name="s.marca";
+
+$filter->salformat = new radiogroupField("Formato de salida","salformat");
+$filter->salformat->options($this->opciones);
+$filter->salformat->insertValue ='XLS';
+$filter->salformat->clause = '';
+
+$filter->buttons("search");
+$filter->build();
+
+if($this->rapyd->uri->is_set("search") AND $filter->is_valid()){
+	$fechad=$filter->fechad->newValue.'01';
+	$ffechad=explode('-',$fechad);
+
+	$udia=days_in_month($ffechad[1],$ffechad[0]);
+	$fechah=$filter->fechah->newValue.$udia;
+	$filter->db->where('a.fecha >=',$fechad);
+	$filter->db->where('a.fecha <=',$fechah);
+
+	$datetime1 = new DateTime($fechad);
+	$datetime2 = new DateTime($fechah);
+	$interval = $datetime1->diff($datetime2);
+	$meses=$interval->m+$interval->y*12;
+
+	$ffechad=explode('-',$fechad);
+
+	$columncal=array();
+	for($i=0;$i<=$meses;$i++){
+		$mk=mktime(0,0,0,$ffechad[1]+$i,1,$ffechad[0]);
+		$udia=days_in_month(date('m',$mk),date('Y',$mk));
+		$sqdesde=date('Y-m-d',$mk);
+		$sqhasta=date('Y-m-',$mk).$udia;
+		$etiq=date('m/Y',$mk);
+
+		$select="SUM(a.cana*(a.fecha BETWEEN '$sqdesde' AND '$sqhasta')) AS '$etiq'";
+		$filter->db->select($select);
+		$columncal[]=$etiq;
+	}
+	if($i>2){
+		$connt='array(<#'.implode('#>,<#',$columncal).'#>)';
+		$vval=$i-2;
+
+		$formula="(array_sum($connt)-min($connt)-max($connt))/$vval";
+		//$pformula="(<#exmin#> > 0)?(($formula)*100/<#exmin#>)-100 : (($formula)>0)? 100 : 0";
+		$pformula="(<#exmin#> > 0)? round((($formula)*100/<#exmin#>)-100,2):((($formula)>0)? 100 : 0)";
+		$mSQL=$this->rapyd->db->_compile_select();
+		//memowrite($mSQL);
+		//echo $mSQL;
+		$sobretabla='';
+
+		if (!empty($filter->depto->newValue))  $sobretabla.=' Dpto: '.$filter->depto->newValue;
+		if (!empty($filter->grupo->newValue))  $sobretabla.=' Grupo: ('.$filter->grupo->newValue.') '.$this->datasis->dameval('SELECT nom_grup FROM grup WHERE grupo="'.$filter->grupo->newValue.'"');
+		if (!empty($filter->linea->newValue))  $sobretabla.=' Línea: ('.$filter->linea->newValue.') '.$this->datasis->dameval('SELECT descrip FROM line WHERE linea="'.$filter->linea->newValue.'"');
+		if (!empty($filter->marca->newValue))  $sobretabla.=' Marca: '.$filter->marca->description;
+
+		$pdf = new PDFReporte($mSQL,'L');
+		$pdf->setHeadValores('TITULO1');
+		$pdf->setSubHeadValores('TITULO2','TITULO3');
+		$pdf->setTitulo("Listado de Ventas por Código");
+		$pdf->setSubTitulo("Desde la fecha: ".$_POST['fechad']." Hasta ".$_POST['fechah']);
+		$pdf->setSobreTabla($sobretabla,5);
+		$pdf->AddPage();
+		$pdf->setTableTitu(9,'Times');
+
+		$pdf->AddCol('depto'  , 9,'Dpto.'      ,'L',6);
+		$pdf->AddCol('linea'  , 9,'Linea'      ,'L',6);
+		$pdf->AddCol('grupo'  , 9,'Grupo'      ,'L',6);
+		$pdf->AddCol('codigo' ,15,'Código'     ,'L',6);
+		$pdf->AddCol('descrip',40,'Descripción','L',6);
+		$pdf->AddCol('existen',12,'Exist.'     ,'L',6);
+
+		foreach($columncal AS $col){
+			$pdf->setType($col,'real');
+			$pdf->AddCol( $col ,12, $col,'R',6);
+		}
+		$pdf->setType('exmin','real');
+		$pdf->AddCol('exmin', 12,'Min/Actual' ,'R',6);
+		if(count($columncal)>0){
+			$pdf->AddCof($formula, 15,'Min.Sug' ,'R',6);
+			$pdf->setType('__cC0','real');
+			$pdf->AddCof($pformula, 15,'% Var.' ,'R',6);
+			$pdf->setType('__cC1','real');
+		}
+		//$pdf->AddCof("nformat(($formula)/<#exmin#>)", 15,'Pocen' ,'R',6);
+		//$pdf->setGrupoLabel('(<#nom_grup#>)');
+		//$pdf->setGrupo('grupo');
+		//$pdf->setGrupoLabel('Departamento: (<#depto#>) <#dptodescrip#> ','Linea: (<#linea#>) <#dlinea#>','Grupo (<#grupo#>) <#nom_grup#>');
+		//$pdf->setGrupo('depto','linea','grupo');
+		$pdf->Table();
+		$pdf->Output();
+	}else{
+		$data["error"]  = 'Debe seleccionar un rango de fechas de al menos 3 meses';
+		$data["filtro"] = $filter->output;
+		$data["titulo"] = '<h2 class="mainheader">Comparativo Minimos</h2>';
+		$data["head"]    = script("jquery.pack.js").$this->rapyd->get_head();
+		$this->load->view('view_freportes', $data);
+	}
+}else{
+	if (strlen($filter->error_string)) $data["error"]=$filter->error_string;
+	$data["filtro"] = $filter->output;
+	$data["titulo"] = '<h2 class="mainheader">Comparativo Minimos</h2>';
+	$data["head"]    = script("jquery.pack.js").$this->rapyd->get_head();
+	$this->load->view('view_freportes', $data);
+}

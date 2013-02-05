@@ -226,17 +226,27 @@ class gser extends Controller {
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url($this->url.'printrete').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
-			} else { $.prompt("<h1>Por favor Seleccione un gasto</h1>");}
+				if(Number(ret.reteiva) > 0){
+					window.open(\''.site_url($this->url.'printrete').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+				}else{
+					$.prompt("<h1>El gasto seleccionado no tiene retenci&oacute;n de iva</h1>");
+				}
+			} else {
+				$.prompt("<h1>Por favor Seleccione un gasto</h1>");
+			}
 		});';
 
 		//Imprime retencion islr
 		$bodyscript .= '
 		jQuery("#reteislrprint").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
+			if (id){
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('formatos/ver/GSERRT/').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+				if(Number(ret.reten) > 0){
+					window.open(\''.site_url('formatos/ver/GSERRT/').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+				}else{
+					$.prompt("<h1>El gasto seleccionado no tiene retenci&oacute;n ISLR</h1>");
+				}
 			} else { $.prompt("<h1>Por favor Seleccione un gasto</h1>");}
 		});';
 
