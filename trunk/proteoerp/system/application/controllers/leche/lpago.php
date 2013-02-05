@@ -612,6 +612,8 @@ class Lpago extends Controller {
 		if($proveed!==false){
 			$this->db->_escape_char='';
 			$this->db->_protect_identifiers=false;
+			//$this->fcorte = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
+			$fcorte = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
 
 			$rt = array();
 			//Deducciones
@@ -621,6 +623,7 @@ class Lpago extends Controller {
 			$this->db->from('lgasto AS a');
 			$this->db->where('(a.pago IS NULL OR a.pago=0)');
 			$this->db->where('a.proveed',$proveed);
+			$this->db->where('a.fecha <=',$fcorte);
 			$query = $this->db->get();
 			if ($query->num_rows() > 0){
 				$row = $query->row();
@@ -629,6 +632,7 @@ class Lpago extends Controller {
 
 			//Productores
 			$rt['monto'] = 0;
+
 			$sel=array('SUM(ROUND(a.lista*if(c.tipolec="F",k.ultimo,e.ultimo),2)+ROUND(a.lista*(f.ultimo+g.ultimo+h.ultimo)*(c.tipolec="F")+ROUND(a.lista*IF(c.animal="B",if(c.tipolec="F",i.ultimo,j.ultimo), 0 ),2),2))  AS total');
 			$this->db->select($sel);
 			$this->db->from('itlrece AS a');
@@ -642,9 +646,9 @@ class Lpago extends Controller {
 			$this->db->join('sinv    AS i','i.codigo="ZBUFALA"'   ,'LEFT');
 			$this->db->join('sinv    AS j','j.codigo="ZBUFALAC"'  ,'LEFT');
 			$this->db->join('sinv    AS k','k.codigo="ZLFRIA"'    ,'LEFT');
-
 			$this->db->where('a.lista >',0);
 			$this->db->where('(a.pago IS NULL OR a.pago=0)');
+			$this->db->where('b.fecha <=',$fcorte);
 			$this->db->where('MID(b.ruta,1,1) <>','G');
 			$this->db->where('c.codprv',$proveed);
 			$query = $this->db->get();
@@ -663,6 +667,7 @@ class Lpago extends Controller {
 			$this->db->where('a.lista >',0);
 			$this->db->where('(a.pago IS NULL OR a.pago=0)');
 			$this->db->where('MID(a.ruta,1,1) <>','G');
+			$this->db->where('a.fecha <=',$fcorte);
 			$this->db->where('b.codprv',$proveed);
 			$query = $this->db->get();
 			if ($query->num_rows() > 0){
@@ -680,7 +685,8 @@ class Lpago extends Controller {
 		$numero=$this->datasis->fprox_numero('nlpago');
 		$do->set('numero',$numero);
 		$proveed=$do->get('proveed');
-
+		$fcorte=date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
+		$this->fcorte=$fcorte;
 
 		//Calcula los montos a pagar
 		$rt = array();
@@ -691,6 +697,7 @@ class Lpago extends Controller {
 		$this->db->from('lgasto AS a');
 		$this->db->where('(a.pago IS NULL OR a.pago=0)');
 		$this->db->where('a.proveed',$proveed);
+		$this->db->where('a.fecha <=',$fcorte);
 		$query = $this->db->get();
 		if ($query->num_rows() > 0){
 			$row = $query->row();
@@ -718,6 +725,7 @@ class Lpago extends Controller {
 		$this->db->join('sinv    AS k','k.codigo="ZLFRIA"'    ,'LEFT');
 
 		$this->db->where('a.lista >',0);
+		$this->db->where('b.fecha <=',$fcorte);
 		$this->db->where('(a.pago IS NULL OR a.pago=0)');
 		$this->db->where('MID(b.ruta,1,1) <>','G');
 		$this->db->where('c.codprv',$proveed);
@@ -740,6 +748,7 @@ class Lpago extends Controller {
 		$this->db->where('(a.pago IS NULL OR a.pago=0)');
 		$this->db->where('MID(a.ruta,1,1) <>','G');
 		$this->db->where('b.codprv',$proveed);
+		$this->db->where('a.fecha <=',$fcorte);
 		$query = $this->db->get();
 		if ($query->num_rows() > 0){
 			$row = $query->row();
@@ -773,13 +782,15 @@ class Lpago extends Controller {
 		$id       = $do->get('id');
 		$dbid     = $this->db->escape($id);
 		$dbproveed= $this->db->escape($proveed);
+		$fcorte   = $this->fcorte;
+		$dbfcorte = $this->db->escape($fcorte);
 
 		//Marca los pagos por transporte
 		if($tipo=='T' || $tipo=='A'){
 			$mSQL="UPDATE
 				lrece AS a
 				JOIN lruta AS b ON a.ruta=b.codigo
-			SET a.pago=${dbid} WHERE b.codprv=${dbproveed} AND (a.pago IS NULL OR a.pago=0) AND MID(a.ruta,1,1)<>'G'";
+			SET a.pago=${dbid} WHERE b.codprv=${dbproveed} AND (a.pago IS NULL OR a.pago=0) AND a.fecha <=$d{bfcorte} AND MID(a.ruta,1,1)<>'G'";
 			$this->db->query($mSQL);
 		}
 
@@ -789,12 +800,12 @@ class Lpago extends Controller {
 			itlrece AS a
 			JOIN lrece AS b ON a.id_lrece=b.id
 			JOIN lvaca AS c ON a.id_lvaca=c.id
-			SET a.pago=${dbid} WHERE c.codprv=${dbproveed} AND (a.pago IS NULL OR a.pago=0) AND MID(b.ruta,1,1)<>'G'";
+			SET a.pago=${dbid} WHERE c.codprv=${dbproveed} AND (a.pago IS NULL OR a.pago=0) AND b.fecha <=$d{bfcorte} AND MID(b.ruta,1,1)<>'G'";
 			$this->db->query($mSQL);
 		}
 
 		//Marca la deducciones
-		$mSQL="UPDATE lgasto SET pago=${dbid} WHERE proveed=${dbproveed} AND (pago IS NULL OR pago=0)";
+		$mSQL="UPDATE lgasto SET pago=${dbid} WHERE proveed=${dbproveed} AND fecha <=$d{bfcorte} AND (pago IS NULL OR pago=0)";
 		$this->db->query($mSQL);
 
 		$primary =implode(',',$do->pk);
