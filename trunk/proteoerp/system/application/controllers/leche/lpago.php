@@ -133,7 +133,7 @@ class Lpago extends Controller {
 								apprise("Registro Guardado");
 								$( "#fedita" ).dialog( "close" );
 								grid.trigger("reloadGrid");
-								'.$this->datasis->jwinopen(site_url('formatos/ver/LPAGO').'/\'+res.id+\'/id\'').';
+								'.$this->datasis->jwinopen(site_url('formatos/ver/LPAGO').'/\'+json.pk.id+\'/id\'').';
 								return true;
 							} else {
 								apprise(json.mensaje);
