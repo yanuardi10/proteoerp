@@ -4,6 +4,7 @@ class Lgasto extends Controller {
 	var $titp    = 'Deducciones';
 	var $tits    = 'Deducciones';
 	var $url     = 'leche/lgasto/';
+	var $tabla   = 'lgasto';
 
 	function Lgasto(){
 		parent::Controller();
