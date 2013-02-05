@@ -1,0 +1,95 @@
+$filter = new DataFilter('Filtro del Reporte');
+$filter->attributes=array('onsubmit'=>'is_loaded()');
+
+$sel=array('d.proveed', 'd.nombre', 'b.fecha', 'b.ruta','i.nombre AS nomrut','c.nombre AS nomvaca','c.codigo');
+
+$filter->db->from('itlrece AS a');
+$filter->db->join('lrece   AS b','a.id_lrece=b.id');
+$filter->db->join('lvaca   AS c','a.id_lvaca=c.id');
+$filter->db->join('lruta   AS i','b.ruta=i.codigo');
+$filter->db->join('sprv    AS d','c.codprv=d.proveed','LEFT');
+
+$filter->db->where('a.lista >',0);
+$filter->db->where('MID(b.ruta,1,1) <>','G');
+$filter->db->groupby('b.ruta,a.id_lvaca');
+$filter->db->orderby('b.ruta');
+$filter->db->orderby('c.nombre');
+
+$filter->fecha = new dateonlyField('Fecha de corte', 'fecha','d/m/Y');
+$filter->fecha->db_name ='b.fecha';
+$filter->fecha->dbformat='Y-m-d';
+//$filter->fecha->clause ='where';
+$filter->fecha->clause ='';
+$filter->fecha->size=15;
+$filter->fecha->insertValue = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
+$filter->fecha->operator='<=';
+$filter->fecha->rule = 'chfecha|required';
+
+$filter->salformat = new radiogroupField('Formato de salida','salformat');
+$filter->salformat->options($this->opciones);
+$filter->salformat->insertValue ='PDF';
+$filter->salformat->clause = '';
+
+$filter->buttons('search');
+$filter->build();
+
+if($this->rapyd->uri->is_set('search') && $filter->is_valid()){
+
+	$semana=array('Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado');
+
+	$label=$formu=array();
+	$fech=explode('-',$filter->fecha->newValue);
+	for($i=0;$i<7;$i++){
+		$mktim      = mktime(0, 0, 0, $fech[1],$fech[2]-$i,$fech[0]);
+		$waw        = date('w',$mktim);
+		$dbfech     = date('Y-m-d',$mktim);
+		$ind        = 'L'.date('Ymd',$mktim);
+		$sel[]      = "ROUND(SUM(a.lista*(b.fecha='${dbfech}')*(b.transporte<=0)+a.lista*(DATE_SUB(b.fecha, INTERVAL 1 DAY)='${dbfech}')*(b.transporte>0)),2) AS $ind";
+		$label[$ind]= $semana[$waw].' '.date('d',$mktim);
+		//$label[$ind]= date('d/m/Y',$mktim);
+		$formu[]=$ind;
+	}
+	//$sel[] = "ROUND(SUM(a.lista),2) AS total";
+	$fhasta= date('Y-m-d',mktime(0, 0, 0, $fech[1],$fech[2]+1,$fech[0]));
+
+	$filter->db->where('b.fecha >=',$dbfech);
+	$filter->db->where('b.fecha <=',$fhasta);
+	$filter->db->select($sel);
+
+	$mSQL=$this->rapyd->db->_compile_select();
+
+	$pdf = new PDFReporte($mSQL,'L');
+	$pdf->setHeadValores('TITULO1');
+	$pdf->setSubHeadValores('TITULO2','TITULO3');
+	$pdf->setTitulo('Litros de leche recibidos por semana');
+	$pdf->setSubTitulo('Desde la fecha: '.date('d/m/Y',$mktim).' Hasta '.$filter->fecha->value);
+	$pdf->AddPage();
+	$pdf->setTableTitu(8,'Times');
+
+	//$pdf->setType('fecha','date');
+
+	$pdf->AddCol('codigo' , 15,'Prod.' ,  'L',8);
+	$pdf->AddCol('nomvaca', 60,'Nombre',  'L',8);
+	$label = array_reverse($label);
+	foreach($label as $val=>$etq){
+		$pdf->setType($val,'real');
+		$pdf->AddCol($val,23,$etq, 'R',8);
+		$pdf->setTotalizar($val);
+	}
+
+	$formula='<#'.implode('#>+<#',$formu).'#>';
+	$pdf->AddCof($formula, 15,'Total','R',8);
+	$pdf->setType('__cC1','real');
+
+	$pdf->setGrupoLabel('Ruta: (<#ruta#>) <#nomrut#>');
+	$pdf->setGrupo('ruta');
+	$pdf->setTotalizar('__cC0');
+	$pdf->Table();
+	$pdf->Output();
+
+}else{
+	$data['filtro'] = $filter->output;
+	$data['titulo'] = '<h2 class="mainheader">Recepci&oacute;n de leche por semana</h2>';
+	$data['head'] = $this->rapyd->get_head();
+	$this->load->view('view_freportes', $data);
+}

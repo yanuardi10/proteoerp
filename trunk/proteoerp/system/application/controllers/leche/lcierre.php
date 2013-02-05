@@ -156,7 +156,8 @@ class Lcierre extends Controller {
 								$("#fedita").html(r);
 							}
 						}
-				})},
+					})
+				},
 				"Cancelar": function() {
 					$( this ).dialog("close");
 					$("#fedita").html("");
@@ -187,9 +188,31 @@ class Lcierre extends Controller {
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret      = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-
-				//var idcierre = $.ajax({ type: "POST", url: "'.site_url($this->url.'getcierre').'/"+ret.fecha, async: false }).responseText;
-
+				if(ret.status!="C"){
+					if(confirm(" Seguro desea realizar el cierre del "+ret.fecha+"?")){
+						$.ajax({
+							type: "POST", dataType: "html", async: false,
+							url: "'.site_url('inventario/stra/consolidar').'"+"/"+ret.id+"/insert",
+							success: function(r,s,x){
+								try{
+									var json = JSON.parse(r);
+									if (json.status == "A"){
+										apprise("Registro Guardado");
+										grid.trigger("reloadGrid");
+										//'.$this->datasis->jwinopen(site_url('formatos/ver/LCIERRE').'/\'+ret.id+\'/id\'').';
+										return true;
+									} else {
+										apprise(json.mensaje);
+									}
+								}catch(e){
+									apprise("Respuesta inesperada");
+								}
+							}
+						});
+					}
+				}else{
+					$.prompt("<h1>El cierre ya fue realizado con anterioridad.</h1>");
+				}
 			} else {
 				$.prompt("<h1>Por favor Seleccione el cierre que desea consolidar</h1>");
 			}
@@ -628,6 +651,11 @@ class Lcierre extends Controller {
 		$id     = $this->input->post('id');
 		$data   = $_POST;
 		$check  = 0;
+		$status = $this->datasis->dameval('SELECT a.status FROM lcierre AS a JOIN itlcierre AS b ON b.id='.$this->db->escape($id));
+		if($status=='C'){
+			echo 'Registro ya fue cerrado';
+			return false;
+		}
 
 		unset($data['oper']);
 		unset($data['id']);
@@ -652,7 +680,7 @@ class Lcierre extends Controller {
 	// DataEdit
 	//***********************************
 	function dataedit($urlfecha=null){
-		$semana=array('DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES');
+		$semana=array('DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO');
 
 		if(preg_match('/(?P<anio>\d{4})\-(?P<mes>\d{2})\-(?P<dia>\d{2})/', $urlfecha, $matches)>0){
 			$fecha = date('Y-m-d', mktime(0, 0, 0, $matches['mes'], $matches['dia'], $matches['anio']));

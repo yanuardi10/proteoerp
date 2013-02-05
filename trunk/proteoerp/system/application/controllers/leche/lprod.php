@@ -602,6 +602,7 @@ class Lprod extends Controller {
 		$edit->inventario->rule='max_length[12]|numeric|required';
 		$edit->inventario->css_class='inputnum';
 		$edit->inventario->size =12;
+		$edit->inventario->insertValue='0';
 		$edit->inventario->onkeyup='totalizar();';
 		$edit->inventario->maxlength =12;
 

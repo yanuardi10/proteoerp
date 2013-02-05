@@ -1118,11 +1118,32 @@ class Stra extends Controller {
 	//******************************************************************
 	//Hace la consolidacion del cierre de los productos lacteos
 	//******************************************************************
-	function consolidar($id){
+	function consolidar($id=null){
+		if(empty($id)){
+			$rt=array(
+				'status' =>'B',
+				'mensaje'=> utf8_encode('Faltan parametros.'),
+				'pk'     =>''
+			);
+			echo json_encode($rt);
+			return false;
+		}
 		$dbid = $this->db->escape($id);
-
-		$lcierre_cana=$this->datasis->dameval('SELECT COUNT(*) FROM lcierre WHERE id='.$dbid);
+		$error= 0;
+		$lcierre_cana=$this->datasis->dameval('SELECT COUNT(*) FROM lcierre WHERE status=\'A\' AND id='.$dbid);
 		if($lcierre_cana>0){
+
+			$it_cana  = $this->datasis->dameval('SELECT COUNT(*) FROM itlcierre WHERE peso >0 AND id_lcierre='.$dbid);
+			if(empty($it_cana)){
+				$rt=array(
+					'status' =>'B',
+					'mensaje'=> utf8_encode('No puede cerrar el día sin producción.'),
+					'pk'     =>''
+				);
+				echo json_encode($rt);
+				return false;
+			}
+
 			$fecha    = $this->datasis->dameval('SELECT fecha FROM lcierre WHERE id='.$dbid);
 			$dbfecha  = $this->db->escape($fecha);
 			$sinvlec  = $this->datasis->damerow('SELECT codigo,descrip FROM sinv WHERE descrip LIKE \'%LECHE%CRUDA%\' LIMIT 1');
@@ -1181,6 +1202,8 @@ class Stra extends Controller {
 				$data = array('status' => 'C');
 				$this->db->where('id', $id);
 				$this->db->update('lcierre', $data);
+			}else{
+				$error++;
 			}
 			//fin de los productos realizados
 
@@ -1210,12 +1233,37 @@ class Stra extends Controller {
 				$_POST[$iind] = $inventario;
 
 				$rt=$this->dataedit();
-				if(strripos($rt,'Guardada')){
+				if(!strripos($rt,'Guardada')){
+					$error++;
 				}
 			}
 			//Fin de la leche usada en inventario
+
+			if($error==0){
+				$rt=array(
+					'status' =>'A',
+					'mensaje'=> utf8_encode('Cierre realizado.'),
+					'pk'     =>''
+				);
+				echo json_encode($rt);
+				return true;
+			}else{
+				$rt=array(
+					'status' =>'B',
+					'mensaje'=> utf8_encode('Hubo problema al realizar el cierre.'),
+					'pk'     =>''
+				);
+				echo json_encode($rt);
+				return true;
+			}
 		}else{
-			echo 'Registro no encontrado';
+			$rt=array(
+				'status' =>'B',
+				'mensaje'=> utf8_encode('Registro no encontrado o día ya fue cerrado.'),
+				'pk'     =>''
+			);
+			echo json_encode($rt);
+			return false;
 		}
 	}
 
