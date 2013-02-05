@@ -490,6 +490,7 @@ class Lgasto extends Controller {
 	}
 
 	function _pre_insert($do){
+		$do->set('status','A');
 		return true;
 	}
 
@@ -522,6 +523,7 @@ class Lgasto extends Controller {
 			  `proveed` char(5) DEFAULT NULL COMMENT 'productor',
 			  `nombre` varchar(100) DEFAULT NULL COMMENT 'nombre',
 			  `referen` varchar(100) DEFAULT NULL,
+			  `status` char(1) DEFAULT 'A',
 			  `fecha` date DEFAULT NULL COMMENT 'nombre',
 			  `descrip` varchar(100) DEFAULT NULL COMMENT 'finca',
 			  `cantidad` decimal(17,2) DEFAULT NULL COMMENT 'ruta a en lruta',
