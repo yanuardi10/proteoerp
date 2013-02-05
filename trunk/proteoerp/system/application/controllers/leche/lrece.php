@@ -179,7 +179,6 @@ class Lrece extends Controller {
 
 		$bodyscript .= '
 		jQuery("#recalcu").click( function(){
-			var ret    = $("#newapi'.$grid0.'").getRowData(id);
 			mId = id;
 			$.post("'.site_url($this->url.'recalcula').'/"+id+"/create", function(data){
 				$.prompt("<h1>Recalculo Concluido</h1>"+data)
