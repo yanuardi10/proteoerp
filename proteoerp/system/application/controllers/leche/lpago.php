@@ -472,7 +472,7 @@ class Lpago extends Controller {
 						data: 'proveed='+ui.item.proveed,
 						success:
 							function(ddata){
-								var monto = ddata.monto+ddata.tmonto;
+								var monto = roundNumber(ddata.monto+ddata.tmonto,2);
 								var diff  = roundNumber(monto-ddata.deduc,2);
 								$('#monto').val(monto);
 								$('#deduc').val(ddata.deduc);
@@ -552,7 +552,7 @@ class Lpago extends Controller {
 		//$edit->numche->append('Aplica si repone desde un Banco');
 
 		$edit->benefi = new inputField('Beneficiario','benefi');
-		$edit->benefi->rule='max_length[100]|strtoupper|condi_required|callback_chobligaban';
+		$edit->benefi->rule='max_length[100]|strtoupper';
 		$edit->benefi->size =52;
 		$edit->benefi->maxlength =100;
 		$edit->benefi->group='Detalles de pago';
@@ -627,7 +627,7 @@ class Lpago extends Controller {
 			$query = $this->db->get();
 			if ($query->num_rows() > 0){
 				$row = $query->row();
-				if(!empty($row->val)) $rt['deduc'] = floatval($row->val);
+				if(!empty($row->val)) $rt['deduc'] = round(floatval($row->val),2);
 			}
 
 			//Productores
@@ -654,7 +654,7 @@ class Lpago extends Controller {
 			$query = $this->db->get();
 			if ($query->num_rows() > 0){
 				$row = $query->row();
-				if(!empty($row->total)) $rt['monto'] = floatval($row->total);
+				if(!empty($row->total)) $rt['monto'] = round(floatval($row->total),2);
 			}
 
 			//Transportista
@@ -672,7 +672,7 @@ class Lpago extends Controller {
 			$query = $this->db->get();
 			if ($query->num_rows() > 0){
 				$row = $query->row();
-				if(!empty($row->monto)) $rt['tmonto'] = floatval($row->monto);
+				if(!empty($row->monto)) $rt['tmonto'] = round(floatval($row->monto),2);
 			}
 
 			echo json_encode($rt);
@@ -685,6 +685,13 @@ class Lpago extends Controller {
 		$numero=$this->datasis->fprox_numero('nlpago');
 		$do->set('numero',$numero);
 		$proveed=$do->get('proveed');
+		$benefi =$do->get('benefi');
+
+		if(empty($benefi)){
+			$nombre = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
+			$do->set('benefi',$nombre);
+		}
+
 		$fcorte=date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
 		$this->fcorte=$fcorte;
 
@@ -833,7 +840,7 @@ class Lpago extends Controller {
 				`nombre` VARCHAR(100) NULL DEFAULT NULL,
 				`banco` VARCHAR(50) NULL DEFAULT NULL,
 				`numche` VARCHAR(100) NULL DEFAULT NULL,
-				`benefi` VARCHAR(100) NULL DEFAULT NULL,
+				`benefi` VARCHAR(200) NULL DEFAULT NULL,
 				`monto` DECIMAL(12,2) NULL DEFAULT NULL,
 				`deduc` DECIMAL(12,2) NULL DEFAULT NULL,
 				`montopago` DECIMAL(12,2) NULL DEFAULT NULL,
