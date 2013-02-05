@@ -21,7 +21,7 @@ class Lpago extends Controller {
 			$this->db->simple_query('ALTER TABLE lpago ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
 
-		$this->datasis->creaintramenu(array('modulo'=>'226','titulo'=>'Pagos de Producción','mensaje'=>'Pagos de Producción','panel'=>'LECHE','ejecutar'=>'leche/lpago','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
+		$this->datasis->creaintramenu(array('modulo'=>'227','titulo'=>'Pagos de Producción','mensaje'=>'Pagos de Producción','panel'=>'LECHE','ejecutar'=>'leche/lpago','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
