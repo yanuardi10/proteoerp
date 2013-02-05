@@ -1,5 +1,5 @@
 <?php
-$maxlin=34; //Maximo de lineas de items.
+$maxlin=30; //Maximo de lineas de items.
 
 if(count($parametros)==0) show_error('Faltan parametros');
 $id   = $parametros[0];
