@@ -70,8 +70,8 @@ if($this->rapyd->uri->is_set("search")){
 	$gdbdesde= date('Y-m-d',mktime(0, 0, 0, $arr_fdesde[1],$arr_fdesde[2]+1,$arr_fdesde[0]));
 	$gdbhasta= date('Y-m-d',mktime(0, 0, 0, $arr_fhasta[1],$arr_fhasta[2]+1,$arr_fhasta[0]));
 
-	$this->db->where("(b.fecha BETWEEN '$fdbdesde' AND '$fdbhasta' AND b.transporte<=0)");
-	$this->db->or_where("(b.fecha BETWEEN '$gdbdesde' AND '$gdbhasta' AND b.transporte>0)");
+	$this->db->where("((b.fecha BETWEEN '$fdbdesde' AND '$fdbhasta' AND b.transporte<=0) OR (b.fecha BETWEEN '$gdbdesde' AND '$gdbhasta' AND b.transporte>0))");
+	$this->db->where("MID(b.ruta,1,1) <> 'G'");
 
 	$mSQL=$this->rapyd->db->_compile_select();
 

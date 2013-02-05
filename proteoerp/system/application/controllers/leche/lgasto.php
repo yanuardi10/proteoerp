@@ -14,6 +14,7 @@ class Lgasto extends Controller {
 	}
 
 	function index(){
+		$this->instalar();
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -35,7 +36,8 @@ class Lgasto extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+			array('id'=>'fedita',  'title'=>'Agregar/Editar Registro'),
+			array('id'=>'fshow' ,  'title'=>'Mostrar Registro'),
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -359,7 +361,54 @@ class Lgasto extends Controller {
 	function dataedit(){
 		$this->rapyd->load('dataedit');
 
+		$script="
+		$(function(){
+			$('.inputnum').numeric('.');
+			$('#fecha').datepicker({   dateFormat: 'dd/mm/yy' });
+			$('#proveed').autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url:  '".site_url('ajax/buscasprv')."',
+						type: 'POST',
+						dataType: 'json',
+						data: 'q='+req.term,
+						success:
+							function(data){
+								var sugiere = [];
+								$.each(data,
+									function(i, val){
+										sugiere.push( val );
+									}
+								);
+								add(sugiere);
+							},
+					})
+				},
+				minLength: 2,
+				select: function( event, ui ) {
+					$('#proveed').attr('readonly', 'readonly');
+					$('#nombre').val(ui.item.nombre);
+					$('#nombre_val').text(ui.item.nombre);
+					$('#proveed').val(ui.item.proveed);
+					$('#sprvreteiva').val(ui.item.reteiva);
+					setTimeout(function() { $('#proveed').removeAttr('readonly'); }, 1500);
+				}
+			});
+		});
+		function totaliza(){
+			if($('#cantidad').val().length>0) cantidad  =parseFloat($('#cantidad').val()); else cantiad =0;
+			if($('#precio').val().length >0)  precio    =parseFloat($('#precio').val());   else precio  =0;
+
+
+			total=roundNumber(cantidad*precio,2);
+			$('#total').val(total);
+			$('#total_val').text(nformat(total));
+		}
+		";
+
 		$edit = new DataEdit($this->tits, 'lgasto');
+		$edit->script($script,'create');
+		$edit->script($script,'modify');
 
 		$edit->on_save_redirect=false;
 
@@ -372,7 +421,7 @@ class Lgasto extends Controller {
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
 
-		$edit->proveed = new inputField('Proveed','proveed');
+		$edit->proveed = new inputField('Proveedor','proveed');
 		$edit->proveed->rule='max_length[5]';
 		$edit->proveed->size =7;
 		$edit->proveed->maxlength =5;
@@ -380,15 +429,24 @@ class Lgasto extends Controller {
 		$edit->nombre = new inputField('Nombre','nombre');
 		$edit->nombre->rule='max_length[100]';
 		$edit->nombre->size =45;
+		$edit->nombre->in = 'proveed';
+		$edit->nombre->type='inputhidden';
 		$edit->nombre->maxlength =100;
+
+		$edit->referen = new inputField('N.Referencia','referen');
+		$edit->referen->rule='max_length[100]';
+		$edit->referen->size =45;
+		$edit->referen->maxlength =100;
 
 		$edit->fecha = new dateField('Fecha','fecha');
 		$edit->fecha->rule='chfecha';
+		$edit->fecha->calendar=false;
+		$edit->fecha->insertValue=date('Y-m-d');
 		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
 
-		$edit->descrip = new inputField('Descrip','descrip');
-		$edit->descrip->rule='max_length[100]';
+		$edit->descrip = new inputField('Descripci&oacute;n','descrip');
+		$edit->descrip->rule='max_length[100]|trim|strtoupper';
 		$edit->descrip->size =45;
 		$edit->descrip->maxlength =100;
 
@@ -396,11 +454,15 @@ class Lgasto extends Controller {
 		$edit->cantidad->rule='max_length[17]|numeric';
 		$edit->cantidad->css_class='inputnum';
 		$edit->cantidad->size =19;
+		$edit->cantidad->autocomplete=false;
+		$edit->cantidad->onkeyup ='totaliza()';
 		$edit->cantidad->maxlength =17;
 
 		$edit->precio = new inputField('Precio','precio');
 		$edit->precio->rule='max_length[17]|numeric';
 		$edit->precio->css_class='inputnum';
+		$edit->precio->onkeyup ='totaliza()';
+		$edit->precio->autocomplete=false;
 		$edit->precio->size =19;
 		$edit->precio->maxlength =17;
 
@@ -408,6 +470,7 @@ class Lgasto extends Controller {
 		$edit->total->rule='max_length[17]|numeric';
 		$edit->total->css_class='inputnum';
 		$edit->total->size =19;
+		$edit->total->type='inputhidden';
 		$edit->total->maxlength =17;
 
 		$edit->build();
@@ -452,6 +515,22 @@ class Lgasto extends Controller {
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
-}
 
-?>
+	function instalar(){
+		if (!$this->db->table_exists('lgasto')) {
+			$mSQL="CREATE TABLE `lgasto` (
+			  `proveed` char(5) DEFAULT NULL COMMENT 'productor',
+			  `nombre` varchar(100) DEFAULT NULL COMMENT 'nombre',
+			  `referen` varchar(100) DEFAULT NULL,
+			  `fecha` date DEFAULT NULL COMMENT 'nombre',
+			  `descrip` varchar(100) DEFAULT NULL COMMENT 'finca',
+			  `cantidad` decimal(17,2) DEFAULT NULL COMMENT 'ruta a en lruta',
+			  `precio` decimal(17,2) DEFAULT NULL COMMENT 'zona',
+			  `total` decimal(17,2) DEFAULT NULL COMMENT 'direccion',
+			  `id` int(11) NOT NULL AUTO_INCREMENT,
+			  PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED COMMENT='Gastos'";
+			$this->db->simple_query($mSQL);
+		}
+	}
+}
