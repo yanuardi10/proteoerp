@@ -790,7 +790,7 @@ class Lpago extends Controller {
 			$mSQL="UPDATE
 				lrece AS a
 				JOIN lruta AS b ON a.ruta=b.codigo
-			SET a.pago=${dbid} WHERE b.codprv=${dbproveed} AND (a.pago IS NULL OR a.pago=0) AND a.fecha <=$d{bfcorte} AND MID(a.ruta,1,1)<>'G'";
+			SET a.pago=${dbid} WHERE b.codprv=${dbproveed} AND (a.pago IS NULL OR a.pago=0) AND a.fecha <=${dbfcorte} AND MID(a.ruta,1,1)<>'G'";
 			$this->db->query($mSQL);
 		}
 
@@ -800,12 +800,12 @@ class Lpago extends Controller {
 			itlrece AS a
 			JOIN lrece AS b ON a.id_lrece=b.id
 			JOIN lvaca AS c ON a.id_lvaca=c.id
-			SET a.pago=${dbid} WHERE c.codprv=${dbproveed} AND (a.pago IS NULL OR a.pago=0) AND b.fecha <=$d{bfcorte} AND MID(b.ruta,1,1)<>'G'";
+			SET a.pago=${dbid} WHERE c.codprv=${dbproveed} AND (a.pago IS NULL OR a.pago=0) AND b.fecha <=${dbfcorte} AND MID(b.ruta,1,1)<>'G'";
 			$this->db->query($mSQL);
 		}
 
 		//Marca la deducciones
-		$mSQL="UPDATE lgasto SET pago=${dbid} WHERE proveed=${dbproveed} AND fecha <=$d{bfcorte} AND (pago IS NULL OR pago=0)";
+		$mSQL="UPDATE lgasto SET pago=${dbid} WHERE proveed=${dbproveed} AND fecha <=${dbfcorte} AND (pago IS NULL OR pago=0)";
 		$this->db->query($mSQL);
 
 		$primary =implode(',',$do->pk);
