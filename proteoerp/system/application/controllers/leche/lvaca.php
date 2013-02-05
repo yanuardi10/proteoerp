@@ -31,7 +31,7 @@ class Lvaca extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
 		//Botones Panel Izq
-		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));
+		$grid->wbotonadd(array("id"=>"recibo",   "img"=>"assets/default/images/print.png",  "alt" => "Imprimir", "label"=>"Imprimir"));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
@@ -58,6 +58,15 @@ class Lvaca extends Controller {
 	//***************************
 	function bodyscript( $grid0 ){
 		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#recibo").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/APANCO').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione una vaquera</h1>");}
+		});';
 
 		$bodyscript .= '
 		function lvacaadd() {
@@ -321,6 +330,20 @@ class Lvaca extends Controller {
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
+		$grid->setOnSelectRow(' function(id){
+			if (id){
+				var ret = jQuery(gridId1).jqGrid(\'getRowData\',id);
+				$(gridId1).jqGrid("setCaption", ret.nombre);
+				$.ajax({
+					url: "'.site_url($this->url).'/resumen/"+id,
+					success: function(msg){
+						$("#ladicional").html(msg);
+					}
+				});
+			}
+		}');
+
+
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
@@ -346,6 +369,30 @@ class Lvaca extends Controller {
 		} else {
 			return $grid;
 		}
+	}
+
+
+	function resumen(){
+
+		$mSQL = '
+		SELECT LPAD(a.id,5,"0") numero, IF(b.transporte>0,DATE_SUB(b.fecha, INTERVAL 1 DAY),b.fecha) AS fecha, b.ruta, c.codigo, c.nombre nomvaca, e.ultimo leche, f.ultimo frio, g.ultimo grasa, h.ultimo bacter, d.proveed, d.nombre, a.lista, d.banco1, d.cuenta1, a.lista monto, a.dtoagua, a.temp, ROUND(a.lista*e.ultimo,2) monto, ROUND(a.lista*(f.ultimo+g.ultimo+h.ultimo)*(c.tipolec="F"),2) incent, (f.ultimo+g.ultimo+h.ultimo) pincent, ROUND(a.lista*e.ultimo,2)+ROUND(a.lista*(f.ultimo+g.ultimo+h.ultimo)*(c.tipolec="F"),2) total, ROUND(a.lista*IF(c.animal="B",i.ultimo, 0 ),2) bufala, ROUND(a.lista*e.ultimo,2)+ROUND(a.lista*(f.ultimo+g.ultimo+h.ultimo)*(c.tipolec="F")+ROUND(a.lista*IF(c.animal="B",i.ultimo, 0 ),2),2) gtotal 
+		FROM (itlrece AS a) 
+		JOIN lrece AS b ON a.id_lrece=b.id 
+		JOIN lvaca AS c ON a.id_lvaca=c.id 
+		LEFT JOIN sprv AS d ON c.codprv=d.proveed 
+		LEFT JOIN sinv e ON e.codigo="ZLCALIENTE" 
+		LEFT JOIN sinv f ON f.codigo="ZMANFRIO" 
+		LEFT JOIN sinv g ON g.codigo="ZPGRASA" 
+		LEFT JOIN sinv h ON h.codigo="ZBACTE" 
+		LEFT JOIN sinv i ON i.codigo="ZBUFALA" 
+		WHERE a.lista > 0 AND MID(b.ruta,1,1) <> "G" AND (b.fecha BETWEEN "2013-01-28" AND "2013-02-03" AND b.transporte<=0) OR (b.fecha BETWEEN "2013-01-29" AND "2013-02-04" AND b.transporte>0) 
+		UNION ALL 
+		SELECT referen numero, fecha, "XXXX" ruta, "XXXX" codigo, "GATOS Y DEDUCCIONES" nomvaca, 0 leche, 0 frio, 0 grasa, 0 bacter, a.proveed, a.nombre, 0, b.banco1, b.cuenta1, 0 monto, 0 dtoagua, 0 temp, 0 monto, 0 incent, 0 pincent, -a.total, 0 bufala, -a.total gtotal 
+		FROM lgasto a JOIN sprv b ON a.proveed=b.proveed 
+		WHERE a.pago=0 
+		ORDER BY proveed, codigo';
+		
+		
 	}
 
 	/**

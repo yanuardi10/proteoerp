@@ -99,7 +99,7 @@ class Lgasto extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 700, modal: true,
+			autoOpen: false, height: 300, width: 550, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -125,6 +125,22 @@ class Lgasto extends Controller {
 							$("#fedita").html(r);
 						}
 					}
+			})},
+			"Guardar y Seguir": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							apprise("Registro Guardado");
+							grid.trigger("reloadGrid");
+							return true;
+						} else {
+							$("#fedita").html(r);
+					}}
 			})},
 			"Cancelar": function() { $( this ).dialog( "close" ); }
 			},
@@ -407,7 +423,7 @@ class Lgasto extends Controller {
 		}
 		";
 
-		$edit = new DataEdit($this->tits, 'lgasto');
+		$edit = new DataEdit('', 'lgasto');
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
 
@@ -424,8 +440,8 @@ class Lgasto extends Controller {
 
 		$edit->proveed = new inputField('Proveedor','proveed');
 		$edit->proveed->rule='max_length[5]';
-		$edit->proveed->size =7;
-		$edit->proveed->maxlength =5;
+		$edit->proveed->size =10;
+		$edit->proveed->maxlength =15;
 
 		$edit->nombre = new inputField('Nombre','nombre');
 		$edit->nombre->rule='max_length[100]';
@@ -436,8 +452,8 @@ class Lgasto extends Controller {
 
 		$edit->referen = new inputField('N.Referencia','referen');
 		$edit->referen->rule='max_length[100]';
-		$edit->referen->size =45;
-		$edit->referen->maxlength =100;
+		$edit->referen->size =12;
+		$edit->referen->maxlength =10;
 
 		$edit->fecha = new dateField('Fecha','fecha');
 		$edit->fecha->rule='chfecha';

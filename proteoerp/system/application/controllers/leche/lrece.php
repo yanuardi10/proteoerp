@@ -179,7 +179,7 @@ class Lrece extends Controller {
 
 		$bodyscript .= '
 		jQuery("#recalcu").click( function(){
-			$.post("'.site_url($this->url.'recalcula').'/"+id+"/create", function(data){
+			$.post("'.site_url($this->url.'recalcula').'", function(data){
 				$.prompt("<h1>Recalculo Concluido</h1>"+data)
 			});
 		});';
@@ -1880,6 +1880,7 @@ class Lrece extends Controller {
 		$this->db->query($mSQL);
 		$mSQL = 'UPDATE lrece SET diferen=litros-lista;';
 		$this->db->query($mSQL);
+		echo "Calculo Concluido";
 	}
 
 

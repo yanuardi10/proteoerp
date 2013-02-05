@@ -15,12 +15,6 @@ class Lpago extends Controller {
 
 	function index(){
 		$this->instalar();
-		/*if ( !$this->datasis->iscampo('lpago','id') ) {
-			$this->db->simple_query('ALTER TABLE lpago DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE lpago ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE lpago ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
-
 		$this->datasis->creaintramenu(array('modulo'=>'227','titulo'=>'Pagos de Producción','mensaje'=>'Pagos de Producción','panel'=>'LECHE','ejecutar'=>'leche/lpago','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
@@ -375,12 +369,13 @@ class Lpago extends Controller {
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = "numero";
 		$check  = 0;
 
 		unset($data['oper']);
 		unset($data['id']);
 		if($oper == 'add'){
+/*
 			if(false == empty($data)){
 				$check = $this->datasis->dameval("SELECT count(*) FROM lpago WHERE $mcodp=".$this->db->escape($data[$mcodp]));
 				if ( $check == 0 ){
@@ -392,29 +387,21 @@ class Lpago extends Controller {
 					echo "Ya existe un registro con ese $mcodp";
 			} else
 				echo "Fallo Agregado!!!";
+*/
 
 		} elseif($oper == 'edit') {
-			$nuevo  = $data[$mcodp];
-			$anterior = $this->datasis->dameval("SELECT $mcodp FROM lpago WHERE id=$id");
-			if ( $nuevo <> $anterior ){
-				//si no son iguales borra el que existe y cambia
-				$this->db->query("DELETE FROM lpago WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE lpago SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-				$this->db->where("id", $id);
-				$this->db->update("lpago", $data);
-				logusu('LPAGO',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-				echo "Grupo Cambiado/Fusionado en clientes";
-			} else {
-				unset($data[$mcodp]);
-				$this->db->where("id", $id);
-				$this->db->update('lpago', $data);
-				logusu('LPAGO',"Grupo de Cliente  ".$nuevo." MODIFICADO");
-				echo "$mcodp Modificado";
-			}
+			$numero   = $data['numero'];
+			$anterior = $this->datasis->dameval("SELECT numero FROM lpago WHERE id=$id");
+			unset($data[$mcodp]);
+			$this->db->where("id", $id);
+			$this->db->update('lpago', $data);
+			logusu('LPAGO',"Pago de Leche  ".$numero." MODIFICADO");
+			echo "Pago $mcodp Modificado";
 
 		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM lpago WHERE id=$id");
+			//$meco = $this->datasis->dameval("SELECT $mcodp FROM lpago WHERE id=$id");
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM lpago WHERE id='$id' ");
+/*
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
@@ -422,6 +409,8 @@ class Lpago extends Controller {
 				logusu('LPAGO',"Registro ????? ELIMINADO");
 				echo "Registro Eliminado";
 			}
+*/
+
 		};
 	}
 
