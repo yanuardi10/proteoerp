@@ -474,7 +474,7 @@ class Sprv extends Controller {
 		$grid->label('Banco1');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 40,
 			'edittype'      => "'select'",
 			'editoptions'   => '{ value: '.$banco.',  style:"width:180px"}',
@@ -499,7 +499,7 @@ class Sprv extends Controller {
 		$grid->label('Banco2');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 40,
 			'edittype'      => "'select'",
 			'editoptions'   => '{ value: '.$banco.',  style:"width:180px"}',

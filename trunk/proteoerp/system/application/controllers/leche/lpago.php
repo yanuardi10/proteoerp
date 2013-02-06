@@ -399,9 +399,10 @@ class Lpago extends Controller {
 			echo "Pago $mcodp Modificado";
 
 		} elseif($oper == 'del') {
-			//$meco = $this->datasis->dameval("SELECT $mcodp FROM lpago WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM lpago WHERE id='$id' ");
 /*
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM lpago WHERE id=$id");
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM lpago WHERE id='$id' ");
+
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
