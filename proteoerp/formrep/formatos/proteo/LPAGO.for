@@ -313,13 +313,7 @@ $pie_final='
 			</tr>
 		</tfoot>
 </table>
-<table  style="width: 100%%; height : 50px;">
-	<tr>
-		<td style="font-size: 8pt; text-align:center;" valign="bottom"><b>Recibido por:</b></td>
-		<td style="font-size: 8pt; text-align:center;" valign="bottom"><b>CI:</b></td>
-		<td style="font-size: 8pt; text-align:center;" valign="bottom"><b>Fecha: ____/____/______</b></td>
-	</tr>
-</table>';
+';
 
 $pie_continuo=<<<piecontinuo
 		</tbody>
@@ -384,5 +378,12 @@ for(1;$lineas<$maxlin;$lineas++){ ?>
 echo sprintf($pie_final,nformat($ittot['tlgasto']));
 }
 ?>
+<table  style="width: 100%%; height : 50px;">
+	<tr>
+		<td style="font-size: 8pt; text-align:center;" valign="bottom"><b>Recibido por:</b></td>
+		<td style="font-size: 8pt; text-align:center;" valign="bottom"><b>CI:</b></td>
+		<td style="font-size: 8pt; text-align:center;" valign="bottom"><b>Fecha: ____/____/______</b></td>
+	</tr>
+</table>'
 </body>
 </html>

@@ -34,11 +34,13 @@ class Lpago extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array('id'=>'bimpri', 'img'=>'assets/default/images/print.png', 'alt' => 'Imprimir Documento', 'label'=>'Imprimir recibo' ));
+		$grid->wbotonadd(array('id'=>'blote' , 'img'=>'images/agrega4.png'             , 'alt' => 'Pagar lote'        , 'label'=>'Pagar lote'      ));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
 			array('id'=>'fedita', 'title'=>'Agregar/Editar Registro'),
-			array('id'=>'fshow' , 'title'=>'Ver Registro')
+			array('id'=>'fshow' , 'title'=>'Ver Registro'),
+			array('id'=>'flote' , 'title'=>'Pago por Lote')
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -67,7 +69,7 @@ class Lpago extends Controller {
 			function(data){
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
-			})
+			});
 		};';
 
 		$bodyscript .= '
@@ -98,6 +100,16 @@ class Lpago extends Controller {
 			';
 
 		$bodyscript .= '
+		jQuery("#blote").click( function(){
+			$.post("'.site_url($this->url.'lote').'",
+			function(data){
+				$("#flote").html(data);
+				$("#flote").dialog( "open" );
+			});
+		});';
+
+
+		$bodyscript .= '
 		jQuery("#bimpri").click( function(){
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
@@ -112,35 +124,71 @@ class Lpago extends Controller {
 		$("#fedita").dialog({
 			autoOpen: false, height: 500, width: 700, modal: true,
 			buttons: {
-			"Guardar": function() {
-				var bValid = true;
-				var murl = $("#df1").attr("action");
-				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST", dataType: "html", async: false,
-					url: murl,
-					data: $("#df1").serialize(),
-					success: function(r,s,x){
-						try{
-							var json = JSON.parse(r);
-							if (json.status == "A"){
-								apprise("Registro Guardado");
-								$( "#fedita" ).dialog( "close" );
-								grid.trigger("reloadGrid");
-								'.$this->datasis->jwinopen(site_url('formatos/ver/LPAGO').'/\'+json.pk.id+\'/id\'').';
-								return true;
-							} else {
-								apprise(json.mensaje);
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									apprise("Registro Guardado");
+									$( "#fedita" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									'.$this->datasis->jwinopen(site_url('formatos/ver/LPAGO').'/\'+json.pk.id+\'/id\'').';
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#fedita").html(r);
 							}
-						}catch(e){
-							$("#fedita").html(r);
 						}
-					}
-			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
+					});
+				},
+				"Cancelar": function() {
+					$("#fedita").html("");
+					$( this ).dialog( "close" );
+				}
 			},
-			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			close: function() {
+				$("#fedita").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
 		});';
+
+		$bodyscript .= '
+		$("#flote").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Guardar": function() {
+					var bValid = true;
+					var murl = $("#df1").attr("action");
+					allFields.removeClass( "ui-state-error" );
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url: murl,
+						data: $("#df1").serialize(),
+						success: function(r,s,x){
+							$("#flote").html(r);
+						}
+					});
+				},
+				"Cancelar": function() {
+					$("#flote").html("");
+					$( this ).dialog( "close" );
+				}
+			},
+			close: function() {
+				$("#flote").html("");
+				allFields.val("").removeClass( "ui-state-error" );
+			}
+		});';
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "</script>";
@@ -581,6 +629,43 @@ class Lpago extends Controller {
 		}
 	}
 
+	function lote(){
+		$this->rapyd->load('dataedit','dataform','datagrid');
+
+		$form = new DataForm($this->url.'lote/insert');
+
+
+
+		$form->banco = new dropdownField('Pagar desde','banco');
+		$form->banco->option('','Seleccionar');
+		$form->banco->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tipocta<>'Q' ORDER BY codbanc");
+		$form->banco->rule='max_length[50]|required';
+		$form->banco->group='Detalles de pago';
+
+		$form->numche = new inputField('N&uacute;mero','numche');
+		$form->numche->rule='max_length[100]';
+		$form->numche->rule='condi_required|callback_chobligaban';
+		$form->numche->size =52;
+		$form->numche->maxlength =100;
+		$form->numche->group='Detalles de pago';
+
+		$form->benefi = new inputField('Beneficiario','benefi');
+		$form->benefi->rule='max_length[100]|strtoupper';
+		$form->benefi->size =52;
+		$form->benefi->maxlength =100;
+		$form->benefi->group='Detalles de pago';
+
+
+		$form->build_form();
+
+		if($form->on_success()){
+
+		}
+
+		echo $form->output;
+
+	}
+
 	function chobligaban($val){
 		$banc=$this->input->post('banco');
 		$sql='SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($banc);
@@ -649,7 +734,7 @@ class Lpago extends Controller {
 
 			//Transportista
 			$rt['tmonto'] = 0;
-			$sel=array('SUM(IF(a.litros=0,a.lista,a.litros)*b.tarifa) AS monto');
+			$sel=array('SUM(a.lista*b.tarifa) AS monto');
 			$this->db->select($sel);
 			$this->db->from('lrece AS a');
 			$this->db->join('lruta AS b','a.ruta=b.codigo');
@@ -736,7 +821,7 @@ class Lpago extends Controller {
 
 		//Transportista
 		$rt['tmonto'] = 0;
-		$sel=array('SUM(IF(a.litros=0,a.lista,a.litros)*b.tarifa) AS monto');
+		$sel=array('SUM(a.lista*b.tarifa) AS monto');
 		$this->db->select($sel);
 		$this->db->from('lrece AS a');
 		$this->db->join('lruta AS b','a.ruta=b.codigo');
