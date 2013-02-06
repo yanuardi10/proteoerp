@@ -464,6 +464,21 @@ class Sprv extends Controller {
 		));
 
 
+
+		$linea = $linea + 1;
+		$grid->addField('prefpago');
+		$grid->label('Preferencia');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: { "T":"Transferencia", "C":"Cobro en caja","D":"Deposito"},  style:"width:180px"}',
+			'stype'         => "'text'"
+		));
+
+
+
 		$linea = $linea + 1;
 		$grid->addField('banco1');
 		$grid->label('Banco1');
@@ -485,7 +500,7 @@ class Sprv extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ size:30, maxlength: 25 }',
-			'formoptions'   => '{ label:"Nro. Cuente 1" }'
+			'formoptions'   => '{ label:"Nro. Cuenta 1" }'
 		));
 
 		$linea = $linea + 1;
@@ -1021,11 +1036,8 @@ class Sprv extends Controller {
 		$edit->cliente->rule ="trim";
 		$edit->cliente->readonly=true;
 		$edit->cliente->append($bsclid);
-		//$edit->cliente->append($lcli);
-		//$edit->cliente->group = "Datos del Proveedor";
 
 		$edit->prefpago = new dropdownField('Preferencia de pago','prefpago');
-		$edit->prefpago->option('' ,'Ninguno');
 		$edit->prefpago->option('T','Transferencia');
 		$edit->prefpago->option('C','Cobro en caja');
 		$edit->prefpago->option('D','Deposito');
