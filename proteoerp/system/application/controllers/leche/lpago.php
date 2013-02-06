@@ -672,16 +672,25 @@ class Lpago extends Controller {
 		$edit->pre_process( 'update', '_pre_lote_update');
 		$edit->pre_process( 'delete', '_pre_lote_delete');
 
-		$edit->enbanco = new dropdownField('Banco a depositar','enbanco');
+		$edit->enbanco = new dropdownField('Pagar con banco','enbanco');
 		$edit->enbanco->option('','Seleccionar');
 		$edit->enbanco->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tipocta<>'Q' AND tbanco<>'CAJ' ORDER BY codbanc");
 		$edit->enbanco->rule='max_length[50]|required';
+		$edit->enbanco->append('Banco desde el que se emiten los pagos');
 
 		$edit->tipo = new dropdownField('Preferencia de pago','tipo');
 		$edit->tipo->option('T','Transferencia');
 		$edit->tipo->option('D','Deposito');
 		$edit->tipo->rule = 'required';
 		$edit->tipo->style = 'width:140px;';
+
+
+		$edit->banco = new dropdownField('Banco a depositar','banco');
+		$edit->banco->option('','Seleccionar');
+		$edit->banco->options('SELECT cod_banc, CONCAT_WS(\'-\',cod_banc,nomb_banc) AS label FROM tban ORDER BY cod_banc');
+		$edit->banco->rule='max_length[50]|required';
+		$edit->banco->append('Banco en donde se le depositar&aacute;n a los clientes');
+
 
 		//$edit->numero = new inputField('N&uacute;mero','numero');
 		//$edit->numero->rule='max_length[100]';
@@ -972,7 +981,8 @@ class Lpago extends Controller {
 
 	function _post_lote_insert($do){
 		$banco   = $do->get('enbanco');
-		$bbanco  = $this->datasis->dameval('SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($banco));
+		$bbanco  = $do->get('banco');
+
 		$tipo    = $do->get('tipo');
 		$fecha   = date('Y-m-d');
 		$hfecha  = date('d/m/Y');
@@ -1087,7 +1097,8 @@ class Lpago extends Controller {
 		if (!$this->db->table_exists('lpagolote')) {
 			$mSQL="CREATE TABLE `lpagolote` (
 				`id` INT(11) NOT NULL AUTO_INCREMENT,
-				`enbanco` VARCHAR(5) NULL DEFAULT NULL,
+				`enbanco` VARCHAR(5) NULL DEFAULT NULL COMMENT 'Banco con que se paga',
+				`banco` VARCHAR(5) NULL DEFAULT NULL COMMENT 'Banco donde se deposita',
 				`tipo` CHAR(2) NULL DEFAULT NULL,
 				`numero` VARCHAR(50) NULL DEFAULT NULL,
 				`benefi` VARCHAR(100) NULL DEFAULT NULL,
@@ -1097,6 +1108,12 @@ class Lpago extends Controller {
 			)
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
+		}
+
+		$campos=$this->db->list_fields('lpagolote');
+		if (!in_array('banco',$campos)){
+			$mSQL="ALTER TABLE `lpagolote` CHANGE COLUMN `enbanco` `enbanco` VARCHAR(5) NULL DEFAULT NULL COMMENT 'Banco con que se paga' AFTER `id`, ADD COLUMN `banco` VARCHAR(5) NULL DEFAULT NULL COMMENT 'Banco donde se deposita' AFTER `enbanco`";
 			$this->db->simple_query($mSQL);
 		}
 	}
