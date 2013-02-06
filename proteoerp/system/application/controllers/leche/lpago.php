@@ -977,7 +977,6 @@ class Lpago extends Controller {
 		$id_lote = $do->get('id');
 		$sumonto = $reg=0;
 		$this->genesal=false;
-		$do->set('fecha',date('Y-m-d'));
 
 		$this->id_lote=$id_lote;
 
@@ -1041,7 +1040,8 @@ class Lpago extends Controller {
 	}
 
 	function _pre_lote_insert($do){
-
+		$do->set('fecha',date('Y-m-d'));
+		return true;
 	}
 
 	function _pre_lote_update($do){
