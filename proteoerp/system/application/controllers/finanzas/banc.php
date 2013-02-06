@@ -1,4 +1,4 @@
-<?php 
+<?php
 class Banc extends Controller {
 	var $mModulo='BANC';
 	var $titp='Bancos y Cajas';
@@ -13,11 +13,8 @@ class Banc extends Controller {
 	}
 
 	function index(){
-		if ( !$this->datasis->iscampo('banc','id') ) {
-			$this->db->simple_query('ALTER TABLE banc DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE banc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
-			$this->db->simple_query('ALTER TABLE banc ADD UNIQUE INDEX codbanc (codbanc)');
-		}
+		$this->instalar();
+
 		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -141,7 +138,7 @@ class Banc extends Controller {
 							grid.trigger("reloadGrid");
 							'.$this->datasis->jwinopen(site_url('formatos/ver/BANC').'/\'+res.id+\'/id\'').';
 							return true;
-						} else { 
+						} else {
 							$("#fedita").html(r);
 						}
 					}
@@ -366,7 +363,7 @@ class Banc extends Controller {
 
 
 		$mSQL = "SELECT COUNT(*) FROM mgas a JOIN grga b ON a.grupo=b.grupo WHERE b.nom_grup='GASTOS FINANCIEROS' ORDER BY codigo ";
-		if ( $this->datasis->dameval($mSQL) == 0 ) 
+		if ( $this->datasis->dameval($mSQL) == 0 )
 			$mSQL = "SELECT codigo, CONCAT(codigo,' ',descrip) descrip FROM mgas a JOIN grga b ON a.grupo=b.grupo ORDER BY codigo ";
 		else
 			$mSQL = "SELECT codigo, CONCAT(codigo,' ',descrip) descrip FROM mgas a JOIN grga b ON a.grupo=b.grupo WHERE b.nom_grup='GASTOS FINANCIEROS' ORDER BY codigo ";
@@ -766,7 +763,7 @@ class Banc extends Controller {
 		$edit->numcuent->rule='trim';
 		$edit->numcuent->size = 24;
 		$edit->numcuent->maxlength=25;
-		
+
 		$edit->dire1 = new inputField('Direcci&oacute;n', 'dire1');
 		$edit->dire1->rule='trim';
 		$edit->dire1->size =40;
@@ -924,7 +921,7 @@ class Banc extends Controller {
 		echo $consul;
 	}
 
-	function consulta(){  
+	function consulta(){
 		$this->rapyd->load("datagrid");
 		$fields = $this->db->field_data('banc');
 		$url_pk = $this->uri->segment_array();
@@ -945,7 +942,7 @@ class Banc extends Controller {
 		$grid->db->where('a.fecha > SUBDATE(curdate(),90)' );
 		$grid->db->orderby('fecha DESC');
 		//$grid->db->limit();
-			
+
 		$grid->column("Fecha"   ,"fecha" );
 		$grid->column("Tipo"   ,"tipo_op" );
 		$grid->column("Numero" ,"numero");
@@ -969,7 +966,7 @@ class Banc extends Controller {
 		$data['title']    = '<h1>Consulta de Banco</h1>';
 		$data["subtitle"] = "<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF '><a href='javascript:javascript:history.go(-1)'>(".$claves['codbanc'].") ".$descrip."</a></div>";
 		$this->load->view('view_ventanas', $data);
-		
+
 	}
 
 	//****************************
@@ -982,20 +979,20 @@ class Banc extends Controller {
 		$codbanc  = $row['codbanc'];
 		$saldo    = $row['saldo'];
 		$activo   = $row['activo'];
-		
+
 		$mSQL = "SELECT saldo Inicial, saldo01 Ene, saldo02 Feb, saldo03 Mar, saldo04 Abr, saldo05 May, saldo06 Jun, saldo07 jul, saldo08 Ago, saldo09 Sep, saldo10 Oct, saldo11 Nov, saldo12 Dic  FROM bsal WHERE ano = YEAR(curdate()) AND codbanc=".$this->db->escape($codbanc);
 
 		$query = $this->db->query($mSQL);
-		$data = $query->row(); 
+		$data = $query->row();
 		$salida = '';
 		$salida  .= '<table width="90%" border="1" align="center">';
-		if ( $activo == 'S') 
+		if ( $activo == 'S')
 			$salida  .= '<tr><th colspan="2" style="background:#A6FAA6;">Saldos por Mes</th></tr>';
 		else
 			$salida  .= '<tr><th colspan="2" style="background:#F97070;">Saldos por Mes</th></tr>';
-		
+
 		foreach( $data AS $mes=>$saldo ){
-			$salida .= "<tr><td>".$mes."</td><td align='right'>".$saldo."</td></tr>\n";	
+			$salida .= "<tr><td>".$mes."</td><td align='right'>".$saldo."</td></tr>\n";
 		}
 		$salida .= "</table>\n";
 		echo $salida;
@@ -1009,15 +1006,15 @@ class Banc extends Controller {
 
 		$ano = date('Y');
 
-		$mSQL = "INSERT IGNORE INTO bsal SET 
-		codbanc=".$this->db->escape($codbanc).", 
-		ano=$ano, saldo=0,   
-		saldo01=0, saldo02=0, saldo03=0, saldo04=0, 
-		saldo05=0, saldo06=0, saldo07=0, saldo08=0, 
+		$mSQL = "INSERT IGNORE INTO bsal SET
+		codbanc=".$this->db->escape($codbanc).",
+		ano=$ano, saldo=0,
+		saldo01=0, saldo02=0, saldo03=0, saldo04=0,
+		saldo05=0, saldo06=0, saldo07=0, saldo08=0,
 		saldo09=0, saldo10=0, saldo11=0, saldo12=0 ";
 		$this->db->query($mSQL);
 
-		$mSQL = "SELECT 
+		$mSQL = "SELECT
 		SUM( monto*(month(fecha)= 1)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=1)*(tipo_op  IN ('CH','ND'))) saldo01,
 		SUM( monto*(month(fecha)= 2)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=3)*(tipo_op  IN ('CH','ND'))) saldo02,
 		SUM( monto*(month(fecha)= 3)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=3)*(tipo_op  IN ('CH','ND'))) saldo03,
@@ -1030,40 +1027,53 @@ class Banc extends Controller {
 		SUM( monto*(month(fecha)=10)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=10)*(tipo_op IN ('CH','ND'))) saldo10,
 		SUM( monto*(month(fecha)=11)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=11)*(tipo_op IN ('CH','ND'))) saldo11,
 		SUM( monto*(month(fecha)=12)*(tipo_op NOT IN ('CH','ND')) - monto*(month(fecha)=12)*(tipo_op IN ('CH','ND'))) saldo12
-		FROM bmov WHERE year(fecha)=$ano AND codbanc=".$this->db->escape($codbanc)." 
+		FROM bmov WHERE year(fecha)=$ano AND codbanc=".$this->db->escape($codbanc)."
 		GROUP BY codbanc, YEAR(fecha)";
 		//memowrite($mSQL);
-		
+
 		$query = $this->db->query($mSQL);
-		$data = $query->row(); 
+		$data = $query->row();
 
 		if ( count($data) == 1 ){
 			$this->db->where('codbanc', $codbanc);
 			$this->db->where('ano',     $ano);
-			$this->db->update('bsal',   $data); 
+			$this->db->update('bsal',   $data);
 		} else {
 			//Coloca todo en 0
 			$data = array(
-			"saldo01"=>0, "saldo02"=>0, "saldo03"=>0, "saldo04"=>0, 
-			"saldo05"=>0, "saldo06"=>0, "saldo07"=>0, "saldo08"=>0, 
+			"saldo01"=>0, "saldo02"=>0, "saldo03"=>0, "saldo04"=>0,
+			"saldo05"=>0, "saldo06"=>0, "saldo07"=>0, "saldo08"=>0,
 			"saldo09"=>0, "saldo10"=>0, "saldo11"=>0, "saldo12"=>0 );
 			$this->db->where('codbanc', $codbanc);
 			$this->db->where('ano',     $ano);
-			$this->db->update('bsal',   $data); 
+			$this->db->update('bsal',   $data);
 		}
 
 		$anoactual = date('Y');
 		//Actualiza Banc
 		$mSQL = 'SELECT saldo+saldo01+saldo02+saldo03+saldo04+saldo05+saldo06+
-			saldo07+saldo08+saldo09+saldo10+saldo11+saldo12 FROM bsal 
+			saldo07+saldo08+saldo09+saldo10+saldo11+saldo12 FROM bsal
 			WHERE codbanc='.$this->db->escape($codbanc).' AND ano='.$anoactual;
 		$saldo = $this->datasis->dameval($mSQL)+0;
-		
+
 		$mSQL = 'UPDATE banc SET saldo='.$saldo.' WHERE codbanc='.$this->db->escape($codbanc);
 		$this->db->query($mSQL);
 
 	}
 
+	function instalar(){
+		$campos=$this->db->list_fields('banc');
+
+		if(!in_array('formato',$campos)){
+			$mSQL="ALTER TABLE `tban` CHANGE COLUMN `formato` `formato` VARCHAR(10) NULL DEFAULT 'CHEQUE' AFTER `formaca`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!in_array('id',$campos)) {
+			$this->db->simple_query('ALTER TABLE banc DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE banc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE banc ADD UNIQUE INDEX codbanc (codbanc)');
+		}
+	}
 
 }
-?>
