@@ -180,6 +180,7 @@ class Lpago extends Controller {
 								if (json.status == "A"){
 									apprise(json.mensaje);
 									$( "#flote" ).dialog( "close" );
+									'.$this->datasis->jwinopen(site_url('reportes/ver/LPAGOLOTE').'/\'+json.pk.id+\'/id\'').';
 									grid.trigger("reloadGrid");
 									return true;
 								} else {
@@ -673,7 +674,7 @@ class Lpago extends Controller {
 
 		$edit->enbanco = new dropdownField('Banco a depositar','enbanco');
 		$edit->enbanco->option('','Seleccionar');
-		$edit->enbanco->options("SELECT banco1, CONCAT_WS('-',banco1,nomb_banc) AS label FROM sprv AS a JOIN tban AS b  ON a.banco1=b.cod_banc GROUP BY banco1 ORDER BY cod_banc");
+		$edit->enbanco->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tipocta<>'Q' AND tbanco<>'CAJ' ORDER BY codbanc");
 		$edit->enbanco->rule='max_length[50]|required';
 
 		$edit->tipo = new dropdownField('Preferencia de pago','tipo');
@@ -971,6 +972,7 @@ class Lpago extends Controller {
 
 	function _post_lote_insert($do){
 		$banco   = $do->get('enbanco');
+		$bbanco  = $this->datasis->dameval('SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($banco));
 		$tipo    = $do->get('tipo');
 		$fecha   = date('Y-m-d');
 		$hfecha  = date('d/m/Y');
@@ -982,7 +984,7 @@ class Lpago extends Controller {
 
 		$this->db->select(array('proveed','nombre'));
 		$this->db->from('sprv');
-		$this->db->where('banco1'  ,$banco);
+		$this->db->where('banco1'  ,$bbanco );
 		$this->db->where('prefpago',$tipo );
 		$query = $this->db->get();
 		foreach ($query->result() as $row){
