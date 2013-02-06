@@ -777,7 +777,7 @@ class Lpago extends Controller {
 			//Productores
 			$rt['monto'] = 0;
 
-			$sel=array('SUM(ROUND(a.lista*if(c.tipolec="F",k.ultimo,e.ultimo),2)+ROUND(a.lista*(f.ultimo+g.ultimo+h.ultimo)*(c.tipolec="F")+ROUND(a.lista*IF(c.animal="B",if(c.tipolec="F",i.ultimo,j.ultimo), 0 ),2),2))  AS total');
+			$sel=array("SUM(ROUND(a.lista*if(c.tipolec='F',k.ultimo,e.ultimo),2)+ROUND(a.lista*(IF(c.zona='0112',l.ultimo,f.ultimo)+g.ultimo+h.ultimo)*(c.tipolec='F')+ROUND(a.lista*IF(c.animal='B',if(c.tipolec='F',i.ultimo,j.ultimo), 0 ),2),2)) AS total");
 			$this->db->select($sel);
 			$this->db->from('itlrece AS a');
 			$this->db->join('lrece   AS b','a.id_lrece=b.id');
@@ -790,13 +790,15 @@ class Lpago extends Controller {
 			$this->db->join('sinv    AS i','i.codigo="ZBUFALA"'   ,'LEFT');
 			$this->db->join('sinv    AS j','j.codigo="ZBUFALAC"'  ,'LEFT');
 			$this->db->join('sinv    AS k','k.codigo="ZLFRIA"'    ,'LEFT');
+			$this->db->join('sinv    AS l','l.codigo="ZLMACHI"'   ,'LEFT');
+
 			$this->db->where('a.lista >',0);
 			$this->db->where('(a.pago IS NULL OR a.pago=0)');
 			$this->db->where('b.fecha <=',$fcorte);
 			$this->db->where('MID(b.ruta,1,1) <>','G');
 			$this->db->where('c.codprv',$proveed);
 			$query = $this->db->get();
-			if ($query->num_rows() > 0){
+			if($query->num_rows() > 0){
 				$row = $query->row();
 				if(!empty($row->total)) $rt['monto'] = round(floatval($row->total),2);
 			}
@@ -844,72 +846,21 @@ class Lpago extends Controller {
 		$fcorte=date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
 		$this->fcorte=$fcorte;
 
-		//Calcula los montos a pagar
-		$rt = array();
-		//Deducciones
-		$rt['deduc'] = 0;
-		$sel=array('SUM(a.total) AS val');
-		$this->db->select($sel);
-		$this->db->from('lgasto AS a');
-		$this->db->where('(a.pago IS NULL OR a.pago=0)');
-		$this->db->where('a.proveed',$proveed);
-		$this->db->where('a.fecha <=',$fcorte);
-		$query = $this->db->get();
-		if ($query->num_rows() > 0){
-			$row = $query->row();
-			if(!empty($row->val)) $rt['deduc'] = floatval($row->val);
+		//Calcula el moto que se le debe
+		$rt=array('deduc'=>0,'monto'=>0,'tmonto'=>0);
+		ob_start();
+			$this->ajaxmonto();
+			$jsmontos=ob_get_contents();
+		@ob_end_clean();
+		$montos = json_decode($jsmontos,true);
+		if(isset($montos['monto']) && isset($montos['tmonto']) && isset($montos['deduc'])){
+			$rt=array(
+				'deduc' => $montos['deduc'],
+				'monto' => $montos['monto'],
+				'tmonto'=> $montos['tmonto']
+			);
 		}
-
-		//Productores
-		$escape_char = $this->db->_escape_char;
-		$protect_ide = $this->db->_protect_identifiers;
-		$this->db->_escape_char        ='';
-		$this->db->_protect_identifiers=false;
-		$rt['monto'] = 0;
-		$sel=array('SUM(ROUND(a.lista*if(c.tipolec="F",k.ultimo,e.ultimo),2)+ROUND(a.lista*(f.ultimo+g.ultimo+h.ultimo)*(c.tipolec="F")+ROUND(a.lista*IF(c.animal="B",if(c.tipolec="F",i.ultimo,j.ultimo), 0 ),2),2)) AS total');
-		$this->db->select($sel);
-		$this->db->from('itlrece AS a');
-		$this->db->join('lrece   AS b','a.id_lrece=b.id');
-		$this->db->join('lvaca   AS c','a.id_lvaca=c.id');
-		$this->db->join('sprv    AS d','c.codprv=d.proveed'   ,'LEFT');
-		$this->db->join('sinv    AS e','e.codigo="ZLCALIENTE"','LEFT');
-		$this->db->join('sinv    AS f','f.codigo="ZMANFRIO"'  ,'LEFT');
-		$this->db->join('sinv    AS g','g.codigo="ZPGRASA"'   ,'LEFT');
-		$this->db->join('sinv    AS h','h.codigo="ZBACTE"'    ,'LEFT');
-		$this->db->join('sinv    AS i','i.codigo="ZBUFALA"'   ,'LEFT');
-		$this->db->join('sinv    AS j','j.codigo="ZBUFALAC"'  ,'LEFT');
-		$this->db->join('sinv    AS k','k.codigo="ZLFRIA"'    ,'LEFT');
-
-		$this->db->where('a.lista >',0);
-		$this->db->where('b.fecha <=',$fcorte);
-		$this->db->where('(a.pago IS NULL OR a.pago=0)');
-		$this->db->where('MID(b.ruta,1,1) <>','G');
-		$this->db->where('c.codprv',$proveed);
-		$query = $this->db->get();
-		if ($query->num_rows() > 0){
-			$row = $query->row();
-			if(!empty($row->total)) $rt['monto'] = floatval($row->total);
-		}
-		$this->db->_escape_char        = $escape_char;
-		$this->db->_protect_identifiers= $protect_ide;
-
-		//Transportista
-		$rt['tmonto'] = 0;
-		$sel=array('SUM(a.lista*b.tarifa) AS monto');
-		$this->db->select($sel);
-		$this->db->from('lrece AS a');
-		$this->db->join('lruta AS b','a.ruta=b.codigo');
-		$this->db->join('sprv  AS c','b.codprv=c.proveed');
-		$this->db->where('a.lista >',0);
-		$this->db->where('(a.pago IS NULL OR a.pago=0)');
-		$this->db->where('MID(a.ruta,1,1) <>','G');
-		$this->db->where('b.codprv',$proveed);
-		$this->db->where('a.fecha <=',$fcorte);
-		$query = $this->db->get();
-		if ($query->num_rows() > 0){
-			$row = $query->row();
-			if(!empty($row->monto)) $rt['tmonto'] = floatval($row->monto);
-		}
+		//Fin del calculo
 
 		//Determina el tipo, si es transportista, productor o ambos
 		if($rt['tmonto']*$rt['monto']>0){
