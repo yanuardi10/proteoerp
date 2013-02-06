@@ -404,7 +404,7 @@ class Lpago extends Controller {
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('lpago');
 
-		$response   = $grid->getData('lpago', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('lpago', array(array()), array(), false, $mWHERE, 'id', 'desc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}

@@ -415,7 +415,7 @@ class Sprv extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
 			'editoptions'   => '{'.$grid->autocomplete($link, 'cuenta','cucucu','<div id=\"cucucu\"><b>"+ui.item.descrip+"</b></div>').'}',
-			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+//			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
 /*
@@ -478,8 +478,7 @@ class Sprv extends Controller {
 			'width'         => 40,
 			'edittype'      => "'select'",
 			'editoptions'   => '{ value: '.$banco.',  style:"width:180px"}',
-			'stype'         => "'text'",
-			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+			'stype'         => "'text'"
 		));
 
 		$grid->addField('cuenta1');
@@ -491,7 +490,7 @@ class Sprv extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ size:30, maxlength: 25 }',
-			'formoptions'   => '{ label:"Nro. Cuente 1", rowpos:'.$linea.', colpos:2 }'
+			'formoptions'   => '{ label:"Nro. Cuente 1" }'
 		));
 
 		$linea = $linea + 1;
@@ -503,19 +502,18 @@ class Sprv extends Controller {
 			'width'         => 40,
 			'edittype'      => "'select'",
 			'editoptions'   => '{ value: '.$banco.',  style:"width:180px"}',
-			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
 		$grid->addField('cuenta2');
 		$grid->label('Cuenta2');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ size:30, maxlength: 25 }',
-			'formoptions'   => '{ label:"Nro. Cuenta 2", rowpos:'.$linea.', colpos:2 }'
+			'formoptions'   => '{ label:"Nro. Cuenta 2" }'
 		));
 
 /*
