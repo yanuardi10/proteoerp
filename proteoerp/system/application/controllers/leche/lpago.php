@@ -11,6 +11,7 @@ class Lpago extends Controller {
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
 		$this->datasis->modulo_nombre( 'LPAGO', $ventana=0 );
+		$this->genesal=true;
 	}
 
 	function index(){
@@ -101,7 +102,7 @@ class Lpago extends Controller {
 
 		$bodyscript .= '
 		jQuery("#blote").click( function(){
-			$.post("'.site_url($this->url.'lote').'",
+			$.post("'.site_url($this->url.'lote').'"+"/create",
 			function(data){
 				$("#flote").html(data);
 				$("#flote").dialog( "open" );
@@ -174,11 +175,23 @@ class Lpago extends Controller {
 						url: murl,
 						data: $("#df1").serialize(),
 						success: function(r,s,x){
-							$("#flote").html(r);
+							try{
+								var json = JSON.parse(r);
+								if (json.status == "A"){
+									apprise(json.mensaje);
+									$( "#flote" ).dialog( "close" );
+									grid.trigger("reloadGrid");
+									return true;
+								} else {
+									apprise(json.mensaje);
+								}
+							}catch(e){
+								$("#flote").html(r);
+							}
 						}
 					});
 				},
-				"Cancelar": function() {
+				"Cerrar": function() {
 					$("#flote").html("");
 					$( this ).dialog( "close" );
 				}
@@ -625,49 +638,91 @@ class Lpago extends Controller {
 			);
 			echo json_encode($rt);
 		}else{
-			echo $edit->output;
+			if($this->genesal){
+				echo $edit->output;
+			}else{
+				$rt=array(
+					'status' =>'B',
+					'mensaje'=>html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string)),
+					'pk'     =>null
+				);
+				echo json_encode($rt);
+			}
 		}
 	}
 
 	function lote(){
-		$this->rapyd->load('dataedit','dataform','datagrid');
+		$this->rapyd->load('dataedit');
 
-		$form = new DataForm($this->url.'lote/insert');
+		$script= '
+		$(function() {
+			$(".inputnum").numeric(".");
+			$(".inputonlynum").numeric();
+		});';
 
+		$edit = new DataEdit($this->tits, 'lpagolote');
+		$edit->script($script,'create');
+		$edit->on_save_redirect=false;
 
-		$form->enbanco = new dropdownField('Banco a depositar','enbanco');
-		$form->enbanco->option('','Seleccionar');
-		$form->enbanco->options("SELECT banco1, CONCAT_WS('-',banco1,nomb_banc) AS label FROM sprv AS a JOIN tban AS b  ON a.banco1=b.cod_banc GROUP BY banco1 ORDER BY cod_banc");
-		$form->enbanco->rule='max_length[50]|required';
+		$edit->post_process('insert','_post_lote_insert');
+		$edit->post_process('update','_post_lote_update');
+		$edit->post_process('delete','_post_lote_delete');
+		$edit->pre_process( 'insert', '_pre_lote_insert');
+		$edit->pre_process( 'update', '_pre_lote_update');
+		$edit->pre_process( 'delete', '_pre_lote_delete');
 
-		$form->banco = new dropdownField('Pagar desde','banco');
-		$form->banco->option('','Seleccionar');
-		$form->banco->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tipocta<>'Q' ORDER BY codbanc");
-		$form->banco->rule='max_length[50]|required';
-		$form->banco->group='Detalles de pago';
+		$edit->enbanco = new dropdownField('Banco a depositar','enbanco');
+		$edit->enbanco->option('','Seleccionar');
+		$edit->enbanco->options("SELECT banco1, CONCAT_WS('-',banco1,nomb_banc) AS label FROM sprv AS a JOIN tban AS b  ON a.banco1=b.cod_banc GROUP BY banco1 ORDER BY cod_banc");
+		$edit->enbanco->rule='max_length[50]|required';
 
-		$form->numche = new inputField('N&uacute;mero','numche');
-		$form->numche->rule='max_length[100]';
-		$form->numche->rule='condi_required|callback_chobligaban';
-		$form->numche->size =52;
-		$form->numche->maxlength =100;
-		$form->numche->group='Detalles de pago';
+		$edit->tipo = new dropdownField('Preferencia de pago','tipo');
+		$edit->tipo->option('T','Transferencia');
+		$edit->tipo->option('D','Deposito');
+		$edit->tipo->rule = 'required';
+		$edit->tipo->style = 'width:140px;';
 
-		$form->benefi = new inputField('Beneficiario','benefi');
-		$form->benefi->rule='max_length[100]|strtoupper';
-		$form->benefi->size =52;
-		$form->benefi->maxlength =100;
-		$form->benefi->group='Detalles de pago';
+		//$edit->numero = new inputField('N&uacute;mero','numero');
+		//$edit->numero->rule='max_length[100]';
+		//$edit->numero->rule='condi_required|callback_chobligaban';
+		//$edit->numero->maxlength =100;
+		//$edit->numero->group='Detalles de pago';
+        //
+		//$edit->banco = new dropdownField('Pagar desde','banco');
+		//$edit->banco->option('','Seleccionar');
+		//$edit->banco->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tipocta<>'Q' ORDER BY codbanc");
+		//$edit->banco->rule='max_length[50]|required';
+		//$edit->banco->group='Detalles de pago';
+        //
+		//$edit->benefi = new inputField('Beneficiario','benefi');
+		//$edit->benefi->rule='max_length[100]';
+		//$edit->benefi->maxlength =100;
 
+		//$edit->fecha = new dateField('Fecha','fecha');
+		//$edit->fecha->rule='chfecha';
+		//$edit->fecha->size =10;
+		//$edit->fecha->calendar=false;
+		//$edit->fecha->maxlength =8;
+		//$edit->monto = new inputField('Monto','monto');
+		//$edit->monto->rule='max_length[12]|numeric';
+		//$edit->monto->css_class='inputnum';
+		//$edit->monto->size =14;
+		//$edit->monto->maxlength =12;
+		//$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 
-		$form->build_form();
+		$edit->build();
 
-		if($form->on_success()){
+		if($edit->on_success()){
+			$rt=array(
+				'status' =>'A',
+				'mensaje'=>empty($edit->_dataobject->comment)? 'Registro guardado':$edit->_dataobject->comment,
+				'pk'     =>$edit->_dataobject->pk
+			);
 
+			echo json_encode($rt);
+		}else{
+			echo $edit->output;
 		}
-
-		echo $form->output;
-
 	}
 
 	function chobligaban($val){
@@ -769,6 +824,11 @@ class Lpago extends Controller {
 		if(empty($benefi)){
 			$nombre = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
 			$do->set('benefi',$nombre);
+		}
+
+		if(isset($this->id_lote)){
+
+			$do->set('id_lpagolote',$this->id_lote);
 		}
 
 		$fcorte=date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
@@ -908,8 +968,91 @@ class Lpago extends Controller {
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
 
+
+	function _post_lote_insert($do){
+		$banco   = $do->get('enbanco');
+		$tipo    = $do->get('tipo');
+		$fecha   = date('Y-m-d');
+		$hfecha  = date('d/m/Y');
+		$id_lote = $do->get('id');
+		$sumonto = $reg=0;
+		$this->genesal=false;
+
+		$this->id_lote=$id_lote;
+
+		$this->db->select(array('proveed','nombre'));
+		$this->db->from('sprv');
+		$this->db->where('banco1'  ,$banco);
+		$this->db->where('prefpago',$tipo );
+		$query = $this->db->get();
+		foreach ($query->result() as $row){
+			$_POST['proveed'] = $row->proveed;
+			$_POST['nombre']  = $row->nombre;
+
+			//Calcula el moto que se le debe
+			ob_start();
+				$this->ajaxmonto();
+				$jsmontos=ob_get_contents();
+			@ob_end_clean();
+			$montos = json_decode($jsmontos,true);
+			if(isset($montos['monto']) && isset($montos['tmonto']) && isset($montos['deduc'])){
+				$_POST['deduc']     = round($montos['deduc'],2);
+				$_POST['monto']     = round($montos['monto']+$montos['tmonto'],2);
+				$_POST['montopago'] = round($_POST['monto']-$_POST['deduc'],2);
+			}
+			//Fin del calculo
+
+			if($_POST['montopago']>0){
+				$_POST['fecha']   = $hfecha;
+				$_POST['banco']   = $banco;
+				$_POST['benefi']  = '';
+				$_POST['numche']  = '**LOTE**';
+
+				ob_start();
+					$this->dataedit();
+					$jsresult=ob_get_contents();
+				@ob_end_clean();
+				$rt = json_decode($jsresult,true);
+				if($rt['status']=='B'){
+					memowrite($rt['mensaje'],'LPAGO');
+				}else{
+					$reg++;
+					$sumonto +=  $_POST['montopago'];
+				}
+
+				$this->validation->_error_array    = array();
+				$this->validation->_rules          = array();
+				$this->validation->_fields         = array();
+				$this->validation->_error_messages = array();
+			}
+		}
+		$mSQL = "UPDATE lpagolote SET monto = ${sumonto} WHERE id=${id_lote}";
+		$this->db->simple_query($mSQL);
+		$do->comment = "Registros creados: ${reg} Monto: ".nformat($sumonto);
+	}
+
+	function _post_lote_update($do){
+		return false;
+	}
+
+	function _post_lote_delete($do){
+
+	}
+
+	function _pre_lote_insert($do){
+
+	}
+
+	function _pre_lote_update($do){
+
+	}
+
+	function _pre_lote_delete($do){
+
+	}
+
 	function instalar(){
-		if (!$this->db->table_exists('lpago')) {
+		if(!$this->db->table_exists('lpago')) {
 			$mSQL="CREATE TABLE `lpago` (
 				`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 				`numero` VARCHAR(8) NULL DEFAULT NULL,
@@ -929,6 +1072,28 @@ class Lpago extends Controller {
 			)
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM;";
+			$this->db->simple_query($mSQL);
+		}
+
+		$campos=$this->db->list_fields('lpago');
+		if (!in_array('id_lpagolote',$campos)){
+			$mSQL="ALTER TABLE `lpago` ADD COLUMN `id_lpagolote` INT NULL DEFAULT NULL";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->table_exists('lpagolote')) {
+			$mSQL="CREATE TABLE `lpagolote` (
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				`enbanco` VARCHAR(5) NULL DEFAULT NULL,
+				`tipo` CHAR(2) NULL DEFAULT NULL,
+				`numero` VARCHAR(50) NULL DEFAULT NULL,
+				`benefi` VARCHAR(100) NULL DEFAULT NULL,
+				`fecha` DATE NULL DEFAULT NULL,
+				`monto` DECIMAL(12,2) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
 			$this->db->simple_query($mSQL);
 		}
 	}

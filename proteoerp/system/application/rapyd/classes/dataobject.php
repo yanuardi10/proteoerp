@@ -59,6 +59,7 @@ class DataObject{
 	var $_rel_pointer_data= array();
 	var $_order_by        = array();
 	var $field_order      = array();
+	var $comment          = '';
 
 	/**
 	* PHP4 constructor.
