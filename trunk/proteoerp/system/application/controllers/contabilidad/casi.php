@@ -14,20 +14,10 @@ class Casi extends Controller {
 	}
 
 	function index(){
-		if (!$this->db->field_exists('id','casi')) {
-			$mSQL='ALTER TABLE `casi` DROP PRIMARY KEY, ADD UNIQUE `comprob` (`comprob`)';
-			$this->db->simple_query($mSQL);
-			$mSQL='ALTER TABLE casi ADD id INT AUTO_INCREMENT PRIMARY KEY';
-			$this->db->simple_query($mSQL);
-		}
+		$mSQL='UPDATE itcasi JOIN casi ON itcasi.comprob=casi.comprob SET itcasi.idcasi=casi.id WHERE itcasi.idcasi IS NULL';
+		$this->db->simple_query($mSQL);
 
-		if ( !$this->datasis->iscampo('itcasi','idcasi') ) {
-			$mSQL='ALTER TABLE itcasi ADD idcasi INT(11) ';
-			$this->db->simple_query($mSQL);
-			$this->db->simple_query('ALTER TABLE itcasi ADD INDEX idcasi (idcasi)');
-			$mSQL = "UPDATE itcasi a JOIN casi b ON a.comprob=b.comprob SET a.idcasi=b.id";
-			$this->db->simple_query($mSQL);
-		}
+		$this->instalar();
 		redirect($this->url.'jqdatag');
 	}
 
@@ -2071,5 +2061,24 @@ jQuery("#boton4").click( function(){
 		$results =  0;
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function instalar(){
+		$campos=$this->db->list_fields('casi');
+		if(!in_array('id',$campos)){
+			$mSQL='ALTER TABLE `casi` DROP PRIMARY KEY, ADD UNIQUE `comprob` (`comprob`)';
+			$this->db->simple_query($mSQL);
+			$mSQL='ALTER TABLE casi ADD id INT AUTO_INCREMENT PRIMARY KEY';
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!in_array('idcasi',$campos)){
+			$mSQL='ALTER TABLE itcasi ADD idcasi INT(11)';
+			$this->db->simple_query($mSQL);
+			$mSQL='ALTER TABLE itcasi ADD INDEX idcasi (idcasi)';
+			$this->db->simple_query($mSQL);
+			$mSQL = "UPDATE itcasi a JOIN casi b ON a.comprob=b.comprob SET a.idcasi=b.id";
+			$this->db->simple_query($mSQL);
+		}
 	}
 }

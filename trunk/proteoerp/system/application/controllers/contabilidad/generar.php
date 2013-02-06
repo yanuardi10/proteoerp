@@ -253,16 +253,18 @@ class Generar extends Metodos {
 	}
 
 	function instalar(){
-		$mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
-		  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
-		  `anno` int(10) DEFAULT NULL,
-		  `cuenta` varchar(250) DEFAULT NULL,
-		  `descrip` varchar(250) DEFAULT NULL,
-		  `monto` decimal(15,2) DEFAULT NULL,
-		  PRIMARY KEY (`id`),
-		  UNIQUE KEY `ac` (`anno`,`cuenta`)
-		) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'";
-		$this->db->simple_query($mSQL);
+		if(!$this->db->table_exists('cplacierre')){
+			$mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
+			`id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+			`anno` int(10) DEFAULT NULL,
+			`cuenta` varchar(250) DEFAULT NULL,
+			`descrip` varchar(250) DEFAULT NULL,
+			`monto` decimal(15,2) DEFAULT NULL,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `ac` (`anno`,`cuenta`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='Cierres contables'";
+			$this->db->simple_query($mSQL);
+		}
 	}
 
 }
