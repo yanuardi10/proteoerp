@@ -11,12 +11,19 @@ class Generar extends Metodos {
 
 	function index() {
 		$this->datasis->modulo_id($this->modulo,1);
-		$this->rapyd->load("datagrid","dataform","fields");
+		$this->rapyd->load('datagrid','dataform','fields');
+
+		//$script='$(document).ready(function() {
+		//	$("#todos").click(function() { $("#genera").checkCheckboxes();   });
+		//	$("#nada").click(function()  { $("#genera").unCheckCheckboxes(); });
+		//	$("#alter").click(function() { $("#genera").toggleCheckboxes();  });
+		//});';
 
 		$control=$this->uri->segment(4);
 		$checkbox =  '<input type="checkbox" name="genera[]" value="<#modulo#>" CHECKED>';
 
-		$grid = new DataGrid('Seleccione los m&oacute;dulos que desea generar');
+		//$seltodos='<a id="todos" href=# >Todos</a> <a id="nada" href=# >Ninguno</a> <a id="alter" href=# >Invertir</a>';
+		$grid = new DataGrid('Seleccione los m&oacute;dulos que desea generar ');
 		$grid->db->select('modulo, descripcion');
 		$grid->db->from('`reglascont`');
 		$grid->db->groupby('modulo');
