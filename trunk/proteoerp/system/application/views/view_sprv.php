@@ -1,6 +1,6 @@
 <?php echo $form_scripts; ?>
 <?php echo $form_begin;   ?>
-<?php 
+<?php
 //$container_tr=join("&nbsp;", $form->_button_container["TR"]);
 //$container_bl=join("&nbsp;", $form->_button_container["BL"]);
 //$container_br=join("&nbsp;", $form->_button_container["BR"]);
@@ -57,7 +57,7 @@
 			<tr>
 				<td width='50' class="littletableheaderc"><?=$form->grupo->label ?></td>
 				<td  class="littletablerow"><?=$form->grupo->output?></td>
-			</tr><tr>	
+			</tr><tr>
 				<td class="littletableheaderc"> <?=$form->tipo->label ?></td>
 				<td class="littletablerow"> <?=$form->tipo->output ?></td>
 			</tr><tr>
@@ -67,8 +67,8 @@
 				<td class="littletableheaderc"><?=$form->reteiva->label  ?></td>
 				<td class="littletablerow"><?=$form->reteiva->output ?></td>
 			<tr><tr>
-				<td class="littletablerow"><?=$form->cuenta->label;?></td>
-				<td class="littletablerow"><?=$form->cuenta->output;?></td>
+				<td class="littletablerow"><?php echo $form->cuenta->label;?></td>
+				<td class="littletablerow"><?php echo $form->cuenta->output;?></td>
 			</tr>
 			</table>
 		</td>
@@ -80,16 +80,16 @@
 	<tr>
 		<td valign='top'>
 			<fieldset style='border: 1px outset #9AC8DA;background: #E0ECF8;'>
-			<legend class="titulofieldset" style='color: #114411;'>Direccion</legend>
+			<legend class="titulofieldset" style='color: #114411;'>Direcci&oacute;n</legend>
 			<table width="100%" cellspacing='1' cellpadding='1'>
 				<tr>
-					<td class="littletablerow"><?=$form->direc1->output ?>&nbsp;</td>
+					<td class="littletablerow"><?php echo $form->direc1->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletablerow"><?=$form->direc2->output ?>&nbsp;</td>
+					<td class="littletablerow"><?php echo $form->direc2->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletablerow" style='font-size:11;'><?=$form->direc3->output  ?>&nbsp;</td>
+					<td class="littletablerow" style='font-size:11;'><?php echo $form->direc3->output  ?>&nbsp;</td>
 				</tr>
 			</table>
 			</fieldset>
@@ -99,12 +99,12 @@
 			<legend class="titulofieldset" style='color: #114411;'>Contacto</legend>
 			<table width= "100%" cellspacing='0' cellpadding='0'>
 				<tr>
-					<td class="littletableheaderc"><?=$form->telefono->label ?></td>
-					<td class="littletablerow"><?=$form->telefono->output ?>&nbsp;</td>
+					<td class="littletableheaderc"><?php echo $form->telefono->label ?></td>
+					<td class="littletablerow"><?php echo $form->telefono->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?=$form->email->label  ?></td>
-					<td class="littletablerow"    ><?=$form->email->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->email->label  ?></td>
+					<td class="littletablerow"    ><?php echo $form->email->output ?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -120,11 +120,14 @@
 					<td class="littletableheaderc">Banco</td>
 					<td class="littletableheaderc">Cuenta</td>
 				</tr><tr>
-					<td class="littletablerow"><?=$form->banco1->output ?></td>
-					<td class="littletablerow"><?=$form->cuenta1->output ?></td>
+					<td class="littletablerow"><?php echo $form->banco1->output;  ?></td>
+					<td class="littletablerow"><?php echo $form->cuenta1->output; ?></td>
 				</tr><tr>
-					<td class="littletablerow"><?=$form->banco2->output ?></td>
-					<td class="littletablerow"><?=$form->cuenta2->output ?></td>
+					<td class="littletablerow"><?php echo $form->banco2->output;  ?></td>
+					<td class="littletablerow"><?php echo $form->cuenta2->output; ?></td>
+				</tr><tr>
+					<td class="littletablerow"><?php echo $form->prefpago->label;  ?></td>
+					<td class="littletablerow"><?php echo $form->prefpago->output; ?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -132,15 +135,15 @@
 			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<table width= '100%' >
 				<tr>
-					<td class="littletableheaderc"><?=$form->cliente->label  ?></td>
-					<td class="littletablerow"><?=$form->cliente->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->cliente->label  ?></td>
+					<td class="littletablerow"><?php echo $form->cliente->output ?></td>
 				<tr><tr>
-					<td class="littletableheaderc"><?=$form->codigo->label  ?></td>
-					<td class="littletablerow"><?=$form->codigo->output ?></td>
+					<td class="littletableheaderc"><?php echo $form->codigo->label  ?></td>
+					<td class="littletablerow"><?php echo $form->codigo->output ?></td>
 				<tr><tr>
-					<td colspan='2' class="littletableheaderc"><?=$form->url->label  ?>
-					<?=$form->url->output ?></td>
-				</tr>				
+					<td colspan='2' class="littletableheaderc"><?php echo $form->url->label  ?>
+					<?php echo $form->url->output ?></td>
+				</tr>
 			</table>
 			</fieldset>
 		</td>
@@ -150,7 +153,7 @@
 </table>
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
-<?php 
+<?php
 	//foreach (get_object_vars($form) as $label=>$tiene)
 	//	echo "$label => $tiene <br>";
 	//echo '<pre>';print_r($form->grupo->request);echo '</pre>'

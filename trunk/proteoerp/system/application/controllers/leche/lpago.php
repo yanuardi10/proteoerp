@@ -635,6 +635,10 @@ class Lpago extends Controller {
 		$form = new DataForm($this->url.'lote/insert');
 
 
+		$form->enbanco = new dropdownField('Banco a depositar','enbanco');
+		$form->enbanco->option('','Seleccionar');
+		$form->enbanco->options("SELECT banco1, CONCAT_WS('-',banco1,nomb_banc) AS label FROM sprv AS a JOIN tban AS b  ON a.banco1=b.cod_banc GROUP BY banco1 ORDER BY cod_banc");
+		$form->enbanco->rule='max_length[50]|required';
 
 		$form->banco = new dropdownField('Pagar desde','banco');
 		$form->banco->option('','Seleccionar');

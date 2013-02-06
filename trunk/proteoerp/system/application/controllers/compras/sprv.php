@@ -14,12 +14,7 @@ class Sprv extends Controller {
 	}
 
 	function index(){
-		if ( !$this->datasis->iscampo('sprv','id') ) {
-			$this->db->simple_query('ALTER TABLE sprv DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE sprv ADD UNIQUE INDEX proveed (proveed)');
-			$this->db->simple_query('ALTER TABLE sprv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};
-		$this->db->simple_query('ALTER TABLE sprv CHANGE COLUMN telefono telefono TEXT NULL DEFAULT NULL AFTER direc3');
+		$this->instalar();
 
 		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
@@ -625,8 +620,7 @@ class Sprv extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -640,8 +634,7 @@ class Sprv extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -932,8 +925,8 @@ class Sprv extends Controller {
 		$edit->grupo->options("SELECT grupo,gr_desc,grupo FROM grpr ORDER BY gr_desc");
 		$edit->grupo->style = "width:190px";
 		//$edit->grupo->rule = "required";
-		$edit->grupo->group = "Datos del Proveedor";
-		$edit->gr_desc = new inputField("gr_desc", "gr_desc");
+		$edit->grupo->group = 'Datos del Proveedor';
+		$edit->gr_desc = new inputField('gr_desc', 'gr_desc');
 
 		$edit->tipo = new dropdownField("Persona", "tipo");
 		$edit->tipo->option("","Seleccionar");
@@ -942,7 +935,7 @@ class Sprv extends Controller {
 		$edit->tipo->rule = "required";
 		$edit->tipo->group = "Datos del Proveedor";
 
-		$edit->tiva  = new dropdownField("Origen", "tiva");
+		$edit->tiva  = new dropdownField("Or&iacute;gen", "tiva");
 		$edit->tiva->option("N","Nacional");
 		$edit->tiva->options(array("N"=>"Nacional","I"=>"Internacional","O"=>"Otros"));
 		$edit->tiva->style='width:190px;';
@@ -962,7 +955,7 @@ class Sprv extends Controller {
 		$edit->direc3->rule ="trim";
 		$edit->direc3->maxlength =40;
 
-		$edit->telefono = new textareaField("Telefono", "telefono");
+		$edit->telefono = new textareaField("Tel&eacute;fono", "telefono");
 		$edit->telefono->rule = "trim";
 		$edit->telefono->cols = 27;
 		$edit->telefono->rows =  2;
@@ -999,10 +992,8 @@ class Sprv extends Controller {
 		$edit->observa->size = 41;
 
 		$edit->banco1 = new dropdownField("Cuenta en bco. (1)", "banco1");
-		$edit->banco1->clause="where";
 		$edit->banco1->option("","Ninguno");
 		$edit->banco1->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
-		$edit->banco1->operator="=";
 		$edit->banco1->group = "Cuentas Bancarias";
 		$edit->banco1->style='width:140px;';
 
@@ -1014,10 +1005,9 @@ class Sprv extends Controller {
 		//$edit->cuenta1->in="banco$i";
 
 		$edit->banco2 = new dropdownField("Cuenta en bco. (2)", 'banco2');
-		$edit->banco2->clause="where";
-		$edit->banco2->option("","Ninguno");
+		$edit->banco2->option('','Ninguno');
 		$edit->banco2->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
-		$edit->banco2->group = "Cuentas Bancarias";
+		$edit->banco2->group = 'Cuentas Bancarias';
 		$edit->banco2->style='width:140px;';
 
 		$edit->cuenta2 = new inputField("&nbsp;&nbsp;N&uacute;mero (2)",'cuenta2');
@@ -1026,7 +1016,7 @@ class Sprv extends Controller {
 		$edit->cuenta2->maxlength = 25;
 		$edit->cuenta2->group = "Cuentas Bancarias";
 
-		$edit->cliente  = new inputField("Como Cliente", "cliente");
+		$edit->cliente  = new inputField('Como Cliente', "cliente");
 		$edit->cliente->size =7;
 		$edit->cliente->rule ="trim";
 		$edit->cliente->readonly=true;
@@ -1034,11 +1024,19 @@ class Sprv extends Controller {
 		//$edit->cliente->append($lcli);
 		//$edit->cliente->group = "Datos del Proveedor";
 
+		$edit->prefpago = new dropdownField('Preferencia de pago','prefpago');
+		$edit->prefpago->option('' ,'Ninguno');
+		$edit->prefpago->option('T','Transferencia');
+		$edit->prefpago->option('C','Cobro en caja');
+		$edit->prefpago->option('D','Deposito');
+		$edit->prefpago->group = 'Cuentas Bancarias';
+		$edit->prefpago->style = 'width:140px;';
+
 		$edit->codigo  = new inputField("Cod. en Prov", "codigo");
 		$edit->codigo->size =15;
 		$edit->codigo->rule ="trim";
 
-		$edit->nomfis = new textareaField('Razon Social', 'nomfis');
+		$edit->nomfis = new textareaField('Raz&oacute;n Social', 'nomfis');
 		$edit->nomfis->rule = 'trim';
 		$edit->nomfis->cols = 33;
 		$edit->nomfis->rows =  2;
@@ -1054,9 +1052,10 @@ class Sprv extends Controller {
 		$edit->cuenta->append($bcpla);
 		//$edit->cuenta->append($lcuent);
 
-		$edit->reteiva  = new inputField('Retencion','reteiva');
+		$edit->reteiva  = new inputField('Retenci&oacute;n','reteiva');
 		$edit->reteiva->size = 6;
 		$edit->reteiva->css_class='inputnum';
+		$edit->reteiva->insertValue='75.00';
 		$edit->reteiva->append("%");
 
 		$edit->buttons('modify','save','undo','delete','add','back');
@@ -1336,23 +1335,26 @@ class Sprv extends Controller {
 		$campos=$this->db->list_fields('sprv');
 		if (!in_array('id',$campos)){
 			$this->db->simple_query('ALTER TABLE `sprv` DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE `sprv` ADD id INT AUTO_INCREMENT PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE sprv ADD UNIQUE INDEX proveed (proveed)');
+			$this->db->simple_query('ALTER TABLE sprv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		}
 
-		if (!in_array('copre'   ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD copre VARCHAR(11) DEFAULT NULL NULL AFTER cuenta');
-		if (!in_array('ocompra' ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD ocompra CHAR(1) DEFAULT NULL NULL AFTER copre');
-		if (!in_array('dcredito',$campos)) $this->db->simple_query('ALTER TABLE sprv ADD dcredito DECIMAL(3,0) DEFAULT "0" NULL AFTER ocompra');
-		if (!in_array('despacho',$campos)) $this->db->simple_query('ALTER TABLE sprv ADD despacho DECIMAL(3,0) DEFAULT NULL NULL AFTER dcredito');
-		if (!in_array('visita'  ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD visita VARCHAR(9) DEFAULT NULL NULL AFTER despacho');
-		if (!in_array('cate'    ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD cate VARCHAR(20) NULL AFTER visita');
-		if (!in_array('reteiva' ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD reteiva DECIMAL(7,2) DEFAULT "0.00" NULL AFTER cate');
-		if (!in_array('ncorto'  ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD ncorto VARCHAR(20) DEFAULT NULL NULL AFTER nombre');
+		if (!in_array('copre'   ,$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD copre VARCHAR(11) DEFAULT NULL NULL AFTER cuenta');
+		if (!in_array('ocompra' ,$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD ocompra CHAR(1) DEFAULT NULL NULL AFTER copre');
+		if (!in_array('dcredito',$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD dcredito DECIMAL(3,0) DEFAULT "0" NULL AFTER ocompra');
+		if (!in_array('despacho',$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD despacho DECIMAL(3,0) DEFAULT NULL NULL AFTER dcredito');
+		if (!in_array('visita'  ,$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD visita VARCHAR(9) DEFAULT NULL NULL AFTER despacho');
+		if (!in_array('cate'    ,$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD cate VARCHAR(20) NULL AFTER visita');
+		if (!in_array('reteiva' ,$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD reteiva DECIMAL(7,2) DEFAULT "0.00" NULL AFTER cate');
+		if (!in_array('ncorto'  ,$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD ncorto VARCHAR(20) DEFAULT NULL NULL AFTER nombre');
+		if (!in_array('prefpago',$campos)) $this->db->simple_query('ALTER TABLE `sprv` ADD COLUMN `prefpago` CHAR(1) NULL DEFAULT \'T\' COMMENT \'Preferencia de pago, Transferencia, Deposito, Caja\' AFTER `reteiva`');
 
-		$this->db->simple_query('ALTER TABLE sprv CHANGE direc1 direc1 VARCHAR(105) DEFAULT NULL NULL');
-		$this->db->simple_query('ALTER TABLE sprv CHANGE direc2 direc2 VARCHAR(105) DEFAULT NULL NULL');
-		$this->db->simple_query('ALTER TABLE sprv CHANGE direc3 direc3 VARCHAR(105) DEFAULT NULL NULL');
-		$this->db->simple_query('ALTER TABLE sprv CHANGE nombre nombre VARCHAR(60) DEFAULT NULL NULL');
+		//$this->db->simple_query('ALTER TABLE sprv CHANGE direc1 direc1 VARCHAR(105) DEFAULT NULL NULL');
+		//$this->db->simple_query('ALTER TABLE sprv CHANGE direc2 direc2 VARCHAR(105) DEFAULT NULL NULL');
+		//$this->db->simple_query('ALTER TABLE sprv CHANGE direc3 direc3 VARCHAR(105) DEFAULT NULL NULL');
+		//$this->db->simple_query('ALTER TABLE sprv CHANGE nombre nombre VARCHAR(60) DEFAULT NULL NULL');
 		$this->db->simple_query('ALTER TABLE sprv CHANGE nomfis nomfis VARCHAR(200) DEFAULT NULL NULL');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE COLUMN telefono telefono TEXT NULL DEFAULT NULL');
 	}
 
 }
