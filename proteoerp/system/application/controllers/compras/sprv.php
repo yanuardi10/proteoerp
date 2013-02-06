@@ -661,6 +661,7 @@ class Sprv extends Controller {
 		unset($data['id']);
 
 		if($oper == 'add'){
+/*
 			if(false == empty($data)){
 				$check = $this->datasis->dameval("SELECT count(*) FROM sprv WHERE $mcodp=".$this->db->escape($data[$mcodp]));
 				if ( $check == 0 ){
@@ -672,27 +673,14 @@ class Sprv extends Controller {
 					echo "Ya existe un registro con ese $mcodp";
 			} else
 				echo "Fallo Agregado!!!";
-
+*/
 		} elseif($oper == 'edit') {
-			$nuevo  = $data[$mcodp];
-			$anterior = $this->datasis->dameval("SELECT $mcodp FROM sprv WHERE id=$id");
-			if ( $nuevo <> $anterior ){
-				//si no son iguales borra el que existe y cambia
-				/*
-				$this->db->query("DELETE FROM sprv WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE sprv SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-				$this->db->where("id", $id);
-				$this->db->update("sprv", $data);
-				logusu('SPRV',strtoupper($mcodp)." Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-				*/
-				echo "Proveedor ".$nuevo." ya existe, Proveedor no modificado";
-			} else {
-				unset($data[$mcodp]);
-				$this->db->where("id", $id);
-				$this->db->update('sprv', $data);
-				logusu('SPRV',"Grupo de Cliente  ".$nuevo." MODIFICADO");
-				echo "Proveedor Modificado";
-			}
+			$proveed  = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
+			if ( isset($data['proveed']) ) unset($data['proveed']);
+			$this->db->where("id", $id);
+			$this->db->update('sprv', $data);
+			logusu('SPRV',"Proveedor  ".$proveed." MODIFICADO");
+			echo "Proveedor Modificado";
 
 		} elseif($oper == 'del') {
 			$codigo = $this->datasis->dameval("SELECT $mcodp FROM sprv WHERE id=$id");
