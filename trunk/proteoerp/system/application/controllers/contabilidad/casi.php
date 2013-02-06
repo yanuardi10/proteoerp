@@ -2072,12 +2072,18 @@ jQuery("#boton4").click( function(){
 			$this->db->simple_query($mSQL);
 		}
 
+		$campos=$this->db->list_fields('itcasi');
 		if(!in_array('idcasi',$campos)){
 			$mSQL='ALTER TABLE itcasi ADD idcasi INT(11)';
 			$this->db->simple_query($mSQL);
 			$mSQL='ALTER TABLE itcasi ADD INDEX idcasi (idcasi)';
 			$this->db->simple_query($mSQL);
 			$mSQL = "UPDATE itcasi a JOIN casi b ON a.comprob=b.comprob SET a.idcasi=b.id";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!in_array('idcasi',$campos)){
+			$mSQL="ALTER TABLE `itcasi` ADD COLUMN `id` INT(11) NOT NULL AUTO_INCREMENT, ADD PRIMARY KEY (`id`)";
 			$this->db->simple_query($mSQL);
 		}
 	}
