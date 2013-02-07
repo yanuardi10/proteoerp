@@ -789,7 +789,6 @@ class Lpago extends Controller {
 			$this->db->where('c.codprv'  , $proveed);
 			$this->db->where('(a.pago IS NULL OR a.pago=0)');
 			$query = $this->db->get();
-
 			if($query->num_rows() > 0){
 				$row = $query->row();
 				if(!empty($row->total)) $rt['monto'] = round(floatval($row->total),2);
@@ -797,7 +796,9 @@ class Lpago extends Controller {
 
 			//Transportista
 			$rt['tmonto'] = 0;
-			$sel=array('SUM(a.lista*b.tarifa) AS monto');
+			//$sel=array('SUM(a.lista*b.tarifa) AS monto');
+			//$sel=array('SUM(round(a.lista*b.tarifa,2)+ROUND(IF(litros>lista,litros-lista,0)*b.tarsob,2)) AS monto');
+			$sel=array('SUM(ROUND(a.lista*b.tarifa,2)+ROUND((litros-lista)*b.tarsob,2)) AS monto');
 			$this->db->select($sel);
 			$this->db->from('lrece AS a');
 			$this->db->join('lruta AS b','a.ruta=b.codigo');
@@ -805,7 +806,7 @@ class Lpago extends Controller {
 			$this->db->where('a.lista >',0);
 			$this->db->where('(a.pago IS NULL OR a.pago=0)');
 			$this->db->where('MID(a.ruta,1,1) <>','G');
-			$this->db->where('a.fecha <=',$fcorte);
+			$this->db->where("((a.fecha<='$fcorte' AND a.transporte<=0) OR (a.fecha<=ADDDATE('$fcorte',INTERVAL 1 DAY)  AND a.transporte>0))");
 			$this->db->where('b.codprv',$proveed);
 			$query = $this->db->get();
 			if ($query->num_rows() > 0){
