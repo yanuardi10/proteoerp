@@ -776,28 +776,20 @@ class Lpago extends Controller {
 
 			//Productores
 			$rt['monto'] = 0;
-
-			$sel=array("SUM(ROUND(a.lista*if(c.tipolec='F',k.ultimo,e.ultimo),2)+ROUND(a.lista*(IF(c.zona='0112',l.ultimo,f.ultimo)+g.ultimo+h.ultimo)*(c.tipolec='F')+ROUND(a.lista*IF(c.animal='B',if(c.tipolec='F',i.ultimo,j.ultimo), 0 ),2),2)) AS total");
+			$sel=array('SUM(ROUND(a.lista*if(c.tipolec="F",if(c.animal="V",if(c.zona="0112",e.tarifa5,e.tarifa1),e.tarifa3), if(c.animal="V",e.tarifa2,e.tarifa4)),2)) AS total');
 			$this->db->select($sel);
 			$this->db->from('itlrece AS a');
 			$this->db->join('lrece   AS b','a.id_lrece=b.id');
 			$this->db->join('lvaca   AS c','a.id_lvaca=c.id');
-			$this->db->join('sprv    AS d','c.codprv=d.proveed'   ,'LEFT');
-			$this->db->join('sinv    AS e','e.codigo="ZLCALIENTE"','LEFT');
-			$this->db->join('sinv    AS f','f.codigo="ZMANFRIO"'  ,'LEFT');
-			$this->db->join('sinv    AS g','g.codigo="ZPGRASA"'   ,'LEFT');
-			$this->db->join('sinv    AS h','h.codigo="ZBACTE"'    ,'LEFT');
-			$this->db->join('sinv    AS i','i.codigo="ZBUFALA"'   ,'LEFT');
-			$this->db->join('sinv    AS j','j.codigo="ZBUFALAC"'  ,'LEFT');
-			$this->db->join('sinv    AS k','k.codigo="ZLFRIA"'    ,'LEFT');
-			$this->db->join('sinv    AS l','l.codigo="ZLMACHI"'   ,'LEFT');
-
-			$this->db->where('a.lista >',0);
-			$this->db->where('(a.pago IS NULL OR a.pago=0)');
-			$this->db->where('b.fecha <=',$fcorte);
+			$this->db->join('sprv    AS d','c.codprv=d.proveed','LEFT');
+			$this->db->join('lprecio AS e','e.tarifa1>=0');
+			$this->db->where('a.lista >','0');
 			$this->db->where('MID(b.ruta,1,1) <>','G');
-			$this->db->where('c.codprv',$proveed);
+			$this->db->where("((b.fecha<='$fcorte' AND b.transporte<=0) OR (b.fecha<=ADDDATE('$fcorte',INTERVAL 1 DAY)  AND b.transporte>0))");
+			$this->db->where('c.codprv'  , $proveed);
+			$this->db->where('(a.pago IS NULL OR a.pago=0)');
 			$query = $this->db->get();
+
 			if($query->num_rows() > 0){
 				$row = $query->row();
 				if(!empty($row->total)) $rt['monto'] = round(floatval($row->total),2);
