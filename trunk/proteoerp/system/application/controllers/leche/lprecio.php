@@ -3,7 +3,7 @@ class Lprecio extends Controller {
 	var $mModulo = 'LPRECIO';
 	var $titp    = 'Precios de la Leche';
 	var $tits    = 'Precios de la Leche';
-	var $url     = 'CONTROLADOR/lprecio/';
+	var $url     = 'leche/lprecio/';
 
 	function Lprecio(){
 		parent::Controller();
@@ -35,7 +35,7 @@ class Lprecio extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fedita",  "title"=>"Precios de Leche")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -96,7 +96,7 @@ class Lprecio extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 700, modal: true,
+			autoOpen: false, height: 450, width: 400, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -413,7 +413,7 @@ class Lprecio extends Controller {
 	function dataedit(){
 		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit($this->tits, 'lprecio');
+		$edit = new DataEdit('', 'lprecio');
 
 		$edit->on_save_redirect=false;
 
@@ -431,56 +431,56 @@ class Lprecio extends Controller {
 		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
 
-		$edit->tarifa1 = new inputField('Tarifa1','tarifa1');
-		$edit->tarifa1->rule='max_length[10]|numeric';
+		$edit->tarifa1 = new inputField('Leche de Vaca Fria','tarifa1');
+		$edit->tarifa1->rule='numeric';
 		$edit->tarifa1->css_class='inputnum';
 		$edit->tarifa1->size =12;
 		$edit->tarifa1->maxlength =10;
 
-		$edit->tarifa2 = new inputField('Tarifa2','tarifa2');
-		$edit->tarifa2->rule='max_length[10]|numeric';
+		$edit->tarifa2 = new inputField('Leche de Vaca Caliente','tarifa2');
+		$edit->tarifa2->rule='numeric';
 		$edit->tarifa2->css_class='inputnum';
 		$edit->tarifa2->size =12;
 		$edit->tarifa2->maxlength =10;
 
-		$edit->tarifa3 = new inputField('Tarifa3','tarifa3');
-		$edit->tarifa3->rule='max_length[10]|numeric';
+		$edit->tarifa3 = new inputField('Leche de Bufala Fria','tarifa3');
+		$edit->tarifa3->rule='numeric';
 		$edit->tarifa3->css_class='inputnum';
 		$edit->tarifa3->size =12;
 		$edit->tarifa3->maxlength =10;
 
-		$edit->tarifa4 = new inputField('Tarifa4','tarifa4');
-		$edit->tarifa4->rule='max_length[10]|numeric';
+		$edit->tarifa4 = new inputField('Leche de Bufala Caliente','tarifa4');
+		$edit->tarifa4->rule='numeric';
 		$edit->tarifa4->css_class='inputnum';
 		$edit->tarifa4->size =12;
 		$edit->tarifa4->maxlength =10;
 
-		$edit->tarifa5 = new inputField('Tarifa5','tarifa5');
-		$edit->tarifa5->rule='max_length[10]|numeric';
+		$edit->tarifa5 = new inputField('Machiques Fria','tarifa5');
+		$edit->tarifa5->rule='numeric';
 		$edit->tarifa5->css_class='inputnum';
 		$edit->tarifa5->size =12;
 		$edit->tarifa5->maxlength =10;
 
-		$edit->tarifa6 = new inputField('Tarifa6','tarifa6');
-		$edit->tarifa6->rule='max_length[10]|numeric';
+		$edit->tarifa6 = new inputField('Machiques Caliente','tarifa6');
+		$edit->tarifa6->rule='numeric';
 		$edit->tarifa6->css_class='inputnum';
 		$edit->tarifa6->size =12;
 		$edit->tarifa6->maxlength =10;
 
-		$edit->enfria = new inputField('Enfria','enfria');
-		$edit->enfria->rule='max_length[10]|numeric';
+		$edit->enfria = new inputField('Enfriamiento','enfria');
+		$edit->enfria->rule='numeric';
 		$edit->enfria->css_class='inputnum';
 		$edit->enfria->size =12;
 		$edit->enfria->maxlength =10;
 
-		$edit->bacteria = new inputField('Bacteria','bacteria');
-		$edit->bacteria->rule='max_length[10]|numeric';
+		$edit->bacteria = new inputField('Calidad Bacteriologica','bacteria');
+		$edit->bacteria->rule='numeric';
 		$edit->bacteria->css_class='inputnum';
 		$edit->bacteria->size =12;
 		$edit->bacteria->maxlength =10;
 
-		$edit->grasa = new inputField('Grasa','grasa');
-		$edit->grasa->rule='max_length[10]|numeric';
+		$edit->grasa = new inputField('Porcentaje de Grasa','grasa');
+		$edit->grasa->rule='numeric';
 		$edit->grasa->css_class='inputnum';
 		$edit->grasa->size =12;
 		$edit->grasa->maxlength =10;
