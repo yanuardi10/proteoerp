@@ -41,7 +41,8 @@ class Lpago extends Controller {
 		$adic = array(
 			array('id'=>'fedita', 'title'=>'Agregar/Editar Registro'),
 			array('id'=>'fshow' , 'title'=>'Ver Registro'),
-			array('id'=>'flote' , 'title'=>'Pago por Lote')
+			array('id'=>'flote' , 'title'=>'Pago por Lote'),
+			array('id'=>'fborra', 'title'=>'Elimina registro')
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -65,6 +66,20 @@ class Lpago extends Controller {
 		$bodyscript = '		<script type="text/javascript">';
 
 		$bodyscript .= '
+		function lpagoshow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		};';
+
+		$bodyscript .= '
 		function lpagoadd() {
 			$.post("'.site_url($this->url.'dataedit/create').'",
 			function(data){
@@ -84,6 +99,34 @@ class Lpago extends Controller {
 					$("#fedita").dialog( "open" );
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		$bodyscript .= '
+		function lpagodel() {
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				if(confirm(" Seguro desea eliminar el registro?")){
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(r){
+						try{
+							var json = JSON.parse(r);
+							if (json.status == "A"){
+								apprise("Registro Eliminado");
+								jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+								return true;
+							} else {
+								apprise(json.mensaje);
+							}
+						}catch(e){
+							$("#fborra").html(r);
+							$("#fborra").dialog( "open" );
+						}
+					});
+				}
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
 		};';
 
 		//Wraper de javascript
@@ -118,6 +161,20 @@ class Lpago extends Controller {
 				'.$this->datasis->jwinopen(site_url('formatos/ver/LPAGO').'/\'+id+\'/id\'').';
 			} else {
 				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		});';
+
+		$bodyscript .= '
+		$("#fshow").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+				},
+			},
+			close: function() {
+				$("#fshow").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
 			}
 		});';
 
@@ -158,6 +215,20 @@ class Lpago extends Controller {
 			},
 			close: function() {
 				$("#fedita").html("");
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
+		});';
+
+		$bodyscript .= '
+		$("#fborra").dialog({
+			autoOpen: false, height: 300, width: 300, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+					grid.trigger("reloadGrid");
+				}
+			},
+			close: function() {
 				allFields.val( "" ).removeClass( "ui-state-error" );
 			}
 		});';
@@ -387,14 +458,14 @@ class Lpago extends Controller {
 		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
 
 		#show/hide navigations buttons
+		$grid->setEdit(false);
 		$grid->setAdd(    $this->datasis->sidapuede('LPAGO','INCLUIR%' ));
-		$grid->setEdit(   $this->datasis->sidapuede('LPAGO','MODIFICA%'));
 		$grid->setDelete( $this->datasis->sidapuede('LPAGO','BORR_REG%'));
 		$grid->setSearch( $this->datasis->sidapuede('LPAGO','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions('addfunc: lpagoadd,teditfunc: lpagoedit');
+		$grid->setBarOptions('addfunc: lpagoadd,editfunc: lpagoedit,delfunc: lpagodel,viewfunc: lpagoshow');
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -918,6 +989,29 @@ class Lpago extends Controller {
 	}
 
 	function _post_delete($do){
+
+		$id       = $do->get('id');
+		$dbid     = $this->db->escape($id);
+
+		//Desmarca los pagos por transporte
+		$mSQL="UPDATE
+			lrece AS a
+			JOIN lruta AS b ON a.ruta=b.codigo
+		SET a.pago=0 WHERE a.pago=${dbid}";
+		$this->db->query($mSQL);
+
+		//Desmarca los pagos por productor
+		$mSQL="UPDATE
+			itlrece AS a
+			JOIN lrece AS b ON a.id_lrece=b.id
+			JOIN lvaca AS c ON a.id_lvaca=c.id
+		SET a.pago=0 WHERE a.pago=${dbid}";
+		$this->db->query($mSQL);
+
+		//Desmarca la deducciones
+		$mSQL="UPDATE lgasto SET pago=0 WHERE pago=${dbid}";
+		$this->db->query($mSQL);
+
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
