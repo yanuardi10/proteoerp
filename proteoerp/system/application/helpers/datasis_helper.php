@@ -24,7 +24,7 @@ function nformat($numero,$num=null,$centimos=null,$miles=null){
 function htmlnformat($numero){
 	$centimos = (is_null(constant('RAPYD_DECIMALS'))) ? ',' : RAPYD_DECIMALS;
 	$numero   = nformat($numero);
-	return str_replace(',','<span style="font-size:0.5em;">'.$centimos,$numero).'</span>';
+	return str_replace(',','<span style="font-size:0.7em;">'.$centimos,$numero).'</span>';
 }
 
 function des_nformat($numero,$num=null,$centimos=null,$miles=null){
