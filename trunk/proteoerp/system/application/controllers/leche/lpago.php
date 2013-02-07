@@ -730,9 +730,39 @@ class Lpago extends Controller {
 		$(function() {
 			$(".inputnum").numeric(".");
 			$(".inputonlynum").numeric();
-		});';
 
-		$edit = new DataEdit($this->tits, 'lpagolote');
+			jQuery("#loteresu").jqGrid({
+				datatype: "local",
+				height: 230,
+				colNames:["Cod.","Nombre", "Monto", "Deducciones","Total pago"],
+				colModel:[
+					{name:"proveed"  , index:"proveed"   , width:60   },
+					{name:"nombre"   , index:"nombre"    , width:240  },
+					{name:"monto"    , index:"monto"     , width:110 , align:"right",sorttype:"float"},
+					{name:"deduc"    , index:"deduc"     , width:90 , align:"right",sorttype:"float"},
+					{name:"montopago", index:"montopago" , width:110 , align:"right",sorttype:"float"},
+				],
+				multiselect: false,
+				caption: "Resumen de pago en lote"
+			});
+		});
+
+		function llenaresu(){
+			var tipo    = $("#tipo").val();
+			var enbanco = $("#banco").val();
+
+			if(tipo!="" && enbanco!=""){
+				$.post("'.site_url($this->url.'resumenlote').'",{ enbanco: enbanco, tipo: tipo },
+				function(data){
+					var json = JSON.parse(data);
+					for(var i=0;i<=json.length;i++){
+						jQuery("#loteresu").jqGrid("addRowData",i+1,json[i]);
+					}
+				});
+			}
+		}';
+
+		$edit = new DataEdit('', 'lpagolote');
 		$edit->script($script,'create');
 		$edit->on_save_redirect=false;
 
@@ -752,15 +782,19 @@ class Lpago extends Controller {
 		$edit->tipo = new dropdownField('Preferencia de pago','tipo');
 		$edit->tipo->option('T','Transferencia');
 		$edit->tipo->option('D','Deposito');
+		$edit->tipo->onchange='llenaresu()';
 		$edit->tipo->rule = 'required';
 		$edit->tipo->style = 'width:140px;';
-
 
 		$edit->banco = new dropdownField('Banco a depositar','banco');
 		$edit->banco->option('','Seleccionar');
 		$edit->banco->options('SELECT cod_banc, CONCAT_WS(\'-\',cod_banc,nomb_banc) AS label FROM tban ORDER BY cod_banc');
-		$edit->banco->rule='max_length[50]|required';
+		$edit->banco->rule='max_length[5]|required';
+		$edit->banco->onchange='llenaresu()';
 		$edit->banco->append('Banco en donde se le depositar&aacute;n a los clientes');
+
+		$edit->container = new containerField('alert','<table id="loteresu"></table>');
+		$edit->container->when = array('create');
 
 
 		//$edit->numero = new inputField('N&uacute;mero','numero');
@@ -821,18 +855,46 @@ class Lpago extends Controller {
 		}
 	}
 
-	function ajaxmonto(){
-		$proveed=$this->input->post('proveed');
+	function resumenlote(){
 
-		if($proveed!==false){
+		$bbanco = $this->input->post('enbanco');
+		$tipo   = $this->input->post('tipo');
+		if($bbanco!==false && $tipo!==false){
+			$arr=array();
+			$this->db->select(array('proveed','nombre'));
+			$this->db->from('sprv');
+			$this->db->where('banco1'  ,$bbanco );
+			$this->db->where('prefpago',$tipo );
+			$query = $this->db->get();
+			//echo $this->db->last_query();
+			foreach ($query->result() as $row){
+				$rt   = $this->_cmonto($row->proveed);
+				$monto= round($rt['monto']+$rt['tmonto'],2);
+
+				if($monto>0){
+					$arr[]=array(
+						'proveed'   => $row->proveed,
+						'nombre'    => $row->nombre,
+						'deduc'     => $rt['deduc'],
+						'monto'     => $monto,
+						'montopago' => $monto-$rt['deduc']
+					);
+				}
+			}
+
+			echo json_encode($arr);
+		}
+	}
+
+	function _cmonto($proveed=null){
+
+		$rt = array('deduc'=>0 , 'tmonto'=>0 , 'monto'=>0);
+		if(!empty($proveed)){
 			$this->db->_escape_char='';
 			$this->db->_protect_identifiers=false;
-			//$this->fcorte = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
 			$fcorte = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
 
-			$rt = array();
 			//Deducciones
-			$rt['deduc'] = 0;
 			$sel=array('SUM(a.total) AS val');
 			$this->db->select($sel);
 			$this->db->from('lgasto AS a');
@@ -846,7 +908,6 @@ class Lpago extends Controller {
 			}
 
 			//Productores
-			$rt['monto'] = 0;
 			$sel=array('SUM(ROUND(a.lista*if(c.tipolec="F",if(c.animal="V",if(c.zona="0112",e.tarifa5,e.tarifa1),e.tarifa3), if(c.animal="V",e.tarifa2,e.tarifa4)),2)) AS total');
 			$this->db->select($sel);
 			$this->db->from('itlrece AS a');
@@ -866,9 +927,6 @@ class Lpago extends Controller {
 			}
 
 			//Transportista
-			$rt['tmonto'] = 0;
-			//$sel=array('SUM(a.lista*b.tarifa) AS monto');
-			//$sel=array('SUM(round(a.lista*b.tarifa,2)+ROUND(IF(litros>lista,litros-lista,0)*b.tarsob,2)) AS monto');
 			$sel=array('SUM(ROUND(a.lista*b.tarifa,2)+ROUND((litros-lista)*b.tarsob,2)) AS monto');
 			$this->db->select($sel);
 			$this->db->from('lrece AS a');
@@ -884,7 +942,15 @@ class Lpago extends Controller {
 				$row = $query->row();
 				if(!empty($row->monto)) $rt['tmonto'] = round(floatval($row->monto),2);
 			}
+		}
+		return $rt;
+	}
 
+	function ajaxmonto(){
+		$proveed=$this->input->post('proveed');
+
+		if($proveed!==false){
+			$rt=$this->_cmonto($proveed);
 			echo json_encode($rt);
 		}else{
 			echo '[]';
@@ -912,10 +978,8 @@ class Lpago extends Controller {
 
 		//Calcula el moto que se le debe
 		$rt=array('deduc'=>0,'monto'=>0,'tmonto'=>0);
-		ob_start();
-			$this->ajaxmonto();
-			$jsmontos=ob_get_contents();
-		@ob_end_clean();
+
+		$jsmontos=$this->_cmonto($proveed);
 		$montos = json_decode($jsmontos,true);
 		if(isset($montos['monto']) && isset($montos['tmonto']) && isset($montos['deduc'])){
 			$rt=array(
