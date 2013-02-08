@@ -1373,7 +1373,7 @@ class Scst extends Controller {
 		));
 
 		$grid->addField('descrip');
-		$grid->label('Descripcion');
+		$grid->label('Descripci&oacute;n');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -2758,7 +2758,7 @@ class Scst extends Controller {
 
 		$edit->clase = new  dropdownField('Clase','clase_<#i#>');
 		$edit->clase->rel_id   = 'sinvehiculo';
-		$edit->clase->db_name = 'clase';
+		$edit->clase->db_name  = 'clase';
 		$edit->clase->option('','Seleccionar');
 		$edit->clase->option('AUTOMOVIL','Automovil');
 		$edit->clase->option('MOTO'     ,'Moto');
