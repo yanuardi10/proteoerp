@@ -453,14 +453,14 @@ class Scst extends Controller {
 	}
 
 	function _autoprecios($control){
-		$esstd=$this->datasis->traevalor('SCSTSD','S Para usar el precio standard en la carga de compras a droguerias');
+		$esstd=$this->datasis->traevalor('SCSTSD','Precios en carga de compras por droguerias S P.standard, I margenes de inventario, D sugerido por drogueria ');
 
 		if(!empty($control)){
 			$dbcontrol=$this->db->escape($control);
 			$dbfarmax = $this->load->database('farmax', TRUE);
 			$dbfarmax->simple_query("ALTER IGNORE TABLE `itscst` ADD COLUMN `pmanual` CHAR(1) NOT NULL DEFAULT 'N' COMMENT 'Si cambio o no el precio manual'");
 
-			if($esstd=='S'){
+			if($esstd=='S'){ //USa el precio standar de inventario
 				$query = $dbfarmax->query('SELECT proveed FROM scst WHERE control='.$dbcontrol);
 				if ($query->num_rows() > 0){
 					$row = $query->row_array();
@@ -495,7 +495,7 @@ class Scst extends Controller {
 						//echo $sql.br();
 					}
 				}
-			}else{
+			}elseif($esstd=='I'){ //usa los margenes de inventario
 				$query = $dbfarmax->query('SELECT proveed FROM scst WHERE control='.$dbcontrol);
 				if ($query->num_rows() > 0){
 					$row = $query->row_array();
@@ -540,6 +540,8 @@ class Scst extends Controller {
 						}
 					}
 				}
+			}else{
+				//usa el sugerido
 			}
 		}
 	}
