@@ -319,6 +319,22 @@ class Sfac extends Controller {
 				}
 			});';
 
+		$bodyscript .= '
+			$("#fborra").dialog({
+				autoOpen: false, height: 300, width: 400, modal: true,
+				buttons: {
+					"Aceptar": function() {
+						$("#fborra").html("");
+						jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+						$( this ).dialog( "close" );
+					},
+				},
+				close: function() {
+					jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+					$("#fborra").html("");
+				}
+			});';
+
 		//Agregar Factura
 		$bodyscript .= '
 			$("#fedita").dialog({
@@ -3689,6 +3705,16 @@ class Sfac extends Controller {
 
 		logusu('sfac',"Anulo factura ${tipo_doc}${numero}");
 		$do->error_message_ar['pre_del']='Factura '.$numero.' anulada';
+
+
+		$upago   = trim($do->get('upago'));
+		$cliente = trim($do->get('cod_cli'));
+		if(!empty($upago)){
+			$dbcliente = $this->db->escape($cliente);
+			$dbupago   = $this->db->escape($upago);
+			$mSQL = "UPDATE scli SET upago=${dbupago} WHERE cliente=${dbcliente}";
+			$this->db->simple_query($mSQL);
+		}
 		return false;
 	}
 

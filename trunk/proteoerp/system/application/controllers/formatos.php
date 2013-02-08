@@ -276,9 +276,9 @@ class Formatos extends Controller{
 
 	function instalar(){
 		$campos=$this->db->list_fields('formatos');
-		if(!in_array('proteo'  ,$campos)) $this->db->simple_query("ALTER TABLE `formatos` ADD `proteo` TEXT NULL AFTER `forma`");
-		if(!in_array('harbour' ,$campos)) $this->db->simple_query("ALTER TABLE `formatos` ADD `harbour` TEXT NULL AFTER `proteo`");
-		if(!in_array('tcpdf'   ,$campos)) $this->db->simple_query("ALTER TABLE `formatos`  ADD COLUMN `tcpdf` TEXT NULL AFTER `forma`");
-		if(!in_array('txt'     ,$campos)) $this->db->simple_query("ALTER TABLE `formatos` ADD COLUMN `txt` TEXT NULL AFTER `harbour`");
+		if(!in_array('proteo' ,$campos)) $this->db->simple_query("ALTER TABLE `formatos` ADD COLUMN `proteo`  TEXT NULL AFTER `forma`"  );
+		if(!in_array('harbour',$campos)) $this->db->simple_query("ALTER TABLE `formatos` ADD COLUMN `harbour` TEXT NULL AFTER `proteo`" );
+		if(!in_array('tcpdf'  ,$campos)) $this->db->simple_query("ALTER TABLE `formatos` ADD COLUMN `tcpdf`   TEXT NULL AFTER `forma`"  );
+		if(!in_array('txt'    ,$campos)) $this->db->simple_query("ALTER TABLE `formatos` ADD COLUMN `txt`     TEXT NULL AFTER `harbour`");
 	}
 }

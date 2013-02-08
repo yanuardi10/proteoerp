@@ -171,6 +171,20 @@ class mensualidad extends sfac {
 		return true;
 	}
 
+	function _post_delete($do){
+		$rt = parent::_post_delete($do);
+		$upago  = $do->get('upago');
+		$cliente= $do->get('cliente');
+
+		$dbcliente = $this->db->escape($do->get('cod_cli'));
+		$dbupago   = $this->db->escape($upago);
+		$mSQL = "UPDATE scli SET upago=$dbupago WHERE cliente=$dbcliente";
+		$this->db->simple_query($mSQL);
+
+		return true;
+	}
+
+
 	function lote($status=null,$grupo,$upago,$tarifa){
 		$this->load->helper('download');
 		$this->genesal=false;
