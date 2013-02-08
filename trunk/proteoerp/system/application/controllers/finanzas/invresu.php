@@ -36,7 +36,7 @@ class Invresu extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-			array('id'=>'fedita' ,  'title'=>'Agregar/Editar Registro'),
+			array('id'=>'fedita' , 'title'=>'Agregar/Editar Registro'),
 			array('id'=>'fshow'  , 'title'=>'Mostrar registro'),
 			array('id'=>'fborra' , 'title'=>'Eliminar registro')
 		);
