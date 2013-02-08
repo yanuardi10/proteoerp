@@ -2571,8 +2571,7 @@ class Sfac extends Controller {
 			$salida .= "<br><table width='100%' border=1>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Forma de Pago</td></tr>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tipo</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				$salida .= "<tr>";
 				$salida .= "<td>".$row['tipo']."</td>";
 				$salida .= "<td>".$row['numero'].  "</td>";
@@ -2591,8 +2590,7 @@ class Sfac extends Controller {
 			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento Pendientes en CxC</td></tr>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
 			$i = 1;
-			foreach ($query->result_array() as $row)
-			{
+			foreach ($query->result_array() as $row){
 				if ( $i < 6 ) {
 					$salida .= "<tr>";
 					$salida .= "<td>".$row['tipo_doc']."</td>";
