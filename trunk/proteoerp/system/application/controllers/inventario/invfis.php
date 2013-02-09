@@ -474,7 +474,7 @@ class Invfis extends Controller {
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ $error.='Error colocando las devoluciones como despachados '; memowrite($mSQL,'INVFIS'); }
 
-			$mSQL="CREATE TEMPORARY TABLE `tem${tabla}` SELECT c.codigoa,SUM(IF(c.tipoa='D',-1,1)*c.cana) AS cana 
+			$mSQL="CREATE TEMPORARY TABLE `tem${tabla}` SELECT c.codigoa,SUM(IF(c.tipoa='D',-1,1)*c.cana) AS cana
 			FROM sitems AS c
 			JOIN sfac AS d ON c.tipoa=d.tipo_doc AND c.numa=d.numero
 			WHERE c.despacha<>'S' AND d.almacen=${dbalma}
@@ -493,7 +493,11 @@ class Invfis extends Controller {
 
 	function _cerrar($tabla,$tipo){
 
-		$fecha  =  substr($tabla,-8);
+		$estampa= date('Y-m-d');
+		$hora   = date('H:i:s');
+		$usr    = $this->secu->usuario();
+		$dbusr  = $this->db->escape($usr);
+		$fecha  = substr($tabla,-8);
 		$nstra  = $this->db->escape($this->datasis->fprox_numero('nstra'));
 		$alma   = substr($tabla,3,strlen($tabla)-11);
 		$alma   = $this->db->escape($alma);
@@ -511,15 +515,15 @@ class Invfis extends Controller {
 			$id=$this->_idsem($tabla);
 			$seg=sem_get($id,1,0666,-1);
 			sem_acquire($seg);
-			
+
 			$mSQL="INSERT INTO itstra (`numero`,`codigo`,`descrip`,`cantidad`,`anteri`)
-				SELECT $nstra,a.codigo,CONCAT_WS(' ',b.descrip,b.descrip2)descrip,IF(a.modificado IS NULL,-1*a.existen,a.contado-a.existen),a.existen $fromwhere";
+				SELECT ${nstra},a.codigo,CONCAT_WS(' ',b.descrip,b.descrip2)descrip,IF(a.modificado IS NULL,-1*a.existen,a.contado-a.existen),a.existen ${fromwhere}";
 
 			$ban = $this->db->simple_query($mSQL);
 			if(!$ban){$error.="No se pudo crear el registro en stra"; memowrite($mSQL,'INVFIS');}
 
-			$mSQL="INSERT INTO stra (`numero`,`fecha`,`envia`,`recibe`,`observ1`)
-				VALUES ($nstra,'$fecha','INFI',$alma,'INVENTARIO FISICO')";
+			$mSQL="INSERT INTO stra (`numero`,`fecha`,`envia`,`recibe`,`observ1`,`usuario`,`estampa`,`hora`)
+				VALUES (${nstra},'${fecha}','INFI',${alma},'INVENTARIO FISICO',${dbusr},'${estampa}','${hora}')";
 
 			$ban = $this->db->simple_query($mSQL);
 			if(!$ban) {$error.="No se pudo crear el registro en stra "; memowrite($mSQL,'INVFIS'); }
@@ -534,6 +538,7 @@ class Invfis extends Controller {
 			}else{
 				sem_release($seg);
 			}
+			logusu('invfis',"Inventario ${nstra} guardado");
 		}else{
 			$error='No hay productos contados para cerrar el inventario';
 		}

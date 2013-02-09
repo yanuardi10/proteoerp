@@ -8,7 +8,7 @@ class Reportes extends Controller
 	function Reportes(){
 		parent::Controller();
 		$this->load->library("rapyd");
-		$this->opciones=array('PDF'=>'pdf','XLS'=>'xls');
+		$this->opciones=array('PDF'=>'pdf','XLS'=>'xls','plano'=>'xls (plano)');
 	}
 
 	function index(){
@@ -34,10 +34,22 @@ class Reportes extends Controller
 			$data['regresar']='<a href='.site_url("/reportes/enlistar/$esta").'>'.image('go-previous.png','Regresar',array('border'=>0)).'Regresar'.'</a>';
 
 			$_formato=$this->input->post('salformat');
-			if($_formato || !empty($_formato))
-				$_mclase=$_formato.'Reporte';
-			else
-				$_mclase='PDFReporte';
+
+			switch ($_formato) {
+				case 'XLS':
+					$_mclase='XLSReporte';
+					break;
+				case 'PDF':
+					$_mclase='PDFReporte';
+					break;
+				case 'plano':
+					$_mclase='XLSReporteplano';
+					$mc=str_replace('new PDFReporte(','new XLSReporteplano(',$mc);
+					break;
+				default:
+					$_mclase='PDFReporte';
+			}
+
 			$this->load->library($_mclase);
 			$this->db->_escape_char='';
 			$this->db->_protect_identifiers=false;
