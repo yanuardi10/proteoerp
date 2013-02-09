@@ -183,6 +183,14 @@ class Kardex extends Controller {
 		if($fecha===FALSE or $codigo===FALSE or $tipo===FALSE or $almacen===FALSE) redirect('inventario/kardex');
 		$this->rapyd->load('datagrid','fields');
 
+		$attsp = array(
+			'width'      => '200',
+			'height'     => '200',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+		);
+
 		$grid = new DataGrid();
 		$grid->order_by('numero','desc');
 		$grid->per_page = 20;
@@ -381,7 +389,9 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('formatos/verhtml/SCON/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
+			$ll=anchor_popup('formatos/descargar/SCON/'.implode('/',$ppk), '»', $attsp);
+
+			$link=anchor('formatos/verhtml/SCON/'.implode('/',$ppk),'<#numero#> '.$ll,array('target'=>'showefect'));
 			$grid->title('Consignaci&oacute;n de inventario');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Descripci&oacute;n','desca');
