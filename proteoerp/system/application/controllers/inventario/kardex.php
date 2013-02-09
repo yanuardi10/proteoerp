@@ -383,7 +383,7 @@ class Kardex extends Controller {
 
 			$link=anchor('formatos/verhtml/SCON/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
 			$grid->title('Consignaci&oacute;n de inventario');
-			$grid->column('N&uacute;mero','numero');
+			$grid->column('N&uacute;mero',$link);
 			$grid->column('Descripci&oacute;n','desca');
 			$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 			$grid->column('Cantidad' ,'<nformat><#cana#></nformat>','align=\'right\'');

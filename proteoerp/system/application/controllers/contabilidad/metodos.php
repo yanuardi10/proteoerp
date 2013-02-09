@@ -43,8 +43,12 @@ class Metodos extends Controller {
 							break;
 						}
 					}
-					if($this->db->field_exists('fecha',$ttabla)){
+					$campos = $this->db->list_fields($ttabla);
+
+					if(in_array('fecha'  ,$campos)){
 						$where .= " AND ${alias}.fecha >= $dbfdesde";
+					}elseif(in_array('recep'  ,$campos)){
+						$where .= " AND ${alias}.recep >= $dbfdesde";
 					}
 				}
 			}
