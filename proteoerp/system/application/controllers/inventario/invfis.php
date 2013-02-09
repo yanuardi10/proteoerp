@@ -289,7 +289,9 @@ class Invfis extends Controller {
 			$campo->size=5;
 			$campo->insertValue=$valor;
 			$campo->readonly = $readonly;
+			if($campo2=='c') $campo->type = 'inputhidden';
 			$campo->name = $codigo;
+			//$campo->name = 'I'.$campo2.'_'.$codigo;
 			$campo->id   = 'I'.$campo2.'_'.$codigo;
 			$campo->tabindex = $desp*$ccana+$fila;
 			$campo->build();
@@ -297,11 +299,11 @@ class Invfis extends Controller {
 		}
 
 		function pinta($modifi,$cont,$idfis,$pos){
-			$iidfis="${pos}${idfis}span";
+			$iidfis="${idfis}class";
 			if(empty($modifi)){
-				$rt='<span id="'.$iidfis.'">'.$cont.'</span>';
+				$rt='<span class="'.$iidfis.'">'.$cont.'</span>';
 			}else{
-				$rt='<span id="'.$iidfis.'" style="color : red;">'.$cont.'</span>';
+				$rt='<span class="'.$iidfis.'" style="color : red;">'.$cont.'</span>';
 			}
 			return $rt;
 		}
@@ -331,7 +333,7 @@ class Invfis extends Controller {
 		$grid->column_orderby('Descripci&oacute;n','<pinta><#modificado#>|<#descrip#>|<#idfis#>|b</pinta>' ,'descrip' );
 		$grid->column_orderby('P.Desp,'           ,'<pinta><#modificado#>|<#despacha#>|<#idfis#>|d</pinta>','despacha','align=right');
 		$grid->column_orderby('Anterior'          ,'<pinta><#modificado#>|<#existen#>|<#idfis#>|d</pinta>' ,'existen' ,'align=right');
-		$grid->column_orderby('Contado'           ,'<caja>c|<#contado#>|<#idfis#>|true|<#dg_row_id#>|0|'.$cana.'</caja>','contado');
+		$grid->column_orderby('Contado'           ,'<caja>c|<#contado#>|<#idfis#>|true|<#dg_row_id#>|0|'.$cana.'</caja>','contado','align=right');
 		$grid->column('Agregar'                   ,'<caja>a|<#agregar#>|<#idfis#>|false|<#dg_row_id#>|1|'.$cana.'</caja>');
 		$grid->column('Quitar'                    ,'<caja>q|<#quitar#>|<#idfis#>|false|<#dg_row_id#>|2|'.$cana.'</caja>');
 		$grid->column('Sustituir'                 ,'<caja>s||<#idfis#>|false|<#dg_row_id#>|3|'.$cana.'</caja>');
@@ -343,6 +345,7 @@ class Invfis extends Controller {
 		function traer(cod){
 			$.post("'.site_url($this->url.'traer').'",{ codigo:cod,tabla:"'.$tabla.'" },function(data){
 				$("#Ic_"+cod).val(data);
+				$("#Ic_"+cod+"_val").text(data);
 			})
 		}
 
@@ -352,6 +355,11 @@ class Invfis extends Controller {
 			$("input[id^=\'I\']").focus(function(){
 				var cod =$(this).attr("name");
 				traer(cod);
+				$(this).select();
+			});
+
+			$("input[id^=\'I\']").click(function(){
+				$(this).select();
 			});
 
 			$("input[id^=\'Ia_\']").change(function(){
@@ -363,10 +371,10 @@ class Invfis extends Controller {
 					if(data.length>0){
 						alert(data);
 					}else{
-						$("[id$=\'"+cod+"span\']").attr("style","color:orange;");
+						$("."+cod+"class").attr("style","color:orange;");
 					}
+					traer(cod);
 				});
-				traer(cod);
 			});
 
 			$("input[id^=\'Iq_\']").change(function(){
@@ -378,10 +386,11 @@ class Invfis extends Controller {
 					if(data.length>0){
 						alert(data);
 					}else{
-						$("[id$=\'"+cod+"span\']").attr("style","color:orange;");
+						$("."+cod+"class").attr("style","color:orange;");
 					}
+					traer(cod);
 				});
-				traer(cod);
+
 			});
 
 			$("input[id^=\'Is_\']").change(function(){
@@ -393,11 +402,12 @@ class Invfis extends Controller {
 					if(data.length>0){
 						alert(data);
 					}else{
-						$("[id$=\'"+cod+"span\']").attr("style","color:orange;");
+						$("."+cod+"class").attr("style","color:orange;");
 					}
+					traer(cod);
 				});
-				traer(cod);
 			});
+
 		});
 		</script>';
 
@@ -570,7 +580,7 @@ class Invfis extends Controller {
 		$tabla  = $this->input->post('tabla');
 		$contado= $this->input->post('contado');
 		$id     = $this->_idsem($tabla);
-		$error='Oops lo siento!! pero hubo un problema actualizando el registro, por favor comuniquese con soporte';
+		$error  = 'Oops lo siento!! pero hubo un problema actualizando el registro, por favor comuniquese con soporte';
 
 		if(is_numeric($valor)){
 			$seg=sem_get($id,1,0666,-1);
@@ -596,7 +606,7 @@ class Invfis extends Controller {
 								break;
 							}
 							$ban=$this->db->simple_query($mSQL);
-							if(!$ban){ echo $error; }
+							if(!$ban){ memowrite($mSQL,'INVFIS'); echo $error; }
 						}
 					}else{
 						echo $error.' 1';
