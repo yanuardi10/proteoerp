@@ -209,7 +209,8 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('formatos/verhtml/FACTURA/'.implode('/',$ppk),'<#tipoa#><#numa#>',array('target'=>'showefect'));
+			$ll=anchor_popup('formatos/descargar/FACTURA/'.implode('/',$ppk), '(pdf)', $attsp);
+			$link=anchor('formatos/verhtml/FACTURA/'.implode('/',$ppk),'<#tipoa#><#numa#> '.$ll,array('target'=>'showefect'));
 			$grid->title('Facturas');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Cliente'      ,'cliente' );
@@ -255,7 +256,8 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('formatos/verhtml/STRA/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
+			$ll=anchor_popup('formatos/descargar/STRA/'.implode('/',$ppk), '(pdf)', $attsp);
+			$link=anchor('formatos/verhtml/STRA/'.implode('/',$ppk),'<#numero#> '.$ll,array('target'=>'showefect'));
 			$grid->title('Tranferencias');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Env&iacute;a'      ,'envia' );
@@ -282,7 +284,8 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('formatos/verhtml/COMPRA/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
+			$ll=anchor_popup('formatos/descargar/COMPRA/'.implode('/',$ppk), '(pdf)', $attsp);
+			$link=anchor('formatos/verhtml/COMPRA/'.implode('/',$ppk),'<#numero#> '.$ll,array('target'=>'showefect'));
 			$grid->title('Compras');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
@@ -311,7 +314,8 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('formatos/verhtml/SNTE/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
+			$ll=anchor_popup('formatos/descargar/SNTE/'.implode('/',$ppk), '(pdf)', $attsp);
+			$link=anchor('formatos/verhtml/SNTE/'.implode('/',$ppk),'<#numero#> '.$ll,array('target'=>'showefect'));
 			$grid->title('Notas de Entrega');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=center');
@@ -337,8 +341,8 @@ class Kardex extends Controller {
 					}
 				}
 			}
-
-			$link=anchor('formatos/verhtml/CONV/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
+			$ll=anchor_popup('formatos/descargar/CONV/'.implode('/',$ppk), '(pdf)', $attsp);
+			$link=anchor('formatos/verhtml/CONV/'.implode('/',$ppk),'<#numero#> '.$ll,array('target'=>'showefect'));
 			$grid->title('Conversiones');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,'<dbdate_to_human><#estampa#></dbdate_to_human>','align=center');
@@ -363,7 +367,8 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('formatos/verhtml/SSAL/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
+			$ll=anchor_popup('formatos/descargar/SSAL/'.implode('/',$ppk), '(pdf)', $attsp);
+			$link=anchor('formatos/verhtml/SSAL/'.implode('/',$ppk),'<#numero#> '.$ll,array('target'=>'showefect'));
 			$grid->title('Ajustes de inventario');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Descripci&oacute;n','descrip');
@@ -389,7 +394,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$ll=anchor_popup('formatos/descargar/SCON/'.implode('/',$ppk), '»', $attsp);
+			$ll=anchor_popup('formatos/descargar/SCON/'.implode('/',$ppk), '(pdf)', $attsp);
 
 			$link=anchor('formatos/verhtml/SCON/'.implode('/',$ppk),'<#numero#> '.$ll,array('target'=>'showefect'));
 			$grid->title('Consignaci&oacute;n de inventario');
