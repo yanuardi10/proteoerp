@@ -99,7 +99,7 @@ class Generar extends Metodos {
 		$qfechaf=date("Ymd",timestampFromInputDate($fechaf, 'd/m/Y'));
 		$generar=$this->input->post('genera');
 
-		$salida=$this->_procesar($qfechai,$qfechaf,$generar,$qfechai);
+		$salida=$this->_procesar($qfechai,$qfechaf,$generar);
 		echo $salida;
 		return true;
 		//redirect('contabilidad/generar/index/completo');
@@ -118,7 +118,7 @@ class Generar extends Metodos {
 		$udate   = days_in_month($mes, $anio);
 		$qfechai = $anio.$mes.'01';
 		$qfechaf = $anio.$mes.str_pad($udate, 2, '0', STR_PAD_LEFT);
-		$this->procesarshell($qfechai,$qfechaf,$modulos,$qfechai);
+		$this->procesarshell($qfechai,$qfechaf,$modulos);
 		return false;
 	}
 
@@ -185,7 +185,7 @@ class Generar extends Metodos {
 
 				$query = $this->db->query($mSQL);
 				foreach ($query->result_array() as $fila){
-					$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila['mgrupo']);
+					$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila['mgrupo'],$qfechai);
 					foreach ($aregla['casi'] as $casi){
 						$ejecasi='INSERT IGNORE INTO casi ( comprob, fecha, descrip, origen ) '.$casi;
 						$ejec=$this->db->simple_query($ejecasi);
