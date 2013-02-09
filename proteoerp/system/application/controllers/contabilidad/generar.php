@@ -99,7 +99,7 @@ class Generar extends Metodos {
 		$qfechaf=date("Ymd",timestampFromInputDate($fechaf, 'd/m/Y'));
 		$generar=$this->input->post('genera');
 
-		$salida=$this->_procesar($qfechai,$qfechaf,$generar);
+		$salida=$this->_procesar($qfechai,$qfechaf,$generar,$qfechai);
 		echo $salida;
 		return true;
 		//redirect('contabilidad/generar/index/completo');
@@ -118,7 +118,7 @@ class Generar extends Metodos {
 		$udate   = days_in_month($mes, $anio);
 		$qfechai = $anio.$mes.'01';
 		$qfechaf = $anio.$mes.str_pad($udate, 2, '0', STR_PAD_LEFT);
-		$this->procesarshell($qfechai,$qfechaf,$modulos);
+		$this->procesarshell($qfechai,$qfechaf,$modulos,$qfechai);
 		return false;
 	}
 
