@@ -178,8 +178,6 @@ echo script('jquery-min.js');
 echo phpscript('nformat.js');
 echo script('jquery-ui.custom.min.js');
 echo script('jquery.ui.selectmenu.js');
-//echo script('jshashtable.js');
-//echo script('jquery.numberformatter.js');
 echo style('jquery.ui.selectmenu.css');
 echo "\n";
 echo script('plugins/jquery.numeric.pack.js');
