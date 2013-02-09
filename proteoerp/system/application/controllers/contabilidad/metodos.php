@@ -44,7 +44,7 @@ class Metodos extends Controller {
 						}
 					}
 					if($this->db->field_exists('fecha',$ttabla)){
-						$where = " AND ${alias}.fecha >= $dbfdesde";
+						$where .= " AND ${alias}.fecha >= $dbfdesde";
 					}
 				}
 			}
