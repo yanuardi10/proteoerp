@@ -319,7 +319,7 @@ class Kardex extends Controller {
 			$grid->title('Notas de Entrega');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=center');
-			$grid->column('Proveedor','Nombre');
+			$grid->column('Cliente','Nombre');
 			$grid->column('Cantidad' ,'<nformat><#cana#></nformat>'   ,'align=\'right\'');
 			$grid->column('Costo'    ,'<nformat><#precio#></nformat>' ,'align=\'right\'');
 			$grid->column('Importe'  ,'<nformat><#importe#></nformat>','align=\'right\'');

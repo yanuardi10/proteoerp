@@ -631,7 +631,7 @@ class Desarrollo extends Controller{
 		$i = 0;
 		if ($query->num_rows() > 0){
 			$fields  = '';
-			$columna = '<pre>';
+			$columna = '<?php'."\n";
 			$param   = '';
 			$campos  = '';
 			$str = '';
@@ -996,7 +996,9 @@ class Desarrollo extends Controller{
 
 			$columna .= $str."\n";
 
-			echo $columna."</pre>";
+			$data['programa'] = $columna.'?>';
+			$data['archivo']  = site_url($contro.'/'.$db.'.php');
+			$this->load->view('editorcm', $data);
 
 		}
 	}
@@ -1661,14 +1663,23 @@ class Desarrollo extends Controller{
 		$crud.="\t".'}'."\n";
 
 		if($s){
-			$data['content'] ='<pre>'.$crud.'</pre>';
+			$data['programa'] ='<pre>'.$crud.'</pre>';
 			$data['head']    = '';
 			$data['title']   =heading('Generador de crud');
-			$this->load->view('jqgrid/ventanajq', $data);
+			$this->load->view('editorcm', $data);
+			//$this->load->view('jqgrid/ventanajq', $data);
 		}else{
 			return $crud;
 		}
 	}
+
+	function editor(){
+
+			$this->load->view('editorcm');
+
+
+	}
+
 
 }
 ?>

@@ -282,12 +282,12 @@ class Sinv extends Controller {
 				buttons: { Aplicar: true, Cancelar: false },
 				submit: function(e,v,m,f){
 					if (v) {
-						if( f.porcen > 0 ) {
+						if( f.porcen != 0 ) {
 							$.ajax({ url: "'.site_url('inventario/sinv/auprec').'/"+f.porcen,
-							complete: function(){ alert(("Aumento Finalizado")) }
+							success: function(data){ alert(("AF "+data)) }
 							});
 						} else {
-							alert("Debe colocar un porcentaje mayor que 0");
+							alert("Debe colocar un porcentaje diferente a 0");
 						}
 					}
 				}
@@ -3542,17 +3542,24 @@ class Sinv extends Controller {
 		$mSQL .= "FROM sinv a ".$where;
 		$this->db->query($mSQL);
 
+		if ( $porcent > 0 ) 
 		$mSQL = "SET
 			a.precio1=ROUND(a.precio1*(100+$porcent)/100,2),
 			a.precio2=ROUND(a.precio2*(100+$porcent)/100,2),
 			a.precio3=ROUND(a.precio3*(100+$porcent)/100,2),
 			a.precio4=ROUND(a.precio4*(100+$porcent)/100,2)";
+		else
+		$mSQL = "SET
+			a.precio1=ROUND(a.precio1*100/(100-$porcent),2),
+			a.precio2=ROUND(a.precio2*100/(100-$porcent),2),
+			a.precio3=ROUND(a.precio3*100/(100-$porcent),2),
+			a.precio4=ROUND(a.precio4*100/(100-$porcent),2)";
 
 		$this->db->query("UPDATE sinv a ".$mSQL." ".$where);
 		$this->datasis->sinvrecalcular("M");
 		$this->datasis->sinvredondear();
 
-		echo "Aumento Concluido";
+		echo "Aumento Concluido ($porcent) ";
 	}
 
 	// **************************************
