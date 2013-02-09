@@ -7,6 +7,7 @@ class Generar extends Metodos {
 		parent::Controller();
 		$this->load->library("rapyd");
 		$this->modulo=602;
+		set_time_limit(3600);
 	}
 
 	function index() {
