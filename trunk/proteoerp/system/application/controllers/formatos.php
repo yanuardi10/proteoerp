@@ -43,7 +43,7 @@ class Formatos extends Controller{
 		$parametros= func_get_args();
 		$this->_direccion='http://localhost/'.trim_slashes($this->config->item('base_url'));
 		if (count($parametros)>0){
-			$_arch_nombre=implode('-',$parametros);
+			$_arch_nombre=implode('-',$parametros).'.pdf';
 			$_fnombre=array_shift($parametros);
 			$_dbfnombre=$this->db->escape($_fnombre);
 			$this->load->library('dompdf/cidompdf');
@@ -75,7 +75,7 @@ class Formatos extends Controller{
 		$parametros= func_get_args();
 		$this->_direccion='http://localhost/'.trim_slashes($this->config->item('base_url'));
 		if (count($parametros)>0){
-			$_arch_nombre=implode('-',$parametros);
+			$_arch_nombre=implode('-',$parametros).'.pdf';
 			$_fnombre=array_shift($parametros);
 			$_dbfnombre=$this->db->escape($_fnombre);
 			$this->load->library('dompdf/cidompdf');
