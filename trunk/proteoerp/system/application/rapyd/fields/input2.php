@@ -59,7 +59,7 @@ class inputField2 extends objField{
 				$attributes = array(
 					'name'      => $this->name,
 					'id'        => $this->id,
-					'type'      => $this->type,
+					'type'      => ($this->type=='inputhidden')? 'hidden': $this->type,
 					'value'     => $value,
 					'maxlength' => $this->maxlength,
 					'size'      => $this->size,
@@ -71,6 +71,12 @@ class inputField2 extends objField{
 				if($this->readonly) $attributes['readonly']='readonly';
 				if(!empty($this->tabindex)) $attributes['tabindex']=$this->tabindex;
 				$output = form_input($attributes) . $this->extra_output;
+
+				if($this->type=='inputhidden'){
+					$val=$this->value;
+					$output.='<span id=\''.$this->id.'_val\'>'.$val.'</span>';
+				}
+
 				break;
 
 			case 'hidden':
