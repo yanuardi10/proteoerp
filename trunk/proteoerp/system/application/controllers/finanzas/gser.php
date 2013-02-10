@@ -59,8 +59,11 @@ class gser extends Controller {
 				<tr>
 					<td style='vertical-align:center;border:1px solid #AFAFAF;'><div class='botones'>".img(array('src' =>"assets/default/images/print.png",  'height' => 18, 'alt' => 'Imprimir',    'title' => 'Imprimir', 'border'=>'0'))."</div></td>
 					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:55px;text-align:left;vertical-align:top;' href='#' id='imprimir'>Egreso</a></div></td>
-					<td style='vertical-align:top;'><div class='botones'><a style='width:55px;text-align:left;vertical-align:top;' href='#' id='reteprint'>R.IVA</a></div></td>
-					<td style='vertical-align:top;'><div class='botones'><a style='width:60px;text-align:left;vertical-align:top;' href='#' id='reteislrprint'>R.ISLR</a></div></td>
+					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:55px;text-align:left;vertical-align:top;' href='#' id='reteprint'>R.IVA</a></div></td>
+					<td style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:60px;text-align:left;vertical-align:top;' href='#' id='reteislrprint'>R.ISLR</a></div></td>
+				</tr>
+				<tr>
+					<td colspan='4' style='vertical-align:top;text-align:center;'><div class='botones'><a style='width:198px;text-align:left;vertical-align:top;text-align:center;' href='#' id='princheque'>Imprimir Cheque</a></div></td>
 				</tr>
 			</table>
 			</div>
@@ -71,8 +74,8 @@ class gser extends Controller {
 
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"creamga", "img"=>"assets/default/images/print.png", "alt" => "Imprimir Documento", "label"=>"Crea Gasto" ));
-		$grid->wbotonadd(array("id"=>"creaprv", "img"=>"assets/default/images/print.png", "alt" => "Imprimir Retención", "label"=>"Crea Proveedor" ));
+		$grid->wbotonadd(array('id'=>'creamga', 'img'=>'images/agrega4.png' , 'alt' => 'Crear gasto caja chica', 'label'=>'Gasto caja chica' ));
+		$grid->wbotonadd(array('id'=>'creaprv', 'img'=>'images/agrega4.png' , 'alt' => 'Imprimir Retención'    , 'label'=>'Crea Proveedor'   ));
 		$WestPanel = $grid->deploywestp();
 
 
@@ -109,6 +112,69 @@ class gser extends Controller {
 	//***************************
 	function bodyscript( $grid0, $grid1 ){
 		$bodyscript = '<script type="text/javascript">';
+
+		$bodyscript .= '
+		function gseradd() {
+			$.post("'.site_url('finanzas/gser/solo/create').'",
+			function(data){
+				$("#fgasto").html(data);
+				$("#fgasto").dialog({height: 500, width: 950, title: "Agregar Egreso"});
+				$( "#fgasto" ).dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function gseredit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('finanzas/gser/solo/modify').'/"+id, function(data){
+					$("#fgasto").html(data);
+					$("#fgasto").dialog({height: 500, width: 950, title: "Agregar Egreso"});
+					$("#fgasto").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
+		};';
+
+		$bodyscript .= '
+		function gsershow() {
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
+					function(data){
+						$("#fshow").html(data);
+						$("#fshow").dialog( "open" );
+					});
+			} else {
+				$.prompt("<h1>Por favor Seleccione un gasto</h1>");
+			}
+		};';
+
+
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+		';
+
+		$bodyscript .= '
+		jQuery("#princheque").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url($this->url.'/impcheque').'/\'+id, \'_blank\', \'width=300,height=400,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-200), screeny=((screen.availWidth/2)-150)\');
+			} else { $.prompt("<h1>Por favor Seleccione una Egreso</h1>");}
+		});';
 
 		$bodyscript .= '
 		jQuery("#imprimir").click( function(){
@@ -151,44 +217,6 @@ class gser extends Controller {
 		});';
 
 		$bodyscript .= '
-		function gseradd() {
-			$.post("'.site_url('finanzas/gser/solo/create').'",
-			function(data){
-				$("#fgasto").html(data);
-				$("#fgasto").dialog({height: 500, width: 950, title: "Agregar Egreso"});
-				$( "#fgasto" ).dialog( "open" );
-			})
-		};';
-
-		$bodyscript .= '
-		function gseredit() {
-			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret    = $("#newapi'.$grid0.'").getRowData(id);
-				mId = id;
-				$.post("'.site_url('finanzas/gser/solo/modify').'/"+id, function(data){
-					$("#fgasto").html(data);
-					$("#fgasto").dialog({height: 500, width: 950, title: "Agregar Egreso"});
-					$("#fgasto").dialog( "open" );
-				});
-			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
-		};';
-
-		$bodyscript .= '
-		function gsershow() {
-			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				$.post("'.site_url($this->url.'dataedit/show').'/"+id,
-					function(data){
-						$("#fshow").html(data);
-						$("#fshow").dialog( "open" );
-					});
-			} else {
-				$.prompt("<h1>Por favor Seleccione un gasto</h1>");
-			}
-		};';
-
-		$bodyscript .= '
 		jQuery("#modifica").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
@@ -197,19 +225,6 @@ class gser extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
 		});';
 
-		//Wraper de javascript
-		$bodyscript .= '
-		$(function() {
-			$("#dialog:ui-dialog").dialog( "destroy" );
-			var mId = 0;
-			var montotal = 0;
-			var ffecha = $("#ffecha");
-			var grid = jQuery("#newapi'.$grid0.'");
-			var s;
-			var allFields = $( [] ).add( ffecha );
-			var tips = $( ".validateTips" );
-			s = grid.getGridParam(\'selarrrow\');
-		';
 
 		$bodyscript.= '
 		jQuery("#imprimir").click( function(){
@@ -1218,8 +1233,7 @@ class gser extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -1233,8 +1247,7 @@ class gser extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -1969,6 +1982,26 @@ class gser extends Controller {
 		logusu('GSER',"Cambia Nro. Serie $id ->  $serie ");
 	}
 
+
+	function impcheque($id_gser){
+		$dbid=$this->db->escape($id_gser);
+		$fila=$this->datasis->damerow('SELECT a.codb1,a.cheque1,a.benefi,a.nombre,monto1 FROM gser AS a JOIN sprv AS b ON a.proveed=b.proveed WHERE a.id='.$dbid);
+		$fila['benefi']= trim($fila['benefi']);
+		$fila['nombre']= trim($fila['nombre']);
+
+		$banco  = Common::_traetipo($fila['codb1']);
+
+		if($banco!='CAJ'){
+			$this->load->library('cheques');
+			$nombre = (empty($fila['benefi']))? $fila['nombre']: $fila['benefi'];
+			$monto  = $fila['monto1'];
+			$fecha  = date('Y-m-d');
+			$banco  = $banco;
+			$this->cheques->genera($nombre,$monto,$banco,$fecha,true);
+		}else{
+			echo 'Egreso no fue pagado con cheque de banco';
+		}
+	}
 
 	function agregar(){
 		$data['content'] = '<div align="center" id="maso" >';
