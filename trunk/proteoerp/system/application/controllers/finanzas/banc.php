@@ -1064,11 +1064,6 @@ class Banc extends Controller {
 	function instalar(){
 		$campos=$this->db->list_fields('banc');
 
-		if(!in_array('formato',$campos)){
-			$mSQL="ALTER TABLE `tban` CHANGE COLUMN `formato` `formato` VARCHAR(10) NULL DEFAULT 'CHEQUE' AFTER `formaca`";
-			$this->db->simple_query($mSQL);
-		}
-
 		if(!in_array('id',$campos)) {
 			$this->db->simple_query('ALTER TABLE banc DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE banc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
