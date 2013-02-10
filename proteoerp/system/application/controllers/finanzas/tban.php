@@ -10,16 +10,11 @@ class Tban extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		$this->datasis->modulo_nombre( 'TBAN', $ventana=0 );
+		$this->datasis->modulo_nombre('TBAN', $ventana=0 );
 	}
 
 	function index(){
 		$this->instalar();
-		if ( !$this->datasis->iscampo('tban','id') ) {
-			$this->db->simple_query('ALTER TABLE tban DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE tban ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
-			$this->db->simple_query('ALTER TABLE tban ADD UNIQUE INDEX cod_banc (cod_banc)');
-		}
 		redirect($this->url.'jqdatag');
 	}
 
@@ -321,9 +316,19 @@ jQuery("#a1").click( function(){
 
 	function instalar(){
 		$campos=$this->db->list_fields('tban');
-		if (!in_array('formato',$campos)){
+
+		if(!in_array('formato',$campos)){
 			$mSQL="ALTER TABLE `tban` ADD COLUMN `formato` VARCHAR(50) NULL DEFAULT NULL COMMENT 'Formato de cheque';";
 			$this->db->simple_query($mSQL);
+			$mSQL="UPDATE tban SET formato=CONCAT('CHEQUE',cod_banc) WHERE formato IS NULL";
+			$this->db->simple_query($mSQL);
 		}
+
+		if(!in_array('id',$campos)){
+			$this->db->simple_query('ALTER TABLE tban DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE tban ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE tban ADD UNIQUE INDEX cod_banc (cod_banc)');
+		}
+
 	}
 }
