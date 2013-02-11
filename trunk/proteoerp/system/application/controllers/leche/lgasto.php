@@ -474,7 +474,7 @@ class Lgasto extends Controller {
 		$edit->fecha->rule='chfecha|required';
 		$edit->fecha->calendar=false;
 		$edit->fecha->insertValue=date('Y-m-d');
-		$edit->fecha->size =10;
+		$edit->fecha->size =12;
 		$edit->fecha->maxlength =8;
 
 		$edit->descrip = new inputField('Descripci&oacute;n','descrip');
