@@ -1,8 +1,8 @@
 <?php
 class Lgasto extends Controller {
 	var $mModulo = 'LGASTO';
-	var $titp    = 'Deducciones';
-	var $tits    = 'Deducciones';
+	var $titp    = 'Adiciones y Deducciones';
+	var $tits    = 'Adiciones y Deducciones';
 	var $url     = 'leche/lgasto/';
 	var $tabla   = 'lgasto';
 
@@ -10,7 +10,7 @@ class Lgasto extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		$this->datasis->creaintramenu(array('modulo'=>'226','titulo'=>'Control de Deducciones','mensaje'=>'Control de Deducciones','panel'=>'LECHE','ejecutar'=>'leche/lgasto','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
+		$this->datasis->creaintramenu(array('modulo'=>'226','titulo'=>'Adiciones y Deducciones','mensaje'=>'Adiciones y Deducciones','panel'=>'LECHE','ejecutar'=>'leche/lgasto','target'=>'popu','visible'=>'S','pertenece'=>'2','ancho'=>900,'alto'=>600));
 		$this->datasis->modulo_nombre( 'LGASTO', $ventana=0 );
 	}
 
@@ -185,6 +185,16 @@ class Lgasto extends Controller {
 			'editoptions'   => '{ size:100, maxlength: 100 }',
 		));
 
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:1, maxlength: 1 }',
+		));
 
 		$grid->addField('fecha');
 		$grid->label('Fecha');
@@ -304,8 +314,7 @@ class Lgasto extends Controller {
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -319,8 +328,7 @@ class Lgasto extends Controller {
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -439,7 +447,7 @@ class Lgasto extends Controller {
 		$edit->pre_process('delete','_pre_delete');
 
 		$edit->proveed = new inputField('Proveedor','proveed');
-		$edit->proveed->rule='max_length[5]';
+		$edit->proveed->rule='max_length[5]|required|existesprv';
 		$edit->proveed->size =10;
 		$edit->proveed->maxlength =15;
 
@@ -450,13 +458,20 @@ class Lgasto extends Controller {
 		$edit->nombre->type='inputhidden';
 		$edit->nombre->maxlength =100;
 
+		$edit->tipo = new  dropdownField('Tipo', 'tipo');
+		$edit->tipo->option('D','Deduci&oacute;n');
+		$edit->tipo->option('A','Asignaci&oacute;n');
+		$edit->tipo->style='width:150px;';
+		$edit->tipo->size = 5;
+		$edit->tipo->rule='required';
+
 		$edit->referen = new inputField('N.Referencia','referen');
 		$edit->referen->rule='max_length[100]';
 		$edit->referen->size =12;
 		$edit->referen->maxlength =10;
 
 		$edit->fecha = new dateField('Fecha','fecha');
-		$edit->fecha->rule='chfecha';
+		$edit->fecha->rule='chfecha|required';
 		$edit->fecha->calendar=false;
 		$edit->fecha->insertValue=date('Y-m-d');
 		$edit->fecha->size =10;
@@ -468,7 +483,7 @@ class Lgasto extends Controller {
 		$edit->descrip->maxlength =100;
 
 		$edit->cantidad = new inputField('Cantidad','cantidad');
-		$edit->cantidad->rule='max_length[17]|numeric';
+		$edit->cantidad->rule='max_length[17]|numeric|required';
 		$edit->cantidad->css_class='inputnum';
 		$edit->cantidad->size =19;
 		$edit->cantidad->autocomplete=false;
@@ -476,7 +491,7 @@ class Lgasto extends Controller {
 		$edit->cantidad->maxlength =17;
 
 		$edit->precio = new inputField('Precio','precio');
-		$edit->precio->rule='max_length[17]|numeric';
+		$edit->precio->rule='max_length[17]|numeric|required';
 		$edit->precio->css_class='inputnum';
 		$edit->precio->onkeyup ='totaliza()';
 		$edit->precio->autocomplete=false;
@@ -484,7 +499,7 @@ class Lgasto extends Controller {
 		$edit->precio->maxlength =17;
 
 		$edit->total = new inputField('Total','total');
-		$edit->total->rule='max_length[17]|numeric';
+		$edit->total->rule='max_length[17]|numeric|required';
 		$edit->total->css_class='inputnum';
 		$edit->total->size =19;
 		$edit->total->type='inputhidden';
@@ -537,18 +552,31 @@ class Lgasto extends Controller {
 	function instalar(){
 		if (!$this->db->table_exists('lgasto')) {
 			$mSQL="CREATE TABLE `lgasto` (
-			  `proveed` char(5) DEFAULT NULL COMMENT 'productor',
-			  `nombre` varchar(100) DEFAULT NULL COMMENT 'nombre',
-			  `referen` varchar(100) DEFAULT NULL,
-			  `status` char(1) DEFAULT 'A',
-			  `fecha` date DEFAULT NULL COMMENT 'nombre',
-			  `descrip` varchar(100) DEFAULT NULL COMMENT 'finca',
-			  `cantidad` decimal(17,2) DEFAULT NULL COMMENT 'ruta a en lruta',
-			  `precio` decimal(17,2) DEFAULT NULL COMMENT 'zona',
-			  `total` decimal(17,2) DEFAULT NULL COMMENT 'direccion',
-			  `id` int(11) NOT NULL AUTO_INCREMENT,
-			  PRIMARY KEY (`id`)
-			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED COMMENT='Gastos'";
+				`proveed` CHAR(5) NULL DEFAULT NULL COMMENT 'productor',
+				`nombre` VARCHAR(100) NULL DEFAULT NULL COMMENT 'nombre',
+				`tipo` CHAR(1) NULL DEFAULT 'D' COMMENT 'Dedudccion, Adicion',
+				`referen` VARCHAR(100) NULL DEFAULT NULL,
+				`status` CHAR(1) NULL DEFAULT 'A',
+				`fecha` DATE NULL DEFAULT NULL COMMENT 'nombre',
+				`descrip` VARCHAR(100) NULL DEFAULT NULL COMMENT 'finca',
+				`cantidad` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'ruta a en lruta',
+				`precio` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'zona',
+				`total` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'direccion',
+				`pago` INT(11) NULL DEFAULT '0' COMMENT 'id de pago lpago',
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				INDEX `proveed` (`proveed`),
+				INDEX `fecha` (`fecha`)
+			)
+			COMMENT='Gastos'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
+		}
+
+		$campos=$this->db->list_fields('lgasto');
+		if (!in_array('tipo',$campos)){
+			$mSQL="ALTER TABLE `lgasto` ADD COLUMN `tipo` CHAR(1) NULL DEFAULT 'D' COMMENT 'Dedudccion, Adicion' AFTER `nombre`";
 			$this->db->simple_query($mSQL);
 		}
 	}

@@ -1,4 +1,6 @@
 <?php
+require_once(APPPATH.'/controllers/finanzas/common.php');
+
 class Lpago extends Controller {
 	var $mModulo = 'LPAGO';
 	var $titp    = 'Modulo de pagos';
@@ -34,8 +36,9 @@ class Lpago extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array('id'=>'bimpri', 'img'=>'assets/default/images/print.png', 'alt' => 'Imprimir Documento', 'label'=>'Imprimir recibo' ));
-		$grid->wbotonadd(array('id'=>'blote' , 'img'=>'images/agrega4.png'             , 'alt' => 'Pagar lote'        , 'label'=>'Pagar lote'      ));
+		$grid->wbotonadd(array('id'=>'bimpri' , 'img'=>'assets/default/images/print.png', 'alt' => 'Imprimir Documento', 'label'=>'Imprimir recibo' ));
+		$grid->wbotonadd(array('id'=>'bcheque', 'img'=>'assets/default/images/print.png', 'alt' => 'Imprimir Cheque'   , 'label'=>'Imprimir cheque' ));
+		$grid->wbotonadd(array('id'=>'blote'  , 'img'=>'images/agrega4.png'             , 'alt' => 'Pagar lote'        , 'label'=>'Pagar lote'      ));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
@@ -159,6 +162,17 @@ class Lpago extends Controller {
 			if (id)	{
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				'.$this->datasis->jwinopen(site_url('formatos/ver/LPAGO').'/\'+id+\'/id\'').';
+			} else {
+				$.prompt("<h1>Por favor Seleccione un registro</h1>");
+			}
+		});';
+
+		$bodyscript .= '
+		jQuery("#bcheque").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url($this->url.'impcheque').'/\'+id+\'/id\'').';
 			} else {
 				$.prompt("<h1>Por favor Seleccione un registro</h1>");
 			}
@@ -886,6 +900,26 @@ class Lpago extends Controller {
 		}
 	}
 
+	function impcheque($id_gser){
+		$dbid=$this->db->escape($id_gser);
+		$fila=$this->datasis->damerow('SELECT a.banco,a.benefi,a.nombre,a.montopago AS monto FROM lpago AS a WHERE a.id='.$dbid);
+		$fila['benefi']= trim($fila['benefi']);
+		$fila['nombre']= trim($fila['nombre']);
+
+		$banco  = Common::_traetipo($fila['banco']);
+
+		if($banco!='CAJ'){
+			$this->load->library('cheques');
+			$nombre = (empty($fila['benefi']))? $fila['nombre']: $fila['benefi'];
+			$monto  = $fila['monto'];
+			$fecha  = date('Y-m-d');
+			$banco  = $banco;
+			$this->cheques->genera($nombre,$monto,$banco,$fecha,true);
+		}else{
+			echo 'Egreso no fue pagado con cheque de banco';
+		}
+	}
+
 	function _cmonto($proveed=null){
 
 		$rt = array('deduc'=>0 , 'tmonto'=>0 , 'monto'=>0);
@@ -895,7 +929,7 @@ class Lpago extends Controller {
 			$fcorte = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
 
 			//Deducciones
-			$sel=array('SUM(a.total) AS val');
+			$sel=array('SUM(a.total*IF(a.tipo="A",-1,-1)) AS val');
 			$this->db->select($sel);
 			$this->db->from('lgasto AS a');
 			$this->db->where('(a.pago IS NULL OR a.pago=0)');
