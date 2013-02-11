@@ -738,7 +738,6 @@ class Datasis {
 		}
 		$query->free_result();
 		$arreglo .= " }";
-		//return $arreglo;
 		if ( $todos ){
 			return $select.'<option value="-">Seleccione</option>'.$opciones.'</select>';
 		} else {
@@ -767,6 +766,13 @@ class Datasis {
 		return $arreglo;
 	}
 
+	function controladores(){
+		$CI =& get_instance();
+		$CI->load->helper('directory');
+		$map = directory_map('./system/application/controllers/', FALSE);
+		return $map;
+		
+	}
 
 	function actusal($codbanc, $fecha, $monto){
 		$CI =& get_instance();

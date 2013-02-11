@@ -996,8 +996,9 @@ class Desarrollo extends Controller{
 
 			$columna .= $str."\n";
 
-			$data['programa'] = $columna.'?>';
-			$data['archivo']  = site_url($contro.'/'.$db.'.php');
+			$data['programa']    = $columna.'?>';
+			$data['bd']          = $db;
+			$data['controlador'] = $contro;
 			$this->load->view('editorcm', $data);
 
 		}
@@ -1674,12 +1675,44 @@ class Desarrollo extends Controller{
 	}
 
 	function editor(){
-
 			$this->load->view('editorcm');
+	}
 
+	function jqguarda(){
+		$code   = $this->input->post('code');
+		$db     = $this->input->post('bd');
+		$contro = $this->input->post('contro');
+		file_put_contents('system/application/controllers/'.$contro.'/'.$db.'.php',$code);
+		echo 'Increible ';
+		
+	}
 
+	function jqcargar(){
+		$db = $this->uri->segment(3);
+		if($db===false){
+			exit('Debe especificar en la uri la tabla y el directorio "/tabla/directorio"');
+		}
+		$contro =$this->uri->segment(4);
+		if($contro===false){
+			$contro = '';
+		}
+		if ( $contro == '' )
+			$leer = file_get_contents('system/application/controllers/'.$db.'.php');
+		else
+			$leer = file_get_contents('system/application/controllers/'.$contro.'/'.$db.'.php');
+		
+		$data['programa']    = $leer;
+		$data['bd']          = $db;
+		$data['controlador'] = $contro;
+		$this->load->view('editorcm', $data);
+
+	}
+
+	function ccc(){
+		print_r($this->datasis->controladores());
 	}
 
 
 }
 ?>
+-
