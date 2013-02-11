@@ -255,27 +255,33 @@ class Lpago extends Controller {
 					var bValid = true;
 					var murl = $("#df1").attr("action");
 					allFields.removeClass( "ui-state-error" );
-					$.ajax({
-						type: "POST", dataType: "html", async: false,
-						url: murl,
-						data: $("#df1").serialize(),
-						success: function(r,s,x){
-							try{
-								var json = JSON.parse(r);
-								if (json.status == "A"){
-									apprise(json.mensaje);
-									$( "#flote" ).dialog( "close" );
-									'.$this->datasis->jwinopen(site_url('reportes/ver/LPAGOLOTE').'/\'+json.pk.id+\'/id\'').';
-									grid.trigger("reloadGrid");
-									return true;
-								} else {
-									apprise(json.mensaje);
+					var totallote = Number($("#totallote").val());
+
+					if(totallote>0){
+						$.ajax({
+							type: "POST", dataType: "html", async: false,
+							url: murl,
+							data: $("#df1").serialize(),
+							success: function(r,s,x){
+								try{
+									var json = JSON.parse(r);
+									if (json.status == "A"){
+										apprise(json.mensaje);
+										$( "#flote" ).dialog( "close" );
+										'.$this->datasis->jwinopen(site_url('reportes/ver/LPAGOLOTE').'/\'+json.pk.id+\'/id\'').';
+										grid.trigger("reloadGrid");
+										return true;
+									} else {
+										apprise(json.mensaje);
+									}
+								}catch(e){
+									$("#flote").html(r);
 								}
-							}catch(e){
-								$("#flote").html(r);
 							}
-						}
-					});
+						});
+					}else{
+						alert("El monto del pago por lote debe ser mayor a cero");
+					}
 				},
 				"Cerrar": function() {
 					$("#flote").html("");
@@ -748,7 +754,7 @@ class Lpago extends Controller {
 			jQuery("#loteresu").jqGrid({
 				datatype: "local",
 				height: 230,
-				colNames:["Cod.","Nombre", "Monto", "Deducciones","Total pago"],
+				colNames:["Cod.","Nombre", "Monto", "Adic. y Dedu.","Total pago"],
 				colModel:[
 					{name:"proveed"  , index:"proveed"   , width:60   },
 					{name:"nombre"   , index:"nombre"    , width:240  },
@@ -762,18 +768,24 @@ class Lpago extends Controller {
 		});
 
 		function llenaresu(){
+			jQuery("#loteresu").jqGrid("clearGridData",true).trigger("reloadGrid");
+
+			var total   = 0;
 			var tipo    = $("#tipo").val();
 			var enbanco = $("#banco").val();
 
 			if(tipo!="" && enbanco!=""){
 				$.post("'.site_url($this->url.'resumenlote').'",{ enbanco: enbanco, tipo: tipo },
 				function(data){
-					var json = JSON.parse(data);
-					for(var i=0;i<=json.length;i++){
-						jQuery("#loteresu").jqGrid("addRowData",i+1,json[i]);
+					var jjson = JSON.parse(data);
+					for(var i=0;i<jjson.length;i++){
+						total = total+jjson[i].montopago;
+						jQuery("#loteresu").jqGrid("addRowData",i+1,jjson[i]);
 					}
 				});
 			}
+			$("#totalval").text(nformat(total));
+			$("#totallote").val(total);
 		}';
 
 		$edit = new DataEdit('', 'lpagolote');
@@ -791,6 +803,7 @@ class Lpago extends Controller {
 		$edit->enbanco->option('','Seleccionar');
 		$edit->enbanco->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tipocta<>'Q' AND tbanco<>'CAJ' ORDER BY codbanc");
 		$edit->enbanco->rule='max_length[50]|required';
+		$edit->enbanco->style='width:200px;';
 		$edit->enbanco->append('Banco desde el que se emiten los pagos');
 
 		$edit->tipo = new dropdownField('Preferencia de pago','tipo');
@@ -802,14 +815,16 @@ class Lpago extends Controller {
 
 		$edit->banco = new dropdownField('Banco a depositar','banco');
 		$edit->banco->option('','Seleccionar');
-		$edit->banco->options('SELECT cod_banc, CONCAT_WS(\'-\',cod_banc,nomb_banc) AS label FROM tban ORDER BY cod_banc');
+		$edit->banco->options('SELECT cod_banc, CONCAT_WS(\'-\',cod_banc,nomb_banc) AS label FROM tban WHERE cod_banc<>"CAJ" ORDER BY cod_banc');
 		$edit->banco->rule='max_length[5]|required';
 		$edit->banco->onchange='llenaresu()';
+		$edit->banco->style='width:200px;';
 		$edit->banco->append('Banco en donde se le depositar&aacute;n a los clientes');
+
+		$edit->totalval = new freeField('Total','','<b id="totalval">0,00</b><input type="hidden" name="totallote" id="totallote" value="0"> ');
 
 		$edit->container = new containerField('alert','<table id="loteresu"></table>');
 		$edit->container->when = array('create');
-
 
 		//$edit->numero = new inputField('N&uacute;mero','numero');
 		//$edit->numero->rule='max_length[100]';
@@ -929,7 +944,7 @@ class Lpago extends Controller {
 			$fcorte = date('Y-m-d',mktime(0, 0, 0, date('n'),date('j')-1*date('w')));
 
 			//Deducciones
-			$sel=array('SUM(a.total*IF(a.tipo="A",-1,-1)) AS val');
+			$sel=array('SUM(a.total*IF(a.tipo="A",-1,1)) AS val');
 			$this->db->select($sel);
 			$this->db->from('lgasto AS a');
 			$this->db->where('(a.pago IS NULL OR a.pago=0)');
