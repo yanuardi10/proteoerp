@@ -999,6 +999,17 @@ class Smov extends Controller {
 					break;
 				}
 
+				//Chequea si viene de otin
+				$mSQL='SELECT a.id
+				FROM otin AS a
+				JOIN smov AS b ON a.transac=b.transac AND a.fecha=b.fecha
+				WHERE b.id='.$dbid;
+				$otin_id=$this->datasis->dameval($mSQL);
+				if(!empty($otin_id)){
+					redirect('ventas/otin/printotin/'.$otin_id);
+					break;
+				}
+
 				redirect('formatos/descargar/CCLINC/'.$id);
 				break;
 			case 'AN':
@@ -1028,6 +1039,17 @@ class Smov extends Controller {
 				$rivc_id=$this->datasis->dameval($mSQL);
 				if(!empty($sfac_id)){
 					redirect('formatos/ver/RIVC/'.$rivc_id);
+					break;
+				}
+
+				//Chequea si viene de otin
+				$mSQL='SELECT a.id
+				FROM otin AS a
+				JOIN smov AS b ON a.transac=b.transac AND a.fecha=b.fecha
+				WHERE b.id='.$dbid;
+				$otin_id=$this->datasis->dameval($mSQL);
+				if(!empty($otin_id)){
+					redirect('ventas/otin/printotin/'.$otin_id);
 					break;
 				}
 

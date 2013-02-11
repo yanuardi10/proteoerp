@@ -195,6 +195,7 @@ class Kardex extends Controller {
 		$grid->order_by('numero','desc');
 		$grid->per_page = 20;
 
+		//img(array('src' =>'images/pdf_logo.gif','height' => 18, 'alt' => 'Imprimir', 'title' => 'Imprimir', 'border'=>'0'))
 		if($tipo=='3I' || $tipo=='3M'){  //ventas de caja
 			$fields = $this->db->field_data('sfac');
 			$ppk=array();

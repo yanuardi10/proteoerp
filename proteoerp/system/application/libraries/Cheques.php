@@ -37,6 +37,10 @@ class Cheques {
 			if(empty($forma)){
 				$forma=$this->_crearep($_fnombre);
 			}
+			if(empty($forma)){
+				$forma=$this->_crearep('CHEQUE');
+			}
+
 			ob_start();
 				echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $forma)).'<?php ');
 				$_html=ob_get_contents();

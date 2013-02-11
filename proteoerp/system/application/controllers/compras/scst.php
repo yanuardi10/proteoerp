@@ -311,7 +311,7 @@ class Scst extends Controller {
 			});';
 
 		$bodyscript .= '
-			$( "#factuali" ).dialog({
+			$("#factuali").dialog({
 				autoOpen: false, height: 300, width: 450, modal: true,
 				buttons: {
 					"Actualizar": function() {
@@ -351,7 +351,7 @@ class Scst extends Controller {
 
 		//Cambiar Precios
 		$bodyscript .= '
-			$( "#cprecios" ).click(function() {
+			$("#cprecios").click(function() {
 				var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 				if (id)	{
 					var ret    = $("#newapi'.$grid0.'").getRowData(id);
@@ -371,7 +371,7 @@ class Scst extends Controller {
 
 
 		$bodyscript .= '
-			$( "#fcompra" ).dialog({
+			$("#fcompra").dialog({
 				autoOpen: false, height: 570, width: 860, modal: true,
 				buttons: {
 					"Guardar": function() {

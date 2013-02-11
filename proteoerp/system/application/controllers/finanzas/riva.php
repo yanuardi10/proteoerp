@@ -31,39 +31,26 @@ class Riva extends Controller {
 		$param['grids'][] = $grid->deploy();
 
 		$bodyscript = '
-<script type="text/javascript">
+		<script type="text/javascript">
 
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/RIVA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
+			jQuery("#a1").click( function(){
+				var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+					window.open(\''.base_url().'formatos/ver/RIVA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+				} else { $.prompt("<h1>Por favor Seleccione una Retenci&oacute;n</h1>");}
+			});
 
-		jQuery("#boton1").click( function(){
-			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('formatos/ver/RIVA').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
-			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
-		});
-</script>
-';
+		</script>';
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
-		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
-
-
 		$WestPanel = $grid->deploywestp();
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"a1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array('id'=>'a1','img'=>'assets/default/images/print.png','alt' => 'Imprimir documento', 'label'=>'Reimprimir Documento'));
 		$WestPanel = $grid->deploywestp();
-
-
 
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
 
@@ -89,7 +76,7 @@ jQuery("#a1").click( function(){
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('periodo');
-		$grid->label('Periodo');
+		$grid->label('Per&iacute;odo');
 		$grid->params(array(
 			'align'         => '"center"',
 			'search'        => 'true',
@@ -112,7 +99,7 @@ jQuery("#a1").click( function(){
 		));
 
 		$grid->addField('emision');
-		$grid->label('Emision');
+		$grid->label('Emisi&oacute;n');
 		$grid->params(array(
 			'align'         => '"center"',
 			'search'        => 'true',
@@ -149,7 +136,7 @@ jQuery("#a1").click( function(){
 		));
 
 		$grid->addField('numero');
-		$grid->label('Numero');
+		$grid->label('N&uacute;mero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'true',
